@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="ISO8859-1"?>
+<fpdoc-description>
+  <package name="DEngine">    
+    <module name="DUtils.pas">
+      <element name="GetTimer">
+        <short>Âîçâðàùàåò òåêóùåå âðåìÿ â ìñ.</short>
+      </element>
+      <element name="PCrossChar">
+        <short>Êðîññêîìïèëÿòîðíàÿ ñòðîêà.</short>
+      </element>
+    </module>
+    <module name="DGraph">
+      <element name="TBlendMode">
+        <short>Operaciya, kotoraya budet vipolnyatsya pri zapisi pixelya na ekran</short>
+      </element>
+      <element name="TBlendMode.bmNo">
+        <short>Prosto zapicat'</short>
+      </element>
+      <element name="TBlendMode.bmAdd">
+        <short>Slojit' vhodyashii cvet s cvetom na ekrane</short>
+      </element>
+      <element name="TBlendMode.bmMul">
+        <short>Umnojit' vhodyashii cvet s cvetom na ekrane</short>
+      </element>
+      <element name="TBlendMode.bmAlpha">
+        <short>Ispol'zovat' Alphu vhodyashego cveta, 0 - polnost'u nevidimii pixel, 1 - polnost'u vidimii.</short>
+      </element>
+      <element name="TBlendMode.bmDiffuse">
+        <short>Ispol'zovat' vhodyashii cvet v kachestve alphi. Chem temnee - tem prozrachnei.</short>
+      </element>
+      <element name="TProjMode">
+        <short>Poka chto ne ispol'zuetsya.</short>
+      </element>
+      <element name="TTexture">
+        <short>Identificator texturi v dvijke.</short>
+      </element>
+      <element name="TTextureInfo">
+        <short>Informaciya o texture.</short>
+      </element>
+      <element name="TTgaHeader">
+        <short>Zagolovok tga faila.</short>
+      </element>
+      <element name="TGraph">
+        <short>Ob'ekt cherez kotorii proishodit ves' render.</short>
+      </element>
+      <element name="TGraph.BeginRender2D">
+        <short>Vkluchaet 2d render.</short>
+      </element>
+      <element name="TGraph.Clear">
+        <short>Ochistka ekrana zadannim cvetom.</short>
+      </element>
+      <element name="TGraph.EndRender">
+        <short>Zavershaet render.</short>
+      </element>
+      <element name="TGraph.SetBlendMode">
+        <short>Ustanavlivaet zadannuu operaciu zapici na ekran.</short>
+      </element>
+      <element name="TGraph.LoadTex">
+        <short>Zagrujaet texturu iz faila, podderjivaut'sya tol'ko nesjatie 24bit tga i faili formata bit.</short>
+      </element>
+      <element name="TGraph.TexWidth">
+        <short>Shirina zadannoi texturi.</short>
+      </element>
+      <element name="TGraph.TexHeight">
+        <short>Visota zadannoi texturi.</short>
+      </element>
+      <element name="TGraph.GetTexFileName">
+        <short>Imya faila texturi.</short>
+      </element>
+      <element name="TGraph.SetPointSize">
+        <short>Ustanavlivaet razmer tochki.</short>
+      </element>
+      <element name="TGraph.SetLineWidth">
+        <short>Ustanavlivaet shirinu linii.</short>
+      </element>
+      <element name="TGraph.SetTexture">
+        <short>Ustanavlivaet tekushuu texturu.</short>
+      </element>
+      <element name="TGraph.SetColor">
+        <short>Ustanavlivaet tekushii cvet.</short>
+      </element>
+      <element name="TGraph.Color4f">
+        <short>Ustanavlivaet tekushii cvet.</short>
+      </element>
+      <element name="TGraph.DrawLine">
+        <short>Risuet liniu.</short>
+      </element>
+      <element name="TGraph.DrawRect">
+        <short>Risuet Rect. Fill - nujno li zakrashivat' vnutrennost'</short>
+      </element>
+      <element name="TGraph.DrawCircle">
+        <short>Risuet okrujnost'.</short>
+      </element>
+      <element name="TGraph.DrawPolygon">
+        <short>Risuet mnogougol'nik.</short>
+      </element>
+      <element name="TGraph.DrawTexture">
+        <short>Risuet pryamougol'nik s nalojennoi texturoi.</short>
+      </element>
+      <element name="TGraph.DrawTiles">
+        <short>Risuet pryamougol'nik s nalojennimi tailami. Razmer taila peredayot'sya cherez parametr Tile</short>
+      </element>
+      <element name="TGraph.PushMatrix">
+        <short>Pomeshaet matricu rendera v stack.</short>
+      </element>
+      <element name="TGraph.PopMatrix">
+        <short>Izvlekaet matricu rendera iz stacka.</short>
+      </element>
+      <element name="TGraph.Translate">
+        <short>Peremeshaet sistemu koordinat na zadannii vektor.</short>
+      </element>
+      <element name="TGraph.VSync">
+        <short>Vkluchaet/vikluchaet vertical'nuu sinhronizaciu.</short>
+      </element>
+    </module>
+
+
+    <module name="DIntersection">
+      <element name="Contain">
+        <short>Proveryaet soderjisya li B vnutri A.</short>
+      </element>
+      <element name="Intersect">
+        <short>Proveryaet stalkivautsya li dve figuri.</short>
+      </element>
+    </module>
+
+    <module name="DCamera2D">
+      <element name="TCamera2D">
+        <short>Realizuet scrolling v dvumernoi igre.</short>
+      </element>
+      <element name="TCamera2D.Bind">
+        <short>Ne ispol'zuetsya.</short>
+      </element>
+      <element name="TCamera2D.Focus">
+        <short>Ustanavlivaet matricu rendera v sootvetstvii s polojeniem cameri.</short>
+      </element>
+      <element name="TCamera2D.Unfocus">
+        <short>Vozvrashaet sostoyanie cameri, kotoroe bilo do vizova Focus</short>
+      </element>
+      <element name="TCamera2D.Update">
+        <short>Obnovlyaet sostoyanie cameri, v kachestve parametra peredaetsya polojenie ob'ekta, kotorii doljen bit' viden na ekrane (naprimer, GG).</short>
+      </element>
+      <element name="TCamera2D.Center">
+        <short>Oblast' na ekrane, v kotoroi ob'ekt mojet peremesh'at'sya i pri etom camera budet stoyat' na meste</short>
+      </element>
+    </module>
+
+    <module name="DDebug">
+      <element name="TDebug">
+        <short>Class dlya otladki</short>
+      </element>
+      <element name="TDebug.Log">
+        <short>Pechataet stroku v log.</short>
+      </element>
+      <element name="TDebug.Assert">
+        <short>Proveryaet vipolneno li uslovie, esli net - pechataet soobshenie v log.</short>
+      </element>
+    </module>
+
+    <module name="DFont">
+      <short>Uproshaet rabotu so shriftami.</short>
+      <element name="TFont">
+        <short>Shrift</short>
+      </element>
+      <element name="TFontMan">
+        <short>Manager shriftov</short>
+      </element>
+      <element name="TFont.Draw">
+        <short>Vivodit shrift na ekran v zadannoi posicii.</short>
+      </element>
+      <element name="TFont.GetWidth">
+        <short>Vozvrashaet shirinu texta.</short>
+      </element>
+      <element name="TFont.GetHeight">
+        <short>Vozvrashaet visotu texta.</short>
+      </element>
+      <element name="TFont.FileName">
+        <short>Imya faila s texturoi.</short>
+      </element>
+      <element name="TFont.Spacing">
+        <short>Rasstoyanie mejdu sosednimi bukvami.</short>
+      </element>
+      <element name="TFont.Width">
+        <short>Shirina bukvi.</short>
+      </element>
+      <element name="TFont.Height">
+        <short>Visota bukvi.</short>
+      </element>
+      <element name="TFontMan.CreateFont">
+        <short>Sozdayot shrift iz faila s zadannim Spaicing. Predpolagaya, chto v nem bukvi zapisani v matricu 16x16.</short>
+      </element>
+    </module>
+
+    <module name="DMath">
+      <element name="EPS">
+        <short>Beskonechno malaya velichina.</short>
+      </element>
+      <element name="TRect">
+        <short>Pryamougol'nik, raven TRectf.</short>
+      </element>
+      <element name="TRectf">
+        <short>Pryamougol'nik s koordinatami tipa float.</short>
+      </element>
+      <element name="Round2f">
+        <short>Okruglenie vektora do celogo.</short>
+      </element>
+      <element name="TVec2f">
+        <short>Vektor v 2D.</short>
+      </element>
+      <element name="TVec2i">
+        <short>Vektor v 2D s koordinatami tipa Integer.</short>
+      </element>
+      <element name="TVec3f">
+        <short>Vektor v 3D.</short>
+      </element>
+      <element name="TVec4f">
+        <short>Vektor v 4D.</short>
+      </element>
+      <element name="Max">
+        <short>Nahodit maximum dvuh velichin.</short>
+      </element>
+      <element name="Min">
+        <short>Nahodit minimum dvuh velichin.</short>
+      </element>
+      <element name="Add2f">
+        <short>Slojenie dvuh vektorov.</short>
+      </element>
+      <element name="Dist2f">
+        <short>Rasstoyanie mejdu dvumya vektorami.</short>
+      </element>
+      <element name="Dot2f">
+        <short>Skalyarnoe proizdedenie dvuh vektorov.</short>
+      </element>
+      <element name="Len2f">
+        <short>Dlinna vektora.</short>
+      </element>
+      <element name="Mul2f">
+        <short>Umnojenie na chislo.</short>
+      </element>
+      <element name="Norm2f">
+        <short>Normalizaciya vektora - delenie ego na svou dlinu.</short>
+      </element>
+      <element name="Rect">
+        <short>Sozdayot pryamougol'nik.</short>
+      </element>
+      <element name="Sub2f">
+        <short>Vichetanie vektorov.</short>
+      </element>
+      <element name="Vec2f">
+        <short>Sozdayot vektor.</short>
+      </element>
+    </module>
+
+    <module name="DSound">
+      <element name="TSoundID">
+        <short>Identificator zvuka v dvijke.</short>
+      </element>
+      <element name="TSound.LoadSound">
+        <short>Zagrujaet zvuk iz faila, podderjivaytsya tol'ko wav.</short>
+      </element>
+      <element name="TSound.DelSound">
+        <short>Udalyaet zvuk.</short>
+      </element>
+      <element name="TSound.PlaySound">
+        <short>Proigrivaet zvuk (mozet iz faila, mojet po TSoundID).</short>
+      </element>
+      <element name="TSound.PlaySoundMMSystem">
+        <short>Proigrivaet cherez MMSystem, podderjivaet mnojestvo formatov. V dal'neishim eta funcciya budet udalena.</short>
+      </element>
+      <element name="TSound.IsPlaying">
+        <short>Proigrivaetsya li zvuk.</short>
+      </element>
+      <element name="TSound.PlayMusic">
+        <short>Proigrat' muziku, podderjivaut'sya tol'ko *.xm.</short>
+      </element>
+      <element name="TSound.SoundVolume">
+        <short>Uroven' gromkosti zvukov (mojet ne rabotat').</short>
+      </element>
+      <element name="TSound.MusicVolume">
+        <short>Uroven' gromkosti muziki.</short>
+      </element>
+      <element name="TSound.MusicPattern">
+        <short>Tekush'ii pattern v muzike.</short>
+      </element>
+    </module>
+
+    <module name="DWinApi">
+      <element name="TWinApi">
+        <short>Klass, realizuushii rabotu s gui v sisteme</short>
+      </element>
+      <element name="TWinApi.CreateWindow">
+        <short>Sozdayot okno</short>
+      </element>
+      <element name="TWinApi.Run">
+        <short>Startuet glavnii cicl dlya vseh okon</short>
+      </element>
+      <element name="TWinApi.ShutDown">
+        <short>Ostanavlivaet vipolnenie programi</short>
+      </element>
+      <element name="TWinApi.SWidth">
+        <short>Shirinta ekrana (razreshenie)</short>
+      </element>
+      <element name="TWinApi.SHeight">
+        <short>Visota ekrana (razreshenie)</short>
+      </element>
+      <element name="TWinApi.Mouse">
+        <short>Polojenie mishi na ekrane</short>
+      </element>
+      <element name="TWinApi.FPS">
+        <short>Chislo kadrov za predidushuu sekundu</short>
+      </element>
+
+      <element name="TWinApp">
+        <short>Klass, realizuushii okonnoe prolozenie</short>
+      </element>
+      <element name="TWinApp.Render">
+        <short>Render</short>
+      </element>
+      <element name="TWinApp.Update">
+        <short>Update</short>
+      </element>
+      <element name="TWinApp.OnEvent">
+        <short>Obrabotka soobshenii - nujno dorabativat'</short>
+      </element>
+
+      <element name="TWindow">
+        <short>Klass, realizuushii okno</short>
+      </element>
+      <element name="TWindow.Subscribe">
+        <short>Registraciya prilojeniya dlya dannogo okna</short>
+      </element>
+      <element name="TWindow.SwapBuffers">
+        <short>Vivedenie otrenderennogo na ekran</short>
+      </element>
+      <element name="TWindow.SetCaption">
+        <short>Ustanovka texta v zagolovke</short>
+      </element>
+      <element name="TWindow.GetWidth">
+        <short>Vozvrashaet shirinu okna</short>
+      </element>
+      <element name="TWindow.GetHeight">
+        <short>Vozvrashaet visotu okna</short>
+      </element>
+      <element name="TWindow.GetSize">
+        <short>Vozvrashaet razmeri okna</short>
+      </element>
+      <element name="TWindow.GetPos">
+        <short>Vozvrashaet posiciu okna</short>
+      </element>
+      <element name="TWindow.GetMouse">
+        <short>Vozvrashaet polojenie mishi v okne</short>
+      </element>
+      <element name="TWindow.GetHeight">
+        <short>Vozvrashaet visotu okna</short>
+      </element>
+    </module>
+
+  </package>
+</fpdoc-description>
