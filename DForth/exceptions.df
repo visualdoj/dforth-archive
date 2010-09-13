@@ -1,0 +1,1 @@
+: catch sys-exceptions-execute sys-exceptions-pop ;

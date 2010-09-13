@@ -1351,54 +1351,58 @@ begin
 end;
 
 procedure TBoolCommands._not;
-var
-  a: TInt;
+//var
+//  a: TInt;
 begin
-  FMachine.WUI(a);
+  {FMachine.WUI(a);
   if a = BOOL_FALSE then
     a := BOOL_TRUE
   else
     a := BOOL_FALSE;
-  FMachine.WUI(a);
+  FMachine.WUI(a);}
+  FMachine.WUI(not FMachine.WOI);
 end;
 
 procedure TBoolCommands._or;
 var
   a, b: TInt;
 begin
-  FMachine.WUI(a);
+  {FMachine.WUI(a);
   FMachine.WUI(b);
   if (a = BOOL_FALSE) and (b = BOOL_FALSE) then
     a := BOOL_FALSE
   else
     a := BOOL_TRUE;
-  FMachine.WUI(a);
+  FMachine.WUI(a);}
+  FMachine.WUI(FMachine.WOI or FMachine.WOI);
 end;
 
 procedure TBoolCommands._and;
-var
-  a, b: TInt;
+//var
+//  a, b: TInt;
 begin
-  a := FMachine.WOI;
+  {a := FMachine.WOI;
   b := FMachine.WOI;
   if (a = BOOL_FALSE) or (b = BOOL_FALSE) then
     a := BOOL_FALSE
   else
     a := BOOL_TRUE;
-  FMachine.WUI(a);
+  FMachine.WUI(a);}
+  FMachine.WUI(FMachine.WOI and FMachine.WOI);
 end;
 
 procedure TBoolCommands._xor;
-var
-  a, b: TInt;
+//var
+//  a, b: TInt;
 begin
-  a := FMachine.WOI;
+  {a := FMachine.WOI;
   b := FMachine.WOI;
   if (a = BOOL_FALSE) xor (b = BOOL_FALSE) then
     a := BOOL_TRUE
   else
     a := BOOL_FALSE;
-  FMachine.WUI(a);
+  FMachine.WUI(a);}
+  FMachine.WUI(FMachine.WOI xor FMachine.WOI);
 end;
 
 procedure TBoolCommands._dot;

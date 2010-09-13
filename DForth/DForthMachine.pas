@@ -586,7 +586,7 @@ TForthMachine = class
    procedure RunValue_ (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_ptr (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand);
@@ -608,7 +608,7 @@ TForthMachine = class
    procedure RunValue_ptr (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_int (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_int (Machine: TForthMachine; Command: PForthCommand);
@@ -630,7 +630,7 @@ TForthMachine = class
    procedure RunValue_int (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_int8 (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand);
@@ -652,7 +652,7 @@ TForthMachine = class
    procedure RunValue_int8 (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_int16 (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand);
@@ -674,7 +674,7 @@ TForthMachine = class
    procedure RunValue_int16 (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_int32 (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand);
@@ -696,7 +696,7 @@ TForthMachine = class
    procedure RunValue_int32 (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_int64 (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand);
@@ -718,7 +718,7 @@ TForthMachine = class
    procedure RunValue_int64 (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_uint (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_uint (Machine: TForthMachine; Command: PForthCommand);
@@ -740,7 +740,7 @@ TForthMachine = class
    procedure RunValue_uint (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_uint8 (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand);
@@ -762,7 +762,7 @@ TForthMachine = class
    procedure RunValue_uint8 (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_uint16 (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand);
@@ -784,7 +784,7 @@ TForthMachine = class
    procedure RunValue_uint16 (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_uint32 (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand);
@@ -806,7 +806,7 @@ TForthMachine = class
    procedure RunValue_uint32 (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_uint64 (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand);
@@ -828,7 +828,7 @@ TForthMachine = class
    procedure RunValue_uint64 (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
    procedure drop_embro (Machine: TForthMachine; Command: PForthCommand);
    procedure dup_embro (Machine: TForthMachine; Command: PForthCommand);
@@ -850,7 +850,7 @@ TForthMachine = class
    procedure RunValue_embro (Machine: TForthMachine; Command: PForthCommand)
   
   
-  ;
+;
   
   procedure _plus (Machine: TForthMachine; Command: PForthCommand);
   procedure _minus (Machine: TForthMachine; Command: PForthCommand);
@@ -1882,54 +1882,58 @@ begin
 end;
 
 procedure TBoolCommands._not;
-var
-  a: TInt;
+//var
+//  a: TInt;
 begin
-  FMachine.WUI(a);
+  {FMachine.WUI(a);
   if a = BOOL_FALSE then
     a := BOOL_TRUE
   else
     a := BOOL_FALSE;
-  FMachine.WUI(a);
+  FMachine.WUI(a);}
+  FMachine.WUI(not FMachine.WOI);
 end;
 
 procedure TBoolCommands._or;
 var
   a, b: TInt;
 begin
-  FMachine.WUI(a);
+  {FMachine.WUI(a);
   FMachine.WUI(b);
   if (a = BOOL_FALSE) and (b = BOOL_FALSE) then
     a := BOOL_FALSE
   else
     a := BOOL_TRUE;
-  FMachine.WUI(a);
+  FMachine.WUI(a);}
+  FMachine.WUI(FMachine.WOI or FMachine.WOI);
 end;
 
 procedure TBoolCommands._and;
-var
-  a, b: TInt;
+//var
+//  a, b: TInt;
 begin
-  a := FMachine.WOI;
+  {a := FMachine.WOI;
   b := FMachine.WOI;
   if (a = BOOL_FALSE) or (b = BOOL_FALSE) then
     a := BOOL_FALSE
   else
     a := BOOL_TRUE;
-  FMachine.WUI(a);
+  FMachine.WUI(a);}
+  FMachine.WUI(FMachine.WOI and FMachine.WOI);
 end;
 
 procedure TBoolCommands._xor;
-var
-  a, b: TInt;
+//var
+//  a, b: TInt;
 begin
-  a := FMachine.WOI;
+  {a := FMachine.WOI;
   b := FMachine.WOI;
   if (a = BOOL_FALSE) xor (b = BOOL_FALSE) then
     a := BOOL_TRUE
   else
     a := BOOL_FALSE;
-  FMachine.WUI(a);
+  FMachine.WUI(a);}
+  FMachine.WUI(FMachine.WOI xor FMachine.WOI);
 end;
 
 procedure TBoolCommands._dot;
@@ -4766,13 +4770,13 @@ begin
       AddCommand('throw', _throw);
     
     
-     AddCommand('-open', file_open);
-     AddCommand('-close', file_close);
-     AddCommand('-w', file_w);
-     AddCommand('-r', file_r);
-     AddCommand('-write', file_write);
-     AddCommand('-read', file_read);
-     AddCommand('-size', file_size);
+     AddCommand('file-open', file_open);
+     AddCommand('file-close', file_close);
+     AddCommand('file-w', file_w);
+     AddCommand('file-r', file_r);
+     AddCommand('file-write', file_write);
+     AddCommand('file-read', file_read);
+     AddCommand('file-size', file_size);
     ;
   Interpret(': if compile ?branch >mark ; immediate');
   Interpret(': else compile branch >mark embro-swap >resolve ; immediate');
@@ -4908,7 +4912,7 @@ begin
   Reset(F);
   {$I+}
   if IOResult <> 0 then begin
-    LogError('cannot open  "' + PChar(@(PStrRec(S)^.Sym[0])) + '"');
+    LogError('cannot open file "' + PChar(@(PStrRec(S)^.Sym[0])) + '"');
     Exit;
   end;
   SetLength(B, FileSize(F) + 1);
@@ -4920,7 +4924,7 @@ begin
   Reset(F);
   {$I+}
   if IOResult <> 0 then begin
-    LogError('cannot open  "' + PChar(@(PStrRec(S)^.Sym[0])) + '"');
+    LogError('cannot open file "' + PChar(@(PStrRec(S)^.Sym[0])) + '"');
     Exit;
   end;
   B := '';
