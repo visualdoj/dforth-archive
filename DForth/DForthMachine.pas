@@ -6993,13 +6993,64 @@ end;
     
    
     
-      procedure TForthMachine.file_open (Machine: TForthMachine; Command: PForthCommand); begin WOI; FStringCommands.str_drop(Machine, Command); WUP(nil) end;
-      procedure TForthMachine.file_close (Machine: TForthMachine; Command: PForthCommand); begin WOP end;
+      type
+        PdfFile = ^TdfFile;
+        TdfFile = record
+          Data: TData;
+          Name: String;
+          Mode: TInt;
+        end;
+      procedure TForthMachine.file_open (Machine: TForthMachine; Command: PForthCommand); 
+      var 
+        F: PdfFile;
+        S: TStr;
+      begin 
+         New(F);
+         F^.Mode := WOI; 
+         S := FStringCommands.str_pop(Machine, Command); 
+         F^.Name := PChar(@(PStrRec(S)^.Sym[0]));
+         if F^.Mode = DF_FILE_R then
+           F^.Data := TData.Create(F^.Name)
+         else
+           F^.Data := TData.Create;
+         WUP(F); 
+         FStringCommands.DelRef(S);
+      end;
+      procedure TForthMachine.file_close (Machine: TForthMachine; Command: PForthCommand); 
+      var
+        F: PdfFile;
+      begin 
+        F := WOP;
+        if F^.Mode = DF_FILE_W then
+          F^.Data.WriteToFile(F^.Name);
+        F^.Data.Free;
+        Dispose(F); 
+      end;
       procedure TForthMachine.file_w (Machine: TForthMachine; Command: PForthCommand); begin WUI(DF_FILE_W) end;
       procedure TForthMachine.file_r (Machine: TForthMachine; Command: PForthCommand); begin WUI(DF_FILE_R) end;
-      procedure TForthMachine.file_write (Machine: TForthMachine; Command: PForthCommand); begin WOP; WOI; WOP; end;
-      procedure TForthMachine.file_read (Machine: TForthMachine; Command: PForthCommand); begin WOP; WOI; WOP; end;
-      procedure TForthMachine.file_size (Machine: TForthMachine; Command: PForthCommand); begin WOP; WUI(0); end;
+      procedure TForthMachine.file_write (Machine: TForthMachine; Command: PForthCommand); 
+      var
+        Src: Pointer;
+        S: TInt;
+        F: PdfFile;
+      begin 
+        F := WOP; 
+        S := WOI; 
+        Src := WOP; 
+        F^.Data.WriteVar(Src, S);
+      end;
+      procedure TForthMachine.file_read (Machine: TForthMachine; Command: PForthCommand);
+      var
+        Src: Pointer;
+        S: TInt;
+        F: PdfFile;
+      begin 
+        F := WOP; 
+        S := WOI; 
+        Src := WOP; 
+        F^.Data.ReadVar(Src, S);
+      end;
+      procedure TForthMachine.file_size (Machine: TForthMachine; Command: PForthCommand); begin WUI(PdfFile(WOP)^.Data.Size); end;
     
   
 
