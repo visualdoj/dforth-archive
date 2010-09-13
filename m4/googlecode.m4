@@ -1,6 +1,6 @@
 dnl(
 changequote(~,|)
-define(~file|, ~dnl($1)|)
+define(~_file|, ~dnl($1)|)
 define(~_doc_enabled|, ~0|)
 define(~_doc_ext|, ~.wiki|)
 define(~_out|, ~|)
@@ -11,7 +11,10 @@ $1 $2
 $3
 _DOC_CUT_ doc_$1~|_doc_ext()
 )|)
-define(~_doc_article|, ~_doc_write($1 $2)|)
+define(~_doc_article|, ~_doc_write(_h1($2)
+$3
+_DOC_CUT_ doc_$1~|_doc_ext()
+)|)
 define(~_b|, ~*$1*|)
 define(~_i|, ~*$1*|)
 define(~_u|, ~*$1*|)
@@ -25,5 +28,5 @@ define(~_list|, ~define(~_item|, ~# $1|)_doc_write($1)|)
 define(~_code|, ~{{{
 $1
 }}}|)
-define(~link|, ~[$1|$2]|)
+define(~link|, ~[$1 $2]|)
 )

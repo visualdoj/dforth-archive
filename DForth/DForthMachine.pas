@@ -1520,7 +1520,7 @@ TForthMachine = class
   
   
   
-
+  
   
   procedure file_open (Machine: TForthMachine; Command: PForthCommand);
   procedure file_close (Machine: TForthMachine; Command: PForthCommand);
@@ -3172,7 +3172,7 @@ end;
 
 procedure TForthMachine.RunMnemonic(M: Cardinal);
 begin
-  Writeln('RUN MNEMONIC "' + C[M].Name + '" ' + IntToStr(M) + ' EC:' + IntToStr(EC));
+  //Writeln('RUN MNEMONIC "' + C[M].Name + '" ' + IntToStr(M) + ' EC:' + IntToStr(EC));
   C[M].Code(Self, C[M]);
 end;
 
@@ -5229,7 +5229,7 @@ var
 begin
   for I := 0 to High(C) do
     if TString(C[I].Name) = Name then begin
-      Writeln('Found command ', C[I].Name);
+      //Writeln('Found command ', C[I].Name);
       Result := C[I];
       Exit;
     end;
@@ -6966,6 +6966,8 @@ end;
      begin 
        Integer(ExceptionsP^) := 0;
        Inc(ExceptionsP, SizeOf(Integer));
+       Integer(ExceptionsP^) := EC;
+       Inc(ExceptionsP, SizeOf(Integer));
        Pointer(ExceptionsP^) := WP;
        Inc(ExceptionsP, SizeOf(Pointer));
        Pointer(ExceptionsP^) := RP;
@@ -6974,15 +6976,15 @@ end;
      end;
      procedure TForthMachine._sys_exceptions_pop (Machine: TForthMachine; Command: PForthCommand);
      begin
-       Dec(ExceptionsP, SizeOf(Integer) + 2*SizeOf(Pointer));
+       Dec(ExceptionsP, 2*SizeOf(Integer) + 2*SizeOf(Pointer));
        WUI(Integer(ExceptionsP^));
      end;
      procedure TForthMachine._throw (Machine: TForthMachine; Command: PForthCommand); 
      begin 
-       Integer((@PArrayOfByte(ExceptionsP^)[-2*SizeOf(Pointer)-SizeOf(Integer)])^) := WOI;
-       RP := Pointer((@PArrayOfByte(ExceptionsP^)[-1*SizeOf(Pointer)])^);
-       WP := Pointer((@PArrayOfByte(ExceptionsP^)[-2*SizeOf(Pointer)])^);
-       EC := Integer(RP^);
+       Integer((@PArrayOfByte(ExceptionsP)^[-2*SizeOf(Pointer)-2*SizeOf(Integer)])^) := WOI;
+       EC := Integer((@PArrayOfByte(ExceptionsP)^[-2*SizeOf(Pointer)-SizeOf(Integer)])^);
+       RP := Pointer((@PArrayOfByte(ExceptionsP)^[-1*SizeOf(Pointer)])^);
+       WP := Pointer((@PArrayOfByte(ExceptionsP)^[-2*SizeOf(Pointer)])^);
      end;
     
    

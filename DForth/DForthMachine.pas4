@@ -1,4 +1,4 @@
-file(~
+_file(~
 unit DForthMachine;
 
 interface
@@ -87,50 +87,6 @@ define(~typed_commands|,
      AddCommand('genname($1, constant)', _value_$1);
      AddCommand('genname($1, variable)', _variable_$1);
     |)
-  dnl(
-    ifelse($1,~|, ,
-      ~
-        _doc_entry(genname($1, ~drop|), ~Удаляет элемент типа |$1~ с вершины стека|, )
-        _doc_entry(genname($1, ~dup|), ~Дублирует элемент типа |$1~ на вершине стека|, )
-        _doc_entry(genname($1, ~swap|), ~Меняет местами два элемента типа |$1~ на вершине стека|, )
-        _doc_entry(genname($1, ~over|), ~Копирует второй по счёту элемент типа |$1~ на вершине стека|, )
-        _doc_entry(genname($1, ~lrot|), ~Левое вращение трёх элементов типа |$1~ на вершине стека|, )
-        _doc_entry(genname($1, ~rrot|), ~Правое вращение трёх элементов типа |$1~ на вершине стека|, )
-        _doc_entry(genname($1, ~lrotn|), ~Левое вращение n элементов типа |$1~ на вершине стека|, )
-        _doc_entry(genname($1, ~rrotn|), ~Правое вращение n элементов типа |$1~ на вершине стека|, )
-        _doc_entry($1@, ~~Снимает указатель со стека и кладёт на стек значение типа ||$1~~на которое ссылается указатель||, )
-        _doc_entry($1!, ~Снимает указатель и значение типа |$1~~после чего записывает это значение по адресу указателя||, )
-        _doc_entry(genname($1, ~to|), ~~Считывает из исходника имя и записывает в область данных этого имени значение типа ||$1~ со стека|, )
-        _doc_entry(~interpret@|genname($1, ~to|), ~...|, )
-        _doc_entry(~compile@|genname($1, ~to|), ~...|, )
-        _doc_entry(~run@|genname($1, ~to|), ~...|, )
-        _doc_entry(genname($1, ~variable|), ~Создаёт переменную с типом |$1, ~|)
-        _doc_entry(genname($1, ~value|), ~~Аналогично variable но при вызове созданной команды кладёт на стек значение||, )
-        _doc_entry(genname($1, ~constant|), ~~То же, что и value||, )
-      |
-    )
-    ifelse($1, ~|,
-      ~
-        _doc_entry(genname($1, ~drop|), ~Аналогично int-drop|, )
-        _doc_entry(genname($1, ~dup|), ~Аналогично int-dup|, )
-        _doc_entry(genname($1, ~swap|), ~Аналогично int-swap|, )
-        _doc_entry(genname($1, ~over|), ~Аналогично int-over|, )
-        _doc_entry(genname($1, ~lrot|), ~Аналогично int-lrot|, )
-        _doc_entry(genname($1, ~rrot|), ~Аналогично int-rrot|, )
-        _doc_entry(genname($1, ~lrotn|), ~Аналогично int-lrotn|, )
-        _doc_entry(genname($1, ~rrotn|), ~Аналогично int-rrotn|, )
-        _doc_entry($1~@|, ~Аналогично int@|, )
-        _doc_entry($1~!|, ~Аналогично int!|, )
-        _doc_entry(genname($1, ~to|), ~Аналогично int-to|, )
-        _doc_entry(~interpret@|genname($1, ~to|), ~Аналогично interpret@|genname(int, ~to|)~|, )
-        _doc_entry(~compile@|genname($1, ~to|), ~...|, )
-        _doc_entry(~run@|genname($1, ~to|), ~...|, )
-        _doc_entry(genname($1, ~variable|), ~Аналогично int-variable|)
-        _doc_entry(genname($1, ~value|), ~Аналогично int-value|, )
-        _doc_entry(genname($1, ~constant|), ~Аналогично int-constant|, )
-      |
-    )
-  )
 |)
 define(~data_commands|, 
   ~
@@ -174,6 +130,8 @@ define(~exception_commands|,
      begin 
        Integer(ExceptionsP^) := 0;
        Inc(ExceptionsP, SizeOf(Integer));
+       Integer(ExceptionsP^) := EC;
+       Inc(ExceptionsP, SizeOf(Integer));
        Pointer(ExceptionsP^) := WP;
        Inc(ExceptionsP, SizeOf(Pointer));
        Pointer(ExceptionsP^) := RP;
@@ -182,15 +140,15 @@ define(~exception_commands|,
      end;
      procedure TForthMachine._sys_exceptions_pop cmdhdr;
      begin
-       Dec(ExceptionsP, SizeOf(Integer) + 2*SizeOf(Pointer));
+       Dec(ExceptionsP, 2*SizeOf(Integer) + 2*SizeOf(Pointer));
        WUI(Integer(ExceptionsP^));
      end;
      procedure TForthMachine._throw cmdhdr; 
      begin 
-       Integer((@PArrayOfByte(ExceptionsP^)[-2*SizeOf(Pointer)-SizeOf(Integer)])^) := WOI;
-       RP := Pointer((@PArrayOfByte(ExceptionsP^)[-1*SizeOf(Pointer)])^);
-       WP := Pointer((@PArrayOfByte(ExceptionsP^)[-2*SizeOf(Pointer)])^);
-       EC := Integer(RP^);
+       Integer((@PArrayOfByte(ExceptionsP)^[-2*SizeOf(Pointer)-2*SizeOf(Integer)])^) := WOI;
+       EC := Integer((@PArrayOfByte(ExceptionsP)^[-2*SizeOf(Pointer)-SizeOf(Integer)])^);
+       RP := Pointer((@PArrayOfByte(ExceptionsP)^[-1*SizeOf(Pointer)])^);
+       WP := Pointer((@PArrayOfByte(ExceptionsP)^[-2*SizeOf(Pointer)])^);
      end;
     |
   )
@@ -200,6 +158,16 @@ define(~exception_commands|,
       AddCommand('sys-exceptions-pop', _sys_exceptions_pop);
       AddCommand('throw', _throw);
     |)
+  dnl(
+        _doc_article(~exceptions|, 
+                     ~Исключения|, 
+~Для работы с исключениями в DForth нужно подключить библиотеку exceptions.df
+_code(~str" exceptions.df" evaluate-file|)
+После этого становятся доступными две команды: throw и catch.
+_code(~catch ( ... xt -- ... i ) выполняет команду со стека (помещённую туда, например, командой ['']). В случае если исключения не было на стеке будет помещено 0. Если же сработало исключение (командой throw) то указатель рабочего и возвратного стека будут возвращены в состояние которое имели перед выполнением команды catch и на стек будет помещён код исключения
+throw ( ... i -- ... i ) последовательно выходит из функций до тех пор пока не встретит вызов командой catch. После чего передаёт управление в неё. |)
+                     |)
+  )
 |)
 define(~arithmetic_commands|, 
   ~
@@ -2673,7 +2641,7 @@ end;
 
 procedure TForthMachine.RunMnemonic(M: Cardinal);
 begin
-  Writeln('RUN MNEMONIC "' + C[M].Name + '" ' + IntToStr(M) + ' EC:' + IntToStr(EC));
+  //Writeln('RUN MNEMONIC "' + C[M].Name + '" ' + IntToStr(M) + ' EC:' + IntToStr(EC));
   C[M].Code(Self, C[M]);
 end;
 
@@ -3993,7 +3961,7 @@ var
 begin
   for I := 0 to High(C) do
     if TString(C[I].Name) = Name then begin
-      Writeln('Found command ', C[I].Name);
+      //Writeln('Found command ', C[I].Name);
       Result := C[I];
       Exit;
     end;
