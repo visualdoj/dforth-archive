@@ -5229,6 +5229,7 @@ var
 begin
   for I := 0 to High(C) do
     if TString(C[I].Name) = Name then begin
+      Writeln('Found command ', C[I].Name);
       Result := C[I];
       Exit;
     end;
@@ -6955,7 +6956,7 @@ end;
      procedure TForthMachine.compile_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@['']'); EWO(NextName); end;
      procedure TForthMachine.run_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin WUP(C[ERO]); end;
      procedure TForthMachine.execute (Machine: TForthMachine; Command: PForthCommand); var P: PForthCommand; begin 
-                                             P := WOP; PForthCommand(P)^.Code(Machine, Command) end;
+                                             P := WOP; P.Code(Machine, P) end;
     
    
     
