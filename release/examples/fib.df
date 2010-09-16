@@ -1,0 +1,4 @@
+: fibstep ( a b -- b a+b) dup lrot + ;
+: fibbase ( n -- fib[n-1] fib[n]) dup 3 < if drop 1 1 else 1- recurse fibstep then ;
+: fib ( n -- fib[n]) fibbase swap drop ;
+str" Enter n: " str. $ fib .

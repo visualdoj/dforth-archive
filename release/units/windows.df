@@ -1,0 +1,28 @@
+ptr-nil ptr-value lib-user32
+
+: ATOM      t_uint16 ;
+: BOOL      t_int32 ;
+: BOOLEAN   t_int8 ;
+: BYTE      t_uint8 ;
+: CHAR      t_uint8 ;
+: DWORD     t_uint32 ;
+: FLOAT     t_single ;
+: HANDLE    t_ptr ;
+: LONG      t_int32 ;
+: LONGLONG  t_int64 ;
+: HBITMAP   HANDLE ;
+: HBRUSH    HANDLE ;
+: HCURSOR   HANDLE ;
+: HDC       HANDLE ;
+: HFILE     HANDLE ;
+: HFONT     HANDLE ;
+: HICON     HANDLE ;
+: HINSTANCE HANDLE ;
+: HKEY      HANDLE ;
+: HMENU     HANDLE ;
+: HMODULE   HANDLE ;
+: HINST     HANDLE ;
+: HRESULT   LONG ;
+: LPCSTR    t_pchar ;
+
+

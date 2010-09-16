@@ -4,13 +4,13 @@
 
 all:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
-	fpc dforth.dpr -dFLAG_FPC -Sd -al -an -ar -at -gl
+	fpc dforth.dpr -dFLAG_FPC -Sd -al -an -ar -at -gl -FE..\release\ -FUtemp
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
 
 release:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
-	fpc dforth.dpr -dFLAG_FPC -Sd
+	fpc dforth.dpr -dFLAG_FPC -Sd -FE..\release\ -FUtemp
 	upx dforth.exe
 
 doc:

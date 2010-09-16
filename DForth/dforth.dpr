@@ -94,12 +94,12 @@ begin
   with CommandLine do
     if Mode = CMD_EXE then begin
       Compile;
-    end else if Mode = CMD_REPL then begin
+    end else if (Mode = CMD_REPL) and (Source = '-') then begin
       Machine := TForthMachine.Create;
       Repl := TRepl.Create;
       Machine.AddCommand('quit', Repl.quit);
       Machine.AddCommand('embro-dump', Repl.embro_dump);
-      //Machine.AddCommand('exit', Repl.quit);
+      Writeln('Commands count: ', Length(Machine.C));
       Writeln('Type "quit" to exit');
       while not Done do begin
         Write('dforth> ');
@@ -109,6 +109,14 @@ begin
         Machine.Interpret(@S[1]);
         Writeln('ok');
       end;
+      Machine.Free;
+    end else begin
+      Machine := TForthMachine.Create;
+      Repl := TRepl.Create;
+      Machine.AddCommand('quit', Repl.quit);
+      Machine.AddCommand('embro-dump', Repl.embro_dump);
+      Machine.Interpret(PChar('str" ' + Source + '" evaluate-file'));
+      Repl.Free;
       Machine.Free;
     end;
 end.

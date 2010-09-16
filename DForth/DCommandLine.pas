@@ -21,7 +21,7 @@ procedure SetDefault;
 begin
   CommandLine.Error  := False;
   CommandLine.Mode   := CMD_REPL;
-  CommandLine.Source := '';
+  CommandLine.Source := '-';
   CommandLine.Dest   := '';
 end;
 
@@ -57,11 +57,14 @@ begin
     end else if Pos('-', C) <> 0 then begin
       for J := 2 to Length(C) do
         if C[J] = 'c' then begin
-          CommandLine.Source := ParamStr(I);
+          // CommandLine.Source := ParamStr(I);
           CommandLine.Mode := CMD_EXE;
           Inc(I);
         end else if C[J] = 'o' then begin
           CommandLine.Dest := ParamStr(I);
+          Inc(I);
+        end else if C[J] = 's' then begin
+          CommandLine.Source := ParamStr(I);
           Inc(I);
         end else if C[J] = 'h' then begin
           PrintHelp;

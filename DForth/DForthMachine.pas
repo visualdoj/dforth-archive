@@ -23,6 +23,12 @@ uses
 
 
 
+{$IFNDEF FLAG_FPC}{$REGION 'long commands'}{$ENDIF}
+
+  
+  
+  
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 
 
@@ -78,6 +84,15 @@ type
     Sym: array[0..1] of TChar;
   end;
   PStrRec = ^TStrRec;
+
+  PLong = ^TLong;
+  TLong = record
+    Ref: Integer; // -1 если не нужно высвобождать из памяти, иначе --- число ссылок
+    Flags: Integer; // Flags and 1 > 0 если число отрицательно
+    Len: Integer; // Такое число, что V[I] = 0 для всех I >= Len
+    Max: Integer; // Число элементов в массиве V
+    V: array[0..1] of Integer;
+  end;
 
   TType = record
     Name: PChar;
@@ -311,6 +326,7 @@ TStringCommands = class
   procedure str_concat(Machine: TForthMachine; Command: PForthCommand);
   procedure str_nil(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dot(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_dollar(Machine: TForthMachine; Command: PForthCommand);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TForthMachine'}{$ENDIF}
@@ -1488,6 +1504,24 @@ TForthMachine = class
   
   
 ;
+  
+     procedure LongAlloc(var L: PLong; Len: Integer);
+     procedure LongIncRef(L: PLong);
+     procedure LongDecRef(L: PLong);
+     procedure WULong(L: PLong);
+     function WOLong: PLong;
+     procedure long_add (Machine: TForthMachine; Command: PForthCommand);
+     procedure long_sub (Machine: TForthMachine; Command: PForthCommand);
+     procedure long_inc (Machine: TForthMachine; Command: PForthCommand);
+     procedure long_dec (Machine: TForthMachine; Command: PForthCommand);
+     procedure long_mul (Machine: TForthMachine; Command: PForthCommand); 
+     procedure long_div (Machine: TForthMachine; Command: PForthCommand);
+     procedure long_mod (Machine: TForthMachine; Command: PForthCommand);
+     procedure long_divmod (Machine: TForthMachine; Command: PForthCommand);
+     procedure int_to_long (Machine: TForthMachine; Command: PForthCommand);
+     procedure long_to_int (Machine: TForthMachine; Command: PForthCommand);
+  
+  
   
   procedure source_next_char (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name (Machine: TForthMachine; Command: PForthCommand);
@@ -3078,11 +3112,25 @@ var
   I: Integer;
 begin
   S := str_pop(Machine, Command);
-  Writeln('STR LEN: ', PStrRec(S)^.Len);
-  Writeln('STR REF: ', PStrRec(S)^.Ref);
+  //Writeln('STR LEN: ', PStrRec(S)^.Len);
+  //Writeln('STR REF: ', PStrRec(S)^.Ref);
   for I := 0 to PStrRec(S)^.Len - 1 do
     Write(PStrRec(S)^.Sym[I]);
   DelRef(S);
+end;
+
+procedure TStringCommands.str_dollar(Machine: TForthMachine; Command: PForthCommand);
+var
+  P: TStr;
+  S: TString;
+begin
+  Read(S); 
+  GetMem(P, 2*SizeOf(Integer) + Length(S) + 1);
+  PStrRec(P)^.Ref := 0;
+  PStrRec(P)^.Len := Length(S);
+  Move(S[1], PStrRec(P)^.Sym[0], Length(S));
+  PStrRec(P)^.Sym[Length(S)] := #0;
+  str_push(Machine, Command, P);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TForthMachine'}{$ENDIF}
@@ -4024,6 +4072,7 @@ begin
   AddCommand('str"', FStringCommands.str_dq, True);
   AddCommand(' str"', FStringCommands.run_str_dq);
   AddCommand('str.', FStringCommands.str_dot);
+  AddCommand('str$', FStringCommands.str_dollar);
   AddCommand('str-len', FStringCommands.str_len);
   AddCommand('str=', FStringCommands.str_equel);
   AddCommand('str-nil', FStringCommands.str_nil);
@@ -4046,6 +4095,8 @@ begin
   AddCommand('spaces', FConsoleCommands.spaces);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   
+    
+    
     
      AddCommand('drop', drop_);
      AddCommand('dup', dup_);
@@ -4785,7 +4836,7 @@ begin
   Interpret(': while compile ?branch >mark embro-swap ; immediate');
   Interpret(': repeat compile branch <resolve >resolve ; immediate');
   Interpret(': until compile ?branch <resolve ; immediate');
-  Writeln('Commands count: ', Length(C));
+  //Writeln('Commands count: ', Length(C));
 end;
 
 destructor TForthMachine.Destroy; 
@@ -5801,9 +5852,12 @@ end;
 
 // ( Вся соль :)
  
-    function TForthMachine.ROP: Pointer; begin Dec(RP, SizeOf(Result)); Result := Pointer(RP^); end; 
-    procedure TForthMachine.RUI(const V: TInt); begin TInt(RP^) := V; Inc(RP, SizeOf(V)) end;
-   
+    
+       function AddWithCarryAndUpdate(
+         A, B: Integer; 
+         var Carry: Integer): Integer; register; inline;
+       asm
+         mov Result 
     procedure TForthMachine.RUI8(const V: TInt8); begin TInt8(RP^) := V; Inc(RP, SizeOf(V)) end;
    
     procedure TForthMachine.RUI16(const V: TInt16); begin TInt16(RP^) := V; Inc(RP, SizeOf(V)) end;
@@ -5872,8 +5926,20 @@ end;
      procedure TForthMachine.dup_ (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
      procedure TForthMachine.swap_ (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end;
      procedure TForthMachine.over_ (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
-     procedure TForthMachine.lrot_ (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_ (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_ (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
+     end;
+     procedure TForthMachine.rrot_ (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
+     end;
      procedure TForthMachine.lrotn_ (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_ (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_ (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
@@ -5896,8 +5962,20 @@ end;
      procedure TForthMachine.dup_ptr (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
      procedure TForthMachine.swap_ptr (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end;
      procedure TForthMachine.over_ptr (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
-     procedure TForthMachine.lrot_ptr (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_ptr (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_ptr (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
+     end;
+     procedure TForthMachine.rrot_ptr (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
+     end;
      procedure TForthMachine.lrotn_ptr (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_ptr (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_ptr (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
@@ -5920,8 +5998,20 @@ end;
      procedure TForthMachine.dup_int (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
      procedure TForthMachine.swap_int (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end;
      procedure TForthMachine.over_int (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
-     procedure TForthMachine.lrot_int (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_int (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_int (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
+     end;
+     procedure TForthMachine.rrot_int (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
+     end;
      procedure TForthMachine.lrotn_int (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_int (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_int (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
@@ -5944,8 +6034,20 @@ end;
      procedure TForthMachine.dup_int8 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end;
      procedure TForthMachine.swap_int8 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-1))^), WP^, 1); Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1))^), 1); Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1); end;
      procedure TForthMachine.over_int8 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end;
-     procedure TForthMachine.lrot_int8 (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_int8 (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_int8 (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
+       Move((Pointer(TUInt(WP) + (-3*1))^), (Pointer(TUInt(WP) + (-1*1))^), 1);
+       Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-3*1))^), 1);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1);
+     end;
+     procedure TForthMachine.rrot_int8 (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
+       Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1*1))^), 1);
+       Move((Pointer(TUInt(WP) + (-3*1))^), (Pointer(TUInt(WP) + (-2*1))^), 1);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*1))^), 1);
+     end;
      procedure TForthMachine.lrotn_int8 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_int8 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_int8 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 1); Move(WP^, DP^, 1); Inc(DP, 1); end;
@@ -5968,8 +6070,20 @@ end;
      procedure TForthMachine.dup_int16 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end;
      procedure TForthMachine.swap_int16 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2))^), WP^, 2); Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-2))^), 2); Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2); end;
      procedure TForthMachine.over_int16 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end;
-     procedure TForthMachine.lrot_int16 (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_int16 (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_int16 (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
+       Move((Pointer(TUInt(WP) + (-3*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2);
+       Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-3*2))^), 2);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2);
+     end;
+     procedure TForthMachine.rrot_int16 (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
+       Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2);
+       Move((Pointer(TUInt(WP) + (-3*2))^), (Pointer(TUInt(WP) + (-2*2))^), 2);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*2))^), 2);
+     end;
      procedure TForthMachine.lrotn_int16 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_int16 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_int16 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 2); Move(WP^, DP^, 2); Inc(DP, 2); end;
@@ -5992,8 +6106,20 @@ end;
      procedure TForthMachine.dup_int32 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
      procedure TForthMachine.swap_int32 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end;
      procedure TForthMachine.over_int32 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
-     procedure TForthMachine.lrot_int32 (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_int32 (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_int32 (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
+     end;
+     procedure TForthMachine.rrot_int32 (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
+     end;
      procedure TForthMachine.lrotn_int32 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_int32 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_int32 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
@@ -6016,8 +6142,20 @@ end;
      procedure TForthMachine.dup_int64 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end;
      procedure TForthMachine.swap_int64 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-8))^), WP^, 8); Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-8))^), 8); Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8); end;
      procedure TForthMachine.over_int64 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end;
-     procedure TForthMachine.lrot_int64 (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_int64 (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_int64 (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
+       Move((Pointer(TUInt(WP) + (-3*8))^), (Pointer(TUInt(WP) + (-1*8))^), 8);
+       Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-3*8))^), 8);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8);
+     end;
+     procedure TForthMachine.rrot_int64 (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
+       Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-1*8))^), 8);
+       Move((Pointer(TUInt(WP) + (-3*8))^), (Pointer(TUInt(WP) + (-2*8))^), 8);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*8))^), 8);
+     end;
      procedure TForthMachine.lrotn_int64 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_int64 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_int64 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 8); Move(WP^, DP^, 8); Inc(DP, 8); end;
@@ -6040,8 +6178,20 @@ end;
      procedure TForthMachine.dup_uint (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
      procedure TForthMachine.swap_uint (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end;
      procedure TForthMachine.over_uint (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
-     procedure TForthMachine.lrot_uint (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_uint (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_uint (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
+     end;
+     procedure TForthMachine.rrot_uint (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
+     end;
      procedure TForthMachine.lrotn_uint (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_uint (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_uint (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
@@ -6064,8 +6214,20 @@ end;
      procedure TForthMachine.dup_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end;
      procedure TForthMachine.swap_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-1))^), WP^, 1); Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1))^), 1); Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1); end;
      procedure TForthMachine.over_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end;
-     procedure TForthMachine.lrot_uint8 (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_uint8 (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_uint8 (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
+       Move((Pointer(TUInt(WP) + (-3*1))^), (Pointer(TUInt(WP) + (-1*1))^), 1);
+       Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-3*1))^), 1);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1);
+     end;
+     procedure TForthMachine.rrot_uint8 (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
+       Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1*1))^), 1);
+       Move((Pointer(TUInt(WP) + (-3*1))^), (Pointer(TUInt(WP) + (-2*1))^), 1);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*1))^), 1);
+     end;
      procedure TForthMachine.lrotn_uint8 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_uint8 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 1); Move(WP^, DP^, 1); Inc(DP, 1); end;
@@ -6088,8 +6250,20 @@ end;
      procedure TForthMachine.dup_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end;
      procedure TForthMachine.swap_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2))^), WP^, 2); Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-2))^), 2); Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2); end;
      procedure TForthMachine.over_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end;
-     procedure TForthMachine.lrot_uint16 (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_uint16 (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_uint16 (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
+       Move((Pointer(TUInt(WP) + (-3*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2);
+       Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-3*2))^), 2);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2);
+     end;
+     procedure TForthMachine.rrot_uint16 (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
+       Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2);
+       Move((Pointer(TUInt(WP) + (-3*2))^), (Pointer(TUInt(WP) + (-2*2))^), 2);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*2))^), 2);
+     end;
      procedure TForthMachine.lrotn_uint16 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_uint16 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 2); Move(WP^, DP^, 2); Inc(DP, 2); end;
@@ -6112,8 +6286,20 @@ end;
      procedure TForthMachine.dup_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
      procedure TForthMachine.swap_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end;
      procedure TForthMachine.over_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
-     procedure TForthMachine.lrot_uint32 (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_uint32 (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_uint32 (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
+     end;
+     procedure TForthMachine.rrot_uint32 (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
+     end;
      procedure TForthMachine.lrotn_uint32 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_uint32 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
@@ -6136,8 +6322,20 @@ end;
      procedure TForthMachine.dup_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end;
      procedure TForthMachine.swap_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-8))^), WP^, 8); Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-8))^), 8); Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8); end;
      procedure TForthMachine.over_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end;
-     procedure TForthMachine.lrot_uint64 (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_uint64 (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_uint64 (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
+       Move((Pointer(TUInt(WP) + (-3*8))^), (Pointer(TUInt(WP) + (-1*8))^), 8);
+       Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-3*8))^), 8);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8);
+     end;
+     procedure TForthMachine.rrot_uint64 (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
+       Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-1*8))^), 8);
+       Move((Pointer(TUInt(WP) + (-3*8))^), (Pointer(TUInt(WP) + (-2*8))^), 8);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*8))^), 8);
+     end;
      procedure TForthMachine.lrotn_uint64 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_uint64 (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 8); Move(WP^, DP^, 8); Inc(DP, 8); end;
@@ -6160,8 +6358,20 @@ end;
      procedure TForthMachine.dup_embro (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
      procedure TForthMachine.swap_embro (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end;
      procedure TForthMachine.over_embro (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
-     procedure TForthMachine.lrot_embro (Machine: TForthMachine; Command: PForthCommand); begin end;
-     procedure TForthMachine.rrot_embro (Machine: TForthMachine; Command: PForthCommand); begin end;
+     procedure TForthMachine.lrot_embro (Machine: TForthMachine; Command: PForthCommand); 
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
+     end;
+     procedure TForthMachine.rrot_embro (Machine: TForthMachine; Command: PForthCommand);
+     begin 
+       Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
+       Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
+     end;
      procedure TForthMachine.lrotn_embro (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine.rrotn_embro (Machine: TForthMachine; Command: PForthCommand); begin end;
      procedure TForthMachine._comma_embro (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
@@ -7144,5 +7354,5 @@ push $00
 из CPU-debug. 
 
 }
-)))))))))))))))))))))))))))))))))))))))))))))))
+)))))))))))))))))))))))))))))))))))))))))))))))|)
 
