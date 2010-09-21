@@ -25,9 +25,6 @@ uses
 
 {$IFNDEF FLAG_FPC}{$REGION 'long commands'}{$ENDIF}
 
-  
-  
-  
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 
@@ -877,6 +874,12 @@ TForthMachine = class
   procedure _gt (Machine: TForthMachine; Command: PForthCommand);
   procedure _lte (Machine: TForthMachine; Command: PForthCommand);
   procedure _gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure _0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure _0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure _0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure _0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure _0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure _0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure _dot (Machine: TForthMachine; Command: PForthCommand);
   procedure _dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -892,6 +895,12 @@ TForthMachine = class
   procedure int_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure int_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure int_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure int_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure int_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure int_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure int_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure int_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure int_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure int_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure int_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -907,6 +916,12 @@ TForthMachine = class
   procedure int8_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure int8_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure int8_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure int8_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure int8_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure int8_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure int8_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -922,6 +937,12 @@ TForthMachine = class
   procedure int16_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure int16_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure int16_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure int16_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure int16_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure int16_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure int16_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -937,6 +958,12 @@ TForthMachine = class
   procedure int32_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure int32_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure int32_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure int32_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure int32_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure int32_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure int32_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -952,6 +979,12 @@ TForthMachine = class
   procedure int64_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure int64_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure int64_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure int64_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure int64_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure int64_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure int64_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -967,6 +1000,12 @@ TForthMachine = class
   procedure uint_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure uint_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -982,6 +1021,12 @@ TForthMachine = class
   procedure uint8_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure uint8_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint8_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint8_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint8_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint8_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint8_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -997,6 +1042,12 @@ TForthMachine = class
   procedure uint16_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure uint16_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint16_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint16_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint16_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint16_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint16_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -1012,6 +1063,12 @@ TForthMachine = class
   procedure uint32_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure uint32_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint32_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint32_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint32_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint32_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint32_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -1027,6 +1084,12 @@ TForthMachine = class
   procedure uint64_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure uint64_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint64_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint64_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint64_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint64_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint64_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -1042,6 +1105,12 @@ TForthMachine = class
   procedure single_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure single_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure single_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure single_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure single_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure single_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure single_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure single_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure single_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure single_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure single_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -1057,6 +1126,12 @@ TForthMachine = class
   procedure double_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure double_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure double_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure double_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure double_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure double_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure double_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure double_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure double_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure double_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure double_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -1072,6 +1147,12 @@ TForthMachine = class
   procedure extended_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_lte (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure extended_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure extended_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure extended_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure extended_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure extended_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure extended_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_dollar (Machine: TForthMachine; Command: PForthCommand)
   
@@ -1486,42 +1567,24 @@ TForthMachine = class
   
   
 ;
-  //
+  
   procedure EW_single (V: Single);
   function ER_single: Single
   
   
 ;
-  //
+  
   procedure EW_double (V: Double);
   function ER_double: Double
   
   
 ;
-  //
+  
   procedure EW_extended (V: Extended);
   function ER_extended: Extended
   
   
 ;
-  
-     procedure LongAlloc(var L: PLong; Len: Integer);
-     procedure LongIncRef(L: PLong);
-     procedure LongDecRef(L: PLong);
-     procedure WULong(L: PLong);
-     function WOLong: PLong;
-     procedure long_add (Machine: TForthMachine; Command: PForthCommand);
-     procedure long_sub (Machine: TForthMachine; Command: PForthCommand);
-     procedure long_inc (Machine: TForthMachine; Command: PForthCommand);
-     procedure long_dec (Machine: TForthMachine; Command: PForthCommand);
-     procedure long_mul (Machine: TForthMachine; Command: PForthCommand); 
-     procedure long_div (Machine: TForthMachine; Command: PForthCommand);
-     procedure long_mod (Machine: TForthMachine; Command: PForthCommand);
-     procedure long_divmod (Machine: TForthMachine; Command: PForthCommand);
-     procedure int_to_long (Machine: TForthMachine; Command: PForthCommand);
-     procedure long_to_int (Machine: TForthMachine; Command: PForthCommand);
-  
-  
   
   procedure source_next_char (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name (Machine: TForthMachine; Command: PForthCommand);
@@ -4096,8 +4159,6 @@ begin
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   
     
-    
-    
      AddCommand('drop', drop_);
      AddCommand('dup', dup_);
      AddCommand('swap', swap_);
@@ -4367,6 +4428,12 @@ begin
      AddCommand('>', _gt);
      AddCommand('<=', _lte);
      AddCommand('>=', _gte);
+     AddCommand('0=', _0_equel);
+     AddCommand('0<>', _0_nequel);
+     AddCommand('0<', _0_lt);
+     AddCommand('0>', _0_gt);
+     AddCommand('0<=', _0_lte);
+     AddCommand('0>=', _0_gte);
      AddCommand('.', _dot);
      AddCommand('$', _dollar);
     
@@ -4380,6 +4447,12 @@ begin
      AddCommand('int>', int_gt);
      AddCommand('int<=', int_lte);
      AddCommand('int>=', int_gte);
+     AddCommand('int-0=', int_0_equel);
+     AddCommand('int-0<>', int_0_nequel);
+     AddCommand('int-0<', int_0_lt);
+     AddCommand('int-0>', int_0_gt);
+     AddCommand('int-0<=', int_0_lte);
+     AddCommand('int-0>=', int_0_gte);
      AddCommand('int.', int_dot);
      AddCommand('int$', int_dollar);
     
@@ -4393,6 +4466,12 @@ begin
      AddCommand('int8>', int8_gt);
      AddCommand('int8<=', int8_lte);
      AddCommand('int8>=', int8_gte);
+     AddCommand('int8-0=', int8_0_equel);
+     AddCommand('int8-0<>', int8_0_nequel);
+     AddCommand('int8-0<', int8_0_lt);
+     AddCommand('int8-0>', int8_0_gt);
+     AddCommand('int8-0<=', int8_0_lte);
+     AddCommand('int8-0>=', int8_0_gte);
      AddCommand('int8.', int8_dot);
      AddCommand('int8$', int8_dollar);
     
@@ -4406,6 +4485,12 @@ begin
      AddCommand('int16>', int16_gt);
      AddCommand('int16<=', int16_lte);
      AddCommand('int16>=', int16_gte);
+     AddCommand('int16-0=', int16_0_equel);
+     AddCommand('int16-0<>', int16_0_nequel);
+     AddCommand('int16-0<', int16_0_lt);
+     AddCommand('int16-0>', int16_0_gt);
+     AddCommand('int16-0<=', int16_0_lte);
+     AddCommand('int16-0>=', int16_0_gte);
      AddCommand('int16.', int16_dot);
      AddCommand('int16$', int16_dollar);
     
@@ -4419,6 +4504,12 @@ begin
      AddCommand('int32>', int32_gt);
      AddCommand('int32<=', int32_lte);
      AddCommand('int32>=', int32_gte);
+     AddCommand('int32-0=', int32_0_equel);
+     AddCommand('int32-0<>', int32_0_nequel);
+     AddCommand('int32-0<', int32_0_lt);
+     AddCommand('int32-0>', int32_0_gt);
+     AddCommand('int32-0<=', int32_0_lte);
+     AddCommand('int32-0>=', int32_0_gte);
      AddCommand('int32.', int32_dot);
      AddCommand('int32$', int32_dollar);
     
@@ -4432,6 +4523,12 @@ begin
      AddCommand('int64>', int64_gt);
      AddCommand('int64<=', int64_lte);
      AddCommand('int64>=', int64_gte);
+     AddCommand('int64-0=', int64_0_equel);
+     AddCommand('int64-0<>', int64_0_nequel);
+     AddCommand('int64-0<', int64_0_lt);
+     AddCommand('int64-0>', int64_0_gt);
+     AddCommand('int64-0<=', int64_0_lte);
+     AddCommand('int64-0>=', int64_0_gte);
      AddCommand('int64.', int64_dot);
      AddCommand('int64$', int64_dollar);
     
@@ -4445,6 +4542,12 @@ begin
      AddCommand('uint>', uint_gt);
      AddCommand('uint<=', uint_lte);
      AddCommand('uint>=', uint_gte);
+     AddCommand('uint-0=', uint_0_equel);
+     AddCommand('uint-0<>', uint_0_nequel);
+     AddCommand('uint-0<', uint_0_lt);
+     AddCommand('uint-0>', uint_0_gt);
+     AddCommand('uint-0<=', uint_0_lte);
+     AddCommand('uint-0>=', uint_0_gte);
      AddCommand('uint.', uint_dot);
      AddCommand('uint$', uint_dollar);
     
@@ -4458,6 +4561,12 @@ begin
      AddCommand('uint8>', uint8_gt);
      AddCommand('uint8<=', uint8_lte);
      AddCommand('uint8>=', uint8_gte);
+     AddCommand('uint8-0=', uint8_0_equel);
+     AddCommand('uint8-0<>', uint8_0_nequel);
+     AddCommand('uint8-0<', uint8_0_lt);
+     AddCommand('uint8-0>', uint8_0_gt);
+     AddCommand('uint8-0<=', uint8_0_lte);
+     AddCommand('uint8-0>=', uint8_0_gte);
      AddCommand('uint8.', uint8_dot);
      AddCommand('uint8$', uint8_dollar);
     
@@ -4471,6 +4580,12 @@ begin
      AddCommand('uint16>', uint16_gt);
      AddCommand('uint16<=', uint16_lte);
      AddCommand('uint16>=', uint16_gte);
+     AddCommand('uint16-0=', uint16_0_equel);
+     AddCommand('uint16-0<>', uint16_0_nequel);
+     AddCommand('uint16-0<', uint16_0_lt);
+     AddCommand('uint16-0>', uint16_0_gt);
+     AddCommand('uint16-0<=', uint16_0_lte);
+     AddCommand('uint16-0>=', uint16_0_gte);
      AddCommand('uint16.', uint16_dot);
      AddCommand('uint16$', uint16_dollar);
     
@@ -4484,6 +4599,12 @@ begin
      AddCommand('uint32>', uint32_gt);
      AddCommand('uint32<=', uint32_lte);
      AddCommand('uint32>=', uint32_gte);
+     AddCommand('uint32-0=', uint32_0_equel);
+     AddCommand('uint32-0<>', uint32_0_nequel);
+     AddCommand('uint32-0<', uint32_0_lt);
+     AddCommand('uint32-0>', uint32_0_gt);
+     AddCommand('uint32-0<=', uint32_0_lte);
+     AddCommand('uint32-0>=', uint32_0_gte);
      AddCommand('uint32.', uint32_dot);
      AddCommand('uint32$', uint32_dollar);
     
@@ -4497,6 +4618,12 @@ begin
      AddCommand('uint64>', uint64_gt);
      AddCommand('uint64<=', uint64_lte);
      AddCommand('uint64>=', uint64_gte);
+     AddCommand('uint64-0=', uint64_0_equel);
+     AddCommand('uint64-0<>', uint64_0_nequel);
+     AddCommand('uint64-0<', uint64_0_lt);
+     AddCommand('uint64-0>', uint64_0_gt);
+     AddCommand('uint64-0<=', uint64_0_lte);
+     AddCommand('uint64-0>=', uint64_0_gte);
      AddCommand('uint64.', uint64_dot);
      AddCommand('uint64$', uint64_dollar);
     
@@ -4510,6 +4637,12 @@ begin
      AddCommand('single>', single_gt);
      AddCommand('single<=', single_lte);
      AddCommand('single>=', single_gte);
+     AddCommand('single-0=', single_0_equel);
+     AddCommand('single-0<>', single_0_nequel);
+     AddCommand('single-0<', single_0_lt);
+     AddCommand('single-0>', single_0_gt);
+     AddCommand('single-0<=', single_0_lte);
+     AddCommand('single-0>=', single_0_gte);
      AddCommand('single.', single_dot);
      AddCommand('single$', single_dollar);
     
@@ -4523,6 +4656,12 @@ begin
      AddCommand('double>', double_gt);
      AddCommand('double<=', double_lte);
      AddCommand('double>=', double_gte);
+     AddCommand('double-0=', double_0_equel);
+     AddCommand('double-0<>', double_0_nequel);
+     AddCommand('double-0<', double_0_lt);
+     AddCommand('double-0>', double_0_gt);
+     AddCommand('double-0<=', double_0_lte);
+     AddCommand('double-0>=', double_0_gte);
      AddCommand('double.', double_dot);
      AddCommand('double$', double_dollar);
     
@@ -4536,6 +4675,12 @@ begin
      AddCommand('extended>', extended_gt);
      AddCommand('extended<=', extended_lte);
      AddCommand('extended>=', extended_gte);
+     AddCommand('extended-0=', extended_0_equel);
+     AddCommand('extended-0<>', extended_0_nequel);
+     AddCommand('extended-0<', extended_0_lt);
+     AddCommand('extended-0>', extended_0_gt);
+     AddCommand('extended-0<=', extended_0_lte);
+     AddCommand('extended-0>=', extended_0_gte);
      AddCommand('extended.', extended_dot);
      AddCommand('extended$', extended_dollar);
     
@@ -5852,12 +5997,9 @@ end;
 
 // ( Вся соль :)
  
-    
-       function AddWithCarryAndUpdate(
-         A, B: Integer; 
-         var Carry: Integer): Integer; register; inline;
-       asm
-         mov Result 
+    function TForthMachine.ROP: Pointer; begin Dec(RP, SizeOf(Result)); Result := Pointer(RP^); end; 
+    procedure TForthMachine.RUI(const V: TInt); begin TInt(RP^) := V; Inc(RP, SizeOf(V)) end;
+   
     procedure TForthMachine.RUI8(const V: TInt8); begin TInt8(RP^) := V; Inc(RP, SizeOf(V)) end;
    
     procedure TForthMachine.RUI16(const V: TInt16); begin TInt16(RP^) := V; Inc(RP, SizeOf(V)) end;
@@ -6408,6 +6550,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt)); end;
      procedure TForthMachine._gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) >= TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt)); end;
+     procedure TForthMachine._0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) = 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
+     procedure TForthMachine._0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <> 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
+     procedure TForthMachine._0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) < 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
+     procedure TForthMachine._0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) > 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
+     procedure TForthMachine._0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
+     procedure TForthMachine._0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) >= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
      procedure TForthMachine._dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt)); Write(TInt(WP^), ' '); end;
      procedure TForthMachine._dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt)); Inc(WP, SizeOf(TInt)); end;
     
@@ -6431,6 +6579,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt)); end;
      procedure TForthMachine.int_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) >= TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt)); end;
+     procedure TForthMachine.int_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) = 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
+     procedure TForthMachine.int_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <> 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
+     procedure TForthMachine.int_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) < 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
+     procedure TForthMachine.int_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) > 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
+     procedure TForthMachine.int_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
+     procedure TForthMachine.int_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) >= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt)) end;
      procedure TForthMachine.int_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt)); Write(TInt(WP^), ' '); end;
      procedure TForthMachine.int_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt)); Inc(WP, SizeOf(TInt)); end;
     
@@ -6454,6 +6608,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TInt8) - SizeOf(TInt)); end;
      procedure TForthMachine.int8_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) >= TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt8) - SizeOf(TInt)); end;
+     procedure TForthMachine.int8_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) = 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt)) end;
+     procedure TForthMachine.int8_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) <> 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt)) end;
+     procedure TForthMachine.int8_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) < 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt)) end;
+     procedure TForthMachine.int8_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) > 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt)) end;
+     procedure TForthMachine.int8_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) <= 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt)) end;
+     procedure TForthMachine.int8_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) >= 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt)) end;
      procedure TForthMachine.int8_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt8)); Write(TInt8(WP^), ' '); end;
      procedure TForthMachine.int8_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt8; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt8)); Inc(WP, SizeOf(TInt8)); end;
     
@@ -6477,6 +6637,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TInt16) - SizeOf(TInt)); end;
      procedure TForthMachine.int16_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) >= TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt16) - SizeOf(TInt)); end;
+     procedure TForthMachine.int16_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) = 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt)) end;
+     procedure TForthMachine.int16_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) <> 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt)) end;
+     procedure TForthMachine.int16_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) < 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt)) end;
+     procedure TForthMachine.int16_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) > 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt)) end;
+     procedure TForthMachine.int16_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) <= 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt)) end;
+     procedure TForthMachine.int16_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) >= 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt)) end;
      procedure TForthMachine.int16_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt16)); Write(TInt16(WP^), ' '); end;
      procedure TForthMachine.int16_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt16; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt16)); Inc(WP, SizeOf(TInt16)); end;
     
@@ -6500,6 +6666,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TInt32) - SizeOf(TInt)); end;
      procedure TForthMachine.int32_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) >= TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt32) - SizeOf(TInt)); end;
+     procedure TForthMachine.int32_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) = 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt)) end;
+     procedure TForthMachine.int32_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) <> 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt)) end;
+     procedure TForthMachine.int32_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) < 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt)) end;
+     procedure TForthMachine.int32_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) > 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt)) end;
+     procedure TForthMachine.int32_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) <= 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt)) end;
+     procedure TForthMachine.int32_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) >= 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt)) end;
      procedure TForthMachine.int32_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt32)); Write(TInt32(WP^), ' '); end;
      procedure TForthMachine.int32_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt32; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt32)); Inc(WP, SizeOf(TInt32)); end;
     
@@ -6523,6 +6695,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TInt64) - SizeOf(TInt)); end;
      procedure TForthMachine.int64_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) >= TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt64) - SizeOf(TInt)); end;
+     procedure TForthMachine.int64_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) = 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt)) end;
+     procedure TForthMachine.int64_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) <> 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt)) end;
+     procedure TForthMachine.int64_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) < 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt)) end;
+     procedure TForthMachine.int64_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) > 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt)) end;
+     procedure TForthMachine.int64_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) <= 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt)) end;
+     procedure TForthMachine.int64_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) >= 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt)) end;
      procedure TForthMachine.int64_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt64)); Write(TInt64(WP^), ' '); end;
      procedure TForthMachine.int64_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt64; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt64)); Inc(WP, SizeOf(TInt64)); end;
     
@@ -6546,6 +6724,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TUInt) - SizeOf(TInt)); end;
      procedure TForthMachine.uint_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) >= TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt) - SizeOf(TInt)); end;
+     procedure TForthMachine.uint_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) = 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) <> 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) < 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) > 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) <= 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) >= 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt)) end;
      procedure TForthMachine.uint_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TUInt)); Write(TUInt(WP^), ' '); end;
      procedure TForthMachine.uint_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt; begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt)); Inc(WP, SizeOf(TUInt)); end;
     
@@ -6569,6 +6753,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TUInt8) - SizeOf(TInt)); end;
      procedure TForthMachine.uint8_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) >= TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt8) - SizeOf(TInt)); end;
+     procedure TForthMachine.uint8_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) = 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint8_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) <> 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint8_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) < 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint8_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) > 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint8_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) <= 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint8_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) >= 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt)) end;
      procedure TForthMachine.uint8_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TUInt8)); Write(TUInt8(WP^), ' '); end;
      procedure TForthMachine.uint8_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt8; begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt8)); Inc(WP, SizeOf(TUInt8)); end;
     
@@ -6592,6 +6782,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TUInt16) - SizeOf(TInt)); end;
      procedure TForthMachine.uint16_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) >= TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt16) - SizeOf(TInt)); end;
+     procedure TForthMachine.uint16_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) = 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint16_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) <> 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint16_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) < 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint16_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) > 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint16_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) <= 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint16_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) >= 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt)) end;
      procedure TForthMachine.uint16_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TUInt16)); Write(TUInt16(WP^), ' '); end;
      procedure TForthMachine.uint16_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt16; begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt16)); Inc(WP, SizeOf(TUInt16)); end;
     
@@ -6615,6 +6811,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TUInt32) - SizeOf(TInt)); end;
      procedure TForthMachine.uint32_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) >= TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt32) - SizeOf(TInt)); end;
+     procedure TForthMachine.uint32_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) = 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint32_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) <> 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint32_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) < 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint32_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) > 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint32_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) <= 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint32_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) >= 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt)) end;
      procedure TForthMachine.uint32_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TUInt32)); Write(TUInt32(WP^), ' '); end;
      procedure TForthMachine.uint32_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt32; begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt32)); Inc(WP, SizeOf(TUInt32)); end;
     
@@ -6638,6 +6840,12 @@ end;
                                                    Dec(WP, 2*SizeOf(TUInt64) - SizeOf(TInt)); end;
      procedure TForthMachine.uint64_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) >= TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt64) - SizeOf(TInt)); end;
+     procedure TForthMachine.uint64_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) = 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint64_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) <> 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint64_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) < 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint64_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) > 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint64_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) <= 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt)) end;
+     procedure TForthMachine.uint64_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) >= 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt)) end;
      procedure TForthMachine.uint64_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TUInt64)); Write(TUInt64(WP^), ' '); end;
      procedure TForthMachine.uint64_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt64; begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt64)); Inc(WP, SizeOf(TUInt64)); end;
     
@@ -6661,6 +6869,12 @@ end;
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt)); end;
      procedure TForthMachine.single_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) >= Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt)); end;
+     procedure TForthMachine.single_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) = 0); Dec(WP, SizeOf(Single) - SizeOf(TInt)) end;
+     procedure TForthMachine.single_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) <> 0); Dec(WP, SizeOf(Single) - SizeOf(TInt)) end;
+     procedure TForthMachine.single_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) < 0); Dec(WP, SizeOf(Single) - SizeOf(TInt)) end;
+     procedure TForthMachine.single_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) > 0); Dec(WP, SizeOf(Single) - SizeOf(TInt)) end;
+     procedure TForthMachine.single_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) <= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt)) end;
+     procedure TForthMachine.single_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) >= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt)) end;
      procedure TForthMachine.single_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(Single)); Write(Single(WP^), ' '); end;
      procedure TForthMachine.single_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Single; begin Read(Temp); Move(Temp, WP^, SizeOf(Single)); Inc(WP, SizeOf(Single)); end;
     
@@ -6684,6 +6898,12 @@ end;
                                                    Dec(WP, 2*SizeOf(Double) - SizeOf(TInt)); end;
      procedure TForthMachine.double_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) >= Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
                                                    Dec(WP, 2*SizeOf(Double) - SizeOf(TInt)); end;
+     procedure TForthMachine.double_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) = 0); Dec(WP, SizeOf(Double) - SizeOf(TInt)) end;
+     procedure TForthMachine.double_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) <> 0); Dec(WP, SizeOf(Double) - SizeOf(TInt)) end;
+     procedure TForthMachine.double_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) < 0); Dec(WP, SizeOf(Double) - SizeOf(TInt)) end;
+     procedure TForthMachine.double_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) > 0); Dec(WP, SizeOf(Double) - SizeOf(TInt)) end;
+     procedure TForthMachine.double_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) <= 0); Dec(WP, SizeOf(Double) - SizeOf(TInt)) end;
+     procedure TForthMachine.double_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) >= 0); Dec(WP, SizeOf(Double) - SizeOf(TInt)) end;
      procedure TForthMachine.double_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(Double)); Write(Double(WP^), ' '); end;
      procedure TForthMachine.double_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Double; begin Read(Temp); Move(Temp, WP^, SizeOf(Double)); Inc(WP, SizeOf(Double)); end;
     
@@ -6707,6 +6927,12 @@ end;
                                                    Dec(WP, 2*SizeOf(Extended) - SizeOf(TInt)); end;
      procedure TForthMachine.extended_gte (Machine: TForthMachine; Command: PForthCommand);   begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) >= Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
                                                    Dec(WP, 2*SizeOf(Extended) - SizeOf(TInt)); end;
+     procedure TForthMachine.extended_0_equel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) = 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt)) end;
+     procedure TForthMachine.extended_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) <> 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt)) end;
+     procedure TForthMachine.extended_0_lt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) < 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt)) end;
+     procedure TForthMachine.extended_0_gt (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) > 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt)) end;
+     procedure TForthMachine.extended_0_lte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) <= 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt)) end;
+     procedure TForthMachine.extended_0_gte (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) >= 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt)) end;
      procedure TForthMachine.extended_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(Extended)); Write(Extended(WP^), ' '); end;
      procedure TForthMachine.extended_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Extended; begin Read(Temp); Move(Temp, WP^, SizeOf(Extended)); Inc(WP, SizeOf(Extended)); end;
     
@@ -7354,5 +7580,5 @@ push $00
 из CPU-debug. 
 
 }
-)))))))))))))))))))))))))))))))))))))))))))))))|)
+)))))))))))))))))))))))))))))))))))))))))))))))
 

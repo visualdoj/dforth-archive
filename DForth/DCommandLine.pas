@@ -40,6 +40,7 @@ var
   I, J: Integer;
   C: String; // Currect
 begin
+  SetDefault;
   I := 1;
   while I <= ParamCount do begin
     Inc(I);

@@ -176,7 +176,7 @@ define(~exception_commands|,
 ~Для работы с исключениями в DForth нужно подключить библиотеку exceptions.df
 _code(~str" exceptions.df" evaluate-file|)
 После этого становятся доступными две команды: throw и catch.
-_code(~catch ( ... xt -- ... i ) выполняет команду со стека (помещённую туда, например, командой ['']). В случае если исключения не было на стеке будет помещено 0. Если же сработало исключение (командой throw) то указатель рабочего и возвратного стека будут возвращены в состояние которое имели перед выполнением команды catch и на стек будет помещён код исключения
+_code(~catch ( ... xt -- ... i ) выполняет команду со стека (помещённую туда например командой ['']). В случае если исключения не было на стеке будет помещено 0. Если же сработало исключение (командой throw) то указатель рабочего и возвратного стека будут возвращены в состояние которое имели перед выполнением команды catch и на стек будет помещён код исключения
 throw ( ... i -- ... i ) последовательно выходит из функций до тех пор пока не встретит вызов командой catch. После чего передаёт управление в неё. |)
                      |)
   )
@@ -199,14 +199,12 @@ define(~long_commands|,
      procedure long_divmod cmdhdr;
      procedure int_to_long cmdhdr;
      procedure long_to_int cmdhdr;
-  |
-  )
   define(~all_implement|, all_implement 
     ~
        function AddWithCarryAndUpdate(
          A, B: Integer; 
          var Carry: Integer): Integer; register; inline;
-       ~asm
+       asm
          mov Result, 0
          add Result, A
          add Result, B
@@ -217,7 +215,7 @@ define(~long_commands|,
        @@setcarry:
          mov Carry, 1
        @@end:
-       end;|
+       end;
        procedure TForthMachine.LongAlloc(var L: PLong; Len: Integer);
        begin
          GetMem(L, SizeOf(Integer) * (4 + Len));
@@ -293,8 +291,6 @@ define(~long_commands|,
   define(~regist_all_commands|, regist_all_commands
     ~
     |)
-  dnl(
-  )
 |)
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 define(~arithmetic_commands|, 
@@ -308,6 +304,12 @@ define(~arithmetic_commands|,
   procedure $1_gt cmdhdr;
   procedure $1_lte cmdhdr;
   procedure $1_gte cmdhdr;  
+  procedure $1_0_equel cmdhdr;
+  procedure $1_0_nequel cmdhdr;
+  procedure $1_0_lt cmdhdr;
+  procedure $1_0_gt cmdhdr;
+  procedure $1_0_lte cmdhdr;
+  procedure $1_0_gte cmdhdr;
   procedure $1_dot cmdhdr;
   procedure $1_dollar cmdhdr
   define(~all_implement|, all_implement 
@@ -330,6 +332,12 @@ define(~arithmetic_commands|,
                                                    Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); end;
      procedure TForthMachine.$1_gte cmdhdr;   begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) >= $2(WVar(-SizeOf($2)))); 
                                                    Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); end;
+     procedure TForthMachine.$1_0_equel cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) = 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+     procedure TForthMachine.$1_0_nequel cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) <> 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+     procedure TForthMachine.$1_0_lt cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) < 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+     procedure TForthMachine.$1_0_gt cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) > 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+     procedure TForthMachine.$1_0_lte cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) <= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+     procedure TForthMachine.$1_0_gte cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) >= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
      procedure TForthMachine.$1_dot cmdhdr;    begin Dec(WP, SizeOf($2)); Write($2(WP^), ' '); end;
      procedure TForthMachine.$1_dollar cmdhdr; var Temp: $2; begin Read(Temp); Move(Temp, WP^, SizeOf($2)); Inc(WP, SizeOf($2)); end;
     |
@@ -345,6 +353,12 @@ define(~arithmetic_commands|,
      AddCommand('$1>', $1_gt);
      AddCommand('$1<=', $1_lte);
      AddCommand('$1>=', $1_gte);
+     AddCommand('genname($1, 0=)', $1_0_equel);
+     AddCommand('genname($1, 0<>)', $1_0_nequel);
+     AddCommand('genname($1, 0<)', $1_0_lt);
+     AddCommand('genname($1, 0>)', $1_0_gt);
+     AddCommand('genname($1, 0<=)', $1_0_lte);
+     AddCommand('genname($1, 0>=)', $1_0_gte);
      AddCommand('$1.', $1_dot);
      AddCommand('$1$', $1_dollar);
     |)
@@ -1184,10 +1198,9 @@ TForthMachine = class
   system_commands(uint16, TUInt16);
   system_commands(uint32, TUInt32);
   system_commands(uint64, TUInt64);
-  //system_commands(single, Single);
-  //system_commands(double, Double);
-  //system_commands(extended, Extended);
-  long_commands
+  system_commands(single, Single);
+  system_commands(double, Double);
+  system_commands(extended, Extended);
   misc_commands
   exception_commands
   file_commands
