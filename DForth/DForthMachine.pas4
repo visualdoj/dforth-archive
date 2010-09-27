@@ -310,36 +310,38 @@ define(~arithmetic_commands|,
   procedure $1_0_gt cmdhdr;
   procedure $1_0_lte cmdhdr;
   procedure $1_0_gte cmdhdr;
+  procedure $1_ask_dup cmdhdr;
   procedure $1_dot cmdhdr;
   procedure $1_dollar cmdhdr
   define(~all_implement|, all_implement 
     ~
-     procedure TForthMachine.$1_plus  cmdhdr; begin $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) + $2(WVar(-SizeOf($2))); 
+      procedure TForthMachine.$1_plus  cmdhdr; begin $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) + $2(WVar(-SizeOf($2))); 
                                                    Dec(WP, SizeOf($2)); end;
-     procedure TForthMachine.$1_minus cmdhdr; begin $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) - $2(WVar(-SizeOf($2))); 
+      procedure TForthMachine.$1_minus cmdhdr; begin $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) - $2(WVar(-SizeOf($2))); 
                                                    Dec(WP, SizeOf($2)); end;
-     procedure TForthMachine.$1_star  cmdhdr; begin $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) * $2(WVar(-SizeOf($2))); 
+      procedure TForthMachine.$1_star  cmdhdr; begin $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) * $2(WVar(-SizeOf($2))); 
                                                    Dec(WP, SizeOf($2)); end;
-     procedure TForthMachine.$1_equel cmdhdr; begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) = $2(WVar(-SizeOf($2)))); 
+      procedure TForthMachine.$1_equel cmdhdr; begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) = $2(WVar(-SizeOf($2)))); 
                                                    Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); end;
-     procedure TForthMachine.$1_nequel cmdhdr; begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) <> $2(WVar(-SizeOf($2)))); 
+      procedure TForthMachine.$1_nequel cmdhdr; begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) <> $2(WVar(-SizeOf($2)))); 
                                                    Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); end;
-     procedure TForthMachine.$1_lt cmdhdr;    begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) < $2(WVar(-SizeOf($2)))); 
+      procedure TForthMachine.$1_lt cmdhdr;    begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) < $2(WVar(-SizeOf($2)))); 
                                                    Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); end;
-     procedure TForthMachine.$1_gt cmdhdr;    begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) > $2(WVar(-SizeOf($2)))); 
+      procedure TForthMachine.$1_gt cmdhdr;    begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) > $2(WVar(-SizeOf($2)))); 
                                                    Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); end;
-     procedure TForthMachine.$1_lte cmdhdr;   begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) <= $2(WVar(-SizeOf($2)))); 
+      procedure TForthMachine.$1_lte cmdhdr;   begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) <= $2(WVar(-SizeOf($2)))); 
                                                    Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); end;
-     procedure TForthMachine.$1_gte cmdhdr;   begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) >= $2(WVar(-SizeOf($2)))); 
+      procedure TForthMachine.$1_gte cmdhdr;   begin TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) >= $2(WVar(-SizeOf($2)))); 
                                                    Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); end;
-     procedure TForthMachine.$1_0_equel cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) = 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
-     procedure TForthMachine.$1_0_nequel cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) <> 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
-     procedure TForthMachine.$1_0_lt cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) < 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
-     procedure TForthMachine.$1_0_gt cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) > 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
-     procedure TForthMachine.$1_0_lte cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) <= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
-     procedure TForthMachine.$1_0_gte cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) >= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
-     procedure TForthMachine.$1_dot cmdhdr;    begin Dec(WP, SizeOf($2)); Write($2(WP^), ' '); end;
-     procedure TForthMachine.$1_dollar cmdhdr; var Temp: $2; begin Read(Temp); Move(Temp, WP^, SizeOf($2)); Inc(WP, SizeOf($2)); end;
+      procedure TForthMachine.$1_0_equel cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) = 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+      procedure TForthMachine.$1_0_nequel cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) <> 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+      procedure TForthMachine.$1_0_lt cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) < 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+      procedure TForthMachine.$1_0_gt cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) > 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+      procedure TForthMachine.$1_0_lte cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) <= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+      procedure TForthMachine.$1_0_gte cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) >= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
+      procedure TForthMachine.$1_ask_dup cmdhdr; begin if ($2(WVar(-1*SizeOf($2)))) <> 0 then begin $2(WP^) := $2(WVar(-1*SizeOf($2))); Inc(WP, SizeOf($2)); end; end;
+      procedure TForthMachine.$1_dot cmdhdr;    begin Dec(WP, SizeOf($2)); Write($2(WP^), ' '); end;
+      procedure TForthMachine.$1_dollar cmdhdr; var Temp: $2; begin Read(Temp); Move(Temp, WP^, SizeOf($2)); Inc(WP, SizeOf($2)); end;
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -359,6 +361,7 @@ define(~arithmetic_commands|,
      AddCommand('genname($1, 0>)', $1_0_gt);
      AddCommand('genname($1, 0<=)', $1_0_lte);
      AddCommand('genname($1, 0>=)', $1_0_gte);
+     AddCommand('genname($1, ?dup)', $1_ask_dup);
      AddCommand('$1.', $1_dot);
      AddCommand('$1$', $1_dollar);
     |)
