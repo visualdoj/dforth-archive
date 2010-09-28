@@ -677,13 +677,13 @@ type
   TPtr = Pointer;
   TEmbroPtr = TInt;
 
-  TStr = Pointer;
   TStrRec = record
     Ref: TInt;
     Len: TInt;
     Sym: array[0..1] of TChar;
   end;
   PStrRec = ^TStrRec;
+  TStr = PStrRec;
 
   PLong = ^TLong;
   TLong = record
@@ -927,6 +927,7 @@ TStringCommands = class
   procedure str_nil(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dot(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dollar(Machine: TForthMachine; Command: PForthCommand);
+  procedure Format(Machine: TForthMachine; Command: PForthCommand);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TForthMachine'}{$ENDIF}
@@ -2772,6 +2773,36 @@ begin
   Move(S[1], PStrRec(P)^.Sym[0], Length(S));
   PStrRec(P)^.Sym[Length(S)] := #0;
   str_push(Machine, Command, P);
+end;
+
+procedure TStringCommands.Format(Machine: TForthMachine; Command: PForthCommand);
+var
+  P: PChar;
+  I, J: Integer;
+  Sub: array of string;
+  STemp: TStr;
+begin
+  S := str_pop(Machine, Command);
+  I := S^.Len;
+  while I > 0 do begin
+    Dec(I);
+    SetLength(Sub, Length(Sub) + 1);
+    if TChar(S^.Sym[I]) = '%' then begin
+      if TChar(S^.Sym[I+1]) = '%' then begin
+        Sub[High(Sub)] := '%';
+      end else if TChar(S^.Sym[I+1]) = 's' then begin
+        STemp := str_pop(Machine, Command);
+        DelRef(STemp);
+      end;
+    end else begin
+      J := I;
+      while (J >= 0) and (TChar(S^.Sym[I+1]) <> '%') do
+        Dec(J);
+      SetLength(Sub[High(Sub)], I - J);
+      I := J;
+    end;
+  end;
+  DelRef(S);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TForthMachine'}{$ENDIF}
