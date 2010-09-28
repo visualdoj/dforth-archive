@@ -1,5 +1,5 @@
 dnl(
 changequote(~,|)
-define(~_file|, ~$1|)
+define(~_file|, ~$@|)
 define(~_out|, ~|)
 )

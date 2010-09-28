@@ -1,6 +1,6 @@
 dnl(
 changequote(~,|)
-define(~_file|, ~dnl($1)|)
+define(~_file|, ~dnl($*)|)
 define(~_doc_enabled|, ~0|)
 define(~_doc_ext|, ~.wiki|)
 define(~_out|, ~|)

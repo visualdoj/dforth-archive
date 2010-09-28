@@ -1,4 +1,4 @@
-_file(~
+_file(
 unit DForthMachine;
 
 interface
@@ -25,15 +25,19 @@ define(~typed_commands|,
   ~
    procedure drop_$1 cmdhdr;
    procedure dup_$1 cmdhdr;
+   procedure nip_$1 cmdhdr;
    procedure swap_$1 cmdhdr;
    procedure over_$1 cmdhdr;
+   procedure tuck_$1 cmdhdr;
    procedure lrot_$1 cmdhdr;
    procedure rrot_$1 cmdhdr;
    procedure lrotn_$1 cmdhdr;
    procedure rrotn_$1 cmdhdr;
+   procedure pick_$1 cmdhdr;
    procedure _comma_$1 cmdhdr;
    procedure _dog_$1 cmdhdr;
    procedure _exclamation_$1 cmdhdr;
+   procedure ptr_plus_$1 cmdhdr;
    procedure _to_$1 cmdhdr;
    procedure _compile_to_$1 cmdhdr;
    procedure _run_to_$1 cmdhdr;
@@ -45,8 +49,10 @@ define(~typed_commands|,
     ~
      procedure TForthMachine.drop_$1 cmdhdr; begin Dec(WP, $2) end;
      procedure TForthMachine.dup_$1 cmdhdr; begin Move(WVar(-$2), WVar(0), $2); WInc($2) end;
+     procedure TForthMachine.nip_$1 cmdhdr; begin Move(WVar(-1*$2), WVar(-2*$2), $2); Dec(WP, $2) end;
      procedure TForthMachine.swap_$1 cmdhdr; begin Move(WVar(-$2), WP^, $2); Move(WVar(-2*$2), WVar(-$2), $2); Move(WP^, WVar(-2*$2), $2); end;
      procedure TForthMachine.over_$1 cmdhdr; begin Move(WVar(-2*$2), WVar(0), $2); Inc(WP, $2) end;
+     procedure TForthMachine.tuck_$1 cmdhdr; begin Move(WVar(-2*$2), WVar(-1*$2), 2*$2); Move(WVar(0), WVar(-2*$2), $2); WInc($2); end;
      procedure TForthMachine.lrot_$1 cmdhdr; 
      begin 
        Move(WVar(-1*$2), WP^, $2);
@@ -61,11 +67,42 @@ define(~typed_commands|,
        Move(WVar(-3*$2), WVar(-2*$2), $2);
        Move(WP^, WVar(-3*$2), $2);
      end;
-     procedure TForthMachine.lrotn_$1 cmdhdr; begin end;
-     procedure TForthMachine.rrotn_$1 cmdhdr; begin end;
+     procedure TForthMachine.lrotn_$1 cmdhdr; 
+     var
+       N: Integer;
+     begin 
+       Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       Move(WVar(-$2*N), WVar(0), $2);
+       while N > 0 do begin
+         Move(WVar(-$2*(N-1)), WVar(-$2*N), $2);
+         Dec(N);
+       end;
+       //Move(WVar(0), WVar(-$2), $2);
+     end;
+     procedure TForthMachine.rrotn_$1 cmdhdr;
+     var
+       I: Integer;
+       N: Integer;
+     begin
+       Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       //Move(WVar(-$2), WVar(0), $2);
+       for I := 0 to N - 1 do
+         Move(WVar(-$2*(I+1)), WVar(-$2*I), $2);
+       Move(WVar(0), WVar(-N*$2), $2);
+     end;
+     procedure TForthMachine.pick_$1 cmdhdr; 
+     begin 
+       Move(WVar(-SizeOf(TInt) -$2*TInt(WVar(-SizeOf(TInt)))), 
+            WVar(-SizeOf(TInt)),
+            $2);
+       WInc($2 - SizeOf(TInt));
+     end;
      procedure TForthMachine._comma_$1 cmdhdr; begin Dec(WP, $2); Move(WP^, DP^, $2); Inc(DP, $2); end;
      procedure TForthMachine._dog_$1 cmdhdr; begin Move(Pointer(WVar(-PSize))^, WVar(-PSize), $2); Inc(WP, $2 - PSize) end;
      procedure TForthMachine._exclamation_$1 cmdhdr; begin Move(WVar(-PSize-$2), Pointer(WVar(-PSize))^, $2); Dec(WP, PSize + $2) end;
+     procedure TForthMachine.ptr_plus_$1 cmdhdr; begin PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; end;
      procedure TForthMachine._to_$1 cmdhdr; begin Writeln(FState); if FState <> FS_INTERPRET then _compile_to_$1(Machine, Command) else _interpret_to_$1(Machine, Command); end;
      procedure TForthMachine._compile_to_$1 cmdhdr; begin EWO('run@genname($1, ~to|)'); EWO(NextName); end;
      procedure TForthMachine._run_to_$1 cmdhdr; begin Move(WVar(-$2), C[ERO].Data^, $2); Dec(WP, $2); end;
@@ -82,15 +119,19 @@ define(~typed_commands|,
     ~
      AddCommand('genname($1, drop)', drop_$1);
      AddCommand('genname($1, dup)', dup_$1);
+     AddCommand('genname($1, nip)', nip_$1);
      AddCommand('genname($1, swap)', swap_$1);
      AddCommand('genname($1, over)', over_$1);
+     AddCommand('genname($1, tuck)', tuck_$1);
      AddCommand('genname($1, lrot)', lrot_$1);
      AddCommand('genname($1, rrot)', rrot_$1);
      AddCommand('genname($1, lrotn)', lrotn_$1);
      AddCommand('genname($1, rrotn)', rrotn_$1);
+     AddCommand('genname($1, pick)', pick_$1);
      AddCommand('$1,', _comma_$1);
      AddCommand('$1@', _dog_$1);
      AddCommand('$1!', _exclamation_$1);
+     AddCommand('ptr+$1', ptr_plus_$1);
      AddCommand('genname($1, to)', _to_$1, True);
      AddCommand('compile@genname($1, to)', _compile_to_$1);
      AddCommand('run@genname($1, to)', _run_to_$1);
@@ -311,8 +352,12 @@ define(~arithmetic_commands|,
   procedure $1_0_lte cmdhdr;
   procedure $1_0_gte cmdhdr;
   procedure $1_ask_dup cmdhdr;
+  procedure $1_max cmdhdr;
+  procedure $1_min cmdhdr;
+  procedure $1_minmax cmdhdr;
   procedure $1_dot cmdhdr;
-  procedure $1_dollar cmdhdr
+  procedure $1_dollar cmdhdr;
+  procedure $1_ptr_plus_exclamation cmdhdr
   define(~all_implement|, all_implement 
     ~
       procedure TForthMachine.$1_plus  cmdhdr; begin $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) + $2(WVar(-SizeOf($2))); 
@@ -340,8 +385,29 @@ define(~arithmetic_commands|,
       procedure TForthMachine.$1_0_lte cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) <= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
       procedure TForthMachine.$1_0_gte cmdhdr; begin TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) >= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) end;
       procedure TForthMachine.$1_ask_dup cmdhdr; begin if ($2(WVar(-1*SizeOf($2)))) <> 0 then begin $2(WP^) := $2(WVar(-1*SizeOf($2))); Inc(WP, SizeOf($2)); end; end;
+      procedure TForthMachine.$1_max cmdhdr;
+      begin
+        if $2(WVar(-2*SizeOf($2))) < $2(WVar(-1*SizeOf($2))) then
+          Move(WVar(-1*SizeOf($2)), WVar(-2*SizeOf($2)), SizeOf($2));
+        Dec(WP, SizeOf($2));
+      end;
+      procedure TForthMachine.$1_min cmdhdr;
+      begin
+        if $2(WVar(-2*SizeOf($2))) > $2(WVar(-1*SizeOf($2))) then
+          Move(WVar(-1*SizeOf($2)), WVar(-2*SizeOf($2)), SizeOf($2));
+        Dec(WP, SizeOf($2));
+      end;
+      procedure TForthMachine.$1_minmax cmdhdr;
+      begin
+        if $2(WVar(-2*SizeOf($2))) > $2(WVar(-1*SizeOf($2))) then begin
+          Move(WVar(-2*SizeOf($2)), WVar(-0*SizeOf($2)), SizeOf($2));
+          Move(WVar(-1*SizeOf($2)), WVar(-2*SizeOf($2)), SizeOf($2));
+          Move(WVar(-0*SizeOf($2)), WVar(-1*SizeOf($2)), SizeOf($2));
+        end;
+      end;
       procedure TForthMachine.$1_dot cmdhdr;    begin Dec(WP, SizeOf($2)); Write($2(WP^), ' '); end;
       procedure TForthMachine.$1_dollar cmdhdr; var Temp: $2; begin Read(Temp); Move(Temp, WP^, SizeOf($2)); Inc(WP, SizeOf($2)); end;
+      procedure TForthMachine.$1_ptr_plus_exclamation cmdhdr; begin $2(Pointer(WVar(-SizeOf(Pointer)))^) := $2(Pointer(WVar(-SizeOf(Pointer)))^) + $2(WVar(-SizeOf(Pointer)-SizeOf($2))); Dec(WP, SizeOf(Pointer) + SizeOf($2)); end;
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -362,8 +428,12 @@ define(~arithmetic_commands|,
      AddCommand('genname($1, 0<=)', $1_0_lte);
      AddCommand('genname($1, 0>=)', $1_0_gte);
      AddCommand('genname($1, ?dup)', $1_ask_dup);
+     AddCommand('genname($1, min)', $1_min);
+     AddCommand('genname($1, max)', $1_max);
+     AddCommand('genname($1, minmax)', $1_minmax);
      AddCommand('$1.', $1_dot);
      AddCommand('$1$', $1_dollar);
+     AddCommand('$1+!', $1_ptr_plus_exclamation);
     |)
 |)
 define(~signed_arithmetic_commands|, 
@@ -390,7 +460,9 @@ define(~number_arithmetic_commands|,
   procedure $1_1_minus cmdhdr;
   procedure $1_div cmdhdr;
   procedure $1_mod cmdhdr;
-  procedure $1_divmod cmdhdr
+  procedure $1_divmod cmdhdr;
+  procedure $1_ptr_inc cmdhdr;
+  procedure $1_ptr_dec cmdhdr
   define(~all_implement|, all_implement 
     ~
      procedure TForthMachine.$1_push  cmdhdr; begin if FState = FS_COMPILE then $1_compile_push(Machine, Command) else $1_interpret_push(Machine, Command) end;
@@ -407,20 +479,35 @@ define(~number_arithmetic_commands|,
                                                      $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) div $2(WVar(-SizeOf($2)));
                                                      $2(WVar(-  SizeOf($2))) := $2(WVar(0)); 
                                                end;
+     procedure TForthMachine.$1_ptr_inc cmdhdr;
+     begin
+       $2(Pointer(WVar(-SizeOf(Pointer)))^) := 
+                         $2(Pointer(WVar(-SizeOf(Pointer)))^) + 1; 
+       Dec(WP, SizeOf(Pointer));
+     end;
+     procedure TForthMachine.$1_ptr_dec cmdhdr;
+     begin
+       $2(Pointer(WVar(-SizeOf(Pointer)))^) := 
+                         $2(Pointer(WVar(-SizeOf(Pointer)))^) - 1; 
+       Dec(WP, SizeOf(Pointer));
+     end;
     |
   )
   define(~regist_all_commands|, regist_all_commands
     ~
      AddCommand('$1-push', $1_push, True);
      AddCommand('run@$1-push', $1_run_push);
-     AddCommand('$1-inc', $1_1_plus);
-     AddCommand('$1-dec', $1_1_minus);
+     AddCommand('genname($1, inc)', $1_1_plus);
+     AddCommand('genname($1, dec)', $1_1_minus);
      ifelse($1, ~|, AddCommand('1+', $1_1_plus);)
      ifelse($1, ~|, AddCommand('1-', $1_1_minus);)
-     AddCommand('$1-div', $1_div);
-     AddCommand('$1-div', $1_div);
-     AddCommand('$1-mod', $1_mod);
-     AddCommand('$1-divmod', $1_divmod);
+     AddCommand('genname($1, inc!)', $1_ptr_inc);
+     AddCommand('genname($1, dec!)', $1_ptr_dec);
+     ifelse($1, ~|, AddCommand('1+!', $1_ptr_inc);)
+     ifelse($1, ~|, AddCommand('1-!', $1_ptr_dec);)
+     AddCommand('genname($1, div)', $1_div);
+     AddCommand('genname($1, mod)', $1_mod);
+     AddCommand('genname($1, divmod)', $1_divmod);
     |)
 |)
 define(~convert_number_arithmetic_commands|, 
@@ -4876,5 +4963,5 @@ push $00
 из CPU-debug. 
 
 }
-)))))))))))))))))))))))))))))))))))))))))))))))|)
+))))))))))))))))))))))))))))))))))))))))))))))))
 _out
