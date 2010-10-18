@@ -1,29 +1,65 @@
-library dforth32;
+library deorth32;
 
 uses
-  {$I ..\DSlider\DSliderUnitsWithPath.inc},
+  {$IFDEF FLAG_FPC}
+    DMath in '..\DEngine\FPC\DMath.pas',
+  {$ELSE}
+    DMath in '..\DEngine\DELPHI\DMath.pas',
+  {$ENDIF}
+
+  DEncoding in '..\DLocal\DEncoding.pas',
+  DTranslater in '..\DLocal\DTranslater.pas',
+
+  DXML in '..\DParser\DXML.pas',
+  DXMLExecutor in '..\DParser\DXMLExecutor.pas',
+  DIni in '..\DParser\DIni.pas',
+  DTreeExpr in '..\DParser\DTreeExpr.pas',
+
+  {$IFNDEF FLAG_DEBUG}
+    winsock in '..\DEngine\WINSOCK\winsock.pas',
+  {$ENDIF}
+
+  DEvents in '..\DEngine\DEvents.pas',
+  DClasses in '..\DEngine\DClasses.pas',
+  DWinApi in '..\DEngine\WINDOWS\DWinApi.pas',
+  DNet in '..\DEngine\WINSOCK\DNet.pas',
+  DLib in '..\DEngine\WINDOWS\DLib.pas',
+
+  DUtils in '..\DEngine\DUtils.pas',
+  DDebug in '..\DEngine\DDebug.pas',
+  DParser in '..\DEngine\DParser.pas',
+  
   DForthStack,
   DForthMachine;
 
 const
-  DF_OK                         = 0;
-  DF_R_UNDERFLOW                = 1;
-  DF_R_OVERFLOW                 = 2;
-  DF_W_UNDERFLOW                = 3;
-  DF_W_OVERFLOW                 = 4;
-  DF_C_OUT_OF_RANGE_ACCESS      = 5;
+  DE_OK                         = 0; // всё прошло без ошибок
+  DE_ERR_UNKNOWN_VALTYPE        = 1; // некорректное значение параметра valtype
+  DE_ERR_UNKNOWN_ACTION         = 2; // некорректное значение параметра action
 
-function dfCreateMachine: Pointer; stdcall;
+  DE_IGNORE                     = 0; // игнорировать
+
+  DE_USERDATA                   = 1; // пользовательская переменная
+  DE_W                          = 2; // стек W (основной)
+  DE_R                          = 3; // стек R (возвратов)
+  DE_L                          = 4; // стек L (локальных переменных)
+  
+  DE_READ                       = 1;
+  DE_WRITE                      = 2;
+  DE_PUSH                       = 3;
+  DE_POP                        = 4;
+
+function deCreateMachine: Pointer; stdcall;
 begin
   Result := TForthMachine.Create;
 end;
 
-procedure dfFreeMachine(machine: Pointer); stdcall;
+procedure deFreeMachine(machine: Pointer); stdcall;
 begin
   TForthMachine(machine).Free;
 end;
 
-procedure dfInterpret(machine: Pointer; code: PChar); stdcall;
+function deInterpret(machine: Pointer; code: PChar): Integer; stdcall;
 var
   S: PChar;
 begin
@@ -33,27 +69,75 @@ begin
   FreeMem(S);
 end;
 
-procedure dfSetUserData(machine: Pointer; userdata: Pointer); stdcall;
+function deAddCommand(machine: Pointer; 
+                      name: PChar; 
+                      CallBack: Pointer;
+                      Data: Pointer;
+                      Immediate: Boolean
+                     ): Pointer; stdcall;
 begin
-  TForthMachine(machine).UserData := userdata;
+  //TForthMachine(machine).AddCommand(name, TCallback(Callback));
 end;
 
-function dfGetUserData(machine: Pointer): Pointer; stdcall;
+function deVar(machine: Pointer; 
+               valtype: Integer; 
+               action: Integer; 
+               ptr: Pointer;
+               size: Integer; 
+               pos: Integer): Integer; stdcall;
 begin
-  Result := TForthMachine(machine).UserData;
-end;
-
-function dfAddCommand(machine: Pointer; name: PChar; CallBack: Pointer): Pointer; stdcall;
-begin
-  TForthMachine(machine).AddCommand(name, TCallback(Callback));
+  Result := DE_OK;
+  if machine = nil then
+    Exit;
+  with TForthMachine(machine) do
+    if action = DE_WRITE then
+      case valtype of
+        DE_IGNORE: ;
+        DE_USERDATA: Userdata := Pointer(ptr^);
+        DE_W: Move(ptr^, Pointer(Cardinal(WP) + Pos)^, Size);
+        DE_R: Move(ptr^, Pointer(Cardinal(RP) + Pos)^, Size);
+        DE_L: Move(ptr^, Pointer(Cardinal(LP) + Pos)^, Size);
+      else
+        Result := DE_ERR_UNKNOWN_VALTYPE;
+      end
+    else if action = DE_READ then
+      case valtype of
+        DE_IGNORE: ;
+        DE_USERDATA: Pointer(ptr^) := Userdata;
+        DE_W: Move(Pointer(Cardinal(WP) + Pos)^, ptr^, Size);
+        DE_R: Move(Pointer(Cardinal(RP) + Pos)^, ptr^, Size);
+        DE_L: Move(Pointer(Cardinal(LP) + Pos)^, ptr^, Size);
+      else
+        Result := DE_ERR_UNKNOWN_VALTYPE;
+      end
+    else if action = DE_PUSH then
+      case valtype of
+        DE_IGNORE: ;
+        DE_W: WUV(ptr, size);
+        DE_R: RUV(ptr, size);
+        DE_L: LUV(ptr, size);
+      else
+        Result := DE_ERR_UNKNOWN_VALTYPE;
+      end
+    else if action = DE_POP then
+      case valtype of
+        DE_IGNORE: ;
+        DE_W: WOV(ptr, size);
+        DE_R: ROV(ptr, size);
+        DE_L: LOV(ptr, size);
+      else
+        Result := DE_ERR_UNKNOWN_VALTYPE;
+      end
+    else if action = DE_IGNORE then
+    else
+      Result := DE_ERR_UNKNOWN_ACTION;
 end;
 
 exports
-  dfCreateMachine,
-  dfFreeMachine,
-  dfInterpret,
-  dfSetUserData,
-  dfGetUserData,
-  dfAddCommand;
+  deCreateMachine,
+  deFreeMachine,
+  deInterpret,
+  deAddCommand,
+  deVar;
 
 end.

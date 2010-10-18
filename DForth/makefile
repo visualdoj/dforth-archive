@@ -1,12 +1,16 @@
 .PHONY: all
 .PHONY: release
 .PHONY: doc
+.PHONY: dll
 
 all:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
 	fpc -vb dforth.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\release\ -FU.\temp
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
+
+dll:
+	fpc dforth32.dpr -dFLAG_FPC -Sd
 
 release:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas

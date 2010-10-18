@@ -385,6 +385,7 @@ TForthMachine = class
   procedure AddType(const Name: TString; Size: Integer);
  public
 {$IFNDEF FLAG_FPC}{$REGION 'machine datas'}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'E'}{$ENDIF}
  public
   E: array of Byte; // Embro
   EB: Pointer; // Embro Base (@E[0])
@@ -429,11 +430,15 @@ TForthMachine = class
   function ERD: Double;
   function ERExtended: Extended;
   function ERPChar: PChar;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'R'}{$ENDIF}
  public
   R: array of Byte; // Return stack
   RB: Pointer; // Return stack Base
   RP: Pointer; // Return stack Pointer
   RS: Integer; // Return stack Size
+  procedure RUV(const P: Pointer; Size: Integer);
+  procedure ROV(const P: Pointer; Size: Integer);
   function ROP: Pointer 
   
   ; // Return stack pOp Pointer
@@ -489,11 +494,15 @@ TForthMachine = class
   function ROU64: TUInt64 
   
   ;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
  public
   W: array of Byte; // Work stack
   WB: Pointer; // Work stack Base (@W[0])
   WP: Pointer; // Work stack Pointer
   WS: Integer; // Work stack Size
+  procedure WUV(const P: Pointer; Size: Integer);
+  procedure WOV(const P: Pointer; Size: Integer);
   procedure WUI(const V: TInt); overload 
   ; // Work stack pUsh Integer
   procedure WUP(const V: Pointer); overload 
@@ -549,6 +558,8 @@ TForthMachine = class
   function WOU64: TUInt64 
   
   ;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'C'}{$ENDIF}
  public
   C: array of PForthCommand; // Commands
   CB: Pointer; // Commands Base (@C[0])
@@ -558,12 +569,16 @@ TForthMachine = class
   // Command FInd
   // Command EXecute
   // Command COmpile
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
  public
   D: array of Byte; // Data
   DB: Pointer; // Data Base
   DP: Pointer; // Data Pointer (traditionaly called HERE in forth)
   DS: Integer; // Data Size
   procedure DA(Size: Integer); // Data Allot
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'S'}{$ENDIF}
  public
   // doesn't work in run state
   S: PChar; // Source
@@ -572,6 +587,16 @@ TForthMachine = class
   function SNC: TChar; // Source Next Char
   function SNN: TString; // Source Next Name
   procedure SSS; // Source Skip Spaces
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
+ public
+  L: array of Byte; // Local stack
+  LB: Pointer; // Local stack Base (@W[0])
+  LP: Pointer; // Local stack Pointer
+  LS: Integer; // Local stack Size
+  procedure LUV(const P: Pointer; Size: Integer);
+  procedure LOV(const P: Pointer; Size: Integer);
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'all commands'}{$ENDIF}
           
@@ -3782,6 +3807,51 @@ procedure TForthMachine.SSS;
 begin
   while (not SE) and (S[SC] in [#1..#32]) do
     SNC;
+end;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'R'}{$ENDIF}
+procedure TForthMachine.RUV(const P: Pointer; Size: Integer);
+begin
+  if P <> nil then
+    Move(P^, RP^, Size);
+  Inc(RP, Size);
+end;
+
+procedure TForthMachine.ROV(const P: Pointer; Size: Integer);
+begin
+  if P <> nil then
+    Move(RP^, P^, Size);
+  Dec(RP, Size);
+end;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
+procedure TForthMachine.WUV(const P: Pointer; Size: Integer);
+begin
+  if P <> nil then
+    Move(P^, WP^, Size);
+  Inc(WP, Size);
+end;
+
+procedure TForthMachine.WOV(const P: Pointer; Size: Integer);
+begin
+  if P <> nil then
+    Move(WP^, P^, Size);
+  Dec(WP, Size);
+end;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
+procedure TForthMachine.LUV(const P: Pointer; Size: Integer);
+begin
+  if P <> nil then
+    Move(P^, LP^, Size);
+  Inc(LP, Size);
+end;
+
+procedure TForthMachine.LOV(const P: Pointer; Size: Integer);
+begin
+  if P <> nil then
+    Move(LP^, P^, Size);
+  Dec(LP, Size);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
