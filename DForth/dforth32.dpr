@@ -49,6 +49,9 @@ const
   DE_PUSH                       = 3;
   DE_POP                        = 4;
 
+  DE_SOURCE_PCHAR               = 1; // исполняемый код находится в строке с завершающим нулём
+  DE_SOURCE_FUNC                = 2; // исходный код нужно получать из функции до тех пор, пока она не вернёт nil
+
 function deCreateMachine: Pointer; stdcall;
 begin
   Result := TForthMachine.Create;
@@ -59,7 +62,7 @@ begin
   TForthMachine(machine).Free;
 end;
 
-function deInterpret(machine: Pointer; code: PChar): Integer; stdcall;
+function deInterpret(machine: Pointer; typ: Integer; source: Pointer): Integer; stdcall;
 var
   S: PChar;
 begin
