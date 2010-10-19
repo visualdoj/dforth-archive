@@ -5,6 +5,9 @@ interface
 uses
   {$I units.inc},Math,strings,DForthStack;
 
+const
+  DFORTHMACHINE_VERSION = 11;
+
 
 
 
@@ -1751,6 +1754,10 @@ TForthMachine = class
   
 ;
   
+  procedure _wp (Machine: TForthMachine; Command: PForthCommand);
+  procedure _rp (Machine: TForthMachine; Command: PForthCommand);
+  procedure _lp (Machine: TForthMachine; Command: PForthCommand);
+  procedure version (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_char (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand);
@@ -5333,6 +5340,10 @@ begin
     
     
     
+     AddCommand('wp', _wp);
+     AddCommand('rp', _rp);
+     AddCommand('lp', _lp);
+     AddCommand('sys-version', version);
      AddCommand('source-next-char', source_next_char);
      AddCommand('source-next-name', source_next_name);
      AddCommand('source-next-name-passive', source_next_name_passive);
@@ -8638,23 +8649,27 @@ end;
     
    
     
-     procedure TForthMachine.source_next_char (Machine: TForthMachine; Command: PForthCommand); begin WUU8(Byte(NextChar)) end;
-     procedure TForthMachine.source_next_name (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, NextName) end;
-     procedure TForthMachine.source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin if FState <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
-                                                                                                  interpret_source_next_name_passive(Machine, Command) end;
-     procedure TForthMachine.interpret_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, NextNamePassive) end;
-     procedure TForthMachine.compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin EWO(' str"'); EWStr(NextNamePassive); end;
-     procedure TForthMachine.run_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, @E[EC]); end;
-     procedure TForthMachine.ptr_nil (Machine: TForthMachine; Command: PForthCommand); begin WUP(nil); end;
-     procedure TForthMachine.compile_start (Machine: TForthMachine; Command: PForthCommand); begin FState := FS_COMPILE end;
-     procedure TForthMachine.interpret_start (Machine: TForthMachine; Command: PForthCommand); begin FState := FS_INTERPRET end;
-     procedure TForthMachine.run_start (Machine: TForthMachine; Command: PForthCommand); begin FState := FS_INTERPRET end;
-     //procedure TForthMachine.allot (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, SizeOf(TInt)); DA(TInt(WP)^); end;
-     procedure TForthMachine.sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin if FState <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command) end;
-     procedure TForthMachine.interpret_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin WUP(FindCommand(NextName)) end;
-     procedure TForthMachine.compile_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@['']'); EWO(NextName); end;
-     procedure TForthMachine.run_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin WUP(C[ERO]); end;
-     procedure TForthMachine.execute (Machine: TForthMachine; Command: PForthCommand); var P: PForthCommand; begin 
+      procedure TForthMachine._wp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine._rp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine._lp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine.version (Machine: TForthMachine; Command: PForthCommand); begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt)); end;
+      procedure TForthMachine.source_next_char (Machine: TForthMachine; Command: PForthCommand); begin WUU8(Byte(NextChar)) end;
+      procedure TForthMachine.source_next_name (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, NextName) end;
+      procedure TForthMachine.source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin if FState <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
+                                                                                                   interpret_source_next_name_passive(Machine, Command) end;
+      procedure TForthMachine.interpret_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, NextNamePassive) end;
+      procedure TForthMachine.compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin EWO(' str"'); EWStr(NextNamePassive); end;
+      procedure TForthMachine.run_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, @E[EC]); end;
+      procedure TForthMachine.ptr_nil (Machine: TForthMachine; Command: PForthCommand); begin WUP(nil); end;
+      procedure TForthMachine.compile_start (Machine: TForthMachine; Command: PForthCommand); begin FState := FS_COMPILE end;
+      procedure TForthMachine.interpret_start (Machine: TForthMachine; Command: PForthCommand); begin FState := FS_INTERPRET end;
+      procedure TForthMachine.run_start (Machine: TForthMachine; Command: PForthCommand); begin FState := FS_INTERPRET end;
+      //procedure TForthMachine.allot (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, SizeOf(TInt)); DA(TInt(WP)^); end;
+      procedure TForthMachine.sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin if FState <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command) end;
+      procedure TForthMachine.interpret_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin WUP(FindCommand(NextName)) end;
+      procedure TForthMachine.compile_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@['']'); EWO(NextName); end;
+      procedure TForthMachine.run_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin WUP(C[ERO]); end;
+      procedure TForthMachine.execute (Machine: TForthMachine; Command: PForthCommand); var P: PForthCommand; begin 
                                              P := WOP; P.Code(Machine, P) end;
     
    

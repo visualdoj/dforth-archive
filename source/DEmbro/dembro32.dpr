@@ -99,7 +99,9 @@ begin
       Repl := TRepl.Create;
       Machine.AddCommand('quit', Repl.quit);
       Machine.AddCommand('embro-dump', Repl.embro_dump);
-      Writeln('Commands count: ', Length(Machine.C));
+      Writeln('DEmbro v' + IntToStr(DFORTHMACHINE_VERSION div 100) + '.' + 
+                           IntToStr(DFORTHMACHINE_VERSION mod 100) + 
+              ' (commands available: ', Length(Machine.C), ')');
       Writeln('Type "quit" to exit');
       while not Done do begin
         Write('dforth> ');
