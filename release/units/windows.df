@@ -8,8 +8,10 @@ ptr-nil ptr-value lib-user32
 : DWORD     t_uint32 ;
 : FLOAT     t_single ;
 : HANDLE    t_ptr ;
+: UINT      t_uint ;
 : LONG      t_int32 ;
 : LONGLONG  t_int64 ;
+: HWND      HANDLE ;
 : HBITMAP   HANDLE ;
 : HBRUSH    HANDLE ;
 : HCURSOR   HANDLE ;
@@ -25,4 +27,7 @@ ptr-nil ptr-value lib-user32
 : HRESULT   LONG ;
 : LPCSTR    t_pchar ;
 
+alien-fun MessageBox HWND LPCSTR LPCSTR UINT  LONG conv-stdcall alien-end
 
+str" User32.dll" lib-load drop ptr-to lib-user32
+str" MessageBoxA" lib-user32 lib-fun ptr-to MessageBox
