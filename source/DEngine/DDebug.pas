@@ -92,8 +92,11 @@ end;
 
 constructor TDebug.Create;
 begin
+  FLogFile := '';
+  {$IFNDEF FLAG_NOLOG}
   FLogFile := LogFile;
   ClearLogFile;
+  {$ENDIF}
 end;
 
 procedure TDebug.Log;
@@ -101,7 +104,9 @@ begin
   {$IFDEF FLAG_CONSOLE}
   Writeln(Group + ' ' + Mes);
   {$ENDIF}
+  {$IFNDEF FLAG_NOLOG}
   PrintToLogFile(Group + ' ' + Mes);
+  {$ENDIF}
 end;
 
 procedure TDebug.Error(Mes: TString);

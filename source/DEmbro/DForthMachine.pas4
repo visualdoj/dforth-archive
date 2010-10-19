@@ -103,7 +103,7 @@ define(~typed_commands|,
      procedure TForthMachine._dog_$1 cmdhdr; begin Move(Pointer(WVar(-PSize))^, WVar(-PSize), $2); Inc(WP, $2 - PSize) end;
      procedure TForthMachine._exclamation_$1 cmdhdr; begin Move(WVar(-PSize-$2), Pointer(WVar(-PSize))^, $2); Dec(WP, PSize + $2) end;
      procedure TForthMachine.ptr_plus_$1 cmdhdr; begin PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; end;
-     procedure TForthMachine._to_$1 cmdhdr; begin Writeln(FState); if FState <> FS_INTERPRET then _compile_to_$1(Machine, Command) else _interpret_to_$1(Machine, Command); end;
+     procedure TForthMachine._to_$1 cmdhdr; begin if FState <> FS_INTERPRET then _compile_to_$1(Machine, Command) else _interpret_to_$1(Machine, Command); end;
      procedure TForthMachine._compile_to_$1 cmdhdr; begin EWO('run@genname($1, ~to|)'); EWO(NextName); end;
      procedure TForthMachine._run_to_$1 cmdhdr; begin Move(WVar(-$2), C[ERO].Data^, $2); Dec(WP, $2); end;
      procedure TForthMachine._interpret_to_$1 cmdhdr; var N: TString; C: PForthCommand; begin N := NextName; C := FindCommand(N);
@@ -1830,7 +1830,7 @@ end;
 
 procedure TControlCommands._exit;
 begin
-  //Writeln('EXIT');
+  //Log('EXIT');
   if TUInt(FMachine.RB) >= TUInt(FMachine.RP) then begin
     //FMachine.EC := Length(FMachine.FEmbro)
     Machine.RB := Machine.ROP;
@@ -2390,7 +2390,7 @@ begin
   New(C);
   C^.Name := StrAlloc(Length(Name) + 1);
   StrCopy(C^.Name, PChar(Name));
-  Writeln('Pushed command ' + C^.Name);
+  Log('Pushed command ' + C^.Name);
   Machine.WUP(C);
   T := @Machine.FTypes[0];
   Machine.WUP(T);
@@ -2398,18 +2398,18 @@ end;
 
 procedure Test2(A, B: Integer); stdcall;
 begin
-  Writeln('Test ', A - B);
+  Log('Test ' + IntToStr(A - B));
 end;
 
 function Test3(A, B: Integer): Integer; stdcall;
 begin
-  Writeln('Test ', A - B);
+  Log('Test ' + IntToStr(A - B));
   Result := A - B;
 end;
 
 function Test(A, B: TInt64): TInt64; stdcall;
 begin
-  Writeln('Test ', A - B);
+  Log('Test ' + IntToStr(A - B));
   Result := A - B;
 end;
 
@@ -2434,14 +2434,13 @@ begin
   T := Machine.WOP;
   SetLength(Types, 0);
   while T <> @Machine.FTypes[0] do begin
-    Write(Length(Types), ': ');
-    Writeln(T^.Name);
+    Log(IntToStr(Length(Types)) + ': ' + T^.Name);
     SetLength(Types, Length(Types) + 1);
     Types[High(Types)] := T;
     T := Machine.WOP;
   end;
   C2 := Machine.WOP;
-  Writeln('Poped command ' + C2^.Name);
+  Log('Poped command ' + C2^.Name);
   C := Machine.ReserveName(TString(C2^.Name));
   StrDispose(C2^.Name);
   Dispose(C2);
@@ -2508,7 +2507,7 @@ begin
     Machine.LogError(C^.Name + ' unknown code convension');
     Exit;
   end;
-  Writeln('Created command ' + C^.Name);
+  Log('Created command ' + C^.Name);
 end;
 
 procedure TAlienCommands.invoke_stdcall(Machine: TForthMachine; Command: PForthCommand);
@@ -2552,7 +2551,7 @@ begin
     @endofcall:
       mov Stack, ebx // запоминаем положение стека
   end;
-  Writeln('SUB: ', TUInt(Machine.WP) - TUInt(Stack));
+  Log('SUB: ' + IntToStr(TUInt(Machine.WP) - TUInt(Stack)));
   Machine.WP := Stack;
 end;
 
@@ -2697,8 +2696,6 @@ procedure TStringCommands.DelRef(S: TStr);
 begin
   Dec(PStrRec(S)^.Ref);
   if PStrRec(S)^.Ref < 1 then begin
-    //Writeln('');
-    //Writeln('sys-debug: FREE STR');
     FreeMem(S);
   end;
 end;
@@ -2866,8 +2863,6 @@ var
   I: Integer;
 begin
   S := str_pop(Machine, Command);
-  //Writeln('STR LEN: ', PStrRec(S)^.Len);
-  //Writeln('STR REF: ', PStrRec(S)^.Ref);
   for I := 0 to PStrRec(S)^.Len - 1 do
     Write(PStrRec(S)^.Sym[I]);
   DelRef(S);
@@ -3014,13 +3009,13 @@ end;
 
 procedure TForthMachine.RunError(const S: TString);
 begin
-  Writeln('Runtime error: ' + S);
+  Error(' Runtime: ' + S);
   FRunning := False;
 end;
 
 procedure TForthMachine.RunWarring(const S: TString);
 begin
-  Writeln('Runtime warring: ' + S);
+  Warrning('Runtime warring: ' + S);
 end;
 
 procedure TForthMachine.IncHere(Count: Integer);
@@ -3970,7 +3965,7 @@ begin
     end;
   I := StrToIntDef(W, -3535);
   if I = -3535 then
-    Writeln('Error, unknown command: ', W)
+    Error(' Unknown command: ' + W)
   else
     WUI(I);
 end;
@@ -3989,7 +3984,7 @@ begin
     end;
   I := StrToIntDef(W, -3535);
   if I = -3535 then
-    Writeln('Error, unknown command: ', W)
+    Error('Unknown command: ' + W)
   else begin
     EWO('run@int-push');
     EWI(I);
@@ -4114,13 +4109,13 @@ end;
 
 procedure TForthMachine.CompileError(const S: TString);
 begin
-  Writeln('Compilation error: ' + S);
+  Error(' Compilation: "' + S + '"');
   FCompilation := False;
 end;
 
 procedure TForthMachine.CompileWarring(const S: TString);
 begin
-  Writeln('Compilation worring: ' + S);
+  Warrning(' Compilation: "' + S + '"');
 end;
 
 procedure TForthMachine.LogError(const S: TString);

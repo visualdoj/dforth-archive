@@ -3,20 +3,27 @@
 .PHONY: doc
 .PHONY: dll
 
-all:
+all: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
-	fpc -vb dforth.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\release\ -FU.\temp
+	fpc -vb dembro32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
 
 dll:
-	fpc dforth32.dpr -dFLAG_FPC -Sd
+	fpc dembro32lib.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
-release:
+release: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
-	fpc dforth.dpr -dFLAG_FPC -Sd -FE..\release\ -FU.\temp
-	upx dforth.exe
+	fpc dembro32.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -FE..\..\release\ -FU.\temp
+	fpc dembro32lib.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -O3 -FE..\..\release\ -FU.\temp
+	upx ..\..\release\dembro32.exe
+	upx ..\..\release\dembro32lib.dll
 
 doc:
 	m4 ..\m4\googlecode.m4 DForthMachine.pas4 > ..\..\wiki\DForthMachine
 	cd ..\..\wiki & dcut -m _DOC_CUT_ -s DForthMachine
+
+clean:
+	del temp\* /Q
+	del *.o /Q
+	del *.ppu /Q

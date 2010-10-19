@@ -36,6 +36,7 @@ const
   DE_OK                         = 0; // всё прошло без ошибок
   DE_ERR_UNKNOWN_VALTYPE        = 1; // некорректное значение параметра valtype
   DE_ERR_UNKNOWN_ACTION         = 2; // некорректное значение параметра action
+  DE_ERR_UNKNOWN_SOURCE_TYPE    = 3; // некорректное значение параметра typ
 
   DE_IGNORE                     = 0; // игнорировать
 
@@ -66,18 +67,24 @@ function deInterpret(machine: Pointer; typ: Integer; source: Pointer): Integer; 
 var
   S: PChar;
 begin
-  GetMem(S, SizeOf(Char) * (Length(code) + 1));
-  Move(code^, S^, SizeOf(Char) * (Length(code) + 1));
-  TForthMachine(machine).Interpret(S);
-  FreeMem(S);
+  Result := DE_OK;
+  if typ = DE_SOURCE_PCHAR then begin
+    GetMem(S, SizeOf(Char) * (Length(PChar(source)) + 1));
+    Move(source^, S^, SizeOf(Char) * (Length(PChar(source)) + 1));
+    TForthMachine(machine).Interpret(S);
+    FreeMem(S);
+  end else if typ = DE_SOURCE_FUNC then begin
+    // underconstruction
+  end else
+    Result := DE_ERR_UNKNOWN_SOURCE_TYPE;
 end;
 
-function deAddCommand(machine: Pointer; 
+procedure deAddCommand(machine: Pointer; 
                       name: PChar; 
                       CallBack: Pointer;
                       Data: Pointer;
                       Immediate: Boolean
-                     ): Pointer; stdcall;
+                     ); stdcall;
 begin
   //TForthMachine(machine).AddCommand(name, TCallback(Callback));
 end;
