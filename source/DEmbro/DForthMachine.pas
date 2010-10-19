@@ -382,6 +382,7 @@ TForthMachine = class
   function NextMnemonic: Cardinal;
   procedure Run(Index: Integer);
   procedure RunMnemonic(M: Cardinal);
+  procedure RunCommand(Command: PForthCommand);
   procedure RunError(const S: TString);
   procedure RunWarring(const S: TString);
   procedure IncHere(Count: Integer);
@@ -603,340 +604,340 @@ TForthMachine = class
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'all commands'}{$ENDIF}
           
-   procedure drop_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_ (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_ (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_ (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_ (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_ptr (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_ptr (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_ptr (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_ptr (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_int (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_int (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_int (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_int (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_int8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_int8 (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_int8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_int8 (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_int16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_int16 (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_int16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_int16 (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_int32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_int32 (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_int32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_int32 (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_int64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_int64 (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_int64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_int64 (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_uint (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_uint (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_uint (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_uint (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_uint8 (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_uint8 (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_uint8 (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_uint8 (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_uint16 (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_uint16 (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_uint16 (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_uint16 (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_uint32 (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_uint32 (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_uint32 (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_uint32 (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_uint64 (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_uint64 (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_uint64 (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_uint64 (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure drop_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure dup_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure nip_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure swap_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure over_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure tuck_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrot_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrot_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure lrotn_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure rrotn_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure pick_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure _comma_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure _dog_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure _exclamation_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure ptr_plus_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure _to_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure _compile_to_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure _run_to_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure _interpret_to_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure _value_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure _variable_embro (Machine: TForthMachine; Command: PForthCommand);
-   procedure RunValue_embro (Machine: TForthMachine; Command: PForthCommand)
+    procedure drop_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_embro (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_embro (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -962,7 +963,9 @@ TForthMachine = class
   procedure _minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure _dot (Machine: TForthMachine; Command: PForthCommand);
   procedure _dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure _ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure _ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure _conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure _conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -988,7 +991,9 @@ TForthMachine = class
   procedure int_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure int_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure int_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure int_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure int_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure int_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure int_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1014,7 +1019,9 @@ TForthMachine = class
   procedure int8_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure int8_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure int8_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure int8_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure int8_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1040,7 +1047,9 @@ TForthMachine = class
   procedure int16_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure int16_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure int16_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure int16_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure int16_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1066,7 +1075,9 @@ TForthMachine = class
   procedure int32_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure int32_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure int32_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure int32_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure int32_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1092,7 +1103,9 @@ TForthMachine = class
   procedure int64_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure int64_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure int64_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure int64_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure int64_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1118,7 +1131,9 @@ TForthMachine = class
   procedure uint_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure uint_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure uint_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1144,7 +1159,9 @@ TForthMachine = class
   procedure uint8_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure uint8_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure uint8_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint8_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint8_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1170,7 +1187,9 @@ TForthMachine = class
   procedure uint16_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure uint16_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure uint16_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint16_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint16_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1196,7 +1215,9 @@ TForthMachine = class
   procedure uint32_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure uint32_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure uint32_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint32_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint32_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1222,7 +1243,9 @@ TForthMachine = class
   procedure uint64_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure uint64_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure uint64_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint64_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint64_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1248,7 +1271,9 @@ TForthMachine = class
   procedure single_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure single_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure single_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure single_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure single_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure single_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1274,7 +1299,9 @@ TForthMachine = class
   procedure double_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure double_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure double_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure double_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure double_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure double_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure double_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1300,7 +1327,9 @@ TForthMachine = class
   procedure extended_minmax (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_dot (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure extended_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand)
+  procedure extended_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure extended_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure extended_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1758,6 +1787,7 @@ TForthMachine = class
   procedure _rp (Machine: TForthMachine; Command: PForthCommand);
   procedure _lp (Machine: TForthMachine; Command: PForthCommand);
   procedure version (Machine: TForthMachine; Command: PForthCommand);
+  procedure _local (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_char (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand);
@@ -3488,6 +3518,11 @@ begin
   C[M].Code(Self, C[M]);
 end;
 
+procedure TForthMachine.RunCommand(Command: PForthCommand);
+begin
+  Command^.Code(Self, Command);
+end;
+
 procedure TForthMachine.RunError(const S: TString);
 begin
   Error(' Runtime: ' + S);
@@ -3893,6 +3928,10 @@ begin
   DB := @D[0];
   DP := DB;
   DS := Length(D);
+  SetLength(L, 1024 * 1024);
+  LB := @L[0];
+  LP := LB;
+  LS := Length(L);
   S  := nil;
   SC := 0;
   FUserData := nil;
@@ -4735,6 +4774,8 @@ begin
      AddCommand('.', _dot);
      AddCommand('$', _dollar);
      AddCommand('+!', _ptr_plus_exclamation);
+     AddCommand('->str', _conv_to_str);
+     AddCommand('str->', _conv_from_str);
     
     
      AddCommand('int+', int_plus);
@@ -4759,6 +4800,8 @@ begin
      AddCommand('int.', int_dot);
      AddCommand('int$', int_dollar);
      AddCommand('int+!', int_ptr_plus_exclamation);
+     AddCommand('int->str', int_conv_to_str);
+     AddCommand('str->int', int_conv_from_str);
     
     
      AddCommand('int8+', int8_plus);
@@ -4783,6 +4826,8 @@ begin
      AddCommand('int8.', int8_dot);
      AddCommand('int8$', int8_dollar);
      AddCommand('int8+!', int8_ptr_plus_exclamation);
+     AddCommand('int8->str', int8_conv_to_str);
+     AddCommand('str->int8', int8_conv_from_str);
     
     
      AddCommand('int16+', int16_plus);
@@ -4807,6 +4852,8 @@ begin
      AddCommand('int16.', int16_dot);
      AddCommand('int16$', int16_dollar);
      AddCommand('int16+!', int16_ptr_plus_exclamation);
+     AddCommand('int16->str', int16_conv_to_str);
+     AddCommand('str->int16', int16_conv_from_str);
     
     
      AddCommand('int32+', int32_plus);
@@ -4831,6 +4878,8 @@ begin
      AddCommand('int32.', int32_dot);
      AddCommand('int32$', int32_dollar);
      AddCommand('int32+!', int32_ptr_plus_exclamation);
+     AddCommand('int32->str', int32_conv_to_str);
+     AddCommand('str->int32', int32_conv_from_str);
     
     
      AddCommand('int64+', int64_plus);
@@ -4855,6 +4904,8 @@ begin
      AddCommand('int64.', int64_dot);
      AddCommand('int64$', int64_dollar);
      AddCommand('int64+!', int64_ptr_plus_exclamation);
+     AddCommand('int64->str', int64_conv_to_str);
+     AddCommand('str->int64', int64_conv_from_str);
     
     
      AddCommand('uint+', uint_plus);
@@ -4879,6 +4930,8 @@ begin
      AddCommand('uint.', uint_dot);
      AddCommand('uint$', uint_dollar);
      AddCommand('uint+!', uint_ptr_plus_exclamation);
+     AddCommand('uint->str', uint_conv_to_str);
+     AddCommand('str->uint', uint_conv_from_str);
     
     
      AddCommand('uint8+', uint8_plus);
@@ -4903,6 +4956,8 @@ begin
      AddCommand('uint8.', uint8_dot);
      AddCommand('uint8$', uint8_dollar);
      AddCommand('uint8+!', uint8_ptr_plus_exclamation);
+     AddCommand('uint8->str', uint8_conv_to_str);
+     AddCommand('str->uint8', uint8_conv_from_str);
     
     
      AddCommand('uint16+', uint16_plus);
@@ -4927,6 +4982,8 @@ begin
      AddCommand('uint16.', uint16_dot);
      AddCommand('uint16$', uint16_dollar);
      AddCommand('uint16+!', uint16_ptr_plus_exclamation);
+     AddCommand('uint16->str', uint16_conv_to_str);
+     AddCommand('str->uint16', uint16_conv_from_str);
     
     
      AddCommand('uint32+', uint32_plus);
@@ -4951,6 +5008,8 @@ begin
      AddCommand('uint32.', uint32_dot);
      AddCommand('uint32$', uint32_dollar);
      AddCommand('uint32+!', uint32_ptr_plus_exclamation);
+     AddCommand('uint32->str', uint32_conv_to_str);
+     AddCommand('str->uint32', uint32_conv_from_str);
     
     
      AddCommand('uint64+', uint64_plus);
@@ -4975,6 +5034,8 @@ begin
      AddCommand('uint64.', uint64_dot);
      AddCommand('uint64$', uint64_dollar);
      AddCommand('uint64+!', uint64_ptr_plus_exclamation);
+     AddCommand('uint64->str', uint64_conv_to_str);
+     AddCommand('str->uint64', uint64_conv_from_str);
     
     
      AddCommand('single+', single_plus);
@@ -4999,6 +5060,8 @@ begin
      AddCommand('single.', single_dot);
      AddCommand('single$', single_dollar);
      AddCommand('single+!', single_ptr_plus_exclamation);
+     AddCommand('single->str', single_conv_to_str);
+     AddCommand('str->single', single_conv_from_str);
     
     
      AddCommand('double+', double_plus);
@@ -5023,6 +5086,8 @@ begin
      AddCommand('double.', double_dot);
      AddCommand('double$', double_dollar);
      AddCommand('double+!', double_ptr_plus_exclamation);
+     AddCommand('double->str', double_conv_to_str);
+     AddCommand('str->double', double_conv_from_str);
     
     
      AddCommand('extended+', extended_plus);
@@ -5047,6 +5112,8 @@ begin
      AddCommand('extended.', extended_dot);
      AddCommand('extended$', extended_dollar);
      AddCommand('extended+!', extended_ptr_plus_exclamation);
+     AddCommand('extended->str', extended_conv_to_str);
+     AddCommand('str->extended', extended_conv_from_str);
     
     AddCommand('abs', _abs);
      AddCommand('neg', _neg);
@@ -5344,6 +5411,7 @@ begin
      AddCommand('rp', _rp);
      AddCommand('lp', _lp);
      AddCommand('sys-version', version);
+     AddCommand('local', _local);
      AddCommand('source-next-char', source_next_char);
      AddCommand('source-next-name', source_next_name);
      AddCommand('source-next-name-passive', source_next_name_passive);
@@ -7410,6 +7478,24 @@ end;
       procedure TForthMachine._dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt)); Write(TInt(WP^), ' '); end;
       procedure TForthMachine._dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt)); Inc(WP, SizeOf(TInt)); end;
       procedure TForthMachine._ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt)); end;
+      procedure TForthMachine._conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)), S);
+        Dec(WP, SizeOf(TInt));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine._conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TInt(WP^), Code);
+        Inc(WP, SizeOf(TInt));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7461,6 +7547,24 @@ end;
       procedure TForthMachine.int_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt)); Write(TInt(WP^), ' '); end;
       procedure TForthMachine.int_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt)); Inc(WP, SizeOf(TInt)); end;
       procedure TForthMachine.int_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt)); end;
+      procedure TForthMachine.int_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)), S);
+        Dec(WP, SizeOf(TInt));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.int_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TInt(WP^), Code);
+        Inc(WP, SizeOf(TInt));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7512,6 +7616,24 @@ end;
       procedure TForthMachine.int8_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt8)); Write(TInt8(WP^), ' '); end;
       procedure TForthMachine.int8_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt8; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt8)); Inc(WP, SizeOf(TInt8)); end;
       procedure TForthMachine.int8_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt8((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt8)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt8)); end;
+      procedure TForthMachine.int8_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)), S);
+        Dec(WP, SizeOf(TInt8));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.int8_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TInt8(WP^), Code);
+        Inc(WP, SizeOf(TInt8));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7563,6 +7685,24 @@ end;
       procedure TForthMachine.int16_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt16)); Write(TInt16(WP^), ' '); end;
       procedure TForthMachine.int16_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt16; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt16)); Inc(WP, SizeOf(TInt16)); end;
       procedure TForthMachine.int16_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt16((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt16)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt16)); end;
+      procedure TForthMachine.int16_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)), S);
+        Dec(WP, SizeOf(TInt16));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.int16_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TInt16(WP^), Code);
+        Inc(WP, SizeOf(TInt16));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7614,6 +7754,24 @@ end;
       procedure TForthMachine.int32_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt32)); Write(TInt32(WP^), ' '); end;
       procedure TForthMachine.int32_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt32; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt32)); Inc(WP, SizeOf(TInt32)); end;
       procedure TForthMachine.int32_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt32((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt32)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt32)); end;
+      procedure TForthMachine.int32_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)), S);
+        Dec(WP, SizeOf(TInt32));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.int32_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TInt32(WP^), Code);
+        Inc(WP, SizeOf(TInt32));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7665,6 +7823,24 @@ end;
       procedure TForthMachine.int64_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TInt64)); Write(TInt64(WP^), ' '); end;
       procedure TForthMachine.int64_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt64; begin Read(Temp); Move(Temp, WP^, SizeOf(TInt64)); Inc(WP, SizeOf(TInt64)); end;
       procedure TForthMachine.int64_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt64((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt64)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt64)); end;
+      procedure TForthMachine.int64_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)), S);
+        Dec(WP, SizeOf(TInt64));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.int64_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TInt64(WP^), Code);
+        Inc(WP, SizeOf(TInt64));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7716,6 +7892,24 @@ end;
       procedure TForthMachine.uint_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TUInt)); Write(TUInt(WP^), ' '); end;
       procedure TForthMachine.uint_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt; begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt)); Inc(WP, SizeOf(TUInt)); end;
       procedure TForthMachine.uint_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt)); end;
+      procedure TForthMachine.uint_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)), S);
+        Dec(WP, SizeOf(TUInt));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.uint_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TUInt(WP^), Code);
+        Inc(WP, SizeOf(TUInt));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7767,6 +7961,24 @@ end;
       procedure TForthMachine.uint8_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TUInt8)); Write(TUInt8(WP^), ' '); end;
       procedure TForthMachine.uint8_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt8; begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt8)); Inc(WP, SizeOf(TUInt8)); end;
       procedure TForthMachine.uint8_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt8((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt8)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt8)); end;
+      procedure TForthMachine.uint8_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)), S);
+        Dec(WP, SizeOf(TUInt8));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.uint8_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TUInt8(WP^), Code);
+        Inc(WP, SizeOf(TUInt8));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7818,6 +8030,24 @@ end;
       procedure TForthMachine.uint16_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TUInt16)); Write(TUInt16(WP^), ' '); end;
       procedure TForthMachine.uint16_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt16; begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt16)); Inc(WP, SizeOf(TUInt16)); end;
       procedure TForthMachine.uint16_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt16((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt16)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt16)); end;
+      procedure TForthMachine.uint16_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)), S);
+        Dec(WP, SizeOf(TUInt16));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.uint16_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TUInt16(WP^), Code);
+        Inc(WP, SizeOf(TUInt16));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7869,6 +8099,24 @@ end;
       procedure TForthMachine.uint32_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TUInt32)); Write(TUInt32(WP^), ' '); end;
       procedure TForthMachine.uint32_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt32; begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt32)); Inc(WP, SizeOf(TUInt32)); end;
       procedure TForthMachine.uint32_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt32((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt32)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt32)); end;
+      procedure TForthMachine.uint32_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)), S);
+        Dec(WP, SizeOf(TUInt32));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.uint32_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TUInt32(WP^), Code);
+        Inc(WP, SizeOf(TUInt32));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7920,6 +8168,24 @@ end;
       procedure TForthMachine.uint64_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(TUInt64)); Write(TUInt64(WP^), ' '); end;
       procedure TForthMachine.uint64_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt64; begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt64)); Inc(WP, SizeOf(TUInt64)); end;
       procedure TForthMachine.uint64_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt64((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt64)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt64)); end;
+      procedure TForthMachine.uint64_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)), S);
+        Dec(WP, SizeOf(TUInt64));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.uint64_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), TUInt64(WP^), Code);
+        Inc(WP, SizeOf(TUInt64));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -7971,6 +8237,24 @@ end;
       procedure TForthMachine.single_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(Single)); Write(Single(WP^), ' '); end;
       procedure TForthMachine.single_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Single; begin Read(Temp); Move(Temp, WP^, SizeOf(Single)); Inc(WP, SizeOf(Single)); end;
       procedure TForthMachine.single_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin Single(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := Single(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + Single((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(Single)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Single)); end;
+      procedure TForthMachine.single_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)), S);
+        Dec(WP, SizeOf(Single));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.single_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), Single(WP^), Code);
+        Inc(WP, SizeOf(Single));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -8022,6 +8306,24 @@ end;
       procedure TForthMachine.double_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(Double)); Write(Double(WP^), ' '); end;
       procedure TForthMachine.double_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Double; begin Read(Temp); Move(Temp, WP^, SizeOf(Double)); Inc(WP, SizeOf(Double)); end;
       procedure TForthMachine.double_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin Double(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := Double(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + Double((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(Double)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Double)); end;
+      procedure TForthMachine.double_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)), S);
+        Dec(WP, SizeOf(Double));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.double_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), Double(WP^), Code);
+        Inc(WP, SizeOf(Double));
+        FStringCommands.DelRef(S);
+      end;
     
    
     
@@ -8073,6 +8375,24 @@ end;
       procedure TForthMachine.extended_dot (Machine: TForthMachine; Command: PForthCommand);    begin Dec(WP, SizeOf(Extended)); Write(Extended(WP^), ' '); end;
       procedure TForthMachine.extended_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Extended; begin Read(Temp); Move(Temp, WP^, SizeOf(Extended)); Inc(WP, SizeOf(Extended)); end;
       procedure TForthMachine.extended_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin Extended(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := Extended(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + Extended((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(Extended)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Extended)); end;
+      procedure TForthMachine.extended_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        Str(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)), S);
+        Dec(WP, SizeOf(Extended));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.extended_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), Extended(WP^), Code);
+        Inc(WP, SizeOf(Extended));
+        FStringCommands.DelRef(S);
+      end;
     
    
     procedure TForthMachine._abs (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := Abs(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); end;
@@ -8653,6 +8973,7 @@ end;
       procedure TForthMachine._rp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._lp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.version (Machine: TForthMachine; Command: PForthCommand); begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt)); end;
+      procedure TForthMachine._local (Machine: TForthMachine; Command: PForthCommand); begin RunCommand(PForthCommand((@E[Integer(Command^.Data)])^)); end;
       procedure TForthMachine.source_next_char (Machine: TForthMachine; Command: PForthCommand); begin WUU8(Byte(NextChar)) end;
       procedure TForthMachine.source_next_name (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, NextName) end;
       procedure TForthMachine.source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin if FState <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 

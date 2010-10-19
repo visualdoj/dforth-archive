@@ -26,28 +26,28 @@ define(~PSize|, ~(SizeOf(Pointer))|)
 define(~genname|, ~ifelse($1, ~|, $2, len($1), ~1|, $2, $1-$2)|)
 define(~typed_commands|, 
   ~
-   procedure drop_$1 cmdhdr;
-   procedure dup_$1 cmdhdr;
-   procedure nip_$1 cmdhdr;
-   procedure swap_$1 cmdhdr;
-   procedure over_$1 cmdhdr;
-   procedure tuck_$1 cmdhdr;
-   procedure lrot_$1 cmdhdr;
-   procedure rrot_$1 cmdhdr;
-   procedure lrotn_$1 cmdhdr;
-   procedure rrotn_$1 cmdhdr;
-   procedure pick_$1 cmdhdr;
-   procedure _comma_$1 cmdhdr;
-   procedure _dog_$1 cmdhdr;
-   procedure _exclamation_$1 cmdhdr;
-   procedure ptr_plus_$1 cmdhdr;
-   procedure _to_$1 cmdhdr;
-   procedure _compile_to_$1 cmdhdr;
-   procedure _run_to_$1 cmdhdr;
-   procedure _interpret_to_$1 cmdhdr;
-   procedure _value_$1 cmdhdr;
-   procedure _variable_$1 cmdhdr;
-   procedure RunValue_$1 cmdhdr
+    procedure drop_$1 cmdhdr;
+    procedure dup_$1 cmdhdr;
+    procedure nip_$1 cmdhdr;
+    procedure swap_$1 cmdhdr;
+    procedure over_$1 cmdhdr;
+    procedure tuck_$1 cmdhdr;
+    procedure lrot_$1 cmdhdr;
+    procedure rrot_$1 cmdhdr;
+    procedure lrotn_$1 cmdhdr;
+    procedure rrotn_$1 cmdhdr;
+    procedure pick_$1 cmdhdr;
+    procedure _comma_$1 cmdhdr;
+    procedure _dog_$1 cmdhdr;
+    procedure _exclamation_$1 cmdhdr;
+    procedure ptr_plus_$1 cmdhdr;
+    procedure _to_$1 cmdhdr;
+    procedure _compile_to_$1 cmdhdr;
+    procedure _run_to_$1 cmdhdr;
+    procedure _interpret_to_$1 cmdhdr;
+    procedure _value_$1 cmdhdr;
+    procedure _variable_$1 cmdhdr;
+    procedure RunValue_$1 cmdhdr
   define(~all_implement|, all_implement 
     ~
      procedure TForthMachine.drop_$1 cmdhdr; begin Dec(WP, $2) end;
@@ -360,7 +360,9 @@ define(~arithmetic_commands|,
   procedure $1_minmax cmdhdr;
   procedure $1_dot cmdhdr;
   procedure $1_dollar cmdhdr;
-  procedure $1_ptr_plus_exclamation cmdhdr
+  procedure $1_ptr_plus_exclamation cmdhdr;
+  procedure $1_conv_to_str cmdhdr;
+  procedure $1_conv_from_str cmdhdr
   define(~all_implement|, all_implement 
     ~
       procedure TForthMachine.$1_plus  cmdhdr; begin $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) + $2(WVar(-SizeOf($2))); 
@@ -411,6 +413,24 @@ define(~arithmetic_commands|,
       procedure TForthMachine.$1_dot cmdhdr;    begin Dec(WP, SizeOf($2)); Write($2(WP^), ' '); end;
       procedure TForthMachine.$1_dollar cmdhdr; var Temp: $2; begin Read(Temp); Move(Temp, WP^, SizeOf($2)); Inc(WP, SizeOf($2)); end;
       procedure TForthMachine.$1_ptr_plus_exclamation cmdhdr; begin $2(Pointer(WVar(-SizeOf(Pointer)))^) := $2(Pointer(WVar(-SizeOf(Pointer)))^) + $2(WVar(-SizeOf(Pointer)-SizeOf($2))); Dec(WP, SizeOf(Pointer) + SizeOf($2)); end;
+      procedure TForthMachine.$1_conv_to_str cmdhdr;
+      var
+        S: TString;
+      begin
+        Str($2(WVar(-SizeOf($2))), S);
+        Dec(WP, SizeOf($2));
+        FStringCommands.str_push(Machine, Command, S);
+      end;
+      procedure TForthMachine.$1_conv_from_str cmdhdr;
+      var
+        S: TStr;
+        Code: Word;
+      begin
+        S := FStringCommands.str_pop(Machine, Command);
+        Val(PChar(@(TStrRec(S^).Sym[0])), $2(WP^), Code);
+        Inc(WP, SizeOf($2));
+        FStringCommands.DelRef(S);
+      end;
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -437,6 +457,8 @@ define(~arithmetic_commands|,
      AddCommand('$1.', $1_dot);
      AddCommand('$1$', $1_dollar);
      AddCommand('$1+!', $1_ptr_plus_exclamation);
+     AddCommand('$1->str', $1_conv_to_str);
+     AddCommand('str->$1', $1_conv_from_str);
     |)
 |)
 define(~signed_arithmetic_commands|, 
@@ -593,6 +615,7 @@ define(~misc_commands|,
   procedure _rp cmdhdr;
   procedure _lp cmdhdr;
   procedure version cmdhdr;
+  procedure _local cmdhdr;
   procedure source_next_char cmdhdr;
   procedure source_next_name cmdhdr;
   procedure source_next_name_passive cmdhdr;
@@ -615,6 +638,7 @@ define(~misc_commands|,
       procedure TForthMachine._rp cmdhdr; begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._lp cmdhdr; begin Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.version cmdhdr; begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt)); end;
+      procedure TForthMachine._local cmdhdr; begin RunCommand(PForthCommand((@E[Integer(Command^.Data)])^)); end;
       procedure TForthMachine.source_next_char cmdhdr; begin WUU8(Byte(NextChar)) end;
       procedure TForthMachine.source_next_name cmdhdr; begin FStringCommands.str_push(Machine, Command, NextName) end;
       procedure TForthMachine.source_next_name_passive cmdhdr; begin if FState <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
@@ -641,6 +665,7 @@ define(~misc_commands|,
      AddCommand('rp', _rp);
      AddCommand('lp', _lp);
      AddCommand('sys-version', version);
+     AddCommand('local', _local);
      AddCommand('source-next-char', source_next_char);
      AddCommand('source-next-name', source_next_name);
      AddCommand('source-next-name-passive', source_next_name_passive);
@@ -1089,6 +1114,7 @@ TForthMachine = class
   function NextMnemonic: Cardinal;
   procedure Run(Index: Integer);
   procedure RunMnemonic(M: Cardinal);
+  procedure RunCommand(Command: PForthCommand);
   procedure RunError(const S: TString);
   procedure RunWarring(const S: TString);
   procedure IncHere(Count: Integer);
@@ -3022,6 +3048,11 @@ begin
   C[M].Code(Self, C[M]);
 end;
 
+procedure TForthMachine.RunCommand(Command: PForthCommand);
+begin
+  Command^.Code(Self, Command);
+end;
+
 procedure TForthMachine.RunError(const S: TString);
 begin
   Error(' Runtime: ' + S);
@@ -3427,6 +3458,10 @@ begin
   DB := @D[0];
   DP := DB;
   DS := Length(D);
+  SetLength(L, 1024 * 1024);
+  LB := @L[0];
+  LP := LB;
+  LS := Length(L);
   S  := nil;
   SC := 0;
   FUserData := nil;
