@@ -96,12 +96,15 @@ type
   PType = ^TType;
 
   TForthCommand = record 
+          Code: TCode;
+          Data: Pointer;
+          Flags: Byte;
           Name: PChar; 
+          Param: Pointer;
+          {
           Immediate: Boolean;
           Param: Pointer;
           EmbroParam: Cardinal;
-          Code: TCode;
-          Data: Pointer;
           Proc: TProcOfObj; 
           Callback: TCallback;
           Runtime: record
@@ -111,6 +114,7 @@ type
                      Proc: TForthCommandProc;
                      Callback: TCallback;
                    end;
+          }
         end;
 {$IFNDEF FLAG_FPC}{$REGION 'TReturnStack'}{$ENDIF}
 TReturnStack = class(TForthStack)
@@ -194,6 +198,9 @@ TControlCommands = class
   procedure call(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_def(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_enddef(Machine: TForthMachine; Command: PForthCommand);
+  procedure compile_scattered_def(Machine: TForthMachine; Command: PForthCommand);
+  procedure compile_scattered_enddef(Machine: TForthMachine; Command: PForthCommand); 
+  procedure scattered_dots(Machine: TForthMachine; Command: PForthCommand); 
   procedure immediate(Machine: TForthMachine; Command: PForthCommand);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -2011,7 +2018,20 @@ TUInt64Arithmetic = class(SUInt64Arithmetic)
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
+function IsImmediate(Command: PForthCommand): Boolean;
+procedure SetImmediate(Command: PForthCommand; I: Boolean);
+
 implementation
+
+function IsImmediate(Command: PForthCommand): Boolean;
+begin
+  Result := (Command^.Flags and 1) > 0;
+end;
+
+procedure SetImmediate(Command: PForthCommand; I: Boolean);
+begin
+  Command^.Flags := Command^.Flags or Ord(I);
+end;
 
 {$IFNDEF FLAG_FPC}{$REGION 'TReturnStack'}{$ENDIF}
 procedure TReturnStack.ptrpush(P: Pointer);
@@ -2366,7 +2386,7 @@ begin
     Machine.RUP(Machine.RB);
     Machine.RB := Machine.RP;
   end;
-  Machine.EC := Command^.EmbroParam;
+  Machine.EC := Integer(Command^.Data);
   Machine.FState := FS_RUN;
 end;
 
@@ -2383,7 +2403,7 @@ begin
   Name := Machine.NextName;
   NewCommand := Machine.ReserveName(Name);
   NewCommand^.Code := call;
-  NewCommand^.EmbroParam := FMachine.EL;
+  Integer(NewCommand^.Data) := FMachine.EL;
   Machine.FState := FS_COMPILE;
   //Writeln('RESERVER NAME ' + NewCommand^.Name);
 end;
@@ -2395,9 +2415,48 @@ begin
   //Writeln('LAST COMMAND ', High(Machine.C), ' ' + Machine.C[High(Machine.C)].Name);
 end;
 
+procedure TControlCommands.compile_scattered_def(Machine: TForthMachine; Command: PForthCommand);
+var
+  Name: TString;
+  C: PForthCommand;
+begin
+  Machine.FState := FS_COMPILE;
+  Name := Machine.NextName;
+  C := Machine.FindCommand(Name);
+  if C = nil then begin
+    Machine.LogError('Command not found: ' + Name);
+    Exit;
+  end;
+  Machine.WUU(Cardinal((@Machine.E[Cardinal(C^.Param)])^));
+  Writeln('param ', Cardinal(C^.Param));
+  Writeln('... end ', Cardinal((@Machine.E[Cardinal(C^.Param)])^));
+  Cardinal((@Machine.E[Cardinal(C^.Param)])^) := FMachine.EL;
+  Machine.WUP(C);
+end;
+
+procedure TControlCommands.compile_scattered_enddef(Machine: TForthMachine; Command: PForthCommand);
+var
+  C: PForthCommand;
+  P: Cardinal;
+begin
+  C := Machine.WOP;
+  P := Cardinal(C^.Param);
+  Machine.EWO('branch');
+  Cardinal(C^.Param) := Machine.EL;
+  Machine.EWU(Machine.WOU);
+  Machine.FState := FS_INTERPRET;
+end;
+
+procedure TControlCommands.scattered_dots(Machine: TForthMachine; Command: PForthCommand); 
+begin
+  Machine.EWO('branch');
+  Cardinal(Machine.C[Machine.FLastMnemonic]^.Param) := Machine.EL;
+  Machine.EWU(Machine.EL + SizeOf(TUInt));
+end;
+
 procedure TControlCommands.immediate(Machine: TForthMachine; Command: PForthCommand);
 begin
-  Machine.C[Machine.FLastMnemonic].Immediate := True;
+  SetImmediate(Machine.C[Machine.FLastMnemonic], True);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TEmbroCommands'}{$ENDIF}
@@ -2427,7 +2486,6 @@ begin
   Name := Machine.NextName;
   NewCommand := Machine.ReserveName(Name);
   NewCommand^.Code := putdataptr;
-  NewCommand^.EmbroParam := TUInt(Machine.DP);
   NewCommand^.Data := Machine.DP;
 end;
 
@@ -2435,7 +2493,7 @@ procedure TDataCommands.putdataptr(Machine: TForthMachine; Command: PForthComman
 var
   P: Pointer;
 begin
-  P := Pointer(Command^.EmbroParam);
+  P := Command^.Data;
   Machine.WUP(P);
 end;
 
@@ -2958,7 +3016,6 @@ begin
   if Conv = CONV_STDCALL then 
         begin
           C^.Code := invoke_stdcall;
-          C^.EmbroParam := TUInt(Machine.DP);
           C^.Data := Machine.DP;
           P := @Test;
           Move(P, Machine.DP^, SizeOf(P));
@@ -3009,7 +3066,6 @@ begin
   else if Conv = CONV_CDECL then 
         begin
           C^.Code := invoke_cdecl;
-          C^.EmbroParam := TUInt(Machine.DP);
           C^.Data := Machine.DP;
           P := nil;
           Move(P, Machine.DP^, SizeOf(P));
@@ -3432,7 +3488,7 @@ begin
   C[High(C)].Name := StrAlloc(StrLen(Name)+1);
   StrCopy(C[High(C)].Name, Name);
   C[High(C)].Code := Code;
-  C[High(C)].Immediate := Immediate;
+  SetImmediate(C[High(C)], Immediate);
 end;
 
 procedure TForthMachine.CompileSource(Source: PChar);
@@ -3550,7 +3606,7 @@ begin
   FTypes[High(FTypes)].Size := Size;
 
   Command := ReserveName(Name);
-  Command^.Immediate := True;
+  SetImmediate(Command, True);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'E'}{$ENDIF}
@@ -4135,6 +4191,9 @@ begin
 {$IFNDEF FLAG_FPC}{$REGION 'control commands'}{$ENDIF}
   AddCommand(':', FControlCommands.compile_def, True);
   AddCommand(';', FControlCommands.compile_enddef, True);
+  AddCommand('...', FControlCommands.scattered_dots, True);
+  AddCommand('..:', FControlCommands.compile_scattered_def, True);
+  AddCommand(';..', FControlCommands.compile_scattered_enddef, True);
   AddCommand('branch', FControlCommands.branch);
   AddCommand('?branch', FControlCommands._ask_branch);
   AddCommand('>mark', FControlCommands._gt_mark);
@@ -5505,7 +5564,7 @@ var
 begin
   for I := 0 to High(C) do
     if StrComp(C[I].Name, W) = 0 then begin
-      if C[I].Immediate then
+      if IsImmediate(C[I]) then
         C[I].Code(Self, C[I])
       else
         EWO(I);
@@ -5805,12 +5864,12 @@ begin
     C[High(C)].Name := StrAlloc(Length(Name)+1);
     StrCopy(C[High(C)].Name, PChar(Name));
   end;
-  C[High(C)].Immediate := False;
+  SetImmediate(C[High(C)], False);
   C[High(C)].Code := FControlCommands.call;
-  C[High(C)].Proc := nil;
-  C[High(C)].Compile.Proc := nil;
-  C[High(C)].Callback := nil;
-  C[High(C)].Runtime.Proc := FControlCommands.call;
+  //C[High(C)].Proc := nil;
+  //C[High(C)].Compile.Proc := nil;
+  //C[High(C)].Callback := nil;
+  //C[High(C)].Runtime.Proc := FControlCommands.call;
   FLastMnemonic := High(C);
   Result := C[High(C)];
 end;
@@ -6597,7 +6656,7 @@ end;
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
      procedure TForthMachine._value_ (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_ (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
+     procedure TForthMachine._variable_ (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_ (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     
    
@@ -6666,7 +6725,7 @@ end;
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
      procedure TForthMachine._value_ptr (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_ptr; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_ptr (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
+     procedure TForthMachine._variable_ptr (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_ptr (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     
    
@@ -6735,7 +6794,7 @@ end;
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
      procedure TForthMachine._value_int (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_int (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
+     procedure TForthMachine._variable_int (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_int (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     
    
@@ -6804,7 +6863,7 @@ end;
                Move((Pointer(TUInt(WP) + (-1))^), C.Data^, 1); Dec(WP, 1);
              end;
      procedure TForthMachine._value_int8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int8; Move((Pointer(TUInt(WP) + (-1))^), DP^, 1); Dec(WP, 1); Inc(DP, 1); end; end;
-     procedure TForthMachine._variable_int8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 1); Move(WP^, DP^, 1); Inc(DP, 1); end; end;
+     procedure TForthMachine._variable_int8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 1); Move(WP^, DP^, 1); Inc(DP, 1); end; end;
      procedure TForthMachine.RunValue_int8 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 1); Inc(WP, 1); end;
     
    
@@ -6873,7 +6932,7 @@ end;
                Move((Pointer(TUInt(WP) + (-2))^), C.Data^, 2); Dec(WP, 2);
              end;
      procedure TForthMachine._value_int16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int16; Move((Pointer(TUInt(WP) + (-2))^), DP^, 2); Dec(WP, 2); Inc(DP, 2); end; end;
-     procedure TForthMachine._variable_int16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 2); Move(WP^, DP^, 2); Inc(DP, 2); end; end;
+     procedure TForthMachine._variable_int16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 2); Move(WP^, DP^, 2); Inc(DP, 2); end; end;
      procedure TForthMachine.RunValue_int16 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 2); Inc(WP, 2); end;
     
    
@@ -6942,7 +7001,7 @@ end;
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
      procedure TForthMachine._value_int32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int32; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_int32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
+     procedure TForthMachine._variable_int32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_int32 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     
    
@@ -7011,7 +7070,7 @@ end;
                Move((Pointer(TUInt(WP) + (-8))^), C.Data^, 8); Dec(WP, 8);
              end;
      procedure TForthMachine._value_int64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int64; Move((Pointer(TUInt(WP) + (-8))^), DP^, 8); Dec(WP, 8); Inc(DP, 8); end; end;
-     procedure TForthMachine._variable_int64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 8); Move(WP^, DP^, 8); Inc(DP, 8); end; end;
+     procedure TForthMachine._variable_int64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 8); Move(WP^, DP^, 8); Inc(DP, 8); end; end;
      procedure TForthMachine.RunValue_int64 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 8); Inc(WP, 8); end;
     
    
@@ -7080,7 +7139,7 @@ end;
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
      procedure TForthMachine._value_uint (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_uint (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
+     procedure TForthMachine._variable_uint (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_uint (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     
    
@@ -7149,7 +7208,7 @@ end;
                Move((Pointer(TUInt(WP) + (-1))^), C.Data^, 1); Dec(WP, 1);
              end;
      procedure TForthMachine._value_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint8; Move((Pointer(TUInt(WP) + (-1))^), DP^, 1); Dec(WP, 1); Inc(DP, 1); end; end;
-     procedure TForthMachine._variable_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 1); Move(WP^, DP^, 1); Inc(DP, 1); end; end;
+     procedure TForthMachine._variable_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 1); Move(WP^, DP^, 1); Inc(DP, 1); end; end;
      procedure TForthMachine.RunValue_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 1); Inc(WP, 1); end;
     
    
@@ -7218,7 +7277,7 @@ end;
                Move((Pointer(TUInt(WP) + (-2))^), C.Data^, 2); Dec(WP, 2);
              end;
      procedure TForthMachine._value_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint16; Move((Pointer(TUInt(WP) + (-2))^), DP^, 2); Dec(WP, 2); Inc(DP, 2); end; end;
-     procedure TForthMachine._variable_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 2); Move(WP^, DP^, 2); Inc(DP, 2); end; end;
+     procedure TForthMachine._variable_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 2); Move(WP^, DP^, 2); Inc(DP, 2); end; end;
      procedure TForthMachine.RunValue_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 2); Inc(WP, 2); end;
     
    
@@ -7287,7 +7346,7 @@ end;
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
      procedure TForthMachine._value_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint32; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
+     procedure TForthMachine._variable_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     
    
@@ -7356,7 +7415,7 @@ end;
                Move((Pointer(TUInt(WP) + (-8))^), C.Data^, 8); Dec(WP, 8);
              end;
      procedure TForthMachine._value_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint64; Move((Pointer(TUInt(WP) + (-8))^), DP^, 8); Dec(WP, 8); Inc(DP, 8); end; end;
-     procedure TForthMachine._variable_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 8); Move(WP^, DP^, 8); Inc(DP, 8); end; end;
+     procedure TForthMachine._variable_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 8); Move(WP^, DP^, 8); Inc(DP, 8); end; end;
      procedure TForthMachine.RunValue_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 8); Inc(WP, 8); end;
     
    
@@ -7425,7 +7484,7 @@ end;
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
      procedure TForthMachine._value_embro (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_embro; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_embro (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; EmbroParam := TUInt(DP); Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
+     procedure TForthMachine._variable_embro (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_embro (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     
    
