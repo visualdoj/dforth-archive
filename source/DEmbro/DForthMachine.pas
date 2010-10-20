@@ -2428,8 +2428,6 @@ begin
     Exit;
   end;
   Machine.WUU(Cardinal((@Machine.E[Cardinal(C^.Param)])^));
-  Writeln('param ', Cardinal(C^.Param));
-  Writeln('... end ', Cardinal((@Machine.E[Cardinal(C^.Param)])^));
   Cardinal((@Machine.E[Cardinal(C^.Param)])^) := FMachine.EL;
   Machine.WUP(C);
 end;
@@ -4189,10 +4187,10 @@ begin
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 *)
 {$IFNDEF FLAG_FPC}{$REGION 'control commands'}{$ENDIF}
-  AddCommand(':', FControlCommands.compile_def, True);
+  AddCommand(':', FControlCommands.compile_def);
   AddCommand(';', FControlCommands.compile_enddef, True);
   AddCommand('...', FControlCommands.scattered_dots, True);
-  AddCommand('..:', FControlCommands.compile_scattered_def, True);
+  AddCommand('..:', FControlCommands.compile_scattered_def);
   AddCommand(';..', FControlCommands.compile_scattered_enddef, True);
   AddCommand('branch', FControlCommands.branch);
   AddCommand('?branch', FControlCommands._ask_branch);
