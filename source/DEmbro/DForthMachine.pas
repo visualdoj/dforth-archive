@@ -1794,6 +1794,7 @@ TForthMachine = class
   procedure _rp (Machine: TForthMachine; Command: PForthCommand);
   procedure _lp (Machine: TForthMachine; Command: PForthCommand);
   procedure version (Machine: TForthMachine; Command: PForthCommand);
+  procedure _time (Machine: TForthMachine; Command: PForthCommand);
   procedure _local (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_char (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name (Machine: TForthMachine; Command: PForthCommand);
@@ -5468,6 +5469,7 @@ begin
      AddCommand('rp', _rp);
      AddCommand('lp', _lp);
      AddCommand('sys-version', version);
+     AddCommand('time', _time);
      AddCommand('local', _local);
      AddCommand('source-next-char', source_next_char);
      AddCommand('source-next-name', source_next_name);
@@ -9030,6 +9032,7 @@ end;
       procedure TForthMachine._rp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._lp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.version (Machine: TForthMachine; Command: PForthCommand); begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt)); end;
+      procedure TForthMachine._time (Machine: TForthMachine; Command: PForthCommand); begin Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt)); end;
       procedure TForthMachine._local (Machine: TForthMachine; Command: PForthCommand); begin RunCommand(PForthCommand((@E[Integer(Command^.Data)])^)); end;
       procedure TForthMachine.source_next_char (Machine: TForthMachine; Command: PForthCommand); begin WUU8(Byte(NextChar)) end;
       procedure TForthMachine.source_next_name (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, NextName) end;
