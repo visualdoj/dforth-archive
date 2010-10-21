@@ -1807,10 +1807,13 @@ TForthMachine = class
   procedure compile_start (Machine: TForthMachine; Command: PForthCommand);
   procedure run_start (Machine: TForthMachine; Command: PForthCommand);
   //procedure allot (Machine: TForthMachine; Command: PForthCommand)
+  procedure opcode_to_command (Machine: TForthMachine; Command: PForthCommand);
+  procedure literal (Machine: TForthMachine; Command: PForthCommand);
   procedure sq_ap_sq (Machine: TForthMachine; Command: PForthCommand);
   procedure interpret_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand);
   procedure compile_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand);
   procedure run_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand);
+  procedure _tick (Machine: TForthMachine; Command: PForthCommand);
   procedure execute (Machine: TForthMachine; Command: PForthCommand);
   
   
@@ -1835,6 +1838,8 @@ TForthMachine = class
   procedure file_r (Machine: TForthMachine; Command: PForthCommand);
   procedure file_write (Machine: TForthMachine; Command: PForthCommand);
   procedure file_read (Machine: TForthMachine; Command: PForthCommand);
+  procedure file_write_from_w (Machine: TForthMachine; Command: PForthCommand);
+  procedure file_read_to_w (Machine: TForthMachine; Command: PForthCommand);
   procedure file_size (Machine: TForthMachine; Command: PForthCommand);
   
   
@@ -1870,6 +1875,8 @@ TForthMachine = class
   procedure PopEmbro(P: Pointer; Size: Integer);
   procedure WriteMnemonic(M: Cardinal);
   procedure WriteMnemonicByName(const Name: TString);
+  function GetOpcodeByName(const Name: TString): TMnemonic;
+  function GetCommandByOpcode(Opcode: Integer): PForthCommand;
   procedure CancelMnemonic;
   function ReserveName(const Name: TString): PForthCommand;
   
@@ -4044,6 +4051,10 @@ begin
   UInt32Arithmetic := TUInt32Arithmetic.Create(Self);
   UInt64Arithmetic := TUInt64Arithmetic.Create(Self);
   FStringCommands := TStringCommands.Create(Self);
+
+  // it must have zero opcode
+  AddCommand('exit', FControlCommands._exit);
+
   AddCommand('(', CompileComment, True); {) для m4}
   AddCommand('//', CompileLineComment, True);
 (*
@@ -4199,7 +4210,6 @@ begin
   AddCommand('>resolve', FControlCommands._gt_resolve);
   AddCommand('<mark', FControlCommands._lt_mark);
   AddCommand('<resolve', FControlCommands._lt_resolve);
-  AddCommand('exit', FControlCommands._exit);
   AddCommand('recurse', FControlCommands.recurse, True);
   AddCommand('immediate', FControlCommands.immediate);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -5482,10 +5492,13 @@ begin
      AddCommand('compile@', compile_start);
      AddCommand('run@', run_start);
      //AddCommand('allot', allot);
+     AddCommand('literal', literal, True);
      AddCommand('['']', sq_ap_sq, True);
-     AddCommand('run@['']', run_sq_ap_sq);
-     AddCommand('compile@['']', compile_sq_ap_sq);
-     AddCommand('interpret@['']', interpret_sq_ap_sq);
+     AddCommand('opcode->command', opcode_to_command);
+     //AddCommand('run@['']', run_sq_ap_sq);
+     //AddCommand('compile@['']', compile_sq_ap_sq);
+     //AddCommand('interpret@['']', interpret_sq_ap_sq);
+     AddCommand('''', _tick);
      AddCommand('execute', execute);
     
     
@@ -5840,6 +5853,25 @@ begin
     WriteMnemonicByName('int-push');
     WriteEmbroInt(I);
   end;
+end;
+
+function TForthMachine.GetOpcodeByName(const Name: TString): TMnemonic;
+var
+  I: Integer;
+begin
+  for I := 0 to High(C) do
+    if TString(C[I].Name) = Name then begin
+      Writeln(I);
+      Result := I;
+      Exit;
+    end;
+  Result := 0;
+end;
+
+function TForthMachine.GetCommandByOpcode(Opcode: Integer): PForthCommand;
+begin
+  Writeln(Opcode);
+  Result := C[Opcode];
 end;
 
 procedure TForthMachine.CancelMnemonic;
@@ -9046,10 +9078,15 @@ end;
       procedure TForthMachine.interpret_start (Machine: TForthMachine; Command: PForthCommand); begin FState := FS_INTERPRET end;
       procedure TForthMachine.run_start (Machine: TForthMachine; Command: PForthCommand); begin FState := FS_INTERPRET end;
       //procedure TForthMachine.allot (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, SizeOf(TInt)); DA(TInt(WP)^); end;
-      procedure TForthMachine.sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin if FState <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command) end;
+      procedure TForthMachine.opcode_to_command (Machine: TForthMachine; Command: PForthCommand); begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)) := GetCommandByOpcode(Integer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^))) end;
+      procedure TForthMachine.literal (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@int-push'); EWI(WOI); end;
+      procedure TForthMachine.sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin {if FState <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
+                WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
+                EWO('opcode->command'); end;
       procedure TForthMachine.interpret_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin WUP(FindCommand(NextName)) end;
       procedure TForthMachine.compile_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@['']'); EWO(NextName); end;
       procedure TForthMachine.run_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin WUP(C[ERO]); end;
+      procedure TForthMachine._tick (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := FindCommand(NextName); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.execute (Machine: TForthMachine; Command: PForthCommand); var P: PForthCommand; begin 
                                              P := WOP; P.Code(Machine, P) end;
     
@@ -9125,10 +9162,10 @@ end;
         S: TInt;
         F: PdfFile;
       begin 
-        F := WOP; 
         S := WOI; 
         Src := WOP; 
-        F^.Data.WriteVar(Src, S);
+        //F := WOP; 
+        PdfFile((Pointer(TUInt(WP) + (-SizeOf(PdfFile)))^))^.Data.WriteVar(Src, S);
       end;
       procedure TForthMachine.file_read (Machine: TForthMachine; Command: PForthCommand);
       var
@@ -9136,10 +9173,17 @@ end;
         S: TInt;
         F: PdfFile;
       begin 
-        F := WOP; 
         S := WOI; 
         Src := WOP; 
-        F^.Data.ReadVar(Src, S);
+        //F := WOP; 
+        //F^.Data.ReadVar(Src, S);
+        PdfFile((Pointer(TUInt(WP) + (-SizeOf(PdfFile)))^))^.Data.ReadVar(Src, S);
+      end;
+      procedure TForthMachine.file_write_from_w (Machine: TForthMachine; Command: PForthCommand);
+      begin
+      end;
+      procedure TForthMachine.file_read_to_w (Machine: TForthMachine; Command: PForthCommand);
+      begin
       end;
       procedure TForthMachine.file_size (Machine: TForthMachine; Command: PForthCommand); begin WUI(PdfFile(WOP)^.Data.Size); end;
     
