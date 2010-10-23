@@ -1794,6 +1794,7 @@ TForthMachine = class
   procedure _rp (Machine: TForthMachine; Command: PForthCommand);
   procedure _lp (Machine: TForthMachine; Command: PForthCommand);
   procedure version (Machine: TForthMachine; Command: PForthCommand);
+  procedure _state (Machine: TForthMachine; Command: PForthCommand);
   procedure _time (Machine: TForthMachine; Command: PForthCommand);
   procedure _local (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_char (Machine: TForthMachine; Command: PForthCommand);
@@ -5479,6 +5480,7 @@ begin
      AddCommand('rp', _rp);
      AddCommand('lp', _lp);
      AddCommand('sys-version', version);
+     AddCommand('state', _state);
      AddCommand('time', _time);
      AddCommand('local', _local);
      AddCommand('source-next-char', source_next_char);
@@ -5522,6 +5524,8 @@ begin
   Interpret(': while compile ?branch >mark embro-swap ; immediate');
   Interpret(': repeat compile branch <resolve >resolve ; immediate');
   Interpret(': until compile ?branch <resolve ; immediate');
+  Interpret(': [ 0 state ! ; immediate');
+  Interpret(': ] 1 state ! ; immediate');
   //Writeln('Commands count: ', Length(C));
 end;
 
@@ -9064,6 +9068,7 @@ end;
       procedure TForthMachine._rp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._lp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.version (Machine: TForthMachine; Command: PForthCommand); begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt)); end;
+      procedure TForthMachine._state (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := @FState; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._time (Machine: TForthMachine; Command: PForthCommand); begin Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt)); end;
       procedure TForthMachine._local (Machine: TForthMachine; Command: PForthCommand); begin RunCommand(PForthCommand((@E[Integer(Command^.Data)])^)); end;
       procedure TForthMachine.source_next_char (Machine: TForthMachine; Command: PForthCommand); begin WUU8(Byte(NextChar)) end;
