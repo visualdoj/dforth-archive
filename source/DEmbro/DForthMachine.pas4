@@ -955,6 +955,7 @@ TControlCommands = class
   procedure recurse(Machine: TForthMachine; Command: PForthCommand);
   procedure call(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_def(Machine: TForthMachine; Command: PForthCommand);
+  procedure compile_skip_to_end(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_enddef(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_scattered_def(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_scattered_enddef(Machine: TForthMachine; Command: PForthCommand); 
@@ -1237,8 +1238,6 @@ TForthMachine = class
   WB: Pointer; // Work stack Base (@W[0])
   WP: Pointer; // Work stack Pointer
   WS: Integer; // Work stack Size
-  procedure WUV(const P: Pointer; Size: Integer);
-  procedure WOV(const P: Pointer; Size: Integer);
   push_interface(WUI, TInt, WP); // Work stack pUsh Integer
   push_interface(WUP, Pointer, WP); // Work stack pUsh Pointer
   pop_interface(WOI, TInt, WP); // Work stack pOp Integer
@@ -1261,6 +1260,10 @@ TForthMachine = class
   pop_interface(WOU16, TUInt16, WP);
   pop_interface(WOU32, TUInt32, WP);
   pop_interface(WOU64, TUInt64, WP);
+  procedure WUV(const P: Pointer; Size: Integer);
+  procedure WOV(const P: Pointer; Size: Integer);
+  procedure WUS(const S: TString);
+  function WOS: TString;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'C'}{$ENDIF}
  public
@@ -1578,6 +1581,7 @@ end;
 
 function IsImmediate(Command: PForthCommand): Boolean;
 procedure SetImmediate(Command: PForthCommand; I: Boolean);
+function CopyStrToPChar(const S: TString): PChar;
 
 implementation
 
@@ -1589,6 +1593,12 @@ end;
 procedure SetImmediate(Command: PForthCommand; I: Boolean);
 begin
   Command^.Flags := Command^.Flags or Ord(I);
+end;
+
+function CopyStrToPChar(const S: TString): PChar;
+begin
+  Result := StrAlloc(Length(S) + 1);
+  StrCopy(Result, PChar(S));
 end;
 
 {$IFNDEF FLAG_FPC}{$REGION 'TReturnStack'}{$ENDIF}
@@ -1952,6 +1962,7 @@ procedure TControlCommands.compile_def(Machine: TForthMachine; Command: PForthCo
 var
   Name: TString;
   NewCommand: PForthCommand;
+  PName: PChar;
 begin
   {Machine.CancelMnemonic;
   Machine.WriteMnemonicByName('branch');
@@ -1959,15 +1970,44 @@ begin
   _gt_mark(Machine, Command);}
   //Writeln('INSIDE compile_def');
   Name := Machine.NextName;
-  NewCommand := Machine.ReserveName(Name);
+  PName := CopyStrToPChar(Name);
+  NewCommand := Machine.ReserveName('');
   NewCommand^.Code := call;
   Integer(NewCommand^.Data) := FMachine.EL;
   Machine.FState := FS_COMPILE;
+  Machine.WUI(Machine.FLastMnemonic);
+  Machine.WUP(PName);
+  Machine.WUI(101);
   //Writeln('RESERVER NAME ' + NewCommand^.Name);
 end;
 
-procedure TControlCommands.compile_enddef(Machine: TForthMachine; Command: PForthCommand);
+procedure TControlCommands.compile_skip_to_end(Machine: TForthMachine; Command: PForthCommand);
 begin
+  if Integer(Machine.WP^) <> 101 then begin
+    Machine.LogError('Нельзя использовать skip-to; внутри конструкций (на вершине стека не colon-id)');
+    Exit;
+  end;
+  Machine.FControlCommands._gt_mark(Machine, nil);
+  Machine.WUI(201);
+end;
+
+procedure TControlCommands.compile_enddef(Machine: TForthMachine; Command: PForthCommand);
+var
+  S: TString;
+  Index: TInt;
+  P: PChar;
+  ID: Integer;
+begin
+  //S := Machine.FStringCommands.str_pop(Machine, Command);
+  //Machine.C[Machine.WOI]^.Name := PChar(TString(PChar(@TStrRec(S^).Sym[0])));
+  //Machine.FStringCommands.DelRef(S);
+  ID := Machine.WOI;
+  if ID = 201 then begin
+    Machine.FControlCommands._gt_resolve(Machine, nil);
+  end;
+  P := Machine.WOP;
+  Index := Machine.WOI;
+  Machine.C[Index]^.Name := P;
   Machine.EWO('exit');
   Machine.FState := FS_INTERPRET;
   //Writeln('LAST COMMAND ', High(Machine.C), ' ' + Machine.C[High(Machine.C)].Name);
@@ -3199,7 +3239,7 @@ procedure TForthMachine.EWO(V: TString);
 var
   I: TOpcode;
 begin
-  for I := 0 to High(C) do
+  for I := High(C) downto 0 do
     if TString(C[I].Name) = V then begin
       EWO(I);
       Exit;
@@ -3487,6 +3527,20 @@ begin
     Move(WP^, P^, Size);
   Dec(WP, Size);
 end;
+
+procedure TForthMachine.WUS(const S: TString);
+begin
+  FStringCommands.str_push(Self, nil, S);
+end;
+
+function TForthMachine.WOS: TString;
+var
+  S: PStrRec;
+begin
+  S := FStringCommands.str_pop(Self, nil);
+  Result := TString(PChar(@S^.Sym[0]));
+  FStringCommands.DelRef(S);
+end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
 procedure TForthMachine.LUV(const P: Pointer; Size: Integer);
@@ -3746,6 +3800,7 @@ begin
 {$IFNDEF FLAG_FPC}{$REGION 'control commands'}{$ENDIF}
   AddCommand(':', FControlCommands.compile_def);
   AddCommand(';', FControlCommands.compile_enddef, True);
+  AddCommand('skip-to;', FControlCommands.compile_enddef, True);
   AddCommand('...', FControlCommands.scattered_dots, True);
   AddCommand('..:', FControlCommands.compile_scattered_def);
   AddCommand(';..', FControlCommands.compile_scattered_enddef, True);
@@ -4096,7 +4151,7 @@ procedure TForthMachine.InterpretName(W: PChar);
 var
   I: Integer;
 begin
-  for I := 0 to High(C) do
+  for I := High(C) downto 0 do
     if StrComp(C[I].Name, W) = 0 then begin
       //Writeln('START ' + W);
       C[I].Code(Self, C[I]);
@@ -4114,7 +4169,7 @@ function TForthMachine.CompileName(W: PChar): Boolean;
 var
   I: Integer;
 begin
-  for I := 0 to High(C) do
+  for I := High(C) downto 0 do
     if StrComp(C[I].Name, W) = 0 then begin
       if IsImmediate(C[I]) then
         C[I].Code(Self, C[I])
@@ -4380,7 +4435,7 @@ var
   I: Integer;
 begin
   //Writeln('Write mnemonic by name ' + Name);
-  for I := 0 to High(C) do
+  for I := High(C) downto 0 do
     if TString(C[I].Name) = Name then begin
       WriteMnemonic(I);
       Exit;
@@ -4398,7 +4453,7 @@ function TForthMachine.GetOpcodeByName(const Name: TString): TMnemonic;
 var
   I: Integer;
 begin
-  for I := 0 to High(C) do
+  for I := High(C) downto 0 do
     if TString(C[I].Name) = Name then begin
       Writeln(I);
       Result := I;
@@ -4423,13 +4478,13 @@ var
   I: Integer;
 begin
   FLastMnemonic := -1;
-  for I := 0 to High(C) do
+  {{for I := 0 to High(C) do
     if TString(C[I].Name) = Name then begin
       Result := C[I];
       FLastMnemonic := I;
       Break;
-    end;
-  if FLastMnemonic = - 1 then begin
+    end;}
+  if FLastMnemonic = -1 then begin
     SetLength(C, Length(C) + 1);
     New(C[High(C)]);
     C[High(C)].Name := StrAlloc(Length(Name)+1);
@@ -4526,7 +4581,7 @@ function TForthMachine.FindCommand(const Name: TString): PForthCommand;
 var
   I: Integer;
 begin
-  for I := 0 to High(C) do
+  for I := High(C) downto 0 do
     if TString(C[I].Name) = Name then begin
       //Writeln('Found command ', C[I].Name);
       Result := C[I];
