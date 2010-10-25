@@ -1819,6 +1819,9 @@ TForthMachine = class
   procedure run_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand);
   procedure _tick (Machine: TForthMachine; Command: PForthCommand);
   procedure execute (Machine: TForthMachine; Command: PForthCommand);
+  procedure _does_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure _sq_does_gt_sq (Machine: TForthMachine; Command: PForthCommand);
+  procedure CallDoesGt (Machine: TForthMachine; Command: PForthCommand);
   
   
 
@@ -2531,6 +2534,7 @@ var
   NewCommand: PForthCommand;
 begin
   Name := Machine.NextName;
+  Writeln('create "', Name, '"');
   NewCommand := Machine.ReserveName(Name);
   NewCommand^.Code := putdataptr;
   NewCommand^.Data := Machine.DP;
@@ -4322,7 +4326,7 @@ begin
   AddCommand(' 32to', FDataCommands.run_32to);
   AddCommand(' 64to', FDataCommands.run_64to);}
 
-  AddCommand('create', FDataCommands._create, True);
+  AddCommand('create', FDataCommands._create);
   //AddCommand('here', FDataCommands.here);
   AddCommand('allot', FDataCommands.allot);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -5557,6 +5561,8 @@ begin
      //AddCommand('interpret@['']', interpret_sq_ap_sq);
      AddCommand('''', _tick);
      AddCommand('execute', execute);
+     AddCommand('does>', _does_gt, True);
+     AddCommand('(does>)', _sq_does_gt_sq);
     
     
       AddCommand('sys-exceptions-execute', _sys_exceptions_execute);
@@ -9149,6 +9155,9 @@ end;
       procedure TForthMachine._tick (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := FindCommand(NextName); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.execute (Machine: TForthMachine; Command: PForthCommand); var P: PForthCommand; begin 
                                              P := WOP; P.Code(Machine, P) end;
+      procedure TForthMachine._does_gt (Machine: TForthMachine; Command: PForthCommand); begin EWO('(does>)'); EWO('exit'); end;
+      procedure TForthMachine._sq_does_gt_sq (Machine: TForthMachine; Command: PForthCommand); begin Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; Writeln(C[FLastMnemonic].Name); end;
+      procedure TForthMachine.CallDoesGt (Machine: TForthMachine; Command: PForthCommand); begin FControlCommands.Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); end;
     
    
     

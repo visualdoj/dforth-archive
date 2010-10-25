@@ -637,6 +637,9 @@ define(~misc_commands|,
   procedure run_sq_ap_sq cmdhdr;
   procedure _tick cmdhdr;
   procedure execute cmdhdr;
+  procedure _does_gt cmdhdr;
+  procedure _sq_does_gt_sq cmdhdr;
+  procedure CallDoesGt cmdhdr;
   define(~all_implement|, all_implement 
     ~
       procedure TForthMachine._wp cmdhdr; begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
@@ -669,6 +672,9 @@ define(~misc_commands|,
       procedure TForthMachine._tick cmdhdr; begin Pointer(WP^) := FindCommand(NextName); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.execute cmdhdr; var P: PForthCommand; begin 
                                              P := WOP; P.Code(Machine, P) end;
+      procedure TForthMachine._does_gt cmdhdr; begin EWO('(does>)'); EWO('exit'); end;
+      procedure TForthMachine._sq_does_gt_sq cmdhdr; begin Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; Writeln(C[FLastMnemonic].Name); end;
+      procedure TForthMachine.CallDoesGt cmdhdr; begin FControlCommands.Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); end;
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -699,6 +705,8 @@ define(~misc_commands|,
      //AddCommand('interpret@['']', interpret_sq_ap_sq);
      AddCommand('''', _tick);
      AddCommand('execute', execute);
+     AddCommand('does>', _does_gt, True);
+     AddCommand('(does>)', _sq_does_gt_sq);
     |)
 |)
 define(~file_commands|, 
@@ -2080,6 +2088,7 @@ var
   NewCommand: PForthCommand;
 begin
   Name := Machine.NextName;
+  Writeln('create "', Name, '"');
   NewCommand := Machine.ReserveName(Name);
   NewCommand^.Code := putdataptr;
   NewCommand^.Data := Machine.DP;
@@ -3866,7 +3875,7 @@ begin
   AddCommand(' 32to', FDataCommands.run_32to);
   AddCommand(' 64to', FDataCommands.run_64to);}
 
-  AddCommand('create', FDataCommands._create, True);
+  AddCommand('create', FDataCommands._create);
   //AddCommand('here', FDataCommands.here);
   AddCommand('allot', FDataCommands.allot);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
