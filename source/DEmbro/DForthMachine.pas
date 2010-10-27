@@ -101,21 +101,13 @@ type
           Flags: Byte;
           Name: PChar; 
           Param: Pointer;
-          {
-          Immediate: Boolean;
-          Param: Pointer;
-          EmbroParam: Cardinal;
-          Proc: TProcOfObj; 
-          Callback: TCallback;
-          Runtime: record
-                     Proc: TForthRuntimeProc;
-                   end;
-          Compile: record
-                     Proc: TForthCommandProc;
-                     Callback: TCallback;
-                   end;
-          }
         end;
+
+  TWordSpace = record
+    C: array of PForthCommand;
+    L: Integer;
+    S: Integer;
+  end;
 {$IFNDEF FLAG_FPC}{$REGION 'TReturnStack'}{$ENDIF}
 TReturnStack = class(TForthStack)
  public
@@ -583,6 +575,10 @@ TForthMachine = class
   // Command FInd
   // Command EXecute
   // Command COmpile
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'C'}{$ENDIF}
+ public
+   Local: TWordSpace;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
  public
@@ -2037,6 +2033,10 @@ function IsImmediate(Command: PForthCommand): Boolean;
 procedure SetImmediate(Command: PForthCommand; I: Boolean);
 function CopyStrToPChar(const S: TString): PChar;
 
+procedure WordListClear(var WL: TWordSpace);
+function WordListInsert(var WL: TWordSpace; Command: PForthCommand): Integer;
+function WordListFind(var WL: TWordSpace; S: TString; var Opcode: TOpcode): Boolean;
+
 implementation
 
 function IsImmediate(Command: PForthCommand): Boolean;
@@ -2053,6 +2053,34 @@ function CopyStrToPChar(const S: TString): PChar;
 begin
   Result := StrAlloc(Length(S) + 1);
   StrCopy(Result, PChar(S));
+end;
+
+procedure WordListClear(var WL: TWordSpace);
+begin
+  SetLength(WL.C, 0);
+  WL.L := 0;
+  WL.S := 0;
+end;
+
+function WordListInsert(var WL: TWordSpace; Command: PForthCommand): Integer;
+begin
+  SetLength(WL.C, Length(WL.C) + 1);
+  WL.C[High(WL.C)] := Command;
+  WL.L := Length(WL.C);
+  Result := High(WL.C);
+end;
+
+function WordListFind(var WL: TWordSpace; S: TString; var Opcode: TOpcode): Boolean;
+var
+  I: Integer;
+begin
+  for I := WL.L - 1 downto 0 do
+    if TString(WL.C[I]) = S then begin
+      Result := True;
+      Opcode := I;
+      Exit;
+    end;
+  Result := False;
 end;
 
 {$IFNDEF FLAG_FPC}{$REGION 'TReturnStack'}{$ENDIF}
@@ -4045,6 +4073,7 @@ begin
   CB := @C[0];
   CC := 0;
   CS := Length(C);
+  WordListClear(Local);
   SetLength(D, 1024 * 1024);
   DB := @D[0];
   DP := DB;
