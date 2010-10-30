@@ -4646,7 +4646,7 @@ begin
      AddCommand('constant', _value_);
      AddCommand('variable', _variable_);
      AddCommand('literal', literal_, True);
-     AddCommand('(literal)', run_literal_, True);
+     AddCommand('(literal)', run_literal_);
     
     
      AddCommand('ptr-drop', drop_ptr);
@@ -4672,7 +4672,7 @@ begin
      AddCommand('ptr-constant', _value_ptr);
      AddCommand('ptr-variable', _variable_ptr);
      AddCommand('ptr-literal', literal_ptr, True);
-     AddCommand('ptr-(literal)', run_literal_ptr, True);
+     AddCommand('ptr-(literal)', run_literal_ptr);
     
     
      AddCommand('int-drop', drop_int);
@@ -4698,7 +4698,7 @@ begin
      AddCommand('int-constant', _value_int);
      AddCommand('int-variable', _variable_int);
      AddCommand('int-literal', literal_int, True);
-     AddCommand('int-(literal)', run_literal_int, True);
+     AddCommand('int-(literal)', run_literal_int);
     
     
      AddCommand('int8-drop', drop_int8);
@@ -4724,7 +4724,7 @@ begin
      AddCommand('int8-constant', _value_int8);
      AddCommand('int8-variable', _variable_int8);
      AddCommand('int8-literal', literal_int8, True);
-     AddCommand('int8-(literal)', run_literal_int8, True);
+     AddCommand('int8-(literal)', run_literal_int8);
     
     
      AddCommand('int16-drop', drop_int16);
@@ -4750,7 +4750,7 @@ begin
      AddCommand('int16-constant', _value_int16);
      AddCommand('int16-variable', _variable_int16);
      AddCommand('int16-literal', literal_int16, True);
-     AddCommand('int16-(literal)', run_literal_int16, True);
+     AddCommand('int16-(literal)', run_literal_int16);
     
     
      AddCommand('int32-drop', drop_int32);
@@ -4776,7 +4776,7 @@ begin
      AddCommand('int32-constant', _value_int32);
      AddCommand('int32-variable', _variable_int32);
      AddCommand('int32-literal', literal_int32, True);
-     AddCommand('int32-(literal)', run_literal_int32, True);
+     AddCommand('int32-(literal)', run_literal_int32);
     
     
      AddCommand('int64-drop', drop_int64);
@@ -4802,7 +4802,7 @@ begin
      AddCommand('int64-constant', _value_int64);
      AddCommand('int64-variable', _variable_int64);
      AddCommand('int64-literal', literal_int64, True);
-     AddCommand('int64-(literal)', run_literal_int64, True);
+     AddCommand('int64-(literal)', run_literal_int64);
     
     
      AddCommand('uint-drop', drop_uint);
@@ -4828,7 +4828,7 @@ begin
      AddCommand('uint-constant', _value_uint);
      AddCommand('uint-variable', _variable_uint);
      AddCommand('uint-literal', literal_uint, True);
-     AddCommand('uint-(literal)', run_literal_uint, True);
+     AddCommand('uint-(literal)', run_literal_uint);
     
     
      AddCommand('uint8-drop', drop_uint8);
@@ -4854,7 +4854,7 @@ begin
      AddCommand('uint8-constant', _value_uint8);
      AddCommand('uint8-variable', _variable_uint8);
      AddCommand('uint8-literal', literal_uint8, True);
-     AddCommand('uint8-(literal)', run_literal_uint8, True);
+     AddCommand('uint8-(literal)', run_literal_uint8);
     
     
      AddCommand('uint16-drop', drop_uint16);
@@ -4880,7 +4880,7 @@ begin
      AddCommand('uint16-constant', _value_uint16);
      AddCommand('uint16-variable', _variable_uint16);
      AddCommand('uint16-literal', literal_uint16, True);
-     AddCommand('uint16-(literal)', run_literal_uint16, True);
+     AddCommand('uint16-(literal)', run_literal_uint16);
     
     
      AddCommand('uint32-drop', drop_uint32);
@@ -4906,7 +4906,7 @@ begin
      AddCommand('uint32-constant', _value_uint32);
      AddCommand('uint32-variable', _variable_uint32);
      AddCommand('uint32-literal', literal_uint32, True);
-     AddCommand('uint32-(literal)', run_literal_uint32, True);
+     AddCommand('uint32-(literal)', run_literal_uint32);
     
     
      AddCommand('uint64-drop', drop_uint64);
@@ -4932,7 +4932,7 @@ begin
      AddCommand('uint64-constant', _value_uint64);
      AddCommand('uint64-variable', _variable_uint64);
      AddCommand('uint64-literal', literal_uint64, True);
-     AddCommand('uint64-(literal)', run_literal_uint64, True);
+     AddCommand('uint64-(literal)', run_literal_uint64);
     
     
      AddCommand('embro-drop', drop_embro);
@@ -4958,7 +4958,7 @@ begin
      AddCommand('embro-constant', _value_embro);
      AddCommand('embro-variable', _variable_embro);
      AddCommand('embro-literal', literal_embro, True);
-     AddCommand('embro-(literal)', run_literal_embro, True);
+     AddCommand('embro-(literal)', run_literal_embro);
     
     
      AddCommand('+', _plus);
@@ -6836,7 +6836,7 @@ end;
      procedure TForthMachine._value_ (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
      procedure TForthMachine._variable_ (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_ (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
-    procedure TForthMachine.literal_ (Machine: TForthMachine; Command: PForthCommand); begin EWO('(literal)'); Dec(WP, 4); ERV(WP, 4); end;
+    procedure TForthMachine.literal_ (Machine: TForthMachine; Command: PForthCommand); begin EWO('(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_ (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
     
    
@@ -6907,7 +6907,7 @@ end;
      procedure TForthMachine._value_ptr (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_ptr; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
      procedure TForthMachine._variable_ptr (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_ptr (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
-    procedure TForthMachine.literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin EWO('ptr-(literal)'); Dec(WP, 4); ERV(WP, 4); end;
+    procedure TForthMachine.literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin EWO('ptr-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
     
    
@@ -6978,7 +6978,7 @@ end;
      procedure TForthMachine._value_int (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
      procedure TForthMachine._variable_int (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_int (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
-    procedure TForthMachine.literal_int (Machine: TForthMachine; Command: PForthCommand); begin EWO('int-(literal)'); Dec(WP, 4); ERV(WP, 4); end;
+    procedure TForthMachine.literal_int (Machine: TForthMachine; Command: PForthCommand); begin EWO('int-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_int (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
     
    
@@ -7049,7 +7049,7 @@ end;
      procedure TForthMachine._value_int8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int8; Move((Pointer(TUInt(WP) + (-1))^), DP^, 1); Dec(WP, 1); Inc(DP, 1); end; end;
      procedure TForthMachine._variable_int8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 1); Move(WP^, DP^, 1); Inc(DP, 1); end; end;
      procedure TForthMachine.RunValue_int8 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 1); Inc(WP, 1); end;
-    procedure TForthMachine.literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int8-(literal)'); Dec(WP, 1); ERV(WP, 1); end;
+    procedure TForthMachine.literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int8-(literal)'); Dec(WP, 1); EWV(WP, 1); end;
     procedure TForthMachine.run_literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 1); Inc(WP, 1); end;
     
    
@@ -7120,7 +7120,7 @@ end;
      procedure TForthMachine._value_int16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int16; Move((Pointer(TUInt(WP) + (-2))^), DP^, 2); Dec(WP, 2); Inc(DP, 2); end; end;
      procedure TForthMachine._variable_int16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 2); Move(WP^, DP^, 2); Inc(DP, 2); end; end;
      procedure TForthMachine.RunValue_int16 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 2); Inc(WP, 2); end;
-    procedure TForthMachine.literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int16-(literal)'); Dec(WP, 2); ERV(WP, 2); end;
+    procedure TForthMachine.literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int16-(literal)'); Dec(WP, 2); EWV(WP, 2); end;
     procedure TForthMachine.run_literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 2); Inc(WP, 2); end;
     
    
@@ -7191,7 +7191,7 @@ end;
      procedure TForthMachine._value_int32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int32; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
      procedure TForthMachine._variable_int32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_int32 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
-    procedure TForthMachine.literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int32-(literal)'); Dec(WP, 4); ERV(WP, 4); end;
+    procedure TForthMachine.literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int32-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
     
    
@@ -7262,7 +7262,7 @@ end;
      procedure TForthMachine._value_int64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int64; Move((Pointer(TUInt(WP) + (-8))^), DP^, 8); Dec(WP, 8); Inc(DP, 8); end; end;
      procedure TForthMachine._variable_int64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 8); Move(WP^, DP^, 8); Inc(DP, 8); end; end;
      procedure TForthMachine.RunValue_int64 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 8); Inc(WP, 8); end;
-    procedure TForthMachine.literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int64-(literal)'); Dec(WP, 8); ERV(WP, 8); end;
+    procedure TForthMachine.literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int64-(literal)'); Dec(WP, 8); EWV(WP, 8); end;
     procedure TForthMachine.run_literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 8); Inc(WP, 8); end;
     
    
@@ -7333,7 +7333,7 @@ end;
      procedure TForthMachine._value_uint (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
      procedure TForthMachine._variable_uint (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_uint (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
-    procedure TForthMachine.literal_uint (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint-(literal)'); Dec(WP, 4); ERV(WP, 4); end;
+    procedure TForthMachine.literal_uint (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_uint (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
     
    
@@ -7404,7 +7404,7 @@ end;
      procedure TForthMachine._value_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint8; Move((Pointer(TUInt(WP) + (-1))^), DP^, 1); Dec(WP, 1); Inc(DP, 1); end; end;
      procedure TForthMachine._variable_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 1); Move(WP^, DP^, 1); Inc(DP, 1); end; end;
      procedure TForthMachine.RunValue_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 1); Inc(WP, 1); end;
-    procedure TForthMachine.literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint8-(literal)'); Dec(WP, 1); ERV(WP, 1); end;
+    procedure TForthMachine.literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint8-(literal)'); Dec(WP, 1); EWV(WP, 1); end;
     procedure TForthMachine.run_literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 1); Inc(WP, 1); end;
     
    
@@ -7475,7 +7475,7 @@ end;
      procedure TForthMachine._value_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint16; Move((Pointer(TUInt(WP) + (-2))^), DP^, 2); Dec(WP, 2); Inc(DP, 2); end; end;
      procedure TForthMachine._variable_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 2); Move(WP^, DP^, 2); Inc(DP, 2); end; end;
      procedure TForthMachine.RunValue_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 2); Inc(WP, 2); end;
-    procedure TForthMachine.literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint16-(literal)'); Dec(WP, 2); ERV(WP, 2); end;
+    procedure TForthMachine.literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint16-(literal)'); Dec(WP, 2); EWV(WP, 2); end;
     procedure TForthMachine.run_literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 2); Inc(WP, 2); end;
     
    
@@ -7546,7 +7546,7 @@ end;
      procedure TForthMachine._value_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint32; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
      procedure TForthMachine._variable_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
-    procedure TForthMachine.literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint32-(literal)'); Dec(WP, 4); ERV(WP, 4); end;
+    procedure TForthMachine.literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint32-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
     
    
@@ -7617,7 +7617,7 @@ end;
      procedure TForthMachine._value_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint64; Move((Pointer(TUInt(WP) + (-8))^), DP^, 8); Dec(WP, 8); Inc(DP, 8); end; end;
      procedure TForthMachine._variable_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 8); Move(WP^, DP^, 8); Inc(DP, 8); end; end;
      procedure TForthMachine.RunValue_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 8); Inc(WP, 8); end;
-    procedure TForthMachine.literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint64-(literal)'); Dec(WP, 8); ERV(WP, 8); end;
+    procedure TForthMachine.literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint64-(literal)'); Dec(WP, 8); EWV(WP, 8); end;
     procedure TForthMachine.run_literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 8); Inc(WP, 8); end;
     
    
@@ -7688,7 +7688,7 @@ end;
      procedure TForthMachine._value_embro (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_embro; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
      procedure TForthMachine._variable_embro (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end; end;
      procedure TForthMachine.RunValue_embro (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
-    procedure TForthMachine.literal_embro (Machine: TForthMachine; Command: PForthCommand); begin EWO('embro-(literal)'); Dec(WP, 4); ERV(WP, 4); end;
+    procedure TForthMachine.literal_embro (Machine: TForthMachine; Command: PForthCommand); begin EWO('embro-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_embro (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
     
    
