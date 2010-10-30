@@ -47,7 +47,9 @@ define(~typed_commands|,
     procedure _interpret_to_$1 cmdhdr;
     procedure _value_$1 cmdhdr;
     procedure _variable_$1 cmdhdr;
-    procedure RunValue_$1 cmdhdr
+    procedure RunValue_$1 cmdhdr;
+    procedure literal_$1 cmdhdr;
+    procedure run_literal_$1 cmdhdr
   define(~all_implement|, all_implement 
     ~
      procedure TForthMachine.drop_$1 cmdhdr; begin Dec(WP, $2) end;
@@ -116,6 +118,8 @@ define(~typed_commands|,
      procedure TForthMachine._value_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_$1; Move(WVar(-$2), DP^, $2); Dec(WP, $2); Inc(DP, $2); end; end;
      procedure TForthMachine._variable_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, $2); Move(WP^, DP^, $2); Inc(DP, $2); end; end;
      procedure TForthMachine.RunValue_$1 cmdhdr; begin Move(Command.Data^, WP^, $2); Inc(WP, $2); end;
+    procedure TForthMachine.literal_$1 cmdhdr; begin EWO('genname($1, (literal))'); Dec(WP, $2); ERV(WP, $2); end;
+    procedure TForthMachine.run_literal_$1 cmdhdr; begin ERV(WP, $2); Inc(WP, $2); end;
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -142,6 +146,8 @@ define(~typed_commands|,
      AddCommand('genname($1, value)', _value_$1);
      AddCommand('genname($1, constant)', _value_$1);
      AddCommand('genname($1, variable)', _variable_$1);
+     AddCommand('genname($1, literal)', literal_$1, True);
+     AddCommand('genname($1, (literal))', run_literal_$1);
     |)
 |)
 define(~data_commands|, 
@@ -697,7 +703,7 @@ define(~misc_commands|,
      AddCommand('compile@', compile_start);
      AddCommand('run@', run_start);
      //AddCommand('allot', allot);
-     AddCommand('literal', literal, True);
+     //AddCommand('literal', literal, True);
      AddCommand('['']', sq_ap_sq, True);
      AddCommand('opcode->command', opcode_to_command);
      //AddCommand('run@['']', run_sq_ap_sq);
