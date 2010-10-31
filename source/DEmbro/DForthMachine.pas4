@@ -116,7 +116,7 @@ define(~typed_commands|,
                Move(WVar(-$2), C.Data^, $2); Dec(WP, $2);
              end;
      procedure TForthMachine._value_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_$1; Move(WVar(-$2), DP^, $2); Dec(WP, $2); Inc(DP, $2); end; end;
-     procedure TForthMachine._variable_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; Dec(WP, $2); Move(WP^, DP^, $2); Inc(DP, $2); end; end;
+     procedure TForthMachine._variable_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, $2); Move(WP^, DP^, $2);} Inc(DP, $2); end; end;
      procedure TForthMachine.RunValue_$1 cmdhdr; begin Move(Command.Data^, WP^, $2); Inc(WP, $2); end;
     procedure TForthMachine.literal_$1 cmdhdr; begin EWO('genname($1, (literal))'); Dec(WP, $2); EWV(WP, $2); end;
     procedure TForthMachine.run_literal_$1 cmdhdr; begin ERV(WP, $2); Inc(WP, $2); end;
