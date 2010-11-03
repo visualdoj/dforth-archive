@@ -359,7 +359,7 @@ TForthMachine = class
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   //C: array of TForthCommand;
   FData: array of Byte;
-  FHere: Integer;
+  //FHere: Integer;
   FCompilation: Boolean;
   FRunning: Boolean;
   FSource: PChar;
@@ -396,6 +396,9 @@ TForthMachine = class
   EC: Integer; // Embro Counter (E[EC])
   EL: Integer; // Embro Last compiled
   ES: Integer; // Embro Size (Length(E))
+  procedure EA(Size: Integer); // Embro Alloc
+  function Here: Pointer; overload;
+  procedure _here(Machine: TForthMachine; Command: PForthCommand); overload;
   procedure EWV(V: Pointer; Size: Integer); // Embro Write Var
   procedure EWI(V: Integer); // Embro Write Integer
   procedure EWE(V: TEmbroPtr);
@@ -582,11 +585,11 @@ TForthMachine = class
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
  public
-  D: array of Byte; // Data
+ {D: array of Byte; // Data
   DB: Pointer; // Data Base
   DP: Pointer; // Data Pointer (traditionaly called HERE in forth)
   DS: Integer; // Data Size
-  procedure DA(Size: Integer); // Data Allot
+  procedure DA(Size: Integer); // Data Allot}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'S'}{$ENDIF}
  public
@@ -1844,6 +1847,8 @@ TForthMachine = class
   procedure _does_gt (Machine: TForthMachine; Command: PForthCommand);
   procedure _sq_does_gt_sq (Machine: TForthMachine; Command: PForthCommand);
   procedure CallDoesGt (Machine: TForthMachine; Command: PForthCommand);
+  procedure Cells (Machine: TForthMachine; Command: PForthCommand);
+  procedure Cell_plus (Machine: TForthMachine; Command: PForthCommand);
   
   
 
@@ -2588,10 +2593,9 @@ var
   NewCommand: PForthCommand;
 begin
   Name := Machine.NextName;
-  Writeln('create "', Name, '"');
   NewCommand := Machine.ReserveName(Name);
   NewCommand^.Code := putdataptr;
-  NewCommand^.Data := Machine.DP;
+  NewCommand^.Data := Machine.Here;
 end;
 
 procedure TDataCommands.putdataptr(Machine: TForthMachine; Command: PForthCommand);
@@ -2607,7 +2611,7 @@ var
   P: Pointer;
 begin
   // FIXME: P не постоянен
-  P := Machine.DP;
+  P := Machine.Here;
   Machine.FPtrStackCommands.Push(@P);
 end;
 
@@ -2794,7 +2798,7 @@ var
   P: Pointer;
 begin
   Machine.FPtrStackCommands.Pop(@P);
-  Move(P, Machine.DP^, SizeOf(Pointer));
+  Move(P, Machine.Here^, SizeOf(Pointer));
   Machine.IncHere(SizeOf(Pointer)); 
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -3121,35 +3125,35 @@ begin
   if Conv = CONV_STDCALL then 
         begin
           C^.Code := invoke_stdcall;
-          C^.Data := Machine.DP;
+          C^.Data := Machine.Here;
           P := @Test;
-          Move(P, Machine.DP^, SizeOf(P));
+          Move(P, Machine.Here^, SizeOf(P));
           Machine.IncHere(SizeOf(P));
           B := ReturnType^.Size;
           if B <= 8 then begin
             S := B;
             if S > 4 then
               S := 4;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             B := B - S;
             S := B;
             if S > 4 then
               S := 4;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             S := 0;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
           end else begin
             S := 0;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             S := 0;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             S := B;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
           end;
           for I := 0 to High(Types) do begin
@@ -3160,20 +3164,20 @@ begin
                 S := 4;
               B := B - S;
               S := -S;
-              Move(S, Machine.DP^, SizeOf(S));
+              Move(S, Machine.Here^, SizeOf(S));
               Machine.IncHere(SizeOf(S));
             end;
           end;
           B := 0;
-          Move(B, Machine.DP^, SizeOf(B));
+          Move(B, Machine.Here^, SizeOf(B));
           Machine.IncHere(SizeOf(B));
         end
   else if Conv = CONV_CDECL then 
         begin
           C^.Code := invoke_cdecl;
-          C^.Data := Machine.DP;
+          C^.Data := Machine.Here;
           P := nil;
-          Move(P, Machine.DP^, SizeOf(P));
+          Move(P, Machine.Here^, SizeOf(P));
         end
   else begin
     Machine.LogError(C^.Name + ' unknown code convension');
@@ -3697,7 +3701,8 @@ end;
 
 procedure TForthMachine.IncHere(Count: Integer);
 begin
-  Inc(DP, Count);
+  //Inc(Here, Count);
+  EA(Count);
   //if Length(FData) - FHere < 1024 then
   //  SetLength(FData, Length(FData) + 1024);
 end;
@@ -3715,6 +3720,22 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'E'}{$ENDIF}
+procedure TForthMachine.EA(Size: Integer); // Embro Alloc
+begin
+  Inc(EL, Size);
+end;
+
+function TForthMachine.Here: Pointer;
+begin
+  Result := @E[EL];
+end;
+
+procedure TForthMachine._here(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Pointer(WP^) := @E[EL];
+  Inc(WP, SizeOf(Pointer));
+end;
+
 procedure TForthMachine.EWV(V: Pointer; Size: Integer); // Embro Write Data
 begin
   Move(V^, (@E[EL])^, Size);
@@ -3965,10 +3986,10 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
-procedure TForthMachine.DA(Size: Integer);
+{procedure TForthMachine.DA(Size: Integer);
 begin
-  Inc(DP, Size);
-end;
+  Inc(Here, Size);
+end;}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'S'}{$ENDIF}
 function TForthMachine.SE: Boolean;
@@ -4100,10 +4121,10 @@ begin
   CC := 0;
   CS := Length(C);
   WordListClear(Local);
-  SetLength(D, 1024 * 1024);
+  {SetLength(D, 1024 * 1024);
   DB := @D[0];
-  DP := DB;
-  DS := Length(D);
+  Here := DB;
+  DS := Length(D);}
   SetLength(L, 1024 * 1024);
   LB := @L[0];
   LP := LB;
@@ -4115,7 +4136,7 @@ begin
   FStack := TForthStack.Create;
   FReturnStack := TReturnStack.Create;
   SetLength(FData, 2048);
-  FHere := 0;
+  //FHere := 0;
   SetLength(FTypes, 0);
   
     ExceptionsS := 1024;
@@ -4382,7 +4403,7 @@ begin
   AddCommand(' 64to', FDataCommands.run_64to);}
 
   AddCommand('create', FDataCommands._create);
-  //AddCommand('here', FDataCommands.here);
+  AddCommand('here', _here);
   AddCommand('allot', FDataCommands.allot);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 (*
@@ -5644,6 +5665,8 @@ begin
      AddCommand('execute', execute);
      AddCommand('does>', _does_gt, True);
      AddCommand('(does>)', _sq_does_gt_sq);
+     AddCommand('cells', Cells);
+     AddCommand('cell+', Cell_plus);
     
     
       AddCommand('sys-exceptions-execute', _sys_exceptions_execute);
@@ -6291,7 +6314,7 @@ var
   a: T;
 begin
   Machine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.DP^, SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -6346,7 +6369,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.DP^, SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -6401,7 +6424,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.DP^, SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -6456,7 +6479,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -6511,7 +6534,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -6548,7 +6571,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -6585,7 +6608,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -6622,7 +6645,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -6659,7 +6682,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -6696,7 +6719,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -6822,7 +6845,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_ (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
+     procedure TForthMachine._comma_ (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4); end;
      procedure TForthMachine._dog_ (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_ (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4) end;
      procedure TForthMachine.ptr_plus_ (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4; end;
@@ -6833,8 +6856,8 @@ end;
                if C = nil then begin LogError('unkown name after to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
-     procedure TForthMachine._value_ (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_ (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, DP^, 4);} Inc(DP, 4); end; end;
+     procedure TForthMachine._value_ (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); end; end;
+     procedure TForthMachine._variable_ (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end; end;
      procedure TForthMachine.RunValue_ (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     procedure TForthMachine.literal_ (Machine: TForthMachine; Command: PForthCommand); begin EWO('(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_ (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
@@ -6893,7 +6916,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_ptr (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
+     procedure TForthMachine._comma_ptr (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4); end;
      procedure TForthMachine._dog_ptr (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_ptr (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4) end;
      procedure TForthMachine.ptr_plus_ptr (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4; end;
@@ -6904,8 +6927,8 @@ end;
                if C = nil then begin LogError('unkown name after ptr-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
-     procedure TForthMachine._value_ptr (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_ptr; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_ptr (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, DP^, 4);} Inc(DP, 4); end; end;
+     procedure TForthMachine._value_ptr (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_ptr; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); end; end;
+     procedure TForthMachine._variable_ptr (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end; end;
      procedure TForthMachine.RunValue_ptr (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     procedure TForthMachine.literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin EWO('ptr-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
@@ -6964,7 +6987,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_int (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
+     procedure TForthMachine._comma_int (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4); end;
      procedure TForthMachine._dog_int (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_int (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4) end;
      procedure TForthMachine.ptr_plus_int (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4; end;
@@ -6975,8 +6998,8 @@ end;
                if C = nil then begin LogError('unkown name after int-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
-     procedure TForthMachine._value_int (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_int (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, DP^, 4);} Inc(DP, 4); end; end;
+     procedure TForthMachine._value_int (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); end; end;
+     procedure TForthMachine._variable_int (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end; end;
      procedure TForthMachine.RunValue_int (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     procedure TForthMachine.literal_int (Machine: TForthMachine; Command: PForthCommand); begin EWO('int-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_int (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
@@ -7035,7 +7058,7 @@ end;
             1);
        Inc(WP, 1 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_int8 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 1); Move(WP^, DP^, 1); Inc(DP, 1); end;
+     procedure TForthMachine._comma_int8 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 1); Move(WP^, Here^, 1); EA(1); end;
      procedure TForthMachine._dog_int8 (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 1); Inc(WP, 1 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_int8 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-1))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 1); Dec(WP, (SizeOf(Pointer)) + 1) end;
      procedure TForthMachine.ptr_plus_int8 (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 1; end;
@@ -7046,8 +7069,8 @@ end;
                if C = nil then begin LogError('unkown name after int8-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-1))^), C.Data^, 1); Dec(WP, 1);
              end;
-     procedure TForthMachine._value_int8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int8; Move((Pointer(TUInt(WP) + (-1))^), DP^, 1); Dec(WP, 1); Inc(DP, 1); end; end;
-     procedure TForthMachine._variable_int8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 1); Move(WP^, DP^, 1);} Inc(DP, 1); end; end;
+     procedure TForthMachine._value_int8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int8; Move((Pointer(TUInt(WP) + (-1))^), Here^, 1); Dec(WP, 1); EA(1); end; end;
+     procedure TForthMachine._variable_int8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 1); Move(WP^, Here^, 1);} EA(1); end; end;
      procedure TForthMachine.RunValue_int8 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 1); Inc(WP, 1); end;
     procedure TForthMachine.literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int8-(literal)'); Dec(WP, 1); EWV(WP, 1); end;
     procedure TForthMachine.run_literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 1); Inc(WP, 1); end;
@@ -7106,7 +7129,7 @@ end;
             2);
        Inc(WP, 2 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_int16 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 2); Move(WP^, DP^, 2); Inc(DP, 2); end;
+     procedure TForthMachine._comma_int16 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 2); Move(WP^, Here^, 2); EA(2); end;
      procedure TForthMachine._dog_int16 (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 2); Inc(WP, 2 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_int16 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-2))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 2); Dec(WP, (SizeOf(Pointer)) + 2) end;
      procedure TForthMachine.ptr_plus_int16 (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 2; end;
@@ -7117,8 +7140,8 @@ end;
                if C = nil then begin LogError('unkown name after int16-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-2))^), C.Data^, 2); Dec(WP, 2);
              end;
-     procedure TForthMachine._value_int16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int16; Move((Pointer(TUInt(WP) + (-2))^), DP^, 2); Dec(WP, 2); Inc(DP, 2); end; end;
-     procedure TForthMachine._variable_int16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 2); Move(WP^, DP^, 2);} Inc(DP, 2); end; end;
+     procedure TForthMachine._value_int16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int16; Move((Pointer(TUInt(WP) + (-2))^), Here^, 2); Dec(WP, 2); EA(2); end; end;
+     procedure TForthMachine._variable_int16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 2); Move(WP^, Here^, 2);} EA(2); end; end;
      procedure TForthMachine.RunValue_int16 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 2); Inc(WP, 2); end;
     procedure TForthMachine.literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int16-(literal)'); Dec(WP, 2); EWV(WP, 2); end;
     procedure TForthMachine.run_literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 2); Inc(WP, 2); end;
@@ -7177,7 +7200,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_int32 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
+     procedure TForthMachine._comma_int32 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4); end;
      procedure TForthMachine._dog_int32 (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_int32 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4) end;
      procedure TForthMachine.ptr_plus_int32 (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4; end;
@@ -7188,8 +7211,8 @@ end;
                if C = nil then begin LogError('unkown name after int32-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
-     procedure TForthMachine._value_int32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int32; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_int32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, DP^, 4);} Inc(DP, 4); end; end;
+     procedure TForthMachine._value_int32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int32; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); end; end;
+     procedure TForthMachine._variable_int32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end; end;
      procedure TForthMachine.RunValue_int32 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     procedure TForthMachine.literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int32-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
@@ -7248,7 +7271,7 @@ end;
             8);
        Inc(WP, 8 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_int64 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 8); Move(WP^, DP^, 8); Inc(DP, 8); end;
+     procedure TForthMachine._comma_int64 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 8); Move(WP^, Here^, 8); EA(8); end;
      procedure TForthMachine._dog_int64 (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 8); Inc(WP, 8 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_int64 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-8))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 8); Dec(WP, (SizeOf(Pointer)) + 8) end;
      procedure TForthMachine.ptr_plus_int64 (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 8; end;
@@ -7259,8 +7282,8 @@ end;
                if C = nil then begin LogError('unkown name after int64-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-8))^), C.Data^, 8); Dec(WP, 8);
              end;
-     procedure TForthMachine._value_int64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_int64; Move((Pointer(TUInt(WP) + (-8))^), DP^, 8); Dec(WP, 8); Inc(DP, 8); end; end;
-     procedure TForthMachine._variable_int64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 8); Move(WP^, DP^, 8);} Inc(DP, 8); end; end;
+     procedure TForthMachine._value_int64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int64; Move((Pointer(TUInt(WP) + (-8))^), Here^, 8); Dec(WP, 8); EA(8); end; end;
+     procedure TForthMachine._variable_int64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 8); Move(WP^, Here^, 8);} EA(8); end; end;
      procedure TForthMachine.RunValue_int64 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 8); Inc(WP, 8); end;
     procedure TForthMachine.literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin EWO('int64-(literal)'); Dec(WP, 8); EWV(WP, 8); end;
     procedure TForthMachine.run_literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 8); Inc(WP, 8); end;
@@ -7319,7 +7342,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_uint (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
+     procedure TForthMachine._comma_uint (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4); end;
      procedure TForthMachine._dog_uint (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_uint (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4) end;
      procedure TForthMachine.ptr_plus_uint (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4; end;
@@ -7330,8 +7353,8 @@ end;
                if C = nil then begin LogError('unkown name after uint-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
-     procedure TForthMachine._value_uint (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_uint (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, DP^, 4);} Inc(DP, 4); end; end;
+     procedure TForthMachine._value_uint (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); end; end;
+     procedure TForthMachine._variable_uint (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end; end;
      procedure TForthMachine.RunValue_uint (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     procedure TForthMachine.literal_uint (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_uint (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
@@ -7390,7 +7413,7 @@ end;
             1);
        Inc(WP, 1 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 1); Move(WP^, DP^, 1); Inc(DP, 1); end;
+     procedure TForthMachine._comma_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 1); Move(WP^, Here^, 1); EA(1); end;
      procedure TForthMachine._dog_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 1); Inc(WP, 1 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-1))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 1); Dec(WP, (SizeOf(Pointer)) + 1) end;
      procedure TForthMachine.ptr_plus_uint8 (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 1; end;
@@ -7401,8 +7424,8 @@ end;
                if C = nil then begin LogError('unkown name after uint8-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-1))^), C.Data^, 1); Dec(WP, 1);
              end;
-     procedure TForthMachine._value_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint8; Move((Pointer(TUInt(WP) + (-1))^), DP^, 1); Dec(WP, 1); Inc(DP, 1); end; end;
-     procedure TForthMachine._variable_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 1); Move(WP^, DP^, 1);} Inc(DP, 1); end; end;
+     procedure TForthMachine._value_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint8; Move((Pointer(TUInt(WP) + (-1))^), Here^, 1); Dec(WP, 1); EA(1); end; end;
+     procedure TForthMachine._variable_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 1); Move(WP^, Here^, 1);} EA(1); end; end;
      procedure TForthMachine.RunValue_uint8 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 1); Inc(WP, 1); end;
     procedure TForthMachine.literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint8-(literal)'); Dec(WP, 1); EWV(WP, 1); end;
     procedure TForthMachine.run_literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 1); Inc(WP, 1); end;
@@ -7461,7 +7484,7 @@ end;
             2);
        Inc(WP, 2 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 2); Move(WP^, DP^, 2); Inc(DP, 2); end;
+     procedure TForthMachine._comma_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 2); Move(WP^, Here^, 2); EA(2); end;
      procedure TForthMachine._dog_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 2); Inc(WP, 2 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-2))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 2); Dec(WP, (SizeOf(Pointer)) + 2) end;
      procedure TForthMachine.ptr_plus_uint16 (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 2; end;
@@ -7472,8 +7495,8 @@ end;
                if C = nil then begin LogError('unkown name after uint16-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-2))^), C.Data^, 2); Dec(WP, 2);
              end;
-     procedure TForthMachine._value_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint16; Move((Pointer(TUInt(WP) + (-2))^), DP^, 2); Dec(WP, 2); Inc(DP, 2); end; end;
-     procedure TForthMachine._variable_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 2); Move(WP^, DP^, 2);} Inc(DP, 2); end; end;
+     procedure TForthMachine._value_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint16; Move((Pointer(TUInt(WP) + (-2))^), Here^, 2); Dec(WP, 2); EA(2); end; end;
+     procedure TForthMachine._variable_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 2); Move(WP^, Here^, 2);} EA(2); end; end;
      procedure TForthMachine.RunValue_uint16 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 2); Inc(WP, 2); end;
     procedure TForthMachine.literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint16-(literal)'); Dec(WP, 2); EWV(WP, 2); end;
     procedure TForthMachine.run_literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 2); Inc(WP, 2); end;
@@ -7532,7 +7555,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
+     procedure TForthMachine._comma_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4); end;
      procedure TForthMachine._dog_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4) end;
      procedure TForthMachine.ptr_plus_uint32 (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4; end;
@@ -7543,8 +7566,8 @@ end;
                if C = nil then begin LogError('unkown name after uint32-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
-     procedure TForthMachine._value_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint32; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, DP^, 4);} Inc(DP, 4); end; end;
+     procedure TForthMachine._value_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint32; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); end; end;
+     procedure TForthMachine._variable_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end; end;
      procedure TForthMachine.RunValue_uint32 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     procedure TForthMachine.literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint32-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
@@ -7603,7 +7626,7 @@ end;
             8);
        Inc(WP, 8 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 8); Move(WP^, DP^, 8); Inc(DP, 8); end;
+     procedure TForthMachine._comma_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 8); Move(WP^, Here^, 8); EA(8); end;
      procedure TForthMachine._dog_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 8); Inc(WP, 8 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-8))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 8); Dec(WP, (SizeOf(Pointer)) + 8) end;
      procedure TForthMachine.ptr_plus_uint64 (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 8; end;
@@ -7614,8 +7637,8 @@ end;
                if C = nil then begin LogError('unkown name after uint64-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-8))^), C.Data^, 8); Dec(WP, 8);
              end;
-     procedure TForthMachine._value_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_uint64; Move((Pointer(TUInt(WP) + (-8))^), DP^, 8); Dec(WP, 8); Inc(DP, 8); end; end;
-     procedure TForthMachine._variable_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 8); Move(WP^, DP^, 8);} Inc(DP, 8); end; end;
+     procedure TForthMachine._value_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint64; Move((Pointer(TUInt(WP) + (-8))^), Here^, 8); Dec(WP, 8); EA(8); end; end;
+     procedure TForthMachine._variable_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 8); Move(WP^, Here^, 8);} EA(8); end; end;
      procedure TForthMachine.RunValue_uint64 (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 8); Inc(WP, 8); end;
     procedure TForthMachine.literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin EWO('uint64-(literal)'); Dec(WP, 8); EWV(WP, 8); end;
     procedure TForthMachine.run_literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 8); Inc(WP, 8); end;
@@ -7674,7 +7697,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_embro (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, DP^, 4); Inc(DP, 4); end;
+     procedure TForthMachine._comma_embro (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4); end;
      procedure TForthMachine._dog_embro (Machine: TForthMachine; Command: PForthCommand); begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer))) end;
      procedure TForthMachine._exclamation_embro (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4) end;
      procedure TForthMachine.ptr_plus_embro (Machine: TForthMachine; Command: PForthCommand); begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4; end;
@@ -7685,8 +7708,8 @@ end;
                if C = nil then begin LogError('unkown name after embro-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), C.Data^, 4); Dec(WP, 4);
              end;
-     procedure TForthMachine._value_embro (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_embro; Move((Pointer(TUInt(WP) + (-4))^), DP^, 4); Dec(WP, 4); Inc(DP, 4); end; end;
-     procedure TForthMachine._variable_embro (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, DP^, 4);} Inc(DP, 4); end; end;
+     procedure TForthMachine._value_embro (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_embro; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); end; end;
+     procedure TForthMachine._variable_embro (Machine: TForthMachine; Command: PForthCommand); begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end; end;
      procedure TForthMachine.RunValue_embro (Machine: TForthMachine; Command: PForthCommand); begin Move(Command.Data^, WP^, 4); Inc(WP, 4); end;
     procedure TForthMachine.literal_embro (Machine: TForthMachine; Command: PForthCommand); begin EWO('embro-(literal)'); Dec(WP, 4); EWV(WP, 4); end;
     procedure TForthMachine.run_literal_embro (Machine: TForthMachine; Command: PForthCommand); begin ERV(WP, 4); Inc(WP, 4); end;
@@ -9263,8 +9286,10 @@ end;
       procedure TForthMachine.execute (Machine: TForthMachine; Command: PForthCommand); var P: PForthCommand; begin 
                                              P := WOP; P.Code(Machine, P) end;
       procedure TForthMachine._does_gt (Machine: TForthMachine; Command: PForthCommand); begin EWO('(does>)'); EWO('exit'); end;
-      procedure TForthMachine._sq_does_gt_sq (Machine: TForthMachine; Command: PForthCommand); begin Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; Writeln(C[FLastMnemonic].Name); end;
+      procedure TForthMachine._sq_does_gt_sq (Machine: TForthMachine; Command: PForthCommand); begin Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; end;
       procedure TForthMachine.CallDoesGt (Machine: TForthMachine; Command: PForthCommand); begin FControlCommands.Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine.Cells (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))*SizeOf(Integer); end;
+      procedure TForthMachine.Cell_plus (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) + SizeOf(TInt); end;
     
    
     

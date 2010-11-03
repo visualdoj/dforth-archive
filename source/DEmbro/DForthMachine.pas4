@@ -104,7 +104,7 @@ define(~typed_commands|,
             $2);
        WInc($2 - SizeOf(TInt));
      end;
-     procedure TForthMachine._comma_$1 cmdhdr; begin Dec(WP, $2); Move(WP^, DP^, $2); Inc(DP, $2); end;
+     procedure TForthMachine._comma_$1 cmdhdr; begin Dec(WP, $2); Move(WP^, Here^, $2); EA($2); end;
      procedure TForthMachine._dog_$1 cmdhdr; begin Move(Pointer(WVar(-PSize))^, WVar(-PSize), $2); Inc(WP, $2 - PSize) end;
      procedure TForthMachine._exclamation_$1 cmdhdr; begin Move(WVar(-PSize-$2), Pointer(WVar(-PSize))^, $2); Dec(WP, PSize + $2) end;
      procedure TForthMachine.ptr_plus_$1 cmdhdr; begin PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; end;
@@ -115,8 +115,8 @@ define(~typed_commands|,
                if C = nil then begin LogError('unkown name after genname($1, ~to|): ' + N); FSession := False; Exit; end; 
                Move(WVar(-$2), C.Data^, $2); Dec(WP, $2);
              end;
-     procedure TForthMachine._value_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := DP; Code := RunValue_$1; Move(WVar(-$2), DP^, $2); Dec(WP, $2); Inc(DP, $2); end; end;
-     procedure TForthMachine._variable_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := DP; Code := FDataCommands.PutDataPtr; {Dec(WP, $2); Move(WP^, DP^, $2);} Inc(DP, $2); end; end;
+     procedure TForthMachine._value_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_$1; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); end; end;
+     procedure TForthMachine._variable_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, $2); Move(WP^, Here^, $2);} EA($2); end; end;
      procedure TForthMachine.RunValue_$1 cmdhdr; begin Move(Command.Data^, WP^, $2); Inc(WP, $2); end;
     procedure TForthMachine.literal_$1 cmdhdr; begin EWO('genname($1, (literal))'); Dec(WP, $2); EWV(WP, $2); end;
     procedure TForthMachine.run_literal_$1 cmdhdr; begin ERV(WP, $2); Inc(WP, $2); end;
@@ -166,7 +166,7 @@ define(~data_commands|,
   )
   define(~regist_all_commands|, regist_all_commands
     ~
-    |)
+    |
 |)
 define(~exception_commands|, 
   ~
@@ -646,6 +646,8 @@ define(~misc_commands|,
   procedure _does_gt cmdhdr;
   procedure _sq_does_gt_sq cmdhdr;
   procedure CallDoesGt cmdhdr;
+  procedure Cells cmdhdr;
+  procedure Cell_plus cmdhdr;
   define(~all_implement|, all_implement 
     ~
       procedure TForthMachine._wp cmdhdr; begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
@@ -679,8 +681,10 @@ define(~misc_commands|,
       procedure TForthMachine.execute cmdhdr; var P: PForthCommand; begin 
                                              P := WOP; P.Code(Machine, P) end;
       procedure TForthMachine._does_gt cmdhdr; begin EWO('(does>)'); EWO('exit'); end;
-      procedure TForthMachine._sq_does_gt_sq cmdhdr; begin Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; Writeln(C[FLastMnemonic].Name); end;
+      procedure TForthMachine._sq_does_gt_sq cmdhdr; begin Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; end;
       procedure TForthMachine.CallDoesGt cmdhdr; begin FControlCommands.Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine.Cells cmdhdr; begin TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt)))*SizeOf(Integer); end;
+      procedure TForthMachine.Cell_plus cmdhdr; begin TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); end;
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -713,6 +717,8 @@ define(~misc_commands|,
      AddCommand('execute', execute);
      AddCommand('does>', _does_gt, True);
      AddCommand('(does>)', _sq_does_gt_sq);
+     AddCommand('cells', Cells);
+     AddCommand('cell+', Cell_plus);
     |)
 |)
 define(~file_commands|, 
@@ -1131,7 +1137,7 @@ TForthMachine = class
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   //C: array of TForthCommand;
   FData: array of Byte;
-  FHere: Integer;
+  //FHere: Integer;
   FCompilation: Boolean;
   FRunning: Boolean;
   FSource: PChar;
@@ -1168,6 +1174,9 @@ TForthMachine = class
   EC: Integer; // Embro Counter (E[EC])
   EL: Integer; // Embro Last compiled
   ES: Integer; // Embro Size (Length(E))
+  procedure EA(Size: Integer); // Embro Alloc
+  function Here: Pointer; overload;
+  procedure _here(Machine: TForthMachine; Command: PForthCommand); overload;
   procedure EWV(V: Pointer; Size: Integer); // Embro Write Var
   procedure EWI(V: Integer); // Embro Write Integer
   procedure EWE(V: TEmbroPtr);
@@ -1288,11 +1297,11 @@ TForthMachine = class
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
  public
-  D: array of Byte; // Data
+ {D: array of Byte; // Data
   DB: Pointer; // Data Base
   DP: Pointer; // Data Pointer (traditionaly called HERE in forth)
   DS: Integer; // Data Size
-  procedure DA(Size: Integer); // Data Allot
+  procedure DA(Size: Integer); // Data Allot}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'S'}{$ENDIF}
  public
@@ -2122,10 +2131,9 @@ var
   NewCommand: PForthCommand;
 begin
   Name := Machine.NextName;
-  Writeln('create "', Name, '"');
   NewCommand := Machine.ReserveName(Name);
   NewCommand^.Code := putdataptr;
-  NewCommand^.Data := Machine.DP;
+  NewCommand^.Data := Machine.Here;
 end;
 
 procedure TDataCommands.putdataptr(Machine: TForthMachine; Command: PForthCommand);
@@ -2141,7 +2149,7 @@ var
   P: Pointer;
 begin
   // FIXME: P не постоянен
-  P := Machine.DP;
+  P := Machine.Here;
   Machine.FPtrStackCommands.Push(@P);
 end;
 
@@ -2328,7 +2336,7 @@ var
   P: Pointer;
 begin
   Machine.FPtrStackCommands.Pop(@P);
-  Move(P, Machine.DP^, SizeOf(Pointer));
+  Move(P, Machine.Here^, SizeOf(Pointer));
   Machine.IncHere(SizeOf(Pointer)); 
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -2655,35 +2663,35 @@ begin
   if Conv = CONV_STDCALL then 
         begin
           C^.Code := invoke_stdcall;
-          C^.Data := Machine.DP;
+          C^.Data := Machine.Here;
           P := @Test;
-          Move(P, Machine.DP^, SizeOf(P));
+          Move(P, Machine.Here^, SizeOf(P));
           Machine.IncHere(SizeOf(P));
           B := ReturnType^.Size;
           if B <= 8 then begin
             S := B;
             if S > 4 then
               S := 4;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             B := B - S;
             S := B;
             if S > 4 then
               S := 4;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             S := 0;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
           end else begin
             S := 0;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             S := 0;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             S := B;
-            Move(S, Machine.DP^, SizeOf(S));
+            Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
           end;
           for I := 0 to High(Types) do begin
@@ -2694,20 +2702,20 @@ begin
                 S := 4;
               B := B - S;
               S := -S;
-              Move(S, Machine.DP^, SizeOf(S));
+              Move(S, Machine.Here^, SizeOf(S));
               Machine.IncHere(SizeOf(S));
             end;
           end;
           B := 0;
-          Move(B, Machine.DP^, SizeOf(B));
+          Move(B, Machine.Here^, SizeOf(B));
           Machine.IncHere(SizeOf(B));
         end
   else if Conv = CONV_CDECL then 
         begin
           C^.Code := invoke_cdecl;
-          C^.Data := Machine.DP;
+          C^.Data := Machine.Here;
           P := nil;
-          Move(P, Machine.DP^, SizeOf(P));
+          Move(P, Machine.Here^, SizeOf(P));
         end
   else begin
     Machine.LogError(C^.Name + ' unknown code convension');
@@ -3231,7 +3239,8 @@ end;
 
 procedure TForthMachine.IncHere(Count: Integer);
 begin
-  Inc(DP, Count);
+  //Inc(Here, Count);
+  EA(Count);
   //if Length(FData) - FHere < 1024 then
   //  SetLength(FData, Length(FData) + 1024);
 end;
@@ -3249,6 +3258,22 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'E'}{$ENDIF}
+procedure TForthMachine.EA(Size: Integer); // Embro Alloc
+begin
+  Inc(EL, Size);
+end;
+
+function TForthMachine.Here: Pointer;
+begin
+  Result := @E[EL];
+end;
+
+procedure TForthMachine._here(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Pointer(WP^) := @E[EL];
+  Inc(WP, SizeOf(Pointer));
+end;
+
 procedure TForthMachine.EWV(V: Pointer; Size: Integer); // Embro Write Data
 begin
   Move(V^, (@E[EL])^, Size);
@@ -3499,10 +3524,10 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
-procedure TForthMachine.DA(Size: Integer);
+{procedure TForthMachine.DA(Size: Integer);
 begin
-  Inc(DP, Size);
-end;
+  Inc(Here, Size);
+end;}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'S'}{$ENDIF}
 function TForthMachine.SE: Boolean;
@@ -3634,10 +3659,10 @@ begin
   CC := 0;
   CS := Length(C);
   WordListClear(Local);
-  SetLength(D, 1024 * 1024);
+  {SetLength(D, 1024 * 1024);
   DB := @D[0];
-  DP := DB;
-  DS := Length(D);
+  Here := DB;
+  DS := Length(D);}
   SetLength(L, 1024 * 1024);
   LB := @L[0];
   LP := LB;
@@ -3649,7 +3674,7 @@ begin
   FStack := TForthStack.Create;
   FReturnStack := TReturnStack.Create;
   SetLength(FData, 2048);
-  FHere := 0;
+  //FHere := 0;
   SetLength(FTypes, 0);
   all_create;
   AddType('', 0);
@@ -3911,7 +3936,7 @@ begin
   AddCommand(' 64to', FDataCommands.run_64to);}
 
   AddCommand('create', FDataCommands._create);
-  //AddCommand('here', FDataCommands.here);
+  AddCommand('here', _here);
   AddCommand('allot', FDataCommands.allot);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 (*
@@ -4783,7 +4808,7 @@ var
   a: T;
 begin
   Machine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.DP^, SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -4838,7 +4863,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.DP^, SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -4893,7 +4918,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.DP^, SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -4948,7 +4973,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -5003,7 +5028,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -5040,7 +5065,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -5077,7 +5102,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -5114,7 +5139,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -5151,7 +5176,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 
@@ -5188,7 +5213,7 @@ var
   a: T;
 begin
   FMachine.Stack.pop(@a, SizeOf(a));
-  Move(a, Machine.FData[Machine.FHere], SizeOf(T));
+  Move(a, Machine.Here^, SizeOf(T));
   Machine.IncHere(SizeOf(T));
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
