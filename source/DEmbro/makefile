@@ -2,12 +2,17 @@
 .PHONY: release
 .PHONY: doc
 .PHONY: dll
+.PHONY: DMachineCode
 
-all: clean
+all: clean DMachineCode
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
+
+DMachineCode:
+	m4 ..\DMachineCode\Dx86.pas4 > ..\DMachineCode\Dx86.temp1
+	m4 ..\m4\hex.m4 ..\DMachineCode\Dx86.temp1 > ..\DMachineCode\Dx86.pas
 
 dll:
 	fpc dembro32lib.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp

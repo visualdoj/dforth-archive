@@ -1,0 +1,101 @@
+unit Dx86;
+
+interface 
+dnl(
+changequote(~,|)
+
+define(~all_implement|, ~|)
+define(~all_interface|, ~// x86 mnemonics|)
+define(~AsmCode|, ~
+  define(~all_interface|, all_interface~
+    procedure $1$2; overload;|)
+  define(~all_implement|, all_implement~
+procedure Tx86.$1$2;
+begin
+  $3
+end;
+|)
+  |
+)
+define(~ModRM_Mod|, ~(($1) shl 6)|)
+define(~ModRM_Reg|, ~(($1) shl 3)|)
+define(~ModRM_R_M|, ~($1)|)
+define(~mne0|, ~AsmCode($1, ~|, WriteB($2);)|)
+define(~mnei|, ~AsmCode($1, ~(I: LongInt)|, WriteB($2);
+  WriteI(I);)|)
+define(~mner|, ~AsmCode($1, ~(Reg: Tx86Reg)|, WriteB($2 + Reg);)|)
+define(~mneri|, ~AsmCode($1, ~(Reg: Tx86Reg; I: LongInt)|, WriteB($2 + Reg2);
+  WriteI(I);)|)
+define(~mnerr|, ~AsmCode($1, ~(Reg1, Reg2: Tx86Reg)|, WriteB($2); 
+  WriteB(3 shl 6 + Reg1 shl 3 + Reg2);)|)
+define(~mnerk|, ~AsmCode($1, ~(Dst, Reg: Tx86Reg)|,
+  WriteB($2);
+  if Reg = ESP then begin
+  end else begin
+    WriteB(ModRM_Mod(0) + ModRM_Mod(Dst) + ModRM_R_M(Reg));
+  end;
+  if Reg = EBP then
+    WriteB(0);)|)
+define(~mnerk2|, ~AsmCode($1, ~(Dst, Reg1, Reg2, Mul: Byte; Add: Byte)|, WriteB($2); 
+  WriteB(ModRM_Mod(3) + ModRM_R_M(Reg2));
+  WriteI(I);)|)
+
+mne0(NOP,  Hex(90))
+mne0(REPNE,  Hex(F2))
+mne0(SCASD,  Hex(AF))
+mneri(MOV,  Hex(B8))
+mnerr(MOV,  Hex(8B))
+mnerk(MOV,  Hex(8B))
+mner(INC,  Hex(40))
+mner(DEC,  Hex(48))
+mner(PUSH, Hex(50))
+mne(POP,  Hex(58))
+)
+
+uses
+  DMachineCode;
+
+const
+  // main x86 registers
+  Tx86Reg = (
+                EAX =                 0,
+                ECX =                 1,
+                EDX =                 2,
+                EBX =                 3,
+                ESP =                 4,
+                EBP =                 5,
+                ESI =                 6,
+                EDI =                 7
+            );
+  // 16-bit x86 registers (rw)
+  Tx86RegL = (
+                AX =                  0,
+                CX =                  1,
+                DX =                  2,
+                BX =                  3,
+                SP =                  4,
+                BP =                  5,
+                SI =                  6,
+                DI =                  7
+            );
+  // 8-bit x86 registers (rb)
+  Tx86RegL = (
+                AL =                  0,
+                CL =                  1,
+                DL =                  2,
+                BL =                  3,
+                AH =                  4,
+                CH =                  5,
+                DH =                  6,
+                BH =                  7
+            );
+
+type
+  Tx86 = class(TMachineCode);
+  public
+    all_interface
+  end;
+
+implementation
+all_implement
+end.
