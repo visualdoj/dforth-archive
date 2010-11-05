@@ -54,7 +54,7 @@ end;
 
 procedure TMachineCode.WriteD(D: LongInt);
 begin
-  Write(@I, SizeOf(LongInt));
+  Write(@D, SizeOf(LongInt));
 end;
 
 constructor TMachineCode.Create(BaseSize: Integer = 64*1024);

@@ -67,6 +67,16 @@ type
                 XMM6 =                 6,
                 XMM7 =                 7
             );
+  // x86 Sreg register
+  Tx86RegSreg = ( 
+                ES =                    0,
+                CS =                    1,
+                SS =                    2,
+                DS =                    3,
+                FS =                    4,
+                GS =                    5
+                );
+  // x86 modes
   Tx86Mode = (X86_MODE_32, X86_MODE_16);
 
 type
@@ -78,28 +88,27 @@ type
   public
     constructor Create(BaseSize: Integer);
     // x86 mnemonics
-    procedure Test(Dst: Tx86RegXMM; const Reg: array of Tx86RegXMM; Offset: LongInt); overload;
+    procedure Test(Dst: Tx86Reg; const Reg: array of Tx86Reg; Offset: LongInt); overload;
     procedure ADD(B: Tx86b); overload;
     procedure ADD(W: Tx86w); overload;
     procedure ADD(D: Tx86d); overload;
-    procedure ADD(Reg: Tx86Reg; B: Tx86b); overload;
-    procedure ADD(Reg: Tx86Reg; W: Tx86w); overload;
-    procedure ADD(Reg: Tx86Reg; D: Tx86d); overload;
-    procedure ADD(Reg: Tx86Reg; B: Tx86b); overload;
-    procedure ADD(Reg: Tx86Reg; B: Tx86b); overload;
-    procedure ADD(Reg: Tx86Reg; B: Tx86b); overload;
     procedure NOP; overload;
     procedure REPNE; overload;
     procedure SCASD; overload;
-    procedure MOV(Reg: Tx86Reg; b: Tx86b); overload;
-    procedure MOV(Reg: Tx86Reg; w: Tx86w); overload;
-    procedure MOV(Reg: Tx86Reg; d: LongIng); overload;
-    procedure MOV(Reg: Tx86Reg; b: Tx86b); overload;
-    procedure MOV(Reg: Tx86Reg; w: Tx86w); overload;
-    procedure MOV(Reg: Tx86Reg; d: LongIng); overload;
+    procedure MOV(Dst, Src: Tx86RegB); overload;
+    procedure MOV(Dst, Src: Tx86RegW); overload;
+    procedure MOV(Dst, Src: Tx86Reg); overload;
+    procedure MOV(Reg: Tx86RegB; B: Tx86b); overload;
+    procedure MOV(Reg: Tx86RegW; W: Tx86w); overload;
+    procedure MOV(Reg: Tx86Reg; D: LongInt); overload;
+    procedure MOV(Reg: Tx86RegW; S: Tx86RegSreg); overload;
+    procedure MOV(S: Tx86RegSreg; Reg: Tx86RegW); overload;
+    procedure MOV(M: Tx86w; S: Tx86RegSreg); overload;
+    procedure MOV(S: Tx86RegSreg; M: Tx86w); overload;
     procedure INC(Reg: Tx86Reg); overload;
     procedure DEC(Reg: Tx86Reg); overload;
     procedure PUSH(Reg: Tx86Reg); overload;
+    procedure POP(Reg: Tx86Reg); overload;
   end;
 
 function x86b(I: ShortInt): Tx86b;
@@ -125,9 +134,11 @@ end;
 
 constructor Tx86.Create(BaseSize: Integer);
 begin
+  inherited Create(BaseSize);
+  FMode := X86_MODE_32;
 end;
 
-procedure Tx86.Test(Dst: Tx86RegXMM; const Reg: array of Tx86RegXMM; Offset: LongInt);
+procedure Tx86.Test(Dst: Tx86Reg; const Reg: array of Tx86Reg; Offset: LongInt);
 begin
   if Length(Reg) <> 1 then begin
     // TODO
@@ -159,48 +170,6 @@ begin
   WriteI(LongInt(D));
 end;
 
-procedure Tx86.ADD(Reg: Tx86Reg; B: Tx86b);
-begin
-  WriteB();
-  // TODO
-  WriteB(Byte(B));
-end;
-
-procedure Tx86.ADD(Reg: Tx86Reg; W: Tx86w);
-begin
-  WriteB();
-  // TODO
-  WriteW(Word(W));
-end;
-
-procedure Tx86.ADD(Reg: Tx86Reg; D: Tx86d);
-begin
-  WriteB();
-  // TODO
-  WriteI(LongInt(D));
-end;
-
-procedure Tx86.ADD(Reg: Tx86Reg; B: Tx86b);
-begin
-  WriteB();
-  // TODO
-  WriteB(Byte(B));
-end;
-
-procedure Tx86.ADD(Reg: Tx86Reg; B: Tx86b);
-begin
-  WriteB();
-  // TODO
-  WriteB(Byte(B));
-end;
-
-procedure Tx86.ADD(Reg: Tx86Reg; B: Tx86b);
-begin
-  WriteB();
-  // TODO
-  WriteB(Byte(B));
-end;
-
 procedure Tx86.NOP;
 begin
   WriteB($90);
@@ -216,46 +185,64 @@ begin
   WriteB($AF);
 end;
 
-procedure Tx86.MOV(Reg: Tx86Reg; b: Tx86b);
+procedure Tx86.MOV(Dst, Src: Tx86RegB);
 begin
-  WriteB();
-  // TODO
-  Writeb(Byte(b));
+  WriteB($88); 
+  WriteB(((3) shl 6) + ((Dst) shl 3) + (Src));
 end;
 
-procedure Tx86.MOV(Reg: Tx86Reg; w: Tx86w);
+procedure Tx86.MOV(Dst, Src: Tx86RegW);
 begin
-  WriteB();
-  // TODO
-  Writew(Word(w));
+  if FMode = X86_MODE_32 then
+  WriteB($66);; 
+  WriteB($89);
+  WriteB(((3) shl 6) + ((Dst) shl 3) + (Src));
 end;
 
-procedure Tx86.MOV(Reg: Tx86Reg; d: LongIng);
+procedure Tx86.MOV(Dst, Src: Tx86Reg);
 begin
-  WriteB();
-  // TODO
-  Writed(LongInt(d));
+  if FMode = X86_MODE_32 then
+  WriteB($66);;
+  WriteB($89); 
+  WriteB(((3) shl 6) + ((Dst) shl 3) + (Src));
 end;
 
-procedure Tx86.MOV(Reg: Tx86Reg; b: Tx86b);
+procedure Tx86.MOV(Reg: Tx86RegB; B: Tx86b);
 begin
-  WriteB();
-  // TODO
-  Writeb(Byte(b));
+  WriteB($B0 + Ord(Reg));
+  WriteB(Byte(B));
 end;
 
-procedure Tx86.MOV(Reg: Tx86Reg; w: Tx86w);
+procedure Tx86.MOV(Reg: Tx86RegW; W: Tx86w);
 begin
-  WriteB();
-  // TODO
-  Writew(Word(w));
+  WriteB($B8 + Ord(Reg));
+  WriteW(Word(W));
 end;
 
-procedure Tx86.MOV(Reg: Tx86Reg; d: LongIng);
+procedure Tx86.MOV(Reg: Tx86Reg; D: LongInt);
 begin
-  WriteB();
-  // TODO
-  Writed(LongInt(d));
+  WriteB($B8 + Ord(Reg));
+  WriteI(LongInt(D));
+end;
+
+procedure Tx86.MOV(Reg: Tx86RegW; S: Tx86RegSreg);
+begin
+  WriteB($8C); // TODO
+end;
+
+procedure Tx86.MOV(S: Tx86RegSreg; Reg: Tx86RegW);
+begin
+  WriteB($8E); // TODO
+end;
+
+procedure Tx86.MOV(M: Tx86w; S: Tx86RegSreg);
+begin
+  WriteB($8C); // TODO
+end;
+
+procedure Tx86.MOV(S: Tx86RegSreg; M: Tx86w);
+begin
+  WriteB($8E); // TODO
 end;
 
 procedure Tx86.INC(Reg: Tx86Reg);
@@ -271,6 +258,11 @@ end;
 procedure Tx86.PUSH(Reg: Tx86Reg);
 begin
   WriteB($50 + Ord(Reg));
+end;
+
+procedure Tx86.POP(Reg: Tx86Reg);
+begin
+  WriteB($58 + Ord(Reg));
 end;
 
 var

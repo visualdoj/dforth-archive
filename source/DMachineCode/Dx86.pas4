@@ -27,9 +27,13 @@ define(~AK|, ~if Length($1) <> 1 then begin
 define(~ModRM_Mod|, ~(($1) shl 6)|)
 define(~ModRM_Reg|, ~(($1) shl 3)|)
 define(~ModRM_R_M|, ~($1)|)
+define(~ModRM|, ~WriteB(ModRM_Mod($1) + ModRM_Reg($2) + ModRM_R_M($3))|)
 define(~SIB_Mul|, ~(($1) shl 6)|)
 define(~SIB_Reg2|, ~(($1) shl 3)|)
 define(~SIB_Reg1|, ~($1)|)
+define(~SIB|, ~WriteB(SIB_MUL($1) + SIB_Reg2($2) + SIB_Reg1($1))|)
+define(~SwitchMode|, ~  if FMode = $1 then
+  WriteB(Hex(66));|)
 
 // xxx
 define(~mne0|, ~AsmCode($1, ~|, WriteB($2);)|)
@@ -53,33 +57,62 @@ define(~mneid|, ~AsmCode($1, ~(D: Tx86d)|, WriteB($2);
 // REGISTER/MEMORY AND IMMEDIATE OPERANDS
 // g := register/memory
 define(~mnexix|, ~
- define(~mne$1ib|, ~AsmCode($|~1, ~(Reg: Tx86Reg$~|3; B: Tx86b)|, WriteB($~|2);
+ define(~mner$1ib|, ~AsmCode($|~1, ~(Reg: Tx86Reg|$|~3~; B: Tx86b)|, WriteB($|~2 + Ord(Reg));
+  WriteB(Byte(B));)|)
+ define(~mner$1iw|, ~AsmCode($|~1, ~(Reg: Tx86Reg|$|~3~; W: Tx86w)|, WriteB($|~2 + Ord(Reg));
+  WriteW(Word(W));)|)
+ define(~mner$1id|, ~AsmCode($|~1, ~(Reg: Tx86Reg|$|~3~; D: LongInt)|, WriteB($|~2 + Ord(Reg));
+  WriteI(LongInt(D));)|)
+  
+ define(~mnem$1ib|, ~AsmCode($|~1, ~(Reg: Tx86Reg|$|~3~; T: )|, WriteB($|~2);
   $2
   WriteB(Byte(B));)|)
- define(~mne$1iw|, ~AsmCode($|~1, ~(Reg: Tx86Reg$~|3; W: Tx86w)|, WriteB($~|2);
+ define(~mnem$1iw|, ~AsmCode($|~1, ~(Reg: Tx86Reg|$|~3~; W: Tx86w)|, SwitchMode(X86_MODE_16);
+  WriteB($|~2 + Ord(Reg));
   $2
   WriteW(Word(W));)|)
- define(~mne$1id|, ~AsmCode($|~1, ~(Reg: Tx86Reg$~|3; D: Tx86d)|, WriteB($~|2);
+ define(~mnem$1id|, ~AsmCode($|~1, ~(Reg: Tx86Reg|$|~3~; D: LongInt)|, SwitchMode(X86_MODE_32);
+  WriteB($|~2 + Ord(Reg));
   $2
   WriteI(LongInt(D));)|)|)
-mnexix(gb, // TODO)
-mnexix(gw, // TODO)
-mnexix(gd, // TODO)
+
+ define(~mneg$1ib|, ~|)
+ define(~mneg$1iw|, ~|)
+ define(~mneg$1id|, ~|)
+mnexix(b, // TODO)
+mnexix(w, // TODO)
+mnexix(d, // TODO)
 
 // REGISTER/MEMORY AND REGISTER OPERANDS
-define(~mnegxrx|, ~
- define(~mneg$1r$1|, ~AsmCode($|~1, ~(Reg: Tx86Reg$~|3; $1: $3)|,  $2|)
- define(~mner$1g$1|, ~AsmCode($|~1, ~($1: $3; Reg: Tx86Reg$~|3)|,  $2|)
+define(~mnerxrx|, ~
+  define(~mner$1r$1|, ~AsmCode($|~1, (Dst, Src: Tx86Reg$|~3),  $2)|)
+|)
+mnerxrx(b, WriteB($2); 
+  ModRM(3, Dst, Src);, 
+  Tx86b, Byte);
+mnerxrx(w, SwitchMode(X86_MODE_32); 
+  WriteB($2);
+  ModRM(3, Dst, Src);, 
+  Tx86w, Word);
+mnerxrx(d, SwitchMode(X86_MODE_32);
+  WriteB($2); 
+  ModRM(3, Dst, Src);, 
+  LongIng, LongInt);
+define(~mnemxrx|, ~
+ define(~mner$1m$1|, ~AsmCode($|~1, (Reg: Tx86Reg$|~3; K(Mem, LongInt)),  $2)|)
+ define(~mnem$1r$1|, ~AsmCode($|~1, (K(Mem, LongInt); Reg: Tx86Reg$|~3),  $2)|)
   |)
-mnegxrx(b, // TODO, Tx86b, Byte)
-mnegxrx(w, // TODO, Tx86w, Word)
-mnegxrx(d, // TODO, LongIng, LongInt)
+define(~mnerws|, ~AsmCode($1, (Reg: Tx86Reg$3; S: Tx86RegSreg),  WriteB($2); // TODO)|)
+define(~mnesrw|, ~AsmCode($1, (S: Tx86RegSreg; Reg: Tx86Reg$3),  WriteB($2); // TODO)|)
+define(~mnemws|, ~AsmCode($1, (M: Tx86w; S: Tx86RegSreg),  WriteB($2); // TODO)|)
+define(~mnesmw|, ~AsmCode($1, (S: Tx86RegSreg; M: Tx86w),  WriteB($2); // TODO)|)
 
 // xxx reg
 define(~mner|, ~AsmCode($1, ~(Reg: Tx86Reg$3)|, WriteB($2 + Ord(Reg));)|)
 
 // xxx reg int
 define(~mneri|, ~AsmCode($1, ~(Reg: Tx86Reg$3; I: LongInt)|, WriteB($2 + Ord(Reg));
+  SwitchMode(X86_MODE_32);
   WriteI(I);)|)
 
 // xxx reg reg
@@ -165,15 +198,15 @@ define(~mnerkmo32|, ~AsmCode($1, ~(Dst: Tx86Reg$3; K(Reg1, Tx86Reg$3); K(Reg2, T
   WriteB(SIB_Mul(Mul - 1) + SIB_Reg2(Ord(Reg2[0])) + SIB_Reg1(Ord(Reg1[0])));
   WriteI(Offset);)|)
 
-mnerko32(Test,  Hex(90), XMM)
+mnerko32(Test,  Hex(90))
 mneib(ADD,  Hex(04))
 mneiw(ADD,  Hex(05))
 mneid(ADD,  Hex(05))
 mnegbib(ADD,  Hex(80))
 mnegwiw(ADD,  Hex(81))
 mnegdid(ADD,  Hex(81))
-mnegwib(ADD,  Hex(83))
-mnegdib(ADD,  Hex(83))
+mnegbib(ADD,  Hex(83), ~B|)
+mnegwib(ADD,  Hex(83), ~W|)
 mnegdib(ADD,  Hex(83))
 mne0(NOP,  Hex(90))
 mne0(REPNE,  Hex(F2))
@@ -186,17 +219,27 @@ dnl mnerko32(MOV,  Hex(8B))
 dnl mnerkmo8(MOV,  Hex(8B))
 dnl mnerkmo32(MOV,  Hex(8B))
 
-mnegbrb(MOV, Hex(88))
-mnegwrw(MOV, Hex(89))
-mnegdrd(MOV, Hex(89))
-mnerbgb(MOV, Hex(8A))
-mnerwgw(MOV, Hex(8B))
-mnerdgd(MOV, Hex(8B))
+mnerbrb(MOV, Hex(88), B)
+mnerwrw(MOV, Hex(89), W)
+mnerdrd(MOV, Hex(89))
+mnerbmb(MOV, Hex(8A), B)
+mnerwmw(MOV, Hex(8B), W)
+mnerdmd(MOV, Hex(8B))
+mnembrb(MOV, Hex(88), B)
+mnemwrw(MOV, Hex(89), W)
+mnemdrd(MOV, Hex(89))
+mnerbib(MOV, Hex(B0), B)
+mnerwiw(MOV, Hex(B8), W)
+mnerdid(MOV, Hex(B8))
+mnerws(MOV, Hex(8C), W)
+mnesrw(MOV, Hex(8E), W)
+mnemws(MOV, Hex(8C), W)
+mnesmw(MOV, Hex(8E), W)
 
 mner(INC,  Hex(40))
 mner(DEC,  Hex(48))
 mner(PUSH, Hex(50))
-mne(POP,  Hex(58))
+mner(POP,  Hex(58))
 )
 
 uses
@@ -264,6 +307,16 @@ type
                 XMM6 =                 6,
                 XMM7 =                 7
             );
+  // x86 Sreg register
+  Tx86RegSreg = ( 
+                ES =                    0,
+                CS =                    1,
+                SS =                    2,
+                DS =                    3,
+                FS =                    4,
+                GS =                    5
+                );
+  // x86 modes
   Tx86Mode = (X86_MODE_32, X86_MODE_16);
 
 type
@@ -300,6 +353,8 @@ end;
 
 constructor Tx86.Create(BaseSize: Integer);
 begin
+  inherited Create(BaseSize);
+  FMode := X86_MODE_32;
 end;
 all_implement
 var
