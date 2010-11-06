@@ -92,6 +92,10 @@ type
     procedure ADD(B: Tx86b); overload;
     procedure ADD(W: Tx86w); overload;
     procedure ADD(D: Tx86d); overload;
+    procedure ADD(D: LongInt); overload;
+    procedure ADD(Reg: Tx86RegB; B: Tx86b); overload;
+    procedure ADD(Reg: Tx86RegW; W: Tx86w); overload;
+    procedure ADD(Reg: Tx86Reg; D: LongInt); overload;
     procedure NOP; overload;
     procedure REPNE; overload;
     procedure SCASD; overload;
@@ -160,13 +164,45 @@ end;
 
 procedure Tx86.ADD(W: Tx86w);
 begin
+  if FMode = X86_MODE_16 then
+    WriteB($66); 
   WriteB($05);
   WriteW(Word(W));
 end;
 
 procedure Tx86.ADD(D: Tx86d);
 begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
   WriteB($05);
+  WriteI(LongInt(D));
+end;
+
+procedure Tx86.ADD(D: LongInt);
+begin
+  if (D >= -128) and (D <= 127) then
+    ADD(x86b(ShortInt(D)))
+  else if (D >= -32768) and (D <= 32767) then
+    ADD(x86w(SmallInt(D)))
+  else
+    ADD(x86d(D));
+end;
+
+procedure Tx86.ADD(Reg: Tx86RegB; B: Tx86b);
+begin
+  WriteB($80 + Ord(Reg));
+  WriteB(Byte(B));
+end;
+
+procedure Tx86.ADD(Reg: Tx86RegW; W: Tx86w);
+begin
+  WriteB($81 + Ord(Reg));
+  WriteW(Word(W));
+end;
+
+procedure Tx86.ADD(Reg: Tx86Reg; D: LongInt);
+begin
+  WriteB($81 + Ord(Reg));
   WriteI(LongInt(D));
 end;
 
@@ -188,23 +224,23 @@ end;
 procedure Tx86.MOV(Dst, Src: Tx86RegB);
 begin
   WriteB($88); 
-  WriteB(((3) shl 6) + ((Dst) shl 3) + (Src));
+  WriteB(((3) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src)));
 end;
 
 procedure Tx86.MOV(Dst, Src: Tx86RegW);
 begin
   if FMode = X86_MODE_32 then
-  WriteB($66);; 
+    WriteB($66);; 
   WriteB($89);
-  WriteB(((3) shl 6) + ((Dst) shl 3) + (Src));
+  WriteB(((3) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src)));
 end;
 
 procedure Tx86.MOV(Dst, Src: Tx86Reg);
 begin
   if FMode = X86_MODE_32 then
-  WriteB($66);;
+    WriteB($66);;
   WriteB($89); 
-  WriteB(((3) shl 6) + ((Dst) shl 3) + (Src));
+  WriteB(((3) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src)));
 end;
 
 procedure Tx86.MOV(Reg: Tx86RegB; B: Tx86b);
@@ -271,8 +307,8 @@ initialization
   c := Tx86.Create(1000);
   c.MOV(EAX, 5);
   c.MOV(EBX, ECX);
-  c.MOV(EDX, [ESP]);
-  c.MOV(EDX, [ESP], [EAX], 4, x86b(67));
-  c.MOV(EDX, [ESP], [EAX], 4, 1067);
+  //c.MOV(EDX, [ESP]);
+  //c.MOV(EDX, [ESP], [EAX], 4, x86b(67));
+  //c.MOV(EDX, [ESP], [EAX], 4, 1067);
   c.Free;
 end.
