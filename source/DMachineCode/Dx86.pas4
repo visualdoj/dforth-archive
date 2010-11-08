@@ -21,7 +21,7 @@ end;
 define(~K|, ~const $1: array of $2|)
 // assert косвенность
 define(~AK|, ~if Length($1) <> 1 then begin
-    // TODO
+    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter $1 must have only one element');
     Exit;
   end|)
 define(~ModRM_Mod|, ~(($1) shl 6)|)
@@ -42,7 +42,8 @@ define(~MulToSIB|, ~case ($1) of
   end|)
 define(~SwitchMode|, ~if FMode = $1 then
     WriteB(Hex(66));|)
-define(~reverse|,ifelse($4,~r|,$3$2$1,$1$2$3))
+define(~CaseSwitchMode|, ~ifelse($1,~w|,  ~SwitchMode(X86_MODE_16);|,$1,~d|,~SwitchMode(X86_MODE_32);|)|)
+define(~reverse|,~ifelse($4,~r|,$3$2$1,$1$2$3)|)
 define(~params|,~reverse($1,;,$2,$3)|)
 
 // xxx
@@ -135,7 +136,7 @@ define(~mnerk|, ~
  AsmCode($1, (Dst: Tx86Reg$3; K(Src1, Tx86Reg$3); K(Src2, Tx86Reg$3); Mul: Tx86Mul),  AK(Src1); 
   AK(Src2);
   if Src2[0] = ESP then begin
-    // TODO ТАК ДЕЛАТЬ НЕЛЬЗЯ!
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
     Exit;
   end;
   WriteB($2);
@@ -150,7 +151,7 @@ define(~mnerk|, ~
  AsmCode($1, (Dst: Tx86Reg$3; K(Src1, Tx86Reg$3); K(Src2, Tx86Reg$3); Mul: Tx86Mul; Offset: Tx86b),  AK(Src1); 
   AK(Src2);
   if Src2[0] = ESP then begin
-    // TODO ТАК ДЕЛАТЬ НЕЛЬЗЯ!
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
     Exit;
   end;
   WriteB($2);
@@ -165,7 +166,7 @@ define(~mnerk|, ~
       $1(Dst, Src2, Src1, Mul, Offset);
       Exit;
     end;
-    // TODO ТАК ДЕЛАТЬ НЕЛЬЗЯ!
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
     Exit;
   end;
   WriteB($2);
@@ -174,9 +175,9 @@ define(~mnerk|, ~
   Write(@Offset, SizeOf(Offset));)
 // [reg+reg*Mul+?]
  AsmCode($1, (Dst: Tx86Reg$3; K(Src1, Tx86Reg$3); K(Src2, Tx86Reg$3); Mul: Tx86Mul; Offset: LongInt),  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
-    $1(Dst, Src1, Src2, Mul, dx86b(Offset))
+    $1(Dst, Src1, Src2, Mul, x86b(Offset))
   else
-    $1(Dst, Src1, Src2, Mul, dx86d(Offset));) 
+    $1(Dst, Src1, Src2, Mul, x86d(Offset));) 
 // [reg*Mul]
  AsmCode($1, (Dst: Tx86Reg$3; K(Src, Tx86Reg$3); Mul: Tx86Mul),  AK(Src); 
   if Src[0] = ESP then begin
@@ -184,7 +185,7 @@ define(~mnerk|, ~
       $1(Dst, Src);
       Exit;
     end;
-    // TODO ТАК ДЕЛАТЬ НЕЛЬЗЯ!
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
     Exit;
   end;
   WriteB($2);
@@ -197,7 +198,7 @@ define(~mnerk|, ~
       $1(Dst, Src);
       Exit;
     end;
-    // TODO ТАК ДЕЛАТЬ НЕЛЬЗЯ!
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
     Exit;
   end;
   WriteB($2);
@@ -211,7 +212,7 @@ define(~mnerk|, ~
       $1(Dst, Src);
       Exit;
     end;
-    // TODO ТАК ДЕЛАТЬ НЕЛЬЗЯ!
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
     Exit;
   end;
   WriteB($2);
@@ -221,7 +222,150 @@ define(~mnerk|, ~
 |)
 
 define(~mnekr|, ~
+// [ptr]
+ AsmCode($1, (Ptr: Tx86d; Src: Tx86Reg$3),  WriteB($2);
+  ModRM(0, Src, EBP);
+  Write(@Ptr, SizeOf(Ptr));)
+ AsmCode($1, (Ptr: Pointer; Src: Tx86Reg$3),  WriteB($2);
+  ModRM(0, Src, EBP);
+  Write(@Ptr, SizeOf(Ptr));)
+ AsmCode($1, (Ptr: Cardinal; Src: Tx86Reg$3),  WriteB($2);
+  ModRM(0, Src, EBP);
+  Write(@Ptr, SizeOf(Ptr));)
+// [reg]
+ AsmCode($1, (K(Dst, Tx86Reg$3); Src: Tx86Reg$3),  AK(Dst);
+  WriteB($2);
+  if Dst[0] = EBP then begin
+    ModRM(1, Src, EBP);
+    WriteB(0);
+  end else if Dst[0] = ESP then begin
+    ModRM(0, Src, ESP);
+    SIB(0, ESP, ESP);
+  end else begin
+    ModRM(0, Src, Dst[0]);
+  end;)
+// [reg+b]
+ AsmCode($1, (K(Dst, Tx86Reg$3); Offset: Tx86b; Src: Tx86Reg$3),  AK(Dst);
+  WriteB($2);
+  if Dst[0] = ESP then begin
+    ModRM(1, Src, ESP);
+    SIB(0, ESP, ESP);
+  end else begin
+    ModRM(1, Src, Dst[0]);
+  end;
+  Write(@Offset, SizeOf(Offset));)
+// [reg+d]
+ AsmCode($1, (K(Dst, Tx86Reg$3); Offset: Tx86d; Src: Tx86Reg$3),
+  AK(Dst);
+  WriteB($2);
+  if Dst[0] = ESP then begin
+    ModRM(2, Src, Dst[0]);
+    SIB(0, ESP, ESP);
+  end else begin
+    ModRM(2, Src, Dst[0]);
+  end;
+  Write(@Offset, SizeOf(Offset));)
+// [reg+?]
+ AsmCode($1, (K(Dst, Tx86Reg$3); Offset: LongInt; Src: Tx86Reg$3),  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
+    $1(Dst, x86b(Offset), Src)
+  else
+    $1(Dst, x86d(Offset), Src))
+// [reg+reg*Mul]
+ AsmCode($1, (K(Dst1, Tx86Reg$3); K(Dst2, Tx86Reg$3); Mul: Tx86Mul; Src: Tx86Reg$3),  AK(Dst1); 
+  AK(Dst2);
+  if Dst2[0] = ESP then begin
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
+    Exit;
+  end;
+  WriteB($2);
+  if Dst1[0] = EBP then begin
+    ModRM(1, ESP, Src);
+  end else
+    ModRM(0, ESP, Src);
+  SIB(Ord(Mul), Dst2[0], Dst1[0]);)
+  if Dst1[0] = EBP then
+    WriteB(0);
+// [reg+reg*Mul+b]
+ AsmCode($1, (K(Dst1, Tx86Reg$3); K(Dst2, Tx86Reg$3); Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg$3),  AK(Dst1); 
+  AK(Dst2);
+  if Dst2[0] = ESP then begin
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
+    Exit;
+  end;
+  WriteB($2);
+  ModRM(1, ESP, Src);
+  SIB(Ord(Mul), Dst2[0], Dst1[0]);
+  Write(@Offset, SizeOf(Offset));)
+// [reg+reg*Mul+d]
+ AsmCode($1, (K(Dst1, Tx86Reg$3); K(Dst2, Tx86Reg$3); Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg$3),  AK(Dst1); 
+  AK(Dst2);
+  if Dst2[0] = ESP then begin
+    if Mul = m1 then begin
+      $1(Dst1, Dst2, Mul, Offset, Src);
+      Exit;
+    end;
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
+    Exit;
+  end;
+  WriteB($2);
+  ModRM(2, ESP, Src);
+  SIB(Ord(Mul), Dst2[0], Dst1[0]);
+  Write(@Offset, SizeOf(Offset));)
+// [reg+reg*Mul+?]
+ AsmCode($1, (K(Dst1, Tx86Reg$3); K(Dst2, Tx86Reg$3); Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg$3),  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+    $1(Dst1, Dst2, Mul, x86b(Offset), Src)
+  else
+    $1(Dst1, Dst2, Mul, x86d(Offset), Src);) 
+// [reg*Mul]
+ AsmCode($1, (K(Dst, Tx86Reg$3); Mul: Tx86Mul; Src: Tx86Reg$3),  AK(Dst); 
+  if Dst[0] = ESP then begin
+    if Mul = m1 then begin
+      $1(Dst, Src);
+      Exit;
+    end;
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
+    Exit;
+  end;
+  WriteB($2);
+  ModRM(0, ESP, Src);
+  SIB(Ord(Mul), ESP, Dst[0]);)
+// [reg*Mul+b]
+ AsmCode($1, (K(Dst, Tx86Reg$3); Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg$3),  AK(Dst); 
+  if Dst[0] = ESP then begin
+    if Mul = m1 then begin
+      $1(Dst, Src);
+      Exit;
+    end;
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
+    Exit;
+  end;
+  WriteB($2);
+  ModRM(1, ESP, Src);
+  SIB(Ord(Mul), ESP, Dst[0]);
+  Write(@Offset, SizeOf(Offset));)
+// [reg*Mul+d]
+ AsmCode($1, (K(Dst, Tx86Reg$3); Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg$3),  AK(Dst); 
+  if Dst[0] = ESP then begin
+    if Mul = m1 then begin
+      $1(Dst, Src);
+      Exit;
+    end;
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
+    Exit;
+  end;
+  WriteB($2);
+  ModRM(2, ESP, Src);
+  SIB(Ord(Mul), ESP, Dst[0]);
+  Write(@Offset, SizeOf(Offset));)
 |)
+
+define(~mneki|, ~
+|)
+
+define(~mnej|, ~AsmCode($1, ~(Rel: Tx86$5)|,  CaseSwitchMode($5)
+  WriteB($3); ifelse($2, ~2|,  
+  WriteB($4);) 
+  Write(@Rel, SizeOfRel);)|)
 
 // 1 IMMEDIATE OPERAND
 // i := immediate
@@ -356,7 +500,7 @@ define(~mnerkmo8|, ~AsmCode($1, ~(Dst: Tx86Reg$3; K(Reg1, Tx86Reg$3); K(Reg2, Tx
   AK(Reg1);
   AK(Reg2);
   if Reg2[0] = ESP then begin
-    // такое нельзя делать...
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
     Exit
   end;
   if (Mul and not 3) <> 0 then begin
@@ -374,6 +518,7 @@ define(~mnerkmo32|, ~AsmCode($1, ~(Dst: Tx86Reg$3; K(Reg1, Tx86Reg$3); K(Reg2, T
   AK(Reg2)
   if Reg2[0] = ESP then begin
     // такое нельзя делать...
+    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
     Exit
   end;
   if Reg1[0] = EBP then begin
@@ -429,16 +574,12 @@ mnekr(SUB, Hex(21))
 mnerk(_XOR, Hex(23))
 mnekr(_XOR, Hex(21))
 
-mnerk(_XOR, Hex(23))
-mnekr(_XOR, Hex(21))
-
 mnerk(CMP, Hex(3B))
 mnekr(CMP, Hex(39))
 
 mnekr(TEST, Hex(85))
 
-mnerk(XCHNG, Hex(87))
-mnerk(XCHNG, Hex(89))
+mnerk(XCHG, Hex(87))
 
 mnerbrb(MOV, Hex(88), B)
 mnerwrw(MOV, Hex(89), W)
@@ -463,10 +604,78 @@ mner(INC,  Hex(40))
 mner(DEC,  Hex(48))
 mner(PUSH, Hex(50))
 mner(POP,  Hex(58))
+
+mnej(JA,     1, Hex(77), Hex(00), b)
+mnej(JAE,    1, Hex(73), Hex(00), b)
+mnej(JB,     1, Hex(72), Hex(00), b)
+mnej(JBE,    1, Hex(76), Hex(00), b)
+mnej(JC,     1, Hex(72), Hex(00), b)
+mnej(JCXZ,   1, Hex(E3), Hex(00), b)
+mnej(JECXZ,  1, Hex(E3), Hex(00), b)
+mnej(JRCXZ,  1, Hex(E3), Hex(00), b)
+mnej(JE,     1, Hex(74), Hex(00), b)
+mnej(JG,     1, Hex(7F), Hex(00), b)
+mnej(JGE,    1, Hex(7D), Hex(00), b)
+mnej(JL,     1, Hex(7C), Hex(00), b)
+mnej(JLE,    1, Hex(7E), Hex(00), b)
+mnej(JNA,    1, Hex(76), Hex(00), b)
+mnej(JNAE,   1, Hex(72), Hex(00), b)
+mnej(JNB,    1, Hex(73), Hex(00), b)
+mnej(JNBE,   1, Hex(77), Hex(00), b)
+mnej(JNE,    1, Hex(75), Hex(00), b)
+mnej(JNG,    1, Hex(7E), Hex(00), b)
+mnej(JNGE,   1, Hex(7C), Hex(00), b)
+mnej(JNL,    1, Hex(7D), Hex(00), b)
+mnej(JNLE,   1, Hex(7F), Hex(00), b)
+mnej(JNO,    1, Hex(71), Hex(00), b)
+mnej(JNP,    1, Hex(7B), Hex(00), b)
+mnej(JNS,    1, Hex(79), Hex(00), b)
+mnej(JNZ,    1, Hex(75), Hex(00), b)
+mnej(JO,     1, Hex(70), Hex(00), b)
+mnej(JP,     1, Hex(7A), Hex(00), b)
+mnej(JPE,    1, Hex(7A), Hex(00), b)
+mnej(JPO,    1, Hex(7B), Hex(00), b)
+mnej(JS,     1, Hex(78), Hex(00), b)
+mnej(JZ,     1, Hex(74), Hex(00), b)
+mnej(JA,     1, Hex(0F), Hex(87), d)
+mnej(JAE,    1, Hex(0F), Hex(83), d)
+mnej(JB,     1, Hex(0F), Hex(82), d)
+mnej(JBE,    1, Hex(0F), Hex(86), d)
+mnej(JC,     1, Hex(0F), Hex(82), d)
+mnej(JZ,     1, Hex(0F), Hex(84), d)
+mnej(JG,     1, Hex(0F), Hex(84), d)
+mnej(JGE,    1, Hex(0F), Hex(8F), d)
+mnej(JL,     1, Hex(0F), Hex(8D), d)
+mnej(JLE,    1, Hex(0F), Hex(8C), d)
+mnej(JNA,    1, Hex(0F), Hex(8E), d)
+mnej(JNAE,   1, Hex(0F), Hex(86), d)
+mnej(JNB,    1, Hex(0F), Hex(82), d)
+mnej(JNBE,   1, Hex(0F), Hex(83), d)
+mnej(JNC,    1, Hex(0F), Hex(87), d)
+mnej(JNE,    1, Hex(0F), Hex(85), d)
+mnej(JNG,    1, Hex(0F), Hex(8E), d)
+mnej(JNGE,   1, Hex(0F), Hex(8C), d)
+mnej(JNL,    1, Hex(0F), Hex(8D), d)
+mnej(JNLE,   1, Hex(0F), Hex(8F), d)
+mnej(JNO,    1, Hex(0F), Hex(81), d)
+mnej(JNP,    1, Hex(0F), Hex(8B), d)
+mnej(JNS,    1, Hex(0F), Hex(89), d)
+mnej(JNZ,    1, Hex(0F), Hex(85), d)
+mnej(JO,     1, Hex(0F), Hex(80), d)
+mnej(JP,     1, Hex(0F), Hex(8A), d)
+mnej(JPE,    1, Hex(0F), Hex(8A), d)
+mnej(JPO,    1, Hex(0F), Hex(8B), d)
+mnej(JS,     1, Hex(0F), Hex(88), d)
+mnej(JZ,     1, Hex(0F), Hex(84), d)
 )
 
 uses
   DMachineCode;
+
+const
+  // errors
+  X86_ERROR_ESP                                 = 1;
+  X86_ERROR_K_PARAM_ONE                         = 2;
 
 type
   // x86 types
