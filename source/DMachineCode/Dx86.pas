@@ -72,7 +72,7 @@ type
                 XMM6 =                 6,
                 XMM7 =                 7
             );
-  // x86 Sreg register
+  // x86 segment register
   Tx86RegSreg = ( 
                 ES =                    0,
                 CS =                    1,
@@ -460,7 +460,35 @@ type
     procedure JPE(Rel: Tx86d); overload;
     procedure JPO(Rel: Tx86d); overload;
     procedure JS(Rel: Tx86d); overload;
-    procedure JZ(Rel: Tx86d); overload;
+    procedure JA(Rel: Tx86w); overload;
+    procedure JAE(Rel: Tx86w); overload;
+    procedure JB(Rel: Tx86w); overload;
+    procedure JBE(Rel: Tx86w); overload;
+    procedure JC(Rel: Tx86w); overload;
+    procedure JZ(Rel: Tx86w); overload;
+    procedure JG(Rel: Tx86w); overload;
+    procedure JGE(Rel: Tx86w); overload;
+    procedure JL(Rel: Tx86w); overload;
+    procedure JLE(Rel: Tx86w); overload;
+    procedure JNA(Rel: Tx86w); overload;
+    procedure JNAE(Rel: Tx86w); overload;
+    procedure JNB(Rel: Tx86w); overload;
+    procedure JNBE(Rel: Tx86w); overload;
+    procedure JNC(Rel: Tx86w); overload;
+    procedure JNE(Rel: Tx86w); overload;
+    procedure JNG(Rel: Tx86w); overload;
+    procedure JNGE(Rel: Tx86w); overload;
+    procedure JNL(Rel: Tx86w); overload;
+    procedure JNLE(Rel: Tx86w); overload;
+    procedure JNO(Rel: Tx86w); overload;
+    procedure JNP(Rel: Tx86w); overload;
+    procedure JNS(Rel: Tx86w); overload;
+    procedure JNZ(Rel: Tx86w); overload;
+    procedure JO(Rel: Tx86w); overload;
+    procedure JP(Rel: Tx86w); overload;
+    procedure JPE(Rel: Tx86w); overload;
+    procedure JPO(Rel: Tx86w); overload;
+    procedure JS(Rel: Tx86w); overload;
   end;
 
 function x86b(I: ShortInt): Tx86b;
@@ -687,7 +715,7 @@ end;
 
 procedure Tx86.ADD(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     ADD(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     ADD(Dst1, Dst2, Mul, x86d(Offset), Src);
@@ -899,7 +927,7 @@ end;
 
 procedure Tx86.ADD(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     ADD(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     ADD(Dst, Src1, Src2, Mul, x86d(Offset));
@@ -1126,7 +1154,7 @@ end;
 
 procedure Tx86._OR(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     _OR(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     _OR(Dst, Src1, Src2, Mul, x86d(Offset));
@@ -1338,7 +1366,7 @@ end;
 
 procedure Tx86._OR(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     _OR(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     _OR(Dst1, Dst2, Mul, x86d(Offset), Src);
@@ -1550,7 +1578,7 @@ end;
 
 procedure Tx86.ADC(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     ADC(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     ADC(Dst, Src1, Src2, Mul, x86d(Offset));
@@ -1762,7 +1790,7 @@ end;
 
 procedure Tx86.ADC(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     ADC(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     ADC(Dst1, Dst2, Mul, x86d(Offset), Src);
@@ -1974,7 +2002,7 @@ end;
 
 procedure Tx86.SBB(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     SBB(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     SBB(Dst, Src1, Src2, Mul, x86d(Offset));
@@ -2186,7 +2214,7 @@ end;
 
 procedure Tx86.SBB(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     SBB(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     SBB(Dst1, Dst2, Mul, x86d(Offset), Src);
@@ -2398,7 +2426,7 @@ end;
 
 procedure Tx86._AND(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     _AND(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     _AND(Dst, Src1, Src2, Mul, x86d(Offset));
@@ -2610,7 +2638,7 @@ end;
 
 procedure Tx86._AND(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     _AND(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     _AND(Dst1, Dst2, Mul, x86d(Offset), Src);
@@ -2822,7 +2850,7 @@ end;
 
 procedure Tx86.SUB(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     SUB(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     SUB(Dst, Src1, Src2, Mul, x86d(Offset));
@@ -3034,7 +3062,7 @@ end;
 
 procedure Tx86.SUB(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     SUB(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     SUB(Dst1, Dst2, Mul, x86d(Offset), Src);
@@ -3246,7 +3274,7 @@ end;
 
 procedure Tx86._XOR(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     _XOR(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     _XOR(Dst, Src1, Src2, Mul, x86d(Offset));
@@ -3458,7 +3486,7 @@ end;
 
 procedure Tx86._XOR(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     _XOR(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     _XOR(Dst1, Dst2, Mul, x86d(Offset), Src);
@@ -3670,7 +3698,7 @@ end;
 
 procedure Tx86.CMP(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     CMP(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     CMP(Dst, Src1, Src2, Mul, x86d(Offset));
@@ -3882,7 +3910,7 @@ end;
 
 procedure Tx86.CMP(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     CMP(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     CMP(Dst1, Dst2, Mul, x86d(Offset), Src);
@@ -4094,7 +4122,7 @@ end;
 
 procedure Tx86.TEST(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     TEST(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     TEST(Dst1, Dst2, Mul, x86d(Offset), Src);
@@ -4306,7 +4334,7 @@ end;
 
 procedure Tx86.XCHG(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     XCHG(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     XCHG(Dst, Src1, Src2, Mul, x86d(Offset));
@@ -4578,7 +4606,7 @@ end;
 
 procedure Tx86.MOV(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     MOV(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     MOV(Dst, Src1, Src2, Mul, x86d(Offset));
@@ -4790,7 +4818,7 @@ end;
 
 procedure Tx86.MOV(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
 begin
-  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     MOV(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     MOV(Dst1, Dst2, Mul, x86d(Offset), Src);
@@ -4879,464 +4907,688 @@ procedure Tx86.JA(Rel: Tx86b);
 begin
   
   WriteB($77);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JAE(Rel: Tx86b);
 begin
   
   WriteB($73);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JB(Rel: Tx86b);
 begin
   
   WriteB($72);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JBE(Rel: Tx86b);
 begin
   
   WriteB($76);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JC(Rel: Tx86b);
 begin
   
   WriteB($72);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JCXZ(Rel: Tx86b);
 begin
   
   WriteB($E3);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JECXZ(Rel: Tx86b);
 begin
   
   WriteB($E3);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JRCXZ(Rel: Tx86b);
 begin
   
   WriteB($E3);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JE(Rel: Tx86b);
 begin
   
   WriteB($74);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JG(Rel: Tx86b);
 begin
   
   WriteB($7F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JGE(Rel: Tx86b);
 begin
   
   WriteB($7D);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JL(Rel: Tx86b);
 begin
   
   WriteB($7C);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JLE(Rel: Tx86b);
 begin
   
   WriteB($7E);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNA(Rel: Tx86b);
 begin
   
   WriteB($76);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNAE(Rel: Tx86b);
 begin
   
   WriteB($72);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNB(Rel: Tx86b);
 begin
   
   WriteB($73);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNBE(Rel: Tx86b);
 begin
   
   WriteB($77);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNE(Rel: Tx86b);
 begin
   
   WriteB($75);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNG(Rel: Tx86b);
 begin
   
   WriteB($7E);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNGE(Rel: Tx86b);
 begin
   
   WriteB($7C);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNL(Rel: Tx86b);
 begin
   
   WriteB($7D);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNLE(Rel: Tx86b);
 begin
   
   WriteB($7F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNO(Rel: Tx86b);
 begin
   
   WriteB($71);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNP(Rel: Tx86b);
 begin
   
   WriteB($7B);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNS(Rel: Tx86b);
 begin
   
   WriteB($79);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNZ(Rel: Tx86b);
 begin
   
   WriteB($75);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JO(Rel: Tx86b);
 begin
   
   WriteB($70);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JP(Rel: Tx86b);
 begin
   
   WriteB($7A);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JPE(Rel: Tx86b);
 begin
   
   WriteB($7A);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JPO(Rel: Tx86b);
 begin
   
   WriteB($7B);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JS(Rel: Tx86b);
 begin
   
   WriteB($78);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JZ(Rel: Tx86b);
 begin
   
   WriteB($74);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JA(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JAE(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JB(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JBE(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JC(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JZ(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JG(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JGE(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JL(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JLE(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNA(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNAE(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNB(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNBE(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNC(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNE(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNG(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNGE(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNL(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNLE(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNO(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNP(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNS(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JNZ(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JO(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JP(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JPE(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JPO(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
 procedure Tx86.JS(Rel: Tx86d);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
 end;
 
-procedure Tx86.JZ(Rel: Tx86d);
+procedure Tx86.JA(Rel: Tx86w);
 begin
   if FMode = X86_MODE_32 then
-    WriteB($66);;
+    WriteB($66);
   WriteB($0F);  
-  Write(@Rel, SizeOfRel);
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JAE(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JB(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JBE(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JC(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JZ(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JG(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JGE(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JL(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JLE(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNA(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNAE(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNB(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNBE(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNC(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNE(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNG(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNGE(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNL(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNLE(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNO(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNP(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNS(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JNZ(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JO(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JP(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JPE(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JPO(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
+end;
+
+procedure Tx86.JS(Rel: Tx86w);
+begin
+  if FMode = X86_MODE_32 then
+    WriteB($66);
+  WriteB($0F);  
+  Write(@Rel, SizeOf(Rel));
 end;
 
 var

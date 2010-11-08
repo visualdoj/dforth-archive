@@ -42,7 +42,7 @@ define(~MulToSIB|, ~case ($1) of
   end|)
 define(~SwitchMode|, ~if FMode = $1 then
     WriteB(Hex(66));|)
-define(~CaseSwitchMode|, ~ifelse($1,~w|,  ~SwitchMode(X86_MODE_16);|,$1,~d|,~SwitchMode(X86_MODE_32);|)|)
+define(~CaseSwitchMode|, ~ifelse($1,~d|,  ~SwitchMode(X86_MODE_16)|,$1,~w|,~SwitchMode(X86_MODE_32)|)|)
 define(~reverse|,~ifelse($4,~r|,$3$2$1,$1$2$3)|)
 define(~params|,~reverse($1,;,$2,$3)|)
 
@@ -174,7 +174,7 @@ define(~mnerk|, ~
   SIB(Ord(Mul), Src2[0], Src1[0]);
   Write(@Offset, SizeOf(Offset));)
 // [reg+reg*Mul+?]
- AsmCode($1, (Dst: Tx86Reg$3; K(Src1, Tx86Reg$3); K(Src2, Tx86Reg$3); Mul: Tx86Mul; Offset: LongInt),  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+ AsmCode($1, (Dst: Tx86Reg$3; K(Src1, Tx86Reg$3); K(Src2, Tx86Reg$3); Mul: Tx86Mul; Offset: LongInt),  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     $1(Dst, Src1, Src2, Mul, x86b(Offset))
   else
     $1(Dst, Src1, Src2, Mul, x86d(Offset));) 
@@ -312,7 +312,7 @@ define(~mnekr|, ~
   SIB(Ord(Mul), Dst2[0], Dst1[0]);
   Write(@Offset, SizeOf(Offset));)
 // [reg+reg*Mul+?]
- AsmCode($1, (K(Dst1, Tx86Reg$3); K(Dst2, Tx86Reg$3); Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg$3),  if (Low(SmallInt) <= Offset) and (Offset <= High(SmallInt)) then
+ AsmCode($1, (K(Dst1, Tx86Reg$3); K(Dst2, Tx86Reg$3); Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg$3),  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
     $1(Dst1, Dst2, Mul, x86b(Offset), Src)
   else
     $1(Dst1, Dst2, Mul, x86d(Offset), Src);) 
@@ -365,7 +365,7 @@ define(~mneki|, ~
 define(~mnej|, ~AsmCode($1, ~(Rel: Tx86$5)|,  CaseSwitchMode($5)
   WriteB($3); ifelse($2, ~2|,  
   WriteB($4);) 
-  Write(@Rel, SizeOfRel);)|)
+  Write(@Rel, SizeOf(Rel));)|)
 
 // 1 IMMEDIATE OPERAND
 // i := immediate
@@ -666,7 +666,35 @@ mnej(JP,     1, Hex(0F), Hex(8A), d)
 mnej(JPE,    1, Hex(0F), Hex(8A), d)
 mnej(JPO,    1, Hex(0F), Hex(8B), d)
 mnej(JS,     1, Hex(0F), Hex(88), d)
-mnej(JZ,     1, Hex(0F), Hex(84), d)
+mnej(JA,     1, Hex(0F), Hex(87), w)
+mnej(JAE,    1, Hex(0F), Hex(83), w)
+mnej(JB,     1, Hex(0F), Hex(82), w)
+mnej(JBE,    1, Hex(0F), Hex(86), w)
+mnej(JC,     1, Hex(0F), Hex(82), w)
+mnej(JZ,     1, Hex(0F), Hex(84), w)
+mnej(JG,     1, Hex(0F), Hex(84), w)
+mnej(JGE,    1, Hex(0F), Hex(8F), w)
+mnej(JL,     1, Hex(0F), Hex(8D), w)
+mnej(JLE,    1, Hex(0F), Hex(8C), w)
+mnej(JNA,    1, Hex(0F), Hex(8E), w)
+mnej(JNAE,   1, Hex(0F), Hex(86), w)
+mnej(JNB,    1, Hex(0F), Hex(82), w)
+mnej(JNBE,   1, Hex(0F), Hex(83), w)
+mnej(JNC,    1, Hex(0F), Hex(87), w)
+mnej(JNE,    1, Hex(0F), Hex(85), w)
+mnej(JNG,    1, Hex(0F), Hex(8E), w)
+mnej(JNGE,   1, Hex(0F), Hex(8C), w)
+mnej(JNL,    1, Hex(0F), Hex(8D), w)
+mnej(JNLE,   1, Hex(0F), Hex(8F), w)
+mnej(JNO,    1, Hex(0F), Hex(81), w)
+mnej(JNP,    1, Hex(0F), Hex(8B), w)
+mnej(JNS,    1, Hex(0F), Hex(89), w)
+mnej(JNZ,    1, Hex(0F), Hex(85), w)
+mnej(JO,     1, Hex(0F), Hex(80), w)
+mnej(JP,     1, Hex(0F), Hex(8A), w)
+mnej(JPE,    1, Hex(0F), Hex(8A), w)
+mnej(JPO,    1, Hex(0F), Hex(8B), w)
+mnej(JS,     1, Hex(0F), Hex(88), w)
 )
 
 uses
@@ -739,7 +767,7 @@ type
                 XMM6 =                 6,
                 XMM7 =                 7
             );
-  // x86 Sreg register
+  // x86 segment register
   Tx86RegSreg = ( 
                 ES =                    0,
                 CS =                    1,

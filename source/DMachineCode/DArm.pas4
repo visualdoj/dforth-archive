@@ -1,0 +1,142 @@
+unit DArm;
+
+interface
+dnl(
+changequote(~,|)
+
+define(~all_implement|, ~|)
+define(~all_interface|, ~// arm mnemonics|
+  )
+define(~AsmCode|, ~
+  define(~all_interface|, all_interface~
+    procedure $1$2; overload;|)
+  define(~all_implement|, all_implement~
+procedure TArm.$1$2;
+begin
+  $3
+end;
+|)|)
+
+// foreach
+divert(~-1|)
+# foreach(x, (item_1, item_2, ..., item_n), stmt)
+#   parenthesized list, simple version
+define(~foreach|, ~pushdef(~$1|)_foreach($@)popdef(~$1|)|)
+define(~_arg1|, ~$1|)
+define(~_foreach|, ~ifelse(~$2|, ~()|, ~|,
+  ~define(~$1|, _arg1$2)$3~|$0(~$1|, (shift$2), ~$3|)|)|)
+divert~|dnl
+
+// conditions
+define(~_EQ|, ~Hex(0)|)
+define(~_NE|, ~Hex(1)|)
+define(~_HS|, ~Hex(2)|) define(~_CS|, ~Hex(2)|)
+define(~_LO|, ~Hex(3)|) define(~_CC|, ~Hex(3)|)
+define(~_MI|, ~Hex(4)|)
+define(~_PL|, ~Hex(5)|)
+define(~_VS|, ~Hex(6)|)
+define(~_VC|, ~Hex(7)|)
+define(~_HI|, ~Hex(8)|)
+define(~_LS|, ~Hex(9)|)
+define(~_GE|, ~Hex(A)|)
+define(~_LT|, ~Hex(B)|)
+define(~_GT|, ~Hex(C)|)
+define(~_LE|, ~Hex(D)|)
+define(~_AL|, ~Hex(E)|)
+define(~_NV|, ~Hex(F)|)
+define(~_conds|, ~(EQ, NE, HS, CS, LO, CC, MI, PL, VS, VC, HI, LS, GE, LT, GT,
+                   LE, AL, NV)|)
+// descriptions
+define(~_EQ_desc|, ~Z set (equal)|)
+define(~_NE_desc|, ~Z clear (not equal)|)
+define(~_HS_desc|, ~C set|) define(~_CS_desc|, ~_HS_desc|)
+define(~_LO_desc|, ~C clear (unsigned lower)|) define(~_CC_desc|, ~_LO_desc|)
+define(~_MI_desc|, ~N set (negative)|)
+define(~_PL_desc|, ~N clear (positive or zero)|)
+define(~_VS_desc|, ~V set (overflow)|)
+define(~_VC_desc|, ~V clear (no overflow)|)
+define(~_HI_desc|, ~C set and Z clear (unsigned higher)|)
+define(~_LS_desc|, ~C clear or Z (set unsigned lower or same)|)
+define(~_GE_desc|, ~N set and V set, or N clear and V clear (>or=)|)
+define(~_LT_desc|, ~N set and V clear, or N clear and V set|)
+define(~_GT_desc|, ~Z clear, and either N set and V set, or clear and V set (>)|)
+define(~_LE_desc|, ~Z set, or N set and V clear, or N clear and V set (<, or =)|)
+define(~_AL_desc|, ~always|)
+define(~_NV_desc|, ~reserved|)
+
+define(~Cond|, ((Ord($1)) shl 28))
+define(~__S|, ((Ord($1)) shl 20))
+define(~__I|, ((Ord($1)) shl 25))
+
+// cccc101Loooooooooooooooooooooooo c=cond o=offset
+define(~_B|,  ~AsmCode(~B$1|,  ~(Offset: Cardinal)|, WriteU(Cond(_$1) or (10 shl 24) or Offset);)|)
+define(~_BL|, ~AsmCode(~BL$1|, ~(Offset: Cardinal)|, WriteU(Cond(_$1) or (11 shl 24) or Offset);)|)
+// cccc00Io oooSnnnn dddd#### ######## c=cond I=immediate o=opcode S=set_condition_code d=destination n=1st #=operand2
+define(~PSR|, ~AsmCode(~$1$2|, ~(Dst, Src1, Src2: TArmReg; Shift: Byte = 0)|,  WriteU(Cond(_$2) or __I(0) or ($3 shl 22) or __S(0) or (Ord(Src1) shl 16) or (Ord(Dst) shl 12) or (Shift shl 4) or Ord(Src2)); )
+               AsmCode(~$1$2S|, ~(Dst, Src1, Src2: TArmReg; Shift: Byte = 0)|,  WriteU(Cond(_$2) or __I(0) or ($3 shl 22) or __S(1) or (Ord(Src1) shl 16) or (Ord(Dst) shl 12) or (Shift shl 4) or Ord(Src2)); )
+               AsmCode(~$1$2|, ~(Dst, Src: TArmReg; Imm: Byte; Rotate: Byte = 0)|,  WriteU(Cond(_$2) or __I(1) or ($3 shl 22) or __S(0) or (Ord(Src1) shl 16) or (Ord(Dst) shl 12) or ((Rotate and $F) shl 8) or Imm); )
+               AsmCode(~$1$2S|, ~(Dst, Src: TArmReg; Imm: Byte; Rotate: Byte = 0)|,  WriteU(Cond(_$2) or __I(1) or ($3 shl 22) or __S(1) or (Ord(Src1) shl 16) or (Ord(Dst) shl 12) or ((Rotate and $F) shl 8) or Imm); )|)
+
+define(~all_interface|, all_interface~
+  // branch menmonics|)
+foreach(~_cond|, _conds, ~_B(_cond)|)
+foreach(~_cond|, _conds, ~_BL(_cond)|)
+# foreach(~_cond|, _conds, foreach(~mne|, _datatransmne, ~PSR(mne, _cond, Hex(0))|))
+foreach(~_cond|, _conds, ~PSR(_AND, _cond, Hex(0))|)
+foreach(~_cond|, _conds, ~PSR( EOR, _cond, Hex(1))|)
+foreach(~_cond|, _conds, ~PSR( SUB, _cond, Hex(2))|)
+foreach(~_cond|, _conds, ~PSR( RSB, _cond, Hex(3))|)
+foreach(~_cond|, _conds, ~PSR( ADD, _cond, Hex(4))|)
+foreach(~_cond|, _conds, ~PSR( ADC, _cond, Hex(5))|)
+foreach(~_cond|, _conds, ~PSR( SBC, _cond, Hex(6))|)
+foreach(~_cond|, _conds, ~PSR( RSC, _cond, Hex(7))|)
+foreach(~_cond|, _conds, ~PSR( TST, _cond, Hex(8))|)
+foreach(~_cond|, _conds, ~PSR( TEQ, _cond, Hex(9))|)
+foreach(~_cond|, _conds, ~PSR( CMP, _cond, Hex(A))|)
+foreach(~_cond|, _conds, ~PSR( CMN, _cond, Hex(B))|)
+foreach(~_cond|, _conds, ~PSR( ORR, _cond, Hex(C))|)
+foreach(~_cond|, _conds, ~PSR( MOV, _cond, Hex(D))|)
+foreach(~_cond|, _conds, ~PSR( BIC, _cond, Hex(E))|)
+foreach(~_cond|, _conds, ~PSR( MVN, _cond, Hex(F))|)
+)
+
+uses
+  DMachineCode;
+
+
+type
+  TArmReg =     (
+                        r0      = 0,
+                        r1      = 1,
+                        r2      = 2,
+                        r3      = 3,
+                        r4      = 4,
+                        r5      = 5,
+                        r6      = 6,
+                        r7      = 7,
+                        r8      = 8,
+                        r9      = 9,
+                        r10     = 10,
+                        r11     = 11,
+                        r12     = 12,
+                        r13     = 13, sp = 13,
+                        r14     = 14, lr = 14,
+                        r15     = 15, pc = 15
+                );
+
+type
+  TArm = class(TMachineCode)
+  private
+  public
+  public
+    constructor Create(BaseSize: Integer);
+    all_interface
+  end;
+
+implementation
+
+constructor TArm.Create(BaseSize: Integer);
+begin
+end;
+all_implement
+end.

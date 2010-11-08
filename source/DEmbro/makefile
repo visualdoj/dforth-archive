@@ -13,6 +13,8 @@ all: clean DMachineCode
 DMachineCode:
 	m4 ..\DMachineCode\Dx86.pas4 > ..\DMachineCode\Dx86.temp1
 	m4 ..\m4\hex.m4 ..\DMachineCode\Dx86.temp1 > ..\DMachineCode\Dx86.pas
+	m4 ..\DMachineCode\DArm.pas4 > ..\DMachineCode\DArm.temp1
+	m4 ..\m4\hex.m4 ..\DMachineCode\DArm.temp1 > ..\DMachineCode\DArm.pas
 
 dll:
 	fpc dembro32lib.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp

@@ -620,6 +620,9 @@ define(~misc_commands|,
   procedure _wp cmdhdr;
   procedure _rp cmdhdr;
   procedure _lp cmdhdr;
+  procedure _r_dog cmdhdr;
+  procedure _r_gt cmdhdr;
+  procedure _lt_r cmdhdr;
   procedure version cmdhdr;
   procedure _state cmdhdr;
   procedure _time cmdhdr;
@@ -653,6 +656,9 @@ define(~misc_commands|,
       procedure TForthMachine._wp cmdhdr; begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._rp cmdhdr; begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._lp cmdhdr; begin Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine._r_dog cmdhdr; begin Pointer(WP^) := Pointer(Pointer(Cardinal(RP) - SizeOf(Pointer))^); Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine._r_gt cmdhdr; begin Dec(RP, SizeOf(Pointer)); Pointer(WP^) := Pointer(RP^); Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine._lt_r cmdhdr; begin Dec(WP, SizeOf(Pointer)); Pointer(RP^) := Pointer(WP^); Inc(RP, SizeOf(Pointer)); end;
       procedure TForthMachine.version cmdhdr; begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt)); end;
       procedure TForthMachine._state cmdhdr; begin Pointer(WP^) := @FState; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._time cmdhdr; begin Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt)); end;
@@ -692,6 +698,9 @@ define(~misc_commands|,
      AddCommand('wp', _wp);
      AddCommand('rp', _rp);
      AddCommand('lp', _lp);
+     AddCommand('r@', _r_dog);
+     AddCommand('r>', _r_gt);
+     AddCommand('>r', _lt_r);
      AddCommand('sys-version', version);
      AddCommand('state', _state);
      AddCommand('time', _time);

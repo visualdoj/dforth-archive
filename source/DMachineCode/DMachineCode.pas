@@ -28,6 +28,7 @@ protected
   procedure WriteW(W: Word);
   procedure WriteI(I: LongInt);
   procedure WriteD(D: LongInt);
+  procedure WriteU(U: Cardinal);
   procedure AddError(Id, Pos: Integer; const Description: String);
   procedure AddMarker(const Name: String; Pos: Integer);
   function FindMarker(const Name: String; var Index: Integer): Boolean;
@@ -75,6 +76,11 @@ end;
 procedure TMachineCode.WriteD(D: LongInt);
 begin
   Write(@D, SizeOf(LongInt));
+end;
+
+procedure TMachineCode.WriteU(U: Cardinal);
+begin
+  Write(@U, SizeOF(U));
 end;
 
 procedure TMachineCode.AddError(Id, Pos: Integer; const Description: String);
