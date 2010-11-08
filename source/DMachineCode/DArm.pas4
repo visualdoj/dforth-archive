@@ -74,8 +74,8 @@ define(~_BL|, ~AsmCode(~BL$1|, ~(Offset: Cardinal)|, WriteU(Cond(_$1) or (11 shl
 // cccc00Io oooSnnnn dddd#### ######## c=cond I=immediate o=opcode S=set_condition_code d=destination n=1st #=operand2
 define(~PSR|, ~AsmCode(~$1$2|, ~(Dst, Src1, Src2: TArmReg; Shift: Byte = 0)|,  WriteU(Cond(_$2) or __I(0) or ($3 shl 22) or __S(0) or (Ord(Src1) shl 16) or (Ord(Dst) shl 12) or (Shift shl 4) or Ord(Src2)); )
                AsmCode(~$1$2S|, ~(Dst, Src1, Src2: TArmReg; Shift: Byte = 0)|,  WriteU(Cond(_$2) or __I(0) or ($3 shl 22) or __S(1) or (Ord(Src1) shl 16) or (Ord(Dst) shl 12) or (Shift shl 4) or Ord(Src2)); )
-               AsmCode(~$1$2|, ~(Dst, Src: TArmReg; Imm: Byte; Rotate: Byte = 0)|,  WriteU(Cond(_$2) or __I(1) or ($3 shl 22) or __S(0) or (Ord(Src1) shl 16) or (Ord(Dst) shl 12) or ((Rotate and $F) shl 8) or Imm); )
-               AsmCode(~$1$2S|, ~(Dst, Src: TArmReg; Imm: Byte; Rotate: Byte = 0)|,  WriteU(Cond(_$2) or __I(1) or ($3 shl 22) or __S(1) or (Ord(Src1) shl 16) or (Ord(Dst) shl 12) or ((Rotate and $F) shl 8) or Imm); )|)
+               AsmCode(~$1$2|, ~(Dst, Src: TArmReg; Imm: Byte; Rotate: Byte = 0)|,  WriteU(Cond(_$2) or __I(1) or ($3 shl 22) or __S(0) or (Ord(Src) shl 16) or (Ord(Dst) shl 12) or ((Rotate and $F) shl 8) or Imm); )
+               AsmCode(~$1$2S|, ~(Dst, Src: TArmReg; Imm: Byte; Rotate: Byte = 0)|,  WriteU(Cond(_$2) or __I(1) or ($3 shl 22) or __S(1) or (Ord(Src) shl 16) or (Ord(Dst) shl 12) or ((Rotate and $F) shl 8) or Imm); )|)
 
 define(~all_interface|, all_interface~
   // branch menmonics|)
