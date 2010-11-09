@@ -73,10 +73,12 @@ define(~_B|,  ~AsmCode(~B$1|,  ~(Offset: Cardinal)|, WriteU(Cond(_$1) or (10 shl
 define(~_BL|, ~AsmCode(~BL$1|, ~(Offset: Cardinal)|, WriteU(Cond(_$1) or (11 shl 24) or Offset);)|)
 // cccc00Io oooSnnnn dddd#### ######## c=cond I=immediate o=opcode S=set_condition_code d=destination n=1st #=operand2
 AsmCode(~WriteDataTrans|, ~(C, I, O, S, N, D: Byte; R: Cardinal)|, WriteU(Cond(C) or __I(I) or (O shl 22) or __S(S) or (N shl 16) or (D shl 12) or R);)
-define(~_PSR|, ~AsmCode(~$1$2|, ~(Dst, Src1, Src2: TArmReg; Shift: Word = 0)|,  WriteDataTrans(_$2, 0, $3, 0, Ord(Src1), Ord(Dst), (Shift shl 4) or Ord(Src2));)
-               AsmCode(~$1$2S|, ~(Dst, Src1, Src2: TArmReg; Shift: Byte = 0)|,  WriteDataTrans(_$2, 0, $3, 1, Ord(Src1), Ord(Dst), (Shift shl 4) or Ord(Src2)); )
-               AsmCode(~$1$2|, ~(Dst, Src: TArmReg; Imm: Byte; Rotate: Byte = 0)|,  WriteDataTrans(_$2, 1, $3, 0, Ord(Src), Ord(Dst), ((Rotate and $F) shl 8) or Imm); )
-               AsmCode(~$1$2S|, ~(Dst, Src: TArmReg; Imm: Byte; Rotate: Byte = 0)|,  WriteDataTrans(_$2, 1, $3, 1, Ord(Src), Ord(Dst), ((Rotate and $F) shl 8) or Imm); )|)
+AsmCode(~WriteDataTransR|, ~(C, O, S: Byte; N, D, R: TArmReg; F: Byte)|, WriteDataTrans(C, 0, O, S, Ord(N), Ord(D), (F shl 4) or Ord(R));)
+AsmCode(~WriteDataTransI|, ~(C, O, S: Byte; N, D: TArmReg; I, R: Byte)|, WriteDataTrans(1, 0, O, S, Ord(N), Ord(D), ((R and Hex(F)) shl 8) or I);)
+define(~_PSR|, ~AsmCode(~$1$2|, ~(Dst, Src1, Src2: TArmReg; Shift: Word = 0)|,  WriteDataTransR(_$2, $3, 0, Ord(Src1), Ord(Dst), Ord(Src2), Shift);)
+               AsmCode(~$1$2S|, ~(Dst, Src1, Src2: TArmReg; Shift: Byte = 0)|,  WriteDataTransR(_$2, $3, 1, Ord(Src1), Ord(Dst), Ord(Src2), Shift); )
+               AsmCode(~$1$2|, ~(Dst, Src: TArmReg; Imm: Byte; Rotate: Byte = 0)|,  WriteDataTransI(_$2, $3, 0, Ord(Src), Ord(Dst), Imm, Rotate); )
+               AsmCode(~$1$2S|, ~(Dst, Src: TArmReg; Imm: Byte; Rotate: Byte = 0)|,  WriteDataTransI(_$2, $3, 1, Ord(Src), Ord(Dst), Imm, Rotate); )|)
 
 define(~all_interface|, all_interface~
   // branch menmonics|)
