@@ -3,6 +3,8 @@
 .PHONY: doc
 .PHONY: dll
 .PHONY: DMachineCode
+.PHONY: Dx86
+.PHONY: DArm
 
 all: clean DMachineCode
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
@@ -10,9 +12,13 @@ all: clean DMachineCode
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
 
-DMachineCode:
+DMachineCode: Dx86 DArm
+
+Dx86:
 	m4 ..\DMachineCode\Dx86.pas4 > ..\DMachineCode\Dx86.temp1
 	m4 ..\m4\hex.m4 ..\DMachineCode\Dx86.temp1 > ..\DMachineCode\Dx86.pas
+
+DArm:
 	m4 ..\DMachineCode\DArm.pas4 > ..\DMachineCode\DArm.temp1
 	m4 ..\m4\hex.m4 ..\DMachineCode\DArm.temp1 > ..\DMachineCode\DArm.pas
 
