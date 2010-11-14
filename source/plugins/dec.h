@@ -34,7 +34,7 @@ typedef command_t* commands_t;
 
 // ID_CODE
 const unsigned int EMBRO_DATA           = 0;
-const unsigned int EMBRO_CODE           = 0;
+const unsigned int EMBRO_CODE           = 1;
 
 // Чаники типа DATA являются недилимыми, их нужно оставить в таком виде,
 // в каком они и были
