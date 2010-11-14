@@ -18,12 +18,24 @@ const
   ERROR_EXCEPTION_WHILE_ERROR_STRING = 7;
   ERROR_EXCEPTION_WHILE_PARSE = 8;
 
+  DEC_TYPE_INT                  = 1;
+  DEC_TYPE_STR                  = 2;
+  DEC_TYPE_DATA                 = 3;  
+
+  DEC_ID_APPTYPE                = 1;
+  DEC_ID_OUTPUT                 = 2;
+  DEC_ID_COMMANDS               = 3;
+  DEC_ID_CODE                   = 4;
+
+  DEC_APPTYPE_CONSOLE           = 1;
+  DEC_APPTYPE_GUI               = 2;
+
 type
-  TdecInfo = procedure (Name: Pointer; _Type: PInteger; Version: PInteger); stdcall;
-  TdecSetParam = procedure (Id: Integer; _Type: Integer; Val: Pointer; Size: Integer); stdcall;
+  TdecInfo = procedure (Name: Pointer; _Type: PInteger; Version: PInteger); cdecl;
+  TdecSetParam = procedure (Id: Integer; _Type: Integer; Val: Pointer; Size: Integer); cdecl;
   TdecCompile = procedure; cdecl;
-  TdecError = function (Id: PInteger; Pos: PInteger): Integer; stdcall;
-  TdecErrorString = function (Id: Integer): PChar; stdcall;
+  TdecError = function (Id: PInteger; Pos: PInteger): Integer; cdecl;
+  TdecErrorString = function (Id: Integer): PChar; cdecl;
   TdecParse = procedure (Format: PChar; Args: array of Const); cdecl;
 
 type
@@ -42,7 +54,8 @@ private
 public
   constructor Create(FileName: TString);
   destructor Destroy; override;
-  procedure SetParam(Id, _Type: Integer; Val: Pointer; Size: Integer = 0);
+  procedure SetParam(Id, _Type: Integer; Val: Pointer; Size: Integer = 0); overload;
+  procedure SetParam(Id: Integer; Val: Integer); overload;
   procedure Compile;
   function Error(var Id: Integer; var Pos: Integer): Integer;
   function ErrorString(Id: Integer): PChar;
@@ -71,14 +84,14 @@ begin
   FReady := Ord(not FLib.Ready);
   if FReady = 0 then
     try
-      Writeln('Called decInfo');
-      //TdecInfo(FLib.GetProcAddress('decInfo'))(@N, @T, @V);
-      TdecCompile(FLib.GetProcAddress('decCompile'))();
-      Writeln('Done decInfo');
+      //Writeln('Called decInfo');
+      TdecInfo(FLib.GetProcAddress('decInfo'))(@N, @T, @V);
+      //Writeln('decCompile = ', Cardinal(FLib.GetProcAddress('decCompile')));
+      //TdecCompile(FLib.GetProcAddress('decCompile'))();
+      //Writeln('Done decInfo');
       FName := N;
       FType := T;
       FVersion := V;
-      FType := 1;
       if FType <> 1 then
         FReady := ERROR_ICORRECT_TYPE
       else begin
@@ -107,6 +120,11 @@ begin
   end;
 end;
 
+procedure TPlugin.SetParam(Id: Integer; Val: Integer);
+begin
+  SetParam(Id, DEC_TYPE_INT, Pointer(Val));
+end;
+
 procedure TPlugin.Compile;
 begin
   try
@@ -119,9 +137,10 @@ end;
 function TPlugin.Error(var Id: Integer; var Pos: Integer): Integer;
 begin
   try
-    FError(@Id, @Pos);
+    Result := FError(@Id, @Pos);
   except
     FReady := ERROR_EXCEPTION_WHILE_ERROR;
+    Result := -1;
   end;
 end;
 
@@ -159,11 +178,13 @@ begin
   GetFileList('plugins\', Files);
   SetLength(Plugins, 0);
   for I := 0 to High(Files) do begin
-    P := TPlugin.Create('plugins\' + Files[I]);
-    Writeln(Files[I], ' ', P.Ready);
+    Files[I] := 'plugins\' + Files[I];
+    P := TPlugin.Create(Files[I]);
     if P.Ready = 0 then begin
       SetLength(Plugins, Length(Plugins) + 1);
       Plugins[High(Plugins)] := P;
+      Writeln('Loaded plugin "', Files[I], '" ', P.Name, ' v', 
+              P.Version div 100, '.', P.Version mod 100);
     end else
       P.Free;
   end;

@@ -74,12 +74,12 @@ typedef struct code_s {
   unsigned int          rcount;
 } code_t;
 
-#define EXPORT __attribute__((cdecl))
+#define EXPORT extern "C" __declspec(dllexport) __attribute__((cdecl))
 
 // в type должно быть возвращено 1
 // в version два младших разряда — minor часть, остальное — major-часть
 // Например version==1234 означает версию 12.34
-EXPORT void  decInfo(void** name, int* type, int* version);
+EXPORT void  decInfo(const char** name, int* type, int* version);
 EXPORT void  decSetParam(int id, int type, void* val, int size);
 EXPORT void  decCompile();
 EXPORT int   decError(int* id, int* pos);

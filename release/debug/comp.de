@@ -1,0 +1,4 @@
+: MAIN str" Hello world!" str. cr ;
+str" Begin compilation" str. cr
+cAPPTYPE-CONSOLE str" out.exe" cOUTPUT cCOMPILE
+str" Done compilation" str. cr

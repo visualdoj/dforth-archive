@@ -13,6 +13,7 @@ private
   FMachine: TForthMachine;
   FAppType: Integer;
   FOutput: TString;
+  function Compile(Plugin: TPlugin): Boolean;
   procedure cOUTPUT(machine: TForthMachine; command: PForthCommand);
   procedure cCOMPILE(machine: TForthMachine; command: PForthCommand);
   procedure cAPPTYPE_CONSOLE(machine: TForthMachine; command: PForthCommand);
@@ -25,13 +26,38 @@ end;
 
 implementation
 
+function TCompiler.Compile(Plugin: TPlugin): Boolean;
+var
+  Id, Pos: Integer;
+begin
+  Result := True;
+  Plugin.SetParam(DEC_ID_APPTYPE, DEC_TYPE_INT, Pointer(FAppType));
+  Plugin.SetParam(DEC_ID_APPTYPE, DEC_TYPE_STR, PChar(FOutPut));
+  Plugin.Compile;
+  if Plugin.Ready <> 0 then begin
+    Writeln('Compilation error [', Plugin.Name, '] plugin failed with error', Plugin.Ready);
+    Result := False;
+    Exit;
+  end;
+  while (Plugin.Error(Id, Pos) <> 0) and (Plugin.Ready = 0) do begin
+    Writeln('Compilation error [', Plugin.Name, '] at ', Pos, '"', 
+            Plugin.ErrorString(Id), '"');
+    Result := False;
+  end;
+end;
+
 procedure TCompiler.cOUTPUT(machine: TForthMachine; command: PForthCommand);
 begin
   FOutput := machine.WOS;
 end;
 
 procedure TCompiler.cCOMPILE(machine: TForthMachine; command: PForthCommand);
+var
+  I: Integer;
 begin
+  for I := 0 to High(Plugins) do
+    if Compile(Plugins[I]) then
+      Break;
 end;
 
 procedure TCompiler.cAPPTYPE_CONSOLE(machine: TForthMachine; command: PForthCommand);

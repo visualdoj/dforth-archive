@@ -2,12 +2,12 @@
 
 const char* NAME = "deArhimag";
 
-EXPORT void  decInfo(void** name, int* type, int* version)
+EXPORT void  decInfo(const char** name, int* type, int* version)
 {
   //printf("decInfo\n");
-  //*name         = (void*)NAME;
-  //*type         = 1;
-  //*version      = 0;
+  *name         = NAME;
+  *type         = 1;
+  *version      = 0;
 }
 
 EXPORT void  decSetParam(int id, int type, void* val, int size)
