@@ -30,7 +30,9 @@ uses
   DForthStack,
   DForthMachine,
   DExecutable,
-  DCommandLine;
+  DCommandLine,
+  DPlugin,
+  DCompiler;
 
 type
 TRepl = class
@@ -41,6 +43,7 @@ end;
 
 var
   Machine: TForthMachine;
+  Compiler: TCompiler;
   Repl: TRepl;
   Done: Boolean = False;
   S: String;
@@ -96,6 +99,7 @@ begin
       Compile;
     end else if (Mode = CMD_REPL) and (Source = '-') then begin
       Machine := TForthMachine.Create;
+      Compiler := TCompiler.Create(Machine);
       Repl := TRepl.Create;
       Machine.AddCommand('quit', Repl.quit);
       Machine.AddCommand('embro-dump', Repl.embro_dump);
@@ -111,14 +115,17 @@ begin
         Machine.Interpret(@S[1]);
         Writeln('ok');
       end;
+      Compiler.Free;
       Machine.Free;
     end else begin
       Machine := TForthMachine.Create;
+      Compiler := TCompiler.Create(Machine);
       Repl := TRepl.Create;
       Machine.AddCommand('quit', Repl.quit);
       Machine.AddCommand('embro-dump', Repl.embro_dump);
       Machine.Interpret(PChar('str" ' + Source + '" evaluate-file'));
       Repl.Free;
+      Compiler.Free;
       Machine.Free;
     end;
 end.

@@ -928,7 +928,6 @@ begin
         end else if fd.cFileName[0] = '.' then begin
          // что-то служебное
         end else begin
-          Log('fd is file');
           SetLength(Files, Length(Files) + 1);
           Files[High(Files)] := fd.cFileName;
         end;

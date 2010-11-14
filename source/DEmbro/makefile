@@ -6,7 +6,7 @@
 .PHONY: Dx86
 .PHONY: DArm
 
-all: clean DMachineCode
+all: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
