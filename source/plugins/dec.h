@@ -88,7 +88,8 @@ typedef struct chunk_s {
   // Косвенные указатели на шитый код
   // Каждый указатель имеет тип unsigned int
   // refs[i] является отступом в data до указателя
-  // Фактически, указатель получается по формуле *((int*)(&data[refs[i]]))
+  // Фактически, указатель получается по формуле 
+  //                                       *((unsigned int*)(&data[refs[i]]))
   unsigned int          count; // кол-во
   unsigned int*         refs; // отступы в data
 } chunk_t;
