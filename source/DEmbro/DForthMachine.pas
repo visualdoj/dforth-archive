@@ -404,6 +404,7 @@ TForthMachine = class
   procedure EWE(V: TEmbroPtr);
   procedure EWO(V: TOpcode); overload;
   procedure EWO(V: TString); overload;
+  procedure EWR(V: TOpcode); overload;
   procedure EWI8(V: TInt8);
   procedure EWI16(V: TInt16);
   procedure EWI32(V: TInt32);
@@ -579,7 +580,7 @@ TForthMachine = class
   // Command EXecute
   // Command COmpile
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'C'}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'LOCALS'}{$ENDIF}
  public
    Local: TWordSpace;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -610,6 +611,27 @@ TForthMachine = class
   procedure LUV(const P: Pointer; Size: Integer);
   procedure LOV(const P: Pointer; Size: Integer);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'plugin datas'}{$ENDIF}
+ public
+  Code: packed record
+    Count: Cardinal;
+    Chunks: Pointer;
+  end;
+  Chunks: array of packed record
+                            Opcode: Cardinal;
+                            Len: Cardinal;
+                            Data: Pointer;
+                            Count: Cardinal;
+                            Refs: Pointer;
+                          end;
+  Refs: array of array of Cardinal;
+  Commands: array of packed record
+                       Name: PChar;
+                       Flags: Integer;
+                       Code: Integer;
+                       Data: Integer;
+                     end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'all commands'}{$ENDIF}
           
@@ -3743,6 +3765,8 @@ procedure TForthMachine.EWV(V: Pointer; Size: Integer); // Embro Write Data
 begin
   Move(V^, (@E[EL])^, Size);
   Inc(EL, Size);
+
+  Inc(Chunks[High(Chunks)].Len, Size);
 end;
 
 procedure TForthMachine.EWI(V: Integer);
@@ -3761,10 +3785,19 @@ end;
 
 procedure TForthMachine.EWO(V: TOpcode);
 begin
-  EWV(@V, SizeOf(V));
+  Move(V, (@E[EL])^, SizeOf(V));
+  Inc(EL, SizeOf(V));
 
   SetLength(FEmbroDump, Length(FEmbroDump) + 1);
   FEmbroDump[High(FEmbroDump)] := C[V].Name + ' ';
+
+  SetLength(Chunks, Length(Chunks) + 1);
+  Chunks[High(Chunks)].Opcode := V;
+  Chunks[High(Chunks)].Data := @E[EL];
+  Chunks[High(Chunks)].Len := 0;
+  Chunks[High(Chunks)].Count := 0;
+  Chunks[High(Chunks)].Refs := nil;
+  SetLength(Refs, Length(Refs) + 1);
   //Writeln('WRITE OPCODE: ' + IntToStr(V));
 end;
 
@@ -3779,6 +3812,11 @@ begin
     end;
   FSession := False;
   LogError('command "' + V + '" not found');
+end;
+
+procedure TForthMachine.EWR(V: TOpcode);
+begin
+  // TODO
 end;
 
 procedure TForthMachine.EWI8(V: TInt8);

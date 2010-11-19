@@ -1,4 +1,5 @@
 #include "..\dec.h"
+#include "examples.cpp"
 
 const char* NAME = "deArhimag";
 
@@ -31,3 +32,4 @@ EXPORT char* decErrorString(int id)
 EXPORT void  decParse(const char* format, ...)
 {
 }
+
