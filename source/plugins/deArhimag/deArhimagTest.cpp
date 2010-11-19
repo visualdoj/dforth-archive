@@ -36,11 +36,42 @@ void DumpUint(FILE* f, int len, unsigned char* bytes)
     fprintf(f, "%2.2x", bytes[i]);
 }
 
+void DumpCommand(FILE* f, unsigned int pos)
+{
+  for (int i = 0; i < commandscount; ++i)
+    if (!(commands[i].flags & 2))
+      if (commands[i].code == pos) {
+        fprintf(f, "    // %s", commands[i].name);
+      }
+}
+
+void DumpCommands()
+{
+  unsigned int pos = 0;
+  FILE* f;
+  f = fopen("commands~", "wt");
+  for (int i = 0; i < commandscount; ++i) {
+    fprintf(f, "%d: %s", i, commands[i].name);
+    if (commands[i].flags != 0) {
+      fprintf(f, " [");
+      if (commands[i].flags & 1)
+        fprintf(f, "i");
+      if (commands[i].flags & 2)
+        fprintf(f, "b");
+      fprintf(f, "]");
+    }
+    if ((commands[i].flags & 2) == 0)
+      fprintf(f, " %d %d", commands[i].code, commands[i].data);
+    fprintf(f, "\n");
+  }
+  fclose(f);
+}
+
 void DumpCode()
 {
   unsigned int pos = 0;
   FILE* f;
-  f = fopen("temp~", "wt");
+  f = fopen("code~", "wt");
   for (int i = 0; i < code->count; ++i) {
     DumpUint(f, 2, (unsigned char*)&pos);
     if (IsChunkData(code->chunks[i]))
@@ -48,6 +79,7 @@ void DumpCode()
     else
       fprintf(f, ": %s ", commands[code->chunks[i].opcode].name);
     DumpBytes(f, code->chunks[i].len, code->chunks[i].data);
+    DumpCommand(f, pos);
     fprintf(f, "\n");
     pos += GetChunkSize(code->chunks[i]);
   }
@@ -86,6 +118,7 @@ EXPORT void  decSetParam(int id, int type, void* val, int size)
 
 EXPORT void  decCompile()
 {
+  DumpCommands();
   DumpCode();
   if (apptype != APPTYPE_CONSOLE && apptype != APPTYPE_GUI) {
     AddError(1, 0);

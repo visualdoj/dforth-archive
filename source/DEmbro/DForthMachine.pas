@@ -1906,7 +1906,8 @@ TForthMachine = class
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   constructor Create;
   destructor Destroy; override;
-  procedure AddCommand(Name: PChar; Code: TCode; Immediate: Boolean = False);
+  procedure AddCommand(Name: PChar; Code: TCode; Immediate: Boolean = False;
+                       Builtin: Boolean = True);
 
   procedure InterpretName(W: PChar); overload;
   procedure Interpret(const S: PChar); overload;
@@ -2087,6 +2088,8 @@ end;
 
 function IsImmediate(Command: PForthCommand): Boolean;
 procedure SetImmediate(Command: PForthCommand; I: Boolean);
+function IsBuiltin(Command: PForthCommand): Boolean;
+procedure SetBuiltin(Command: PForthCommand; I: Boolean);
 function CopyStrToPChar(const S: TString): PChar;
 
 procedure WordListClear(var WL: TWordSpace);
@@ -2103,6 +2106,16 @@ end;
 procedure SetImmediate(Command: PForthCommand; I: Boolean);
 begin
   Command^.Flags := Command^.Flags or Ord(I);
+end;
+
+function IsBuiltin(Command: PForthCommand): Boolean;
+begin
+  Result := (Command^.Flags and 2) > 0;
+end;
+
+procedure SetBuiltin(Command: PForthCommand; I: Boolean);
+begin
+  Command^.Flags := Command^.Flags or (Ord(I) shl 1);
 end;
 
 function CopyStrToPChar(const S: TString): PChar;
@@ -3615,7 +3628,7 @@ end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TForthMachine'}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'folded'}{$ENDIF}
-procedure TForthMachine.AddCommand(Name: PChar; Code: TCode; Immediate: Boolean = False);
+procedure TForthMachine.AddCommand(Name: PChar; Code: TCode; Immediate: Boolean = False; Builtin: Boolean = True);
 begin
   SetLength(C, Length(C) + 1);
   New(C[High(C)]);
@@ -3623,6 +3636,7 @@ begin
   StrCopy(C[High(C)].Name, Name);
   C[High(C)].Code := Code;
   SetImmediate(C[High(C)], Immediate);
+  SetBuiltin(C[High(C)], Builtin);
 end;
 
 procedure TForthMachine.CompileSource(Source: PChar);
@@ -3742,6 +3756,7 @@ begin
 
   Command := ReserveName(Name);
   SetImmediate(Command, True);
+  SetBuiltin(Command, True);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'E'}{$ENDIF}
@@ -5800,7 +5815,7 @@ begin
   if I = -3535 then
     Error('Unknown command: ' + W)
   else begin
-    EWO('run@int-push');
+    EWO('(literal)');
     EWI(I);
   end;
 end;
@@ -6111,10 +6126,6 @@ begin
   end;
   SetImmediate(C[High(C)], False);
   C[High(C)].Code := FControlCommands.call;
-  //C[High(C)].Proc := nil;
-  //C[High(C)].Compile.Proc := nil;
-  //C[High(C)].Callback := nil;
-  //C[High(C)].Runtime.Proc := FControlCommands.call;
   FLastMnemonic := High(C);
   Result := C[High(C)];
 end;
@@ -9322,7 +9333,7 @@ end;
       procedure TForthMachine.run_start (Machine: TForthMachine; Command: PForthCommand); begin FState := FS_INTERPRET end;
       //procedure TForthMachine.allot (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, SizeOf(TInt)); DA(TInt(WP)^); end;
       procedure TForthMachine.opcode_to_command (Machine: TForthMachine; Command: PForthCommand); begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)) := GetCommandByOpcode(Integer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^))) end;
-      procedure TForthMachine.literal (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@int-push'); EWI(WOI); end;
+      procedure TForthMachine.literal (Machine: TForthMachine; Command: PForthCommand); begin EWO('(literal)'); EWI(WOI); end;
       procedure TForthMachine.sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin {if FState <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
                 WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
                 EWO('opcode->command'); end;

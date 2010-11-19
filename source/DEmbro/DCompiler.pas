@@ -40,8 +40,13 @@ begin
       Chunks[I].Count := Length(Refs[I]);
     end;
     SetLength(Commands, Length(C));
-    for I := 0 to High(C) do
+    for I := 0 to High(C) do begin
       Commands[I].Name := C[I].Name;
+      Commands[I].Flags := Ord(IsImmediate(C[I]));
+      Commands[I].Flags := Commands[I].Flags or (Ord(IsBuiltIn(C[I])) shl 1);
+      Commands[I].Code := Cardinal(C[I].Data);
+      Commands[I].Data := Cardinal(C[I].Param);
+    end;
   end;
 end;
 
