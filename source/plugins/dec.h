@@ -24,6 +24,7 @@ typedef struct command_s {
   // bit1 является ли команда встроенной, или она является функцией
   // в первом случае код будет сгенерирован плагином, во втором
   // он указан в полне code
+  // См. cf* defines
   int flags; 
   // номер байта в embro, начиная с которого идёт описание
   unsigned int          code; 
@@ -31,6 +32,10 @@ typedef struct command_s {
   unsigned int          data; 
 } command_t;
 typedef command_t* commands_t;
+
+// command flags
+#define cfI(x) (((x).flags & 1) > 0)
+#define cfB(x) (((x).flags & 2) > 0)
 
 // ID_CODE
 const unsigned int EMBRO_DATA           = 0;

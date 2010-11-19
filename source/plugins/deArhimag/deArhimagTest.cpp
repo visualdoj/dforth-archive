@@ -104,6 +104,9 @@ EXPORT void  decInfo(const char** name, int* type, int* version)
 EXPORT void  decSetParam(int id, int type, void* val, int size)
 {
   if (type == TYPE_INT) {
+    switch (id) {
+      case ID_APPTYPE: apptype = (int)val; break;
+    }
   } else if (type == TYPE_STR)
     switch (id) {
       case ID_OUTPUT: /* копирование из val в output */ ; break;
