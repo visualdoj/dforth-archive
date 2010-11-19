@@ -2,7 +2,7 @@
 #include "..\dec.h"
 #include "examples.cpp"
 
-const char* NAME = "deArhimag";
+const char* NAME = "deArhimag (test)";
 
 int apptype; // DEC_ID_OUTPUT
 char output[1024*16]; // DEC_ID_OUTPUT
