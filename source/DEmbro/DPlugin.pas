@@ -174,16 +174,20 @@ var
   I: Integer;
   P: TPlugin;
   Files: TArrayOfString;
+  ExeDir: TString;
 begin
-  GetFileList('plugins\', Files);
+  ExeDir := ParamStr(0);
+  while (Length(ExeDir) > 0) and (ExeDir[Length(ExeDir)] <> '\') do
+    Delete(ExeDir, Length(ExeDir), 1);
+  GetFileList(ExeDir + 'plugins\', Files, False);
   SetLength(Plugins, 0);
   for I := 0 to High(Files) do begin
-    Files[I] := 'plugins\' + Files[I];
+    Files[I] := ExeDir + 'plugins\' + Files[I];
     P := TPlugin.Create(Files[I]);
     if P.Ready = 0 then begin
       SetLength(Plugins, Length(Plugins) + 1);
       Plugins[High(Plugins)] := P;
-      Writeln('Loaded plugin "', Files[I], '" ', P.Name, ' v', 
+      Writeln('Loaded plugin "', P.Name, '" v', 
               P.Version div 100, '.', P.Version mod 100);
     end else
       P.Free;

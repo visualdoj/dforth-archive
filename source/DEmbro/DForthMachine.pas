@@ -1925,6 +1925,7 @@ TForthMachine = class
 
   procedure InterpretName(W: PChar); overload;
   procedure Interpret(const S: PChar); overload;
+  procedure InterpretFile(const FileName: TString);
   procedure Evaluate(Machine: TForthMachine; Command: PForthCommand);
   procedure EvaluateFile(Machine: TForthMachine; Command: PForthCommand);
   procedure MainLoop;
@@ -4207,6 +4208,10 @@ begin
   FReturnStack := TReturnStack.Create;
   SetLength(FData, 2048);
   //FHere := 0;
+
+  // it must have zero opcode
+  AddCommand('exit', FControlCommands._exit);
+
   SetLength(FTypes, 0);
   
     ExceptionsS := 1024;
@@ -4256,9 +4261,6 @@ begin
   UInt32Arithmetic := TUInt32Arithmetic.Create(Self);
   UInt64Arithmetic := TUInt64Arithmetic.Create(Self);
   FStringCommands := TStringCommands.Create(Self);
-
-  // it must have zero opcode
-  AddCommand('exit', FControlCommands._exit);
 
   AddCommand('(', CompileComment, True); {) для m4}
   AddCommand('//', CompileLineComment, True);
@@ -5879,6 +5881,31 @@ begin
   EC := ROI;
   FSession := ROI <> BOOL_FALSE;
   FState := ROI;
+end;
+
+procedure TForthMachine.InterpretFile(const FileName: TString);
+var
+  F: TextFile;
+  S: TString;
+  B: TString;
+  T: TString;
+begin
+  S := FileName;
+  Assign(F, S);
+  {$I-}
+  Reset(F);
+  {$I+}
+  if IOResult <> 0 then begin
+    LogError('cannot open file "' + S + '"');
+    Exit;
+  end;
+  B := '';
+  while not EOF(F) do begin
+    Readln(F, T);
+    B := B + T + EOL;
+  end;
+  Close(F);
+  Interpret(PChar(B));
 end;
 
 procedure TForthMachine.Evaluate(Machine: TForthMachine; Command: PForthCommand);

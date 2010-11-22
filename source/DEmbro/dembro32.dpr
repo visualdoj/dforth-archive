@@ -77,6 +77,26 @@ begin
     Result := Copy(S, 1, I - 1) + '.exe';
 end;
 
+procedure RunSystem;
+begin
+  // 1. command line
+  // 2. current dir
+  if FileExist(GetCurrentDirectory + '\system.de') then begin
+    Machine.InterpretFile(GetCurrentDirectory + '\system.de');
+    Exit;
+  end;
+  // 3. exe
+  if FileExist(GetExeDirectory + '\system.de') then begin
+    Machine.InterpretFile(GetExeDirectory + '\system.de');
+    Exit;
+  end;
+  // 3. exe\units
+  if FileExist(GetExeDirectory + '\units\system.de') then begin
+    Machine.InterpretFile(GetExeDirectory + '\units\system.de');
+    Exit;
+  end;
+end;
+
 procedure Compile;
 var
   Builder: TExeBuilder;
@@ -99,6 +119,7 @@ begin
       Compile;
     end else if (Mode = CMD_REPL) and (Source = '-') then begin
       Machine := TForthMachine.Create;
+      RunSystem;
       Compiler := TCompiler.Create(Machine);
       Repl := TRepl.Create;
       Machine.AddCommand('quit', Repl.quit);
@@ -119,6 +140,7 @@ begin
       Machine.Free;
     end else begin
       Machine := TForthMachine.Create;
+      RunSystem;
       Compiler := TCompiler.Create(Machine);
       Repl := TRepl.Create;
       Machine.AddCommand('quit', Repl.quit);

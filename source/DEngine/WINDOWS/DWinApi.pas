@@ -216,12 +216,14 @@ Function GetSaveFile(Window: TWindow; ext: TString = '*'): TString;
 // Загрузка файла формата ext, возвращает путь к файлу
 Function GetLoadFile(Window: TWindow; ext: TString = '*'): TString;
 // Список файлов в заданной папке
-procedure GetFileList(const Folder: TString; var Files: TArrayOfString);
+procedure GetFileList(const Folder: TString; var Files: TArrayOfString; Current: Boolean = True);
 // Список директорий в заданной папке
 procedure GetDirList(const Folder: TString; var Files: TArrayOfString);
 // Текущие директории
 function GetCurrentDirectory: TString;
 procedure SetCurrentDirectory(const Folder: TString);
+// Директория, в которой лежит Exe
+function GetExeDirectory: TString;
 
 implementation
 
@@ -912,13 +914,18 @@ begin
       Result := '';
 end;
 
-procedure GetFileList(const Folder: TString; var Files: TArrayOfString);
+procedure GetFileList(const Folder: TString; var Files: TArrayOfString; Current: Boolean = True);
   var
     fd: TWin32FindData;
     fh: THandle;
+    Pref: TString;
 begin
   SetLength(Files, 0);
-  fh := FindFirstFile(PAnsiChar(GetCurrentDirectory + '\' + Folder + '*'), @fd);  
+  if Current then
+    Pref := GetCurrentDirectory + '\'
+  else
+    Pref := '';
+  fh := FindFirstFile(PAnsiChar(Pref + Folder + '*'), @fd);  
   if fh <> INVALID_HANDLE_VALUE then begin
     repeat
       if Length(fd.cFileName) > 0 then
@@ -971,6 +978,18 @@ end;
 procedure SetCurrentDirectory(const Folder: TString);
 begin
   windows.SetCurrentDirectory(PAnsiChar(Folder));
+end;
+
+function GetExeDirectory: TString;
+var
+  P: TString;
+  L: Integer;
+begin
+  P := ParamStr(0);
+  L := Length(P);
+  while (L > 0) and (P[L] <> '\') do
+    Dec(L);
+  Result := Copy(P, 1, L - 1);
 end;
 
 end.
