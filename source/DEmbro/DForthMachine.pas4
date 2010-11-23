@@ -486,6 +486,7 @@ define(~signed_arithmetic_commands|,
 |)
 define(~number_arithmetic_commands|, 
   ~
+  function ConvertStrTo$1(const S: TString; var X: $2): Integer;
   procedure $1_push  cmdhdr;
   procedure $1_interpret_push  cmdhdr;
   procedure $1_compile_push  cmdhdr;
@@ -499,6 +500,41 @@ define(~number_arithmetic_commands|,
   procedure $1_ptr_dec cmdhdr
   define(~all_implement|, all_implement 
     ~
+     function TForthMachine.ConvertStrTo$1(const S: TString; var X: $2): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.$1_push  cmdhdr; begin if FState = FS_COMPILE then $1_compile_push(Machine, Command) else $1_interpret_push(Machine, Command) end;
      procedure TForthMachine.$1_interpret_push  cmdhdr; begin $2(WP^) := $2(StrToInt(NextName)); Inc(WP, SizeOf($2)); end;
      procedure TForthMachine.$1_compile_push  cmdhdr; begin EWO('run@$1-push'); EW_$1(StrToInt(NextName)); end;
@@ -1765,16 +1801,16 @@ begin
 end;
 
 procedure TStackCommands.compile_push;
-var
-  Name: TString;
-  I: Integer;
+(* var *)
+(*   Name: TString; *)
+(*   I: Integer; *)
 begin
-  Name := FMachine.NextName;
-  I := StrToIntDef(Name, -3535);
-  if I = -3535 then
-    FMachine.CompileError('need number, but ' + Name + ' found')
-  else
-    FMachine.WriteEmbroInt(I);
+  (* Name := FMachine.NextName; *)
+  (* I := StrToIntDef(Name, -3535); *)
+  (* if I = -3535 then *)
+  (*   FMachine.CompileError('need number, but ' + Name + ' found') *)
+  (* else *)
+  (*   FMachine.WriteEmbroInt(I); *)
 end;
 
 procedure TStackCommands.pop(P: Pointer);
@@ -4325,8 +4361,12 @@ begin
       // Writeln('DONE ' + W);
       Exit;
     end;
-  I := StrToIntDef(W, -3535);
-  if I = -3535 then
+  (* I := StrToIntDef(W, -3535); *)
+  (* if I = -3535 then *)
+  (*   Error(' Unknown command: ' + W) *)
+  (* else *)
+  (*   WUI(I); *)
+  if ConvertStrToInt(W, I) <> 0 then
     Error(' Unknown command: ' + W)
   else
     WUI(I);
@@ -4344,9 +4384,15 @@ begin
         EWO(I);
       Exit;
     end;
-  I := StrToIntDef(W, -3535);
-  if I = -3535 then
-    Error('Unknown command: ' + W)
+  (* I := StrToIntDef(W, -3535); *)
+  (* if I = -3535 then *)
+  (*   Error('Unknown command: ' + W) *)
+  (* else begin *)
+  (*   EWO('(literal)'); *)
+  (*   EWI(I); *)
+  (* end; *)
+  if ConvertStrToInt(W, I) <> 0 then
+    Error(' Unknown command: ' + W)
   else begin
     EWO('(literal)');
     EWI(I);
@@ -4626,12 +4672,18 @@ begin
       WriteMnemonic(I);
       Exit;
     end;
-  I := StrToIntDef(Name, -3535);
-  if I = -3535 then
-    CompileError('Unknown name "' + Name + '"')
+  (* I := StrToIntDef(Name, -3535); *)
+  (* if I = -3535 then *)
+  (*   CompileError('Unknown name "' + Name + '"') *)
+  (* else begin *)
+  (*   WriteMnemonicByName('int-push'); *)
+  (*   WriteEmbroInt(I); *)
+  (* end; *)
+  if ConvertStrToInt(Name, I) <> 0 then
+    Error(' Unknown command: ' + Name)
   else begin
-    WriteMnemonicByName('int-push');
-    WriteEmbroInt(I);
+    EWO('(literal)');
+    EWI(I);
   end;
 end;
 

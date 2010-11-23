@@ -1453,6 +1453,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrTo(const S: TString; var X: TInt): Integer;
   procedure _push  (Machine: TForthMachine; Command: PForthCommand);
   procedure _interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure _compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -1468,6 +1469,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrToint(const S: TString; var X: TInt): Integer;
   procedure int_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure int_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure int_compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -1483,6 +1485,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrToint8(const S: TString; var X: TInt8): Integer;
   procedure int8_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -1498,6 +1501,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrToint16(const S: TString; var X: TInt16): Integer;
   procedure int16_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -1513,6 +1517,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrToint32(const S: TString; var X: TInt32): Integer;
   procedure int32_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -1528,6 +1533,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrToint64(const S: TString; var X: TInt64): Integer;
   procedure int64_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -1543,6 +1549,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrTouint(const S: TString; var X: TUInt): Integer;
   procedure uint_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -1558,6 +1565,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrTouint8(const S: TString; var X: TUInt8): Integer;
   procedure uint8_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -1573,6 +1581,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrTouint16(const S: TString; var X: TUInt16): Integer;
   procedure uint16_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -1588,6 +1597,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrTouint32(const S: TString; var X: TUInt32): Integer;
   procedure uint32_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -1603,6 +1613,7 @@ TForthMachine = class
   
 ;
   
+  function ConvertStrTouint64(const S: TString; var X: TUInt64): Integer;
   procedure uint64_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_compile_push  (Machine: TForthMachine; Command: PForthCommand);
@@ -2226,16 +2237,16 @@ begin
 end;
 
 procedure TStackCommands.compile_push;
-var
-  Name: TString;
-  I: Integer;
+(* var *)
+(*   Name: TString; *)
+(*   I: Integer; *)
 begin
-  Name := FMachine.NextName;
-  I := StrToIntDef(Name, -3535);
-  if I = -3535 then
-    FMachine.CompileError('need number, but ' + Name + ' found')
-  else
-    FMachine.WriteEmbroInt(I);
+  (* Name := FMachine.NextName; *)
+  (* I := StrToIntDef(Name, -3535); *)
+  (* if I = -3535 then *)
+  (*   FMachine.CompileError('need number, but ' + Name + ' found') *)
+  (* else *)
+  (*   FMachine.WriteEmbroInt(I); *)
 end;
 
 procedure TStackCommands.pop(P: Pointer);
@@ -5850,8 +5861,12 @@ begin
       // Writeln('DONE ' + W);
       Exit;
     end;
-  I := StrToIntDef(W, -3535);
-  if I = -3535 then
+  (* I := StrToIntDef(W, -3535); *)
+  (* if I = -3535 then *)
+  (*   Error(' Unknown command: ' + W) *)
+  (* else *)
+  (*   WUI(I); *)
+  if ConvertStrToInt(W, I) <> 0 then
     Error(' Unknown command: ' + W)
   else
     WUI(I);
@@ -5869,9 +5884,15 @@ begin
         EWO(I);
       Exit;
     end;
-  I := StrToIntDef(W, -3535);
-  if I = -3535 then
-    Error('Unknown command: ' + W)
+  (* I := StrToIntDef(W, -3535); *)
+  (* if I = -3535 then *)
+  (*   Error('Unknown command: ' + W) *)
+  (* else begin *)
+  (*   EWO('(literal)'); *)
+  (*   EWI(I); *)
+  (* end; *)
+  if ConvertStrToInt(W, I) <> 0 then
+    Error(' Unknown command: ' + W)
   else begin
     EWO('(literal)');
     EWI(I);
@@ -6151,12 +6172,18 @@ begin
       WriteMnemonic(I);
       Exit;
     end;
-  I := StrToIntDef(Name, -3535);
-  if I = -3535 then
-    CompileError('Unknown name "' + Name + '"')
+  (* I := StrToIntDef(Name, -3535); *)
+  (* if I = -3535 then *)
+  (*   CompileError('Unknown name "' + Name + '"') *)
+  (* else begin *)
+  (*   WriteMnemonicByName('int-push'); *)
+  (*   WriteEmbroInt(I); *)
+  (* end; *)
+  if ConvertStrToInt(Name, I) <> 0 then
+    Error(' Unknown command: ' + Name)
   else begin
-    WriteMnemonicByName('int-push');
-    WriteEmbroInt(I);
+    EWO('(literal)');
+    EWI(I);
   end;
 end;
 
@@ -8860,6 +8887,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrTo(const S: TString; var X: TInt): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine._push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then _compile_push(Machine, Command) else _interpret_push(Machine, Command) end;
      procedure TForthMachine._interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TInt(WP^) := TInt(StrToInt(NextName)); Inc(WP, SizeOf(TInt)); end;
      procedure TForthMachine._compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@-push'); EW_(StrToInt(NextName)); end;
@@ -8889,6 +8951,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrToint(const S: TString; var X: TInt): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.int_push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then int_compile_push(Machine, Command) else int_interpret_push(Machine, Command) end;
      procedure TForthMachine.int_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TInt(WP^) := TInt(StrToInt(NextName)); Inc(WP, SizeOf(TInt)); end;
      procedure TForthMachine.int_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@int-push'); EW_int(StrToInt(NextName)); end;
@@ -8918,6 +9015,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrToint8(const S: TString; var X: TInt8): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.int8_push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then int8_compile_push(Machine, Command) else int8_interpret_push(Machine, Command) end;
      procedure TForthMachine.int8_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TInt8(WP^) := TInt8(StrToInt(NextName)); Inc(WP, SizeOf(TInt8)); end;
      procedure TForthMachine.int8_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@int8-push'); EW_int8(StrToInt(NextName)); end;
@@ -8947,6 +9079,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrToint16(const S: TString; var X: TInt16): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.int16_push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then int16_compile_push(Machine, Command) else int16_interpret_push(Machine, Command) end;
      procedure TForthMachine.int16_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TInt16(WP^) := TInt16(StrToInt(NextName)); Inc(WP, SizeOf(TInt16)); end;
      procedure TForthMachine.int16_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@int16-push'); EW_int16(StrToInt(NextName)); end;
@@ -8976,6 +9143,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrToint32(const S: TString; var X: TInt32): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.int32_push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then int32_compile_push(Machine, Command) else int32_interpret_push(Machine, Command) end;
      procedure TForthMachine.int32_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TInt32(WP^) := TInt32(StrToInt(NextName)); Inc(WP, SizeOf(TInt32)); end;
      procedure TForthMachine.int32_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@int32-push'); EW_int32(StrToInt(NextName)); end;
@@ -9005,6 +9207,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrToint64(const S: TString; var X: TInt64): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.int64_push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then int64_compile_push(Machine, Command) else int64_interpret_push(Machine, Command) end;
      procedure TForthMachine.int64_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TInt64(WP^) := TInt64(StrToInt(NextName)); Inc(WP, SizeOf(TInt64)); end;
      procedure TForthMachine.int64_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@int64-push'); EW_int64(StrToInt(NextName)); end;
@@ -9034,6 +9271,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrTouint(const S: TString; var X: TUInt): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.uint_push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then uint_compile_push(Machine, Command) else uint_interpret_push(Machine, Command) end;
      procedure TForthMachine.uint_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TUInt(WP^) := TUInt(StrToInt(NextName)); Inc(WP, SizeOf(TUInt)); end;
      procedure TForthMachine.uint_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@uint-push'); EW_uint(StrToInt(NextName)); end;
@@ -9063,6 +9335,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrTouint8(const S: TString; var X: TUInt8): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.uint8_push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then uint8_compile_push(Machine, Command) else uint8_interpret_push(Machine, Command) end;
      procedure TForthMachine.uint8_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TUInt8(WP^) := TUInt8(StrToInt(NextName)); Inc(WP, SizeOf(TUInt8)); end;
      procedure TForthMachine.uint8_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@uint8-push'); EW_uint8(StrToInt(NextName)); end;
@@ -9092,6 +9399,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrTouint16(const S: TString; var X: TUInt16): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.uint16_push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then uint16_compile_push(Machine, Command) else uint16_interpret_push(Machine, Command) end;
      procedure TForthMachine.uint16_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TUInt16(WP^) := TUInt16(StrToInt(NextName)); Inc(WP, SizeOf(TUInt16)); end;
      procedure TForthMachine.uint16_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@uint16-push'); EW_uint16(StrToInt(NextName)); end;
@@ -9121,6 +9463,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrTouint32(const S: TString; var X: TUInt32): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.uint32_push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then uint32_compile_push(Machine, Command) else uint32_interpret_push(Machine, Command) end;
      procedure TForthMachine.uint32_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TUInt32(WP^) := TUInt32(StrToInt(NextName)); Inc(WP, SizeOf(TUInt32)); end;
      procedure TForthMachine.uint32_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@uint32-push'); EW_uint32(StrToInt(NextName)); end;
@@ -9150,6 +9527,41 @@ end;
     
    
     
+     function TForthMachine.ConvertStrTouint64(const S: TString; var X: TUInt64): Integer;
+     const
+       Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
+                                        '7', '8', '9', 'A', 'B', 'C', 'D',
+                                        'E', 'F');
+     var
+       D: Byte;
+           function GetDigit(C: TChar; var D: Byte): Boolean;
+           begin
+             Result := True;
+             case C of
+               '0'..'9': D := Ord(C) - Ord('0');
+               'a'..'f': D := Ord(C) - Ord('a') + 10;
+               'A'..'F': D := Ord(C) - Ord('F') + 10;
+             else
+               Result := False;
+             end;
+           end;
+     begin
+       X := 0;
+       Result := Ord(Length(S) <> 0);
+       if Result = 0 then
+         Exit; 
+       if S[1] = 'h' then begin
+         Inc(Result);
+         while Result <= Length(S) do begin
+           if not GetDigit(S[Result], D) then
+             Exit;
+           X := (X shl 4) or D;
+           Inc(Result);
+         end;
+         Result := 0;
+       end else
+         Val(S, X, Result);
+     end;
      procedure TForthMachine.uint64_push  (Machine: TForthMachine; Command: PForthCommand); begin if FState = FS_COMPILE then uint64_compile_push(Machine, Command) else uint64_interpret_push(Machine, Command) end;
      procedure TForthMachine.uint64_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin TUInt64(WP^) := TUInt64(StrToInt(NextName)); Inc(WP, SizeOf(TUInt64)); end;
      procedure TForthMachine.uint64_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin EWO('run@uint64-push'); EW_uint64(StrToInt(NextName)); end;

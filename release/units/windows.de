@@ -87,6 +87,123 @@ ptr-nil ptr-value lib-user32 // переменная для хранения з�
 : WIN32FINDDATAA t_ptr ( WIN32_FIND_DATA) ;
 : PWIN32FINDDATA t_ptr ( ^WIN32_FIND_DATA) ;
 
+// вводим константы
+1               constant CF_TEXT
+
+2               constant CS_HREDRAW
+32              constant CS_OWNDC
+1               constant CS_VREDRAW
+  
+-1              constant INVALID_HANDLE_VALUE 
+
+32              constant FILE_ATTRIBUTE_ARCHIVE 
+128             constant FILE_ATTRIBUTE_NORMAL 
+16              constant FILE_ATTRIBUTE_DIRECTORY 
+2               constant FILE_ATTRIBUTE_HIDDEN 
+1               constant FILE_ATTRIBUTE_READONLY 
+4               constant FILE_ATTRIBUTE_SYSTEM 
+256             constant FILE_ATTRIBUTE_TEMPORARY 
+h0200           constant FILE_ATTRIBUTE_SPARSE_FILE 
+h0400           constant FILE_ATTRIBUTE_REPARSE_POINT 
+h0800           constant FILE_ATTRIBUTE_COMPRESSED 
+h1000           constant FILE_ATTRIBUTE_OFFLINE 
+h2000           constant FILE_ATTRIBUTE_NOT_CONTENT_INDEXED 
+h4000           constant FILE_ATTRIBUTE_ENCRYPTED 
+h20000          constant FILE_ATTRIBUTE_VIRTUAL 
+
+h80000000       constant FILE_FLAG_WRITE_THROUGH 
+1073741824      constant FILE_FLAG_OVERLAPPED 
+536870912       constant FILE_FLAG_NO_BUFFERING 
+268435456       constant FILE_FLAG_RANDOM_ACCESS 
+134217728       constant FILE_FLAG_SEQUENTIAL_SCAN 
+67108864        constant FILE_FLAG_DELETE_ON_CLOSE 
+33554432        constant FILE_FLAG_BACKUP_SEMANTICS 
+16777216        constant FILE_FLAG_POSIX_SEMANTICS 
+0               constant SECURITY_ANONYMOUS 
+65536           constant SECURITY_IDENTIFICATION 
+131072          constant SECURITY_IMPERSONATION 
+196608          constant SECURITY_DELEGATION 
+262144          constant SECURITY_CONTEXT_TRACKING 
+524288          constant SECURITY_EFFECTIVE_ONLY 
+1048576         constant SECURITY_SQOS_PRESENT 
+  ( CreateFileMapping, VirtualAlloc, VirtualFree, VirtualProtect)
+134217728       constant SEC_COMMIT 
+16777216        constant SEC_IMAGE 
+268435456       constant SEC_NOCACHE 
+67108864        constant SEC_RESERVE 
+2               constant PAGE_READONLY 
+4               constant PAGE_READWRITE 
+8               constant PAGE_WRITECOPY 
+16              constant PAGE_EXECUTE 
+32              constant PAGE_EXECUTE_READ 
+64              constant PAGE_EXECUTE_READWRITE 
+128             constant PAGE_EXECUTE_WRITECOPY 
+256             constant PAGE_GUARD 
+1               constant PAGE_NOACCESS 
+512             constant PAGE_NOCACHE 
+4096            constant MEM_COMMIT 
+65536           constant MEM_FREE 
+8192            constant MEM_RESERVE 
+16777216        constant MEM_IMAGE 
+262144          constant MEM_MAPPED 
+131072          constant MEM_PRIVATE 
+16384           constant MEM_DECOMMIT 
+32768           constant MEM_RELEASE 
+1048576         constant MEM_TOP_DOWN 
+h80000          constant MEM_RESET        
+h200000         constant MEM_WRITE_WATCH  
+h400000         constant MEM_PHYSICAL     
+h20000000       constant MEM_LARGE_PAGES  
+h80000000       constant MEM_4MB_PAGES    
+
+-1              constant ENUM_CURRENT_SETTINGS  
+2               constant GMEM_MOVEABLE 
+-16             constant GWL_STYLE 
+-21             constant GWL_USERDATA 
+32512           constant IDC_ARROW 
+ 
+     // OpenGL! O_o
+h1              constant PFD_DOUBLEBUFFER 
+h4              constant PFD_DRAW_TO_WINDOW 
+h20             constant PFD_SUPPORT_OPENGL 
+0               constant PFD_MAIN_PLANE 
+0               constant PFD_TYPE_RGBA 
+
+1               constant PM_REMOVE 
+32              constant SWP_FRAMECHANGED 
+512             constant SWP_NOOWNERZORDER 
+5               constant SW_SHOW 
+hc00000         constant WS_CAPTION 
+h40000          constant WS_EX_APPWINDOW 
+h100            constant WS_EX_WINDOWEDGE 
+h80000000       constant WS_POPUP 
+h10000000       constant WS_VISIBLE 
+32              constant CCHDEVICENAME 
+32              constant CCHFORMNAME 
+37              constant VK_LEFT 
+38              constant VK_UP 
+39              constant VK_RIGHT 
+40              constant VK_DOWN 
+h70             constant VK_F1  
+h71             constant VK_F2  
+h72             constant VK_F3  
+h73             constant VK_F4  
+h74             constant VK_F5  
+h75             constant VK_F6  
+h76             constant VK_F7  
+h77             constant VK_F8  
+h78             constant VK_F9  
+h79             constant VK_F10 
+h7A             constant VK_F11 
+h7B             constant VK_F12 
+
+260             constant MAX_PATH 
+
+h0001           constant SEM_FAILCRITICALERRORS             
+h0004           constant SEM_NOALIGNMENTFAULTEXCEPT         
+h0002           constant SEM_NOGPFAULTERRORBOX              
+h8000 constant SEM_NOOPENFILEERRORBOX             
+
 // список протатипов всех функций
 :a MessageBox HWND LPCSTR LPCSTR UINT  LONG stdcall user32;
 :a AdjustWindowRect LPRECT DWORD WINBOOL WINBOOL stdcall user32;
