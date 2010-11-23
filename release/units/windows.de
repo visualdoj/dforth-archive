@@ -1,8 +1,8 @@
 str" units\structures\dyn.de" evaluate-file // там реализован динамический массив
-
+// {{{
 ptr-nil ptr-value lib-user32 // переменная для хранения загруженной либы user32
 1000 dyn user32-funcs // массив для хранения функций, которые необходимо загрузить
-
+// }}}
 // завершает объявление прототипа функции, которая должна браться из user32 библиотеки
 : user32; ( -) ['] a; execute last user32-funcs dyn.add ; immediate
 
