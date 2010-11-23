@@ -1,0 +1,12 @@
+: dyn.len ( d-p) ;
+: dyn.ptr ( d-p) cell+ ;
+: dyn.max ( d-p) 2 cells + ;
+: dyn ( "name" i--) create here 3 cells allot 
+                       dup dyn.len 0 swap ! 
+                       dup dyn.max lrot swap !
+                       dup dyn.max @
+                       cells malloc swap dyn.ptr ! ;
+: dyn.add ( id-) dup 1+! dyn.ptr ! ;
+: dyn.len@ ( d-i) dyn.len @ ;
+
+str" Loaded dyn.de" str. cr

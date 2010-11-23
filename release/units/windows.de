@@ -1,5 +1,12 @@
-ptr-nil ptr-value lib-user32
+str" units\structures\dyn.de" evaluate-file // там реализован динамический массив
 
+ptr-nil ptr-value lib-user32 // переменная для хранения загруженной либы user32
+100 dyn user32-funcs // массив для хранения функций, которые необходимо загрузить
+
+// завершает объявление прототипа функции, которая должна браться из user32 библиотеки
+: user32; ( -) ['] a; execute last user32-funcs dyn.add ; immediate
+
+// вводим виндовые типы
 : ATOM      t_uint16 ;
 : BOOL      t_int32 ;
 : BOOLEAN   t_int8 ;
@@ -27,7 +34,8 @@ ptr-nil ptr-value lib-user32
 : HRESULT   LONG ;
 : LPCSTR    t_pchar ;
 
-:a MessageBox HWND LPCSTR LPCSTR UINT  LONG stdcall a;
+// список протатипов всех функций
+:a MessageBox HWND LPCSTR LPCSTR UINT  LONG stdcall user32;
 
 str" User32.dll" lib-load drop ptr-to lib-user32
 lib-user32 str" MessageBoxA" lib-fun to MessageBox

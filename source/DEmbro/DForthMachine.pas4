@@ -654,6 +654,9 @@ define(~misc_commands|,
   procedure CallDoesGt cmdhdr;
   procedure Cells cmdhdr;
   procedure Cell_plus cmdhdr;
+  procedure _malloc cmdhdr;
+  procedure _free cmdhdr;
+  procedure _last cmdhdr;
   define(~all_implement|, all_implement 
     ~
       procedure TForthMachine._wp cmdhdr; begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
@@ -694,6 +697,9 @@ define(~misc_commands|,
       procedure TForthMachine.CallDoesGt cmdhdr; begin FControlCommands.Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.Cells cmdhdr; begin TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt)))*SizeOf(Integer); end;
       procedure TForthMachine.Cell_plus cmdhdr; begin TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); end;
+      procedure TForthMachine._malloc cmdhdr; var P: Pointer; begin P := Pointer(WP^); GetMem(P, Integer(WVar(-SizeOf(Integer)))); Pointer(WP^) := P; end;
+      procedure TForthMachine._free cmdhdr; var P: Pointer; begin Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P); end;
+      procedure TForthMachine._last cmdhdr; var P: Pointer; begin Pointer(WP^) := C[CC-1]; Inc(WP, SizeOf(Pointer)); end;
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -731,6 +737,9 @@ define(~misc_commands|,
      AddCommand('(does>)', _sq_does_gt_sq);
      AddCommand('cells', Cells);
      AddCommand('cell+', Cell_plus);
+     AddCommand('malloc', _malloc);
+     AddCommand('free', _free);
+     AddCommand('last', _last);
     |)
 |)
 define(~file_commands|, 

@@ -1888,6 +1888,9 @@ TForthMachine = class
   procedure CallDoesGt (Machine: TForthMachine; Command: PForthCommand);
   procedure Cells (Machine: TForthMachine; Command: PForthCommand);
   procedure Cell_plus (Machine: TForthMachine; Command: PForthCommand);
+  procedure _malloc (Machine: TForthMachine; Command: PForthCommand);
+  procedure _free (Machine: TForthMachine; Command: PForthCommand);
+  procedure _last (Machine: TForthMachine; Command: PForthCommand);
   
   
 
@@ -5778,6 +5781,9 @@ begin
      AddCommand('(does>)', _sq_does_gt_sq);
      AddCommand('cells', Cells);
      AddCommand('cell+', Cell_plus);
+     AddCommand('malloc', _malloc);
+     AddCommand('free', _free);
+     AddCommand('last', _last);
     
     
       AddCommand('sys-exceptions-execute', _sys_exceptions_execute);
@@ -9433,6 +9439,9 @@ end;
       procedure TForthMachine.CallDoesGt (Machine: TForthMachine; Command: PForthCommand); begin FControlCommands.Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.Cells (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))*SizeOf(Integer); end;
       procedure TForthMachine.Cell_plus (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) + SizeOf(TInt); end;
+      procedure TForthMachine._malloc (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin P := Pointer(WP^); GetMem(P, Integer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^))); Pointer(WP^) := P; end;
+      procedure TForthMachine._free (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P); end;
+      procedure TForthMachine._last (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin Pointer(WP^) := C[CC-1]; Inc(WP, SizeOf(Pointer)); end;
     
    
     
