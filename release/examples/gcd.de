@@ -1,3 +1,2 @@
 : GCD ( ii - i) 0; tuck mod recurse ;
-value x
 str" Enter a: " str. int$ str" Enter b: " str. int$ GCD str" GCD(a, b) = " str. .
