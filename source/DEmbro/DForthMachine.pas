@@ -3195,18 +3195,18 @@ begin
             S := B;
             if S > 4 then
               S := 4;
-            Writeln('Return-size(1): ', S);
+            //Writeln('Return-size(1): ', S);
             Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             B := B - S;
             S := B;
             if S > 4 then
               S := 4;
-            Writeln('Return-size(2): ', S);
+            //Writeln('Return-size(2): ', S);
             Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             S := 0;
-            Writeln('Return-size(3): ', S);
+            //Writeln('Return-size(3): ', S);
             Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
           end else begin
@@ -3304,7 +3304,7 @@ begin
     @endofcall:
       mov Stack,ebx // запоминаем положение стека
   end;
-  Log('SUB: ' + IntToStr(TUInt(Machine.WP) - TUInt(Stack)));
+  //Log('SUB: ' + IntToStr(TUInt(Machine.WP) - TUInt(Stack)));
   Machine.WP := Stack;
 end;
 
@@ -6166,7 +6166,7 @@ var
 begin
   for I := High(C) downto 0 do
     if TString(C[I].Name) = Name then begin
-      Writeln(I);
+      //Writeln(I);
       Result := I;
       Exit;
     end;
@@ -6175,7 +6175,7 @@ end;
 
 function TForthMachine.GetCommandByOpcode(Opcode: Integer): PForthCommand;
 begin
-  Writeln(Opcode);
+  //Writeln(Opcode);
   Result := C[Opcode];
 end;
 
