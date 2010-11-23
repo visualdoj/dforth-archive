@@ -3076,13 +3076,14 @@ end;
 {$IFNDEF FLAG_FPC}{$REGION 'TAlienCommands'}{$ENDIF}
 procedure TAlienCommands.lib_load(Machine: TForthMachine; Command: PForthCommand);
 var
-  P: PChar;
+  S: TString;
   L: TLib;
   B: TInt;
 begin
-  Machine.FPtrStackCommands.Pop(@P);
-  L := TLib.Create(P);
-  Machine.FPtrStackCommands.Push(@L);
+  //Machine.FPtrStackCommands.Pop(@P);
+  S := Machine.WOS;
+  L := TLib.Create(PChar(S));   
+  Machine.WUP(L);
   B := BOOL_TRUE * Ord(L.Ready) + BOOL_FALSE * Ord(not L.Ready);
   Machine.WUI(B);
 end;
@@ -3091,20 +3092,21 @@ procedure TAlienCommands.lib_unload(Machine: TForthMachine; Command: PForthComma
 var
   L: TLib;
 begin
-  Machine.FPtrStackCommands.Pop(@L);
+  L := Machine.WOP;
   L.Free;
 end;
 
 procedure TAlienCommands.lib_fun(Machine: TForthMachine; Command: PForthCommand);
 var
   L: TLib;
-  P: PChar;
+  S: TString;
+  P: Pointer;
 begin
-  Machine.FPtrStackCommands.Pop(@P);
-  Machine.FPtrStackCommands.Pop(@L);
-  P := L.GetProcAddress(P);
-  Machine.FPtrStackCommands.Push(@L);
-  Machine.FPtrStackCommands.Push(@P);
+  S := Machine.WOS;
+  L := Machine.WOP;
+  P := L.GetProcAddress(PChar(S));
+  // Machine.WUI(L);
+  Machine.WUP(P);
 end;
 
 procedure TAlienCommands.alien_fun(Machine: TForthMachine; Command: PForthCommand);
@@ -3121,26 +3123,26 @@ begin
   New(C);
   C^.Name := StrAlloc(Length(Name) + 1);
   StrCopy(C^.Name, PChar(Name));
-  Log('Pushed command ' + C^.Name);
+  //Log('Pushed command ' + C^.Name);
   Machine.WUP(C);
   T := @Machine.FTypes[0];
   Machine.WUP(T);
 end;
 
-procedure Test2(A, B: Integer); stdcall;
+procedure Test1(A, B: Integer); stdcall;
 begin
-  Log('Test ' + IntToStr(A - B));
+  Log('Test1 ' + IntToStr(A - B));
 end;
 
-function Test3(A, B: Integer): Integer; stdcall;
+function Test2(A, B: Integer): Integer; stdcall;
 begin
-  Log('Test ' + IntToStr(A - B));
+  Log('Test2 ' + IntToStr(A - B));
   Result := A - B;
 end;
 
-function Test(A, B: TInt64): TInt64; stdcall;
+function Test3(A, B: TInt64): TInt64; stdcall;
 begin
-  Log('Test ' + IntToStr(A - B));
+  Log('Test3 ' + IntToStr(A - B));
   Result := A - B;
 end;
 
@@ -3165,13 +3167,13 @@ begin
   T := Machine.WOP;
   SetLength(Types, 0);
   while T <> @Machine.FTypes[0] do begin
-    Log(IntToStr(Length(Types)) + ': ' + T^.Name);
+    //Log(IntToStr(Length(Types)) + ': ' + T^.Name);
     SetLength(Types, Length(Types) + 1);
     Types[High(Types)] := T;
     T := Machine.WOP;
   end;
   C2 := Machine.WOP;
-  Log('Poped command ' + C2^.Name);
+  //Log('Poped command ' + C2^.Name);
   C := Machine.ReserveName(TString(C2^.Name));
   StrDispose(C2^.Name);
   Dispose(C2);
@@ -3179,7 +3181,10 @@ begin
         begin
           C^.Code := invoke_stdcall;
           C^.Data := Machine.Here;
-          P := @Test;
+          if C^.Name = 'test1' then
+            P := @Test1
+          else if C^.Name = 'test2' then
+            P := @Test2;
           Move(P, Machine.Here^, SizeOf(P));
           Machine.IncHere(SizeOf(P));
           B := ReturnType^.Size;
@@ -3187,15 +3192,18 @@ begin
             S := B;
             if S > 4 then
               S := 4;
+            Writeln('Return-size(1): ', S);
             Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             B := B - S;
             S := B;
             if S > 4 then
               S := 4;
+            Writeln('Return-size(2): ', S);
             Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
             S := 0;
+            Writeln('Return-size(3): ', S);
             Move(S, Machine.Here^, SizeOf(S));
             Machine.IncHere(SizeOf(S));
           end else begin
@@ -3236,7 +3244,7 @@ begin
     Machine.LogError(C^.Name + ' unknown code convension');
     Exit;
   end;
-  Log('Created command ' + C^.Name);
+  //Log('Created command ' + C^.Name);
 end;
 
 procedure TAlienCommands.invoke_stdcall(Machine: TForthMachine; Command: PForthCommand);
@@ -3265,18 +3273,31 @@ begin
       mov Stack,ebx
       call [Fun] // вызываем функцию
       mov ebx,Stack
-      mov ecx,Fun + 4
-      mov DWORD [ebx],eax
-      add ebx,BYTE [ecx]
-      inc ecx
-      mov DWORD [ebx],edx
-      add ebx,BYTE [ecx]
-      inc ecx
-      mov esi,eax
-      mov edi,ebx
-      movzx ecx,BYTE [ecx]
-      rep MOVSw
-      add ebx,ecx
+    @readeax:
+      mov ecx,Data
+      movsx ecx,BYTE [ecx+4] // нужно ли читать ecx
+      cmp ecx,0
+      jz @readedx
+      mov [ebx],eax
+      add ebx,4
+    @readedx:
+      mov ecx,Data
+      movsx ecx,BYTE [ecx+5] // нужно ли читать edx
+      cmp ecx,0
+      jz @readstack
+      mov [ebx],edx
+      add ebx,4
+    @readstack:
+      mov ecx,Data
+      movsx ecx,BYTE [ecx+6] // что читаем со стека
+      cmp ecx,0
+      jz @endofcall
+    @readstackloop:
+      pop eax
+      mov [ebx],eax
+      add ebx,4
+      sub ecx,4
+      jnz @readstackloop
     @endofcall:
       mov Stack,ebx // запоминаем положение стека
   end;
@@ -4262,6 +4283,7 @@ begin
   UInt64Arithmetic := TUInt64Arithmetic.Create(Self);
   FStringCommands := TStringCommands.Create(Self);
 
+  AddCommand('exit', FControlCommands._exit);
   AddCommand('(', CompileComment, True); {) для m4}
   AddCommand('//', CompileLineComment, True);
 (*
@@ -4674,10 +4696,10 @@ begin
   AddCommand('lib-load', FAlienCommands.lib_load);
   AddCommand('lib-unload', FAlienCommands.lib_unload);
   AddCommand('lib-fun', FAlienCommands.lib_fun);
-  AddCommand('alien-fun', FAlienCommands.alien_fun);
-  AddCommand('alien-endfun', FAlienCommands.alien_endfun);
-  AddCommand('conv-stdcall', FAlienCommands._conv_stdcall);
-  AddCommand('conv-cdecl', FAlienCommands._conv_cdecl);
+  AddCommand(':a', FAlienCommands.alien_fun);
+  AddCommand('a;', FAlienCommands.alien_endfun);
+  AddCommand('stdcall', FAlienCommands._conv_stdcall);
+  AddCommand('cdecl', FAlienCommands._conv_cdecl);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'string commands'}{$ENDIF}
   AddCommand('pchar"', FStringCommands.pchar_dq, True);
@@ -5927,25 +5949,19 @@ var
   T: TString;
 begin
   S := MAchine.FStringCommands.str_pop(Machine, Command);
-  (*Assign(F, PChar(@(PStrRec(S)^.Sym[0])));
+  Assign(F, PChar(GetCurrentDirectory) + '\' + PChar(@(PStrRec(S)^.Sym[0])));
   {$I-}
   Reset(F);
   {$I+}
   if IOResult <> 0 then begin
-    LogError('cannot open file "' + PChar(@(PStrRec(S)^.Sym[0])) + '"');
-    Exit;
-  end;
-  SetLength(B, FileSize(F) + 1);
-  B[FileSize(F)] := 0;
-  BlockRead(F, B[0], FileSize(F)); 
-  Close(F);*)
-  Assign(F, PChar(@(PStrRec(S)^.Sym[0])));
-  {$I-}
-  Reset(F);
-  {$I+}
-  if IOResult <> 0 then begin
-    LogError('cannot open file "' + PChar(@(PStrRec(S)^.Sym[0])) + '"');
-    Exit;
+    Assign(F, PChar(GetExeDirectory) + '\' + PChar(@(PStrRec(S)^.Sym[0])));
+    {$I-}
+    Reset(F);
+    {$I+}
+    if IOResult <> 0 then begin
+      LogError('cannot open file "' + PChar(@(PStrRec(S)^.Sym[0])) + '"');
+      Exit;
+    end;
   end;
   B := '';
   while not EOF(F) do begin

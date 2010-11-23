@@ -1,0 +1,4 @@
+:a test1 t_int t_int t_void stdcall a;
+987 321 test1
+:a test2 t_int t_int t_int stdcall a;
+987 321 test2 .

@@ -27,7 +27,9 @@ ptr-nil ptr-value lib-user32
 : HRESULT   LONG ;
 : LPCSTR    t_pchar ;
 
-alien-fun MessageBox HWND LPCSTR LPCSTR UINT  LONG conv-stdcall alien-end
+:a MessageBox HWND LPCSTR LPCSTR UINT  LONG stdcall a;
 
 str" User32.dll" lib-load drop ptr-to lib-user32
-str" MessageBoxA" lib-user32 lib-fun ptr-to MessageBox
+lib-user32 str" MessageBoxA" lib-fun to MessageBox
+
+str" Loaded windows.de" str. cr

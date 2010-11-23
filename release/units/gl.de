@@ -1,0 +1,3 @@
+:a glFlush t_void stdcall a;
+
+str" Opengl32.dll" lib-load drop dup str" glFlush" lib-fun to glFlush
