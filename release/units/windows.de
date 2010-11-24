@@ -6,7 +6,7 @@ ptr-nil ptr-value lib-user32 // переменная для хранения з�
 // завершает объявление прототипа функции, которая должна браться из user32 библиотеки
 : user32; ( -) ['] a; execute last user32-funcs dyn.add ; immediate
 
-// вводим виндовые типы
+// {{{ types
 : BOOLEAN   t_int8 ;
 : BYTE      t_uint8 ;
 : CHAR      t_uint8 ;
@@ -86,8 +86,8 @@ ptr-nil ptr-value lib-user32 // переменная для хранения з�
 : TWIN32FINDDATAA t_ptr ( WIN32_FIND_DATA) ;
 : WIN32FINDDATAA t_ptr ( WIN32_FIND_DATA) ;
 : PWIN32FINDDATA t_ptr ( ^WIN32_FIND_DATA) ;
-
-// вводим константы
+// }}}
+// {{{ constants
 1               constant CF_TEXT
 
 2               constant CS_HREDRAW
@@ -203,103 +203,115 @@ h0001           constant SEM_FAILCRITICALERRORS
 h0004           constant SEM_NOALIGNMENTFAULTEXCEPT         
 h0002           constant SEM_NOGPFAULTERRORBOX              
 h8000 constant SEM_NOOPENFILEERRORBOX             
+// }}}
+// {{{ prototypes
+:a MessageBox HWND LPCSTR LPCSTR UINT                   LONG stdcall user32;
+:a AdjustWindowRect LPRECT DWORD WINBOOL                WINBOOL stdcall user32;
+:a ChoosePixelFormat HDC PPIXELFORMATDESCRIPTOR         LONG stdcall user32;
+:a CloseClipboard                                       WINBOOL stdcall user32;
+:a CreateWindowExA DWORD LPCSTR LPCSTR DWORD LONG LONG 
+                   LONG LONG HWND HMENU HINST LPVOID    HWND stdcall user32;
+:a DefWindowProcA HWND UINT WPARAM LPARAM               LRESULT stdcall user32;
+:a DispatchMessageA LPMSG                               LONG stdcall user32;
+:a EmptyClipboard                                       WINBOOL stdcall user32;
+:a EnumDisplaySettingsA LPCSTR DWORD LPDEVMODE          WINBOOL stdcall user32;
+:a GetClipboardData UINT                                HANDLE stdcall user32;
+:a GetCursorPos LPPOINT                                 WINBOOL stdcall user32;
+:a GetDC HWND                                           HDC stdcall user32;
+:a GetKeyState LONG                                     SHORT stdcall user32;
+:a GetWindowLongA HWND LONG                             LONG stdcall user32;
+:a GetWindowRect HWND LPRECT                            WINBOOL stdcall user32;
+:a GlobalAlloc UINT DWORD                               HGLOBAL stdcall user32;
+:a GlobalLock HGLOBAL                                   LPVOID stdcall user32;
+:a GlobalUnlock HGLOBAL                                 WINBOOL stdcall user32;
+:a IsClipboardFormatAvailable UINT                      WINBOOL stdcall user32;
+:a LoadCursorA HINST LPCSTR                             HCURSOR stdcall user32;
+:a MoveWindow HWND LONG LONG LONG LONG WINBOOL          WINBOOL stdcall user32;
+:a OpenClipboard HWND                                   WINBOOL stdcall user32;
+:a PeekMessageA LPMSG HWND UINT UINT UINT               WINBOOL stdcall user32;
+:a RegisterClassExA PWNDCLASSEX                         ATOM stdcall user32;
+:a SetClipboardData UINT HANDLE                         HANDLE stdcall user32;
+:a SetFocus HWND                                        HWND stdcall user32;
+:a SetForegroundWindow HWND                             WINBOOL stdcall user32;
+:a SetPixelFormat HDC LONG PPIXELFORMATDESCRIPTOR       WINBOOL stdcall user32;
+:a SetWindowLongA HWND LONG LONG                        LONG stdcall user32;
+:a SetWindowTextA HWND LPCSTR                           WINBOOL stdcall user32;
+:a SetWindowPos HWND HWND LONG LONG LONG LONG UINT      WINBOOL stdcall user32;
+:a ShowCursor WINBOOL                                   t_int stdcall user32;
+:a ShowWindow HWND t_int                                WINBOOL stdcall user32;
+:a SwapBuffers HDC                                      WINBOOL stdcall user32;
+:a TranslateMessage LPMSG                               WINBOOL stdcall user32;
+:a UpdateWindow HWND                                    WINBOOL stdcall user32;
+:a wglCreateContext HDC                                 HGLRC stdcall user32;
+:a wglMakeCurrent HDC HGLRC                             WINBOOL stdcall user32;
+:a QueryPerformanceCounter PLARGE_INTEGER               WINBOOL stdcall user32;
+:a QueryPerformanceFrequency PLARGE_INTEGER             WINBOOL stdcall user32;
+:a SetCurrentDirectory LPCSTR                           WINBOOL stdcall user32;
+:a GetCurrentDirectory DWORD LPSTR                      DWORD stdcall user32;
+:a FindFirstFile LPCSTR LPWIN32_FIND_DATA               HANDLE stdcall user32;
+:a FindNextFile HANDLE LPWIN32_FIND_DATA                WINBOOL stdcall user32;
+:a FindClose HANDLE                                     WINBOOL stdcall user32;
+:a SetErrorMode UINT                                    UINT stdcall user32;
+// }}}
 
-// список протатипов всех функций
-:a MessageBox HWND LPCSTR LPCSTR UINT  LONG stdcall user32;
-:a AdjustWindowRect LPRECT DWORD WINBOOL WINBOOL stdcall user32;
-:a ChoosePixelFormat HDC PPIXELFORMATDESCRIPTOR LONG stdcall user32;
-:a CloseClipboard WINBOOL stdcall user32;
-:a CreateWindowExA DWORD LPCSTR LPCSTR DWORD LONG LONG LONG LONG 
-                   HWND HMENU HINST LPVOID HWND stdcall user32;
-:a DefWindowProcA HWND UINT WPARAM LPARAM LRESULT stdcall user32;
-:a DispatchMessageA LPMSG LONG stdcall user32;
-:a EmptyClipboard WINBOOL stdcall user32;
-:a EnumDisplaySettingsA LPCSTR DWORD LPDEVMODE WINBOOL stdcall user32;
-:a GetClipboardData UINT HANDLE stdcall user32;
-:a GetCursorPos LPPOINT WINBOOL stdcall user32;
-:a GetDC HWND HDC stdcall user32;
-:a GetKeyState LONG SHORT stdcall user32;
-:a GetWindowLongA HWND LONG LONG stdcall user32;
-:a GetWindowRect HWND LPRECT WINBOOL stdcall user32;
-:a GlobalAlloc UINT DWORD HGLOBAL stdcall user32;
-:a GlobalLock HGLOBAL LPVOID stdcall user32;
-:a GlobalUnlock HGLOBAL WINBOOL stdcall user32;
-:a IsClipboardFormatAvailable UINT WINBOOL stdcall user32;
-:a LoadCursorA HINST LPCSTR HCURSOR stdcall user32;
-:a MoveWindow HWND LONG LONG LONG LONG WINBOOL WINBOOL stdcall user32;
-:a OpenClipboard HWND WINBOOL stdcall user32;
-:a PeekMessageA LPMSG HWND UINT UINT UINT WINBOOL stdcall user32;
-:a RegisterClassExA PWNDCLASSEX ATOM stdcall user32;
-:a SetClipboardData UINT HANDLE HANDLE stdcall user32;
-:a SetFocus HWND HWND stdcall user32;
-:a SetForegroundWindow HWND WINBOOL stdcall user32;
-:a SetPixelFormat HDC LONG PPIXELFORMATDESCRIPTOR WINBOOL stdcall user32;
-:a SetWindowLongA HWND LONG LONG LONG stdcall user32;
-:a SetWindowTextA HWND LPCSTR WINBOOL stdcall user32;
-:a SetWindowPos HWND HWND LONG LONG LONG LONG UINT WINBOOL stdcall user32;
-:a ShowCursor WINBOOL t_int stdcall user32;
-:a ShowWindow HWND t_int WINBOOL stdcall user32;
-:a SwapBuffers HDC WINBOOL stdcall user32;
-:a TranslateMessage LPMSG WINBOOL stdcall user32;
-:a UpdateWindow HWND WINBOOL stdcall user32;
-:a wglCreateContext HDC HGLRC stdcall user32;
-:a wglMakeCurrent HDC HGLRC WINBOOL stdcall user32;
-:a QueryPerformanceCounter PLARGE_INTEGER WINBOOL stdcall user32;
-:a QueryPerformanceFrequency PLARGE_INTEGER WINBOOL stdcall user32;
-:a SetCurrentDirectory LPCSTR WINBOOL stdcall user32;
-:a GetCurrentDirectory DWORD LPSTR DWORD stdcall user32;
-:a FindFirstFile LPCSTR LPWIN32_FIND_DATA HANDLE stdcall user32;
-:a FindNextFile HANDLE LPWIN32_FIND_DATA WINBOOL stdcall user32;
-:a FindClose HANDLE WINBOOL stdcall user32;
-:a SetErrorMode UINT  UINT stdcall user32;
+str" User32.dll" lib-load drop to lib-user32
 
-str" User32.dll" lib-load drop ptr-to lib-user32
+: windows-load-fun ( lx-) tuck xt.n@ pchar->str lib-fun swap xt.d@ ! ;
+: windows-load
+  // str" User32.dll" lib-load 
+  //  0= if str" Cannot load User32.dll" str. cr drop exit then 
+  // to lib-user32
+  // 0 begin dup user32-funcs dyn.l@ < while 
+  //   dup lib-user32 swap user32-funcs dyn.e@ windows-load-fun 
+  // repeat drop
+  lib-user32 str" AdjustWindowRect" lib-fun to AdjustWindowRect
+  lib-user32 str" ChoosePixelFormat" lib-fun to ChoosePixelFormat
+  lib-user32 str" CloseClipboard" lib-fun to CloseClipboard
+  lib-user32 str" CreateWindowExA" lib-fun to CreateWindowExA
+  lib-user32 str" DefWindowProcA" lib-fun to DefWindowProcA
+  lib-user32 str" DispatchMessageA" lib-fun to DispatchMessageA
+  lib-user32 str" EmptyClipboard" lib-fun to EmptyClipboard
+  lib-user32 str" EnumDisplaySettingsA" lib-fun to EnumDisplaySettingsA
+  lib-user32 str" FindClose" lib-fun to FindClose
+  lib-user32 str" FindFirstFile" lib-fun to FindFirstFile
+  lib-user32 str" FindNextFile" lib-fun to FindNextFile
+  lib-user32 str" GetClipboardData" lib-fun to GetClipboardData
+  lib-user32 str" GetCurrentDirectory" lib-fun to GetCurrentDirectory
+  lib-user32 str" GetCursorPos" lib-fun to GetCursorPos
+  lib-user32 str" GetDC" lib-fun to GetDC
+  lib-user32 str" GetKeyState" lib-fun to GetKeyState
+  lib-user32 str" GetWindowLongA" lib-fun to GetWindowLongA
+  lib-user32 str" GetWindowRect" lib-fun to GetWindowRect
+  lib-user32 str" GlobalAlloc" lib-fun to GlobalAlloc
+  lib-user32 str" GlobalLock" lib-fun to GlobalLock
+  lib-user32 str" GlobalUnlock" lib-fun to GlobalUnlock
+  lib-user32 str" IsClipboardFormatAvailable" lib-fun to IsClipboardFormatAvailable
+  lib-user32 str" LoadCursorA" lib-fun to LoadCursorA
+  lib-user32 str" MessageBoxA" lib-fun to MessageBox
+  lib-user32 str" MoveWindow" lib-fun to MoveWindow
+  lib-user32 str" OpenClipboard" lib-fun to OpenClipboard
+  lib-user32 str" PeekMessageA" lib-fun to PeekMessageA
+  lib-user32 str" QueryPerformanceCounter" lib-fun to QueryPerformanceCounter
+  lib-user32 str" QueryPerformanceFrequency" lib-fun to QueryPerformanceFrequency
+  lib-user32 str" RegisterClassExA" lib-fun to RegisterClassExA
+  lib-user32 str" SetClipboardData" lib-fun to SetClipboardData
+  lib-user32 str" SetCurrentDirectory" lib-fun to SetCurrentDirectory
+  lib-user32 str" SetErrorMode" lib-fun to SetErrorMode
+  lib-user32 str" SetFocus" lib-fun to SetFocus
+  lib-user32 str" SetForegroundWindow" lib-fun to SetForegroundWindow
+  lib-user32 str" SetPixelFormat" lib-fun to SetPixelFormat
+  lib-user32 str" SetWindowLongA" lib-fun to SetWindowLongA
+  lib-user32 str" SetWindowPos" lib-fun to SetWindowPos
+  lib-user32 str" SetWindowTextA" lib-fun to SetWindowTextA
+  lib-user32 str" ShowCursor" lib-fun to ShowCursor
+  lib-user32 str" ShowWindow" lib-fun to ShowWindow
+  lib-user32 str" SwapBuffers" lib-fun to SwapBuffers
+  lib-user32 str" TranslateMessage" lib-fun to TranslateMessage
+  lib-user32 str" UpdateWindow" lib-fun to UpdateWindow
+  lib-user32 str" wglCreateContext" lib-fun to wglCreateContext
+  lib-user32 str" wglMakeCurrent" lib-fun to wglMakeCurrent
+;
 
-lib-user32 str" AdjustWindowRect" lib-fun to AdjustWindowRect
-lib-user32 str" ChoosePixelFormat" lib-fun to ChoosePixelFormat
-lib-user32 str" CloseClipboard" lib-fun to CloseClipboard
-lib-user32 str" CreateWindowExA" lib-fun to CreateWindowExA
-lib-user32 str" DefWindowProcA" lib-fun to DefWindowProcA
-lib-user32 str" DispatchMessageA" lib-fun to DispatchMessageA
-lib-user32 str" EmptyClipboard" lib-fun to EmptyClipboard
-lib-user32 str" EnumDisplaySettingsA" lib-fun to EnumDisplaySettingsA
-lib-user32 str" FindClose" lib-fun to FindClose
-lib-user32 str" FindFirstFile" lib-fun to FindFirstFile
-lib-user32 str" FindNextFile" lib-fun to FindNextFile
-lib-user32 str" GetClipboardData" lib-fun to GetClipboardData
-lib-user32 str" GetCurrentDirectory" lib-fun to GetCurrentDirectory
-lib-user32 str" GetCursorPos" lib-fun to GetCursorPos
-lib-user32 str" GetDC" lib-fun to GetDC
-lib-user32 str" GetKeyState" lib-fun to GetKeyState
-lib-user32 str" GetWindowLongA" lib-fun to GetWindowLongA
-lib-user32 str" GetWindowRect" lib-fun to GetWindowRect
-lib-user32 str" GlobalAlloc" lib-fun to GlobalAlloc
-lib-user32 str" GlobalLock" lib-fun to GlobalLock
-lib-user32 str" GlobalUnlock" lib-fun to GlobalUnlock
-lib-user32 str" IsClipboardFormatAvailable" lib-fun to IsClipboardFormatAvailable
-lib-user32 str" LoadCursorA" lib-fun to LoadCursorA
-lib-user32 str" MessageBoxA" lib-fun to MessageBox
-lib-user32 str" MoveWindow" lib-fun to MoveWindow
-lib-user32 str" OpenClipboard" lib-fun to OpenClipboard
-lib-user32 str" PeekMessageA" lib-fun to PeekMessageA
-lib-user32 str" QueryPerformanceCounter" lib-fun to QueryPerformanceCounter
-lib-user32 str" QueryPerformanceFrequency" lib-fun to QueryPerformanceFrequency
-lib-user32 str" RegisterClassExA" lib-fun to RegisterClassExA
-lib-user32 str" SetClipboardData" lib-fun to SetClipboardData
-lib-user32 str" SetCurrentDirectory" lib-fun to SetCurrentDirectory
-lib-user32 str" SetErrorMode" lib-fun to SetErrorMode
-lib-user32 str" SetFocus" lib-fun to SetFocus
-lib-user32 str" SetForegroundWindow" lib-fun to SetForegroundWindow
-lib-user32 str" SetPixelFormat" lib-fun to SetPixelFormat
-lib-user32 str" SetWindowLongA" lib-fun to SetWindowLongA
-lib-user32 str" SetWindowPos" lib-fun to SetWindowPos
-lib-user32 str" SetWindowTextA" lib-fun to SetWindowTextA
-lib-user32 str" ShowCursor" lib-fun to ShowCursor
-lib-user32 str" ShowWindow" lib-fun to ShowWindow
-lib-user32 str" SwapBuffers" lib-fun to SwapBuffers
-lib-user32 str" TranslateMessage" lib-fun to TranslateMessage
-lib-user32 str" UpdateWindow" lib-fun to UpdateWindow
-lib-user32 str" wglCreateContext" lib-fun to wglCreateContext
-lib-user32 str" wglMakeCurrent" lib-fun to wglMakeCurrent
+windows-load
 
 str" Loaded windows.de" str. cr

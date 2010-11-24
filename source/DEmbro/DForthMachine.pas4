@@ -693,6 +693,8 @@ define(~misc_commands|,
   procedure _malloc cmdhdr;
   procedure _free cmdhdr;
   procedure _last cmdhdr;
+  procedure _xt_dot_n cmdhdr;
+  procedure _xt_dot_d cmdhdr;
   define(~all_implement|, all_implement 
     ~
       procedure TForthMachine._wp cmdhdr; begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
@@ -733,9 +735,11 @@ define(~misc_commands|,
       procedure TForthMachine.CallDoesGt cmdhdr; begin FControlCommands.Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.Cells cmdhdr; begin TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt)))*SizeOf(Integer); end;
       procedure TForthMachine.Cell_plus cmdhdr; begin TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); end;
-      procedure TForthMachine._malloc cmdhdr; var P: Pointer; begin P := Pointer(WP^); GetMem(P, Integer(WVar(-SizeOf(Integer)))); Pointer(WP^) := P; end;
+      procedure TForthMachine._malloc cmdhdr; var P: Pointer; begin P := Pointer(WVar(-SizeOf(Integer))); GetMem(P, Integer(WVar(-SizeOf(Integer)))); Pointer(WVar(-SizeOf(Integer))) := P; end;
       procedure TForthMachine._free cmdhdr; var P: Pointer; begin Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P); end;
       procedure TForthMachine._last cmdhdr; var P: Pointer; begin Pointer(WP^) := C[CC-1]; Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine._xt_dot_n cmdhdr; begin Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Name; end;
+      procedure TForthMachine._xt_dot_d cmdhdr; begin Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Data end;
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -776,6 +780,8 @@ define(~misc_commands|,
      AddCommand('malloc', _malloc);
      AddCommand('free', _free);
      AddCommand('last', _last);
+     AddCommand('xt.n@', _xt_dot_n);
+     AddCommand('xt.d@', _xt_dot_d);
     |)
 |)
 define(~file_commands|, 
@@ -1157,6 +1163,7 @@ TStringCommands = class
   procedure str_nil(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dot(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dollar(Machine: TForthMachine; Command: PForthCommand);
+  procedure pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
   procedure Format(Machine: TForthMachine; Command: PForthCommand);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -1379,6 +1386,28 @@ TForthMachine = class
   LS: Integer; // Local stack Size
   procedure LUV(const P: Pointer; Size: Integer);
   procedure LOV(const P: Pointer; Size: Integer);
+  push_interface(LUI, TInt, LP); // Work stack pUsh Integer
+  push_interface(LUP, Pointer, LP); // Work stack pUsh Pointer
+  pop_interface(LOI, TInt, LP); // Work stack pOp Integer
+  pop_interface(LOP, Pointer, LP); // Work stack pOp Pointer
+  push_interface(LUI8, TInt8, LP); 
+  push_interface(LUI16, TInt16, LP);
+  push_interface(LUI32, TInt32, LP);
+  push_interface(LUI64, TInt64, LP);
+  push_interface(LUU, TUInt, LP);
+  push_interface(LUU8, TUInt8, LP); 
+  push_interface(LUU16, TUInt16, LP);
+  push_interface(LUU32, TUInt32, LP);
+  push_interface(LUU64, TUInt64, LP);
+  pop_interface(LOI8, TInt8, LP); 
+  pop_interface(LOI16, TInt16, LP);
+  pop_interface(LOI32, TInt32, LP);
+  pop_interface(LOI64, TInt64, LP);
+  pop_interface(LOU, TUInt, LP);
+  pop_interface(LOU8, TUInt8, LP); 
+  pop_interface(LOU16, TUInt16, LP);
+  pop_interface(LOU32, TUInt32, LP);
+  pop_interface(LOU64, TUInt64, LP);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'plugin datas'}{$ENDIF}
@@ -2119,20 +2148,20 @@ begin
   NewCommand^.Code := call;
   Integer(NewCommand^.Data) := FMachine.EL;
   Machine.FState := FS_COMPILE;
-  Machine.WUI(Machine.FLastMnemonic);
-  Machine.WUP(PName);
-  Machine.WUI(101);
+  Machine.LUI(Machine.FLastMnemonic);
+  Machine.LUP(PName);
+  Machine.LUI(101);
   //Writeln('RESERVER NAME ' + NewCommand^.Name);
 end;
 
 procedure TControlCommands.compile_skip_to_end(Machine: TForthMachine; Command: PForthCommand);
 begin
-  if Integer(Machine.WP^) <> 101 then begin
+  if Integer(Machine.LP^) <> 101 then begin
     Machine.LogError('Нельзя использовать skip-to; внутри конструкций (на вершине стека не colon-id)');
     Exit;
   end;
   Machine.FControlCommands._gt_mark(Machine, nil);
-  Machine.WUI(201);
+  Machine.LUI(201);
 end;
 
 procedure TControlCommands.compile_enddef(Machine: TForthMachine; Command: PForthCommand);
@@ -2145,12 +2174,12 @@ begin
   //S := Machine.FStringCommands.str_pop(Machine, Command);
   //Machine.C[Machine.WOI]^.Name := PChar(TString(PChar(@TStrRec(S^).Sym[0])));
   //Machine.FStringCommands.DelRef(S);
-  ID := Machine.WOI;
+  ID := Machine.LOI;
   if ID = 201 then begin
     Machine.FControlCommands._gt_resolve(Machine, nil);
   end;
-  P := Machine.WOP;
-  Index := Machine.WOI;
+  P := Machine.LOP;
+  Index := Machine.LOI;
   Machine.C[Index]^.Name := P;
   Machine.EWO('exit');
   Machine.FState := FS_INTERPRET;
@@ -3208,6 +3237,12 @@ begin
   Move(S[1], PStrRec(P)^.Sym[0], Length(S));
   PStrRec(P)^.Sym[Length(S)] := #0;
   str_push(Machine, Command, P);
+end;
+
+procedure TStringCommands.pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Dec(Machine.WP, SizeOf(Pointer));
+  Machine.WUS(TString(PChar(Machine.WP^)));
 end;
 
 procedure TStringCommands.Format(Machine: TForthMachine; Command: PForthCommand);
@@ -4301,6 +4336,7 @@ begin
   AddCommand('str-rrot', FPtrStackCommands.rrot);
   AddCommand('str-lrotn', FPtrStackCommands.lrotn);
   AddCommand('str-rrotn', FPtrStackCommands.rrotn);
+  AddCommand('pchar->str', FStringCommands.pchar_to_str);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'console commands'}{$ENDIF}
   FConsoleCommands := TConsoleCommands.Create(Self);

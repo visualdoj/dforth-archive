@@ -322,6 +322,7 @@ TStringCommands = class
   procedure str_nil(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dot(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dollar(Machine: TForthMachine; Command: PForthCommand);
+  procedure pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
   procedure Format(Machine: TForthMachine; Command: PForthCommand);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -610,6 +611,61 @@ TForthMachine = class
   LS: Integer; // Local stack Size
   procedure LUV(const P: Pointer; Size: Integer);
   procedure LOV(const P: Pointer; Size: Integer);
+  procedure LUI(const V: TInt); overload 
+  ; // Work stack pUsh Integer
+  procedure LUP(const V: Pointer); overload 
+  ; // Work stack pUsh Pointer
+  function LOI: TInt 
+  
+  ; // Work stack pOp Integer
+  function LOP: Pointer 
+  
+  ; // Work stack pOp Pointer
+  procedure LUI8(const V: TInt8); overload 
+  ; 
+  procedure LUI16(const V: TInt16); overload 
+  ;
+  procedure LUI32(const V: TInt32); overload 
+  ;
+  procedure LUI64(const V: TInt64); overload 
+  ;
+  procedure LUU(const V: TUInt); overload 
+  ;
+  procedure LUU8(const V: TUInt8); overload 
+  ; 
+  procedure LUU16(const V: TUInt16); overload 
+  ;
+  procedure LUU32(const V: TUInt32); overload 
+  ;
+  procedure LUU64(const V: TUInt64); overload 
+  ;
+  function LOI8: TInt8 
+  
+  ; 
+  function LOI16: TInt16 
+  
+  ;
+  function LOI32: TInt32 
+  
+  ;
+  function LOI64: TInt64 
+  
+  ;
+  function LOU: TUInt 
+  
+  ;
+  function LOU8: TUInt8 
+  
+  ; 
+  function LOU16: TUInt16 
+  
+  ;
+  function LOU32: TUInt32 
+  
+  ;
+  function LOU64: TUInt64 
+  
+  ;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'plugin datas'}{$ENDIF}
@@ -1902,6 +1958,8 @@ TForthMachine = class
   procedure _malloc (Machine: TForthMachine; Command: PForthCommand);
   procedure _free (Machine: TForthMachine; Command: PForthCommand);
   procedure _last (Machine: TForthMachine; Command: PForthCommand);
+  procedure _xt_dot_n (Machine: TForthMachine; Command: PForthCommand);
+  procedure _xt_dot_d (Machine: TForthMachine; Command: PForthCommand);
   
   
 
@@ -2555,20 +2613,20 @@ begin
   NewCommand^.Code := call;
   Integer(NewCommand^.Data) := FMachine.EL;
   Machine.FState := FS_COMPILE;
-  Machine.WUI(Machine.FLastMnemonic);
-  Machine.WUP(PName);
-  Machine.WUI(101);
+  Machine.LUI(Machine.FLastMnemonic);
+  Machine.LUP(PName);
+  Machine.LUI(101);
   //Writeln('RESERVER NAME ' + NewCommand^.Name);
 end;
 
 procedure TControlCommands.compile_skip_to_end(Machine: TForthMachine; Command: PForthCommand);
 begin
-  if Integer(Machine.WP^) <> 101 then begin
+  if Integer(Machine.LP^) <> 101 then begin
     Machine.LogError('Нельзя использовать skip-to; внутри конструкций (на вершине стека не colon-id)');
     Exit;
   end;
   Machine.FControlCommands._gt_mark(Machine, nil);
-  Machine.WUI(201);
+  Machine.LUI(201);
 end;
 
 procedure TControlCommands.compile_enddef(Machine: TForthMachine; Command: PForthCommand);
@@ -2581,12 +2639,12 @@ begin
   //S := Machine.FStringCommands.str_pop(Machine, Command);
   //Machine.C[Machine.WOI]^.Name := PChar(TString(PChar(@TStrRec(S^).Sym[0])));
   //Machine.FStringCommands.DelRef(S);
-  ID := Machine.WOI;
+  ID := Machine.LOI;
   if ID = 201 then begin
     Machine.FControlCommands._gt_resolve(Machine, nil);
   end;
-  P := Machine.WOP;
-  Index := Machine.WOI;
+  P := Machine.LOP;
+  Index := Machine.LOI;
   Machine.C[Index]^.Name := P;
   Machine.EWO('exit');
   Machine.FState := FS_INTERPRET;
@@ -3644,6 +3702,12 @@ begin
   Move(S[1], PStrRec(P)^.Sym[0], Length(S));
   PStrRec(P)^.Sym[Length(S)] := #0;
   str_push(Machine, Command, P);
+end;
+
+procedure TStringCommands.pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Dec(Machine.WP, SizeOf(Pointer));
+  Machine.WUS(TString(PChar(Machine.WP^)));
 end;
 
 procedure TStringCommands.Format(Machine: TForthMachine; Command: PForthCommand);
@@ -4742,6 +4806,7 @@ begin
   AddCommand('str-rrot', FPtrStackCommands.rrot);
   AddCommand('str-lrotn', FPtrStackCommands.lrotn);
   AddCommand('str-rrotn', FPtrStackCommands.rrotn);
+  AddCommand('pchar->str', FStringCommands.pchar_to_str);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'console commands'}{$ENDIF}
   FConsoleCommands := TConsoleCommands.Create(Self);
@@ -5795,6 +5860,8 @@ begin
      AddCommand('malloc', _malloc);
      AddCommand('free', _free);
      AddCommand('last', _last);
+     AddCommand('xt.n@', _xt_dot_n);
+     AddCommand('xt.d@', _xt_dot_d);
     
     
       AddCommand('sys-exceptions-execute', _sys_exceptions_execute);
@@ -6951,6 +7018,39 @@ end;
     function TForthMachine.WOU16: TUInt16; begin Dec(WP, SizeOf(Result)); Result := TUInt16(WP^); end; 
     function TForthMachine.WOU32: TUInt32; begin Dec(WP, SizeOf(Result)); Result := TUInt32(WP^); end; 
     function TForthMachine.WOU64: TUInt64; begin Dec(WP, SizeOf(Result)); Result := TUInt64(WP^); end; 
+    procedure TForthMachine.LUI(const V: TInt); begin TInt(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    procedure TForthMachine.LUP(const V: Pointer); begin Pointer(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    function TForthMachine.LOI: TInt; begin Dec(LP, SizeOf(Result)); Result := TInt(LP^); end; 
+    function TForthMachine.LOP: Pointer; begin Dec(LP, SizeOf(Result)); Result := Pointer(LP^); end; 
+    procedure TForthMachine.LUI8(const V: TInt8); begin TInt8(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    procedure TForthMachine.LUI16(const V: TInt16); begin TInt16(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    procedure TForthMachine.LUI32(const V: TInt32); begin TInt32(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    procedure TForthMachine.LUI64(const V: TInt64); begin TInt64(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    procedure TForthMachine.LUU(const V: TUInt); begin TUInt(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    procedure TForthMachine.LUU8(const V: TUInt8); begin TUInt8(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    procedure TForthMachine.LUU16(const V: TUInt16); begin TUInt16(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    procedure TForthMachine.LUU32(const V: TUInt32); begin TUInt32(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    procedure TForthMachine.LUU64(const V: TUInt64); begin TUInt64(LP^) := V; Inc(LP, SizeOf(V)) end;
+   
+    function TForthMachine.LOI8: TInt8; begin Dec(LP, SizeOf(Result)); Result := TInt8(LP^); end; 
+    function TForthMachine.LOI16: TInt16; begin Dec(LP, SizeOf(Result)); Result := TInt16(LP^); end; 
+    function TForthMachine.LOI32: TInt32; begin Dec(LP, SizeOf(Result)); Result := TInt32(LP^); end; 
+    function TForthMachine.LOI64: TInt64; begin Dec(LP, SizeOf(Result)); Result := TInt64(LP^); end; 
+    function TForthMachine.LOU: TUInt; begin Dec(LP, SizeOf(Result)); Result := TUInt(LP^); end; 
+    function TForthMachine.LOU8: TUInt8; begin Dec(LP, SizeOf(Result)); Result := TUInt8(LP^); end; 
+    function TForthMachine.LOU16: TUInt16; begin Dec(LP, SizeOf(Result)); Result := TUInt16(LP^); end; 
+    function TForthMachine.LOU32: TUInt32; begin Dec(LP, SizeOf(Result)); Result := TUInt32(LP^); end; 
+    function TForthMachine.LOU64: TUInt64; begin Dec(LP, SizeOf(Result)); Result := TUInt64(LP^); end; 
     
      procedure TForthMachine.drop_ (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, 4) end;
      procedure TForthMachine.dup_ (Machine: TForthMachine; Command: PForthCommand); begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end;
@@ -9851,9 +9951,11 @@ end;
       procedure TForthMachine.CallDoesGt (Machine: TForthMachine; Command: PForthCommand); begin FControlCommands.Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine.Cells (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))*SizeOf(Integer); end;
       procedure TForthMachine.Cell_plus (Machine: TForthMachine; Command: PForthCommand); begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) + SizeOf(TInt); end;
-      procedure TForthMachine._malloc (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin P := Pointer(WP^); GetMem(P, Integer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^))); Pointer(WP^) := P; end;
+      procedure TForthMachine._malloc (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin P := Pointer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)); GetMem(P, Integer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^))); Pointer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)) := P; end;
       procedure TForthMachine._free (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P); end;
       procedure TForthMachine._last (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin Pointer(WP^) := C[CC-1]; Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine._xt_dot_n (Machine: TForthMachine; Command: PForthCommand); begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PForthCommand((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)).Name; end;
+      procedure TForthMachine._xt_dot_d (Machine: TForthMachine; Command: PForthCommand); begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PForthCommand((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)).Data end;
     
    
     

@@ -6,7 +6,13 @@
                        dup dyn.max lrot swap !
                        dup dyn.max @
                        cells malloc swap dyn.ptr ! ;
-: dyn.add ( id-) dup 1+! dyn.ptr ! ;
-: dyn.len@ ( d-i) dyn.len @ ;
+// dyn set length
+: dyn.l! ( id-) ;
+// dyn length get
+: dyn.l@ ( d-i) dyn.len @ ;
+// dyn add element
+: dyn.add ( id-) dup 1+! dup @ swap ( ild) dyn.ptr @ swap ( ial) cells + ! ;
+// dyn element get
+: dyn.e@ ( id-i) dyn.ptr @ swap cells + @ ;
 
 str" Loaded dyn.de" str. cr

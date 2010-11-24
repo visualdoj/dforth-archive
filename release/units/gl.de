@@ -3,6 +3,57 @@ str" units\structures\dyn.de" evaluate-file // там реализован ди�
 ptr-nil ptr-value lib-gl // переменная для хранения загруженной либы user32
 1000 dyn user32-funcs // массив для хранения функций, которые необходимо загрузить
 
-// завершает объявление прототипа функции, которая должна браться из user32 библиотеки
-: gl; ( -) ['] a; execute last user32-funcs dyn.add ; immediate
+// завершает объявление прототипа функции, которая должна браться из gl библиотеки
+: gl; ( -) stdcall ['] a; execute last user32-funcs dyn.add ; immediate
 
+// {{{ prototypes
+:a glBegin GLenum t_void gl;
+:a glEnd t_void gl;
+:a glGenTextures GLsizei PGLuint t_void gl;
+:a glPixelStorei GLenum GLint t_void gl;
+:a glBindTexture GLenum GLuint t_void gl;
+:a glDeleteTextures GLsizei PGLuint t_void gl;
+:a glTexParameteri GLenum GLenum GLint t_void gl;
+:a glTexImage2D GLenum GLint GLint GLsizei GLsizei GLint GLenum GLenum Pointer t_void gl;
+:a glScissor GLint GLsizei GLsizei t_void gl;
+:a glShadeModel GLenum t_void gl;
+:a glViewport GLint GLsizei GLsizei t_void gl;
+:a glMatrixMode GLenum t_void gl;
+:a glLoadIdentity t_void gl;
+:a glLoadMatrixf PGLfloat  t_void gl;
+:a glOrtho GLdouble GLdouble GLdouble GLdouble GLdouble GLdouble t_void gl;
+:a glClearColor GLclampf GLclampf GLclampf GLclampf t_void gl;
+:a glClear GLbitfield t_void gl;
+:a glFlush t_void gl;
+:a glFinish t_void gl;
+:a glEnable GLenum t_void gl;
+:a glDisable GLenum t_void gl;
+:a glBlendFunc dfactor t_void gl;
+:a glPointSize GLfloat t_void gl;
+:a glLineWidth GLfloat t_void gl;
+:a glColor4f GLfloat GLfloat GLfloat GLfloat t_void gl;
+:a glColor4fv PGLfloat t_void gl;
+:a glVertex2fv PGLfloat t_void gl;
+:a glVertex3f GLfloat GLfloat GLfloat t_void gl;
+:a glVertex3fv PGLfloat t_void gl;
+:a glTexCoord2fv PGLfloat t_void gl;
+:a glPushMatrix; t_void gl;
+:a glPopMatrix; t_void gl;
+:a glTranslatef GLfloat GLfloat GLfloat t_void gl;
+:a glVertexPointer GLint GLenum GLsizei Pointer t_void gl;
+:a glTexCoordPointer GLint GLenum GLsizei Pointer t_void gl;
+:a glEnableClientState GLenum t_void gl;
+:a glDisableClientState GLenum t_void gl;
+:a glDrawArrays GLenum GLint GLsizei t_void gl;
+:a glTexCoord2f GLfloat t_void gl;
+:a glDrawElements GLenum GLsizei GLenum Pointer t_void gl;
+:a glGetString GLenum PChar gl;
+:a glRotatef GLfloat GLfloat GLfloat GLfloat t_void gl;
+:a glScalef GLfloat GLfloat GLfloat GLfloat t_void gl;
+:a glMultMatrixf PGLfloat t_void gl;
+:a glGetFloatv GLenum PGLfloat t_void gl;
+:a glRasterPos2f GLfloat GLfloat t_void gl;
+:a glRasterPos2fv PGLfloat t_void gl;
+:a glDrawPixels GLsizei GLsizei GLenum GLenum Pointer t_void gl;
+:a glGetError GLenum gl;
+// }}}
