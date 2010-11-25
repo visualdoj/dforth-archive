@@ -256,6 +256,9 @@ h8000 constant SEM_NOOPENFILEERRORBOX
 
 // функция прописывает в alien-команду x адрес из библиотеки l
 : windows-load-fun ( lx-) tuck xt.n@ pchar->str lib-fun swap xt.d@ ! ;
+// : windows-load-fun ( lx-) locals| xt| xt xt.name lib-fun 
+//                           dup xt xt.name windows-check-fun-loaded 
+//                           xt xt.d@ ! ;
 // функция, пробегающая массивы с прототипами и прописывающая команды
 // её должна вызывать программа, подключившая windows.de
 : windows-load
