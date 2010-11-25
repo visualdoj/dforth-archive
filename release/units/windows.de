@@ -202,7 +202,16 @@ h7B             constant VK_F12
 h0001           constant SEM_FAILCRITICALERRORS             
 h0004           constant SEM_NOALIGNMENTFAULTEXCEPT         
 h0002           constant SEM_NOGPFAULTERRORBOX              
-h8000 constant SEM_NOOPENFILEERRORBOX             
+h8000           constant SEM_NOOPENFILEERRORBOX             
+
+h0002           constant MB_ABORTRETRYIGNORE
+h0006           constant MB_CANCELTRYCONTINUE
+h4000           constant MB_HELP
+h0000           constant MB_OK
+h0001           constant MB_OKCANCEL
+h0005           constant MB_RETRYCANCEL
+h0004           constant MB_YESNO
+h0003           constant MB_YESNOCANCEL
 // }}}
 // {{{ prototypes
 :a MessageBoxA HWND LPCSTR LPCSTR UINT                  LONG stdcall user32;

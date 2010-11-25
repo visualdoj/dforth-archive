@@ -4,5 +4,5 @@ str" Reading functions' addresses" str. cr
 windows-load
 
 str" Calling MessageBox... " str.
-0 pchar" Hello world!" pchar" test" 0 MessageBoxA
+0 pchar" Hello world!" pchar" test" MB_OKCANCEL MessageBoxA
 str" Result: " str. . str$
