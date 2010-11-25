@@ -1,4 +1,5 @@
 str" units\windows.de" evaluate-file
 
-0 pchar" Hello world!" pchar" test" 0 MessageBox
-str" Result code: " str. . str$
+str" Call MessageBox... " str.
+0 pchar" Hello world!" pchar" test" 0 MessageBoxA
+str" Result: " str. . str$

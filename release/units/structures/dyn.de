@@ -11,7 +11,7 @@
 // dyn length get
 : dyn.l@ ( d-i) dyn.len @ ;
 // dyn add element
-: dyn.add ( id-) dup 1+! dup @ swap ( ild) dyn.ptr @ swap ( ial) cells + ! ;
+: dyn.add ( id-) dup 1+! dup @ swap ( ild) dyn.ptr @ swap ( ial) 1- cells + ! ;
 // dyn element get
 : dyn.e@ ( id-i) dyn.ptr @ swap cells + @ ;
 

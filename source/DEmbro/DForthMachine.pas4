@@ -110,12 +110,12 @@ define(~typed_commands|,
      procedure TForthMachine.ptr_plus_$1 cmdhdr; begin PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; end;
      procedure TForthMachine._to_$1 cmdhdr; begin if FState <> FS_INTERPRET then _compile_to_$1(Machine, Command) else _interpret_to_$1(Machine, Command); end;
      procedure TForthMachine._compile_to_$1 cmdhdr; begin EWO('run@genname($1, ~to|)'); EWO(NextName); end;
-     procedure TForthMachine._run_to_$1 cmdhdr; begin Move(WVar(-$2), C[ERO].Data^, $2); Dec(WP, $2); end;
+     procedure TForthMachine._run_to_$1 cmdhdr; var O: TOpcode; begin O := ERO; Move(WVar(-$2), C[O].Data^, $2); Dec(WP, $2); end;
      procedure TForthMachine._interpret_to_$1 cmdhdr; var N: TString; C: PForthCommand; begin N := NextName; C := FindCommand(N);
                if C = nil then begin LogError('unkown name after genname($1, ~to|): ' + N); FSession := False; Exit; end; 
                Move(WVar(-$2), C.Data^, $2); Dec(WP, $2);
              end;
-     procedure TForthMachine._value_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_$1; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); end; end;
+     procedure TForthMachine._value_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_$1; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); Flags := Flags and not 1; end; end;
      procedure TForthMachine._variable_$1 cmdhdr; begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, $2); Move(WP^, Here^, $2);} EA($2); end; end;
      procedure TForthMachine.RunValue_$1 cmdhdr; begin Move(Command.Data^, WP^, $2); Inc(WP, $2); end;
     procedure TForthMachine.literal_$1 cmdhdr; begin EWO('genname($1, (literal))'); Dec(WP, $2); EWV(WP, $2); end;
@@ -737,8 +737,8 @@ define(~misc_commands|,
       procedure TForthMachine.Cell_plus cmdhdr; begin TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); end;
       procedure TForthMachine._malloc cmdhdr; var P: Pointer; begin P := Pointer(WVar(-SizeOf(Integer))); GetMem(P, Integer(WVar(-SizeOf(Integer)))); Pointer(WVar(-SizeOf(Integer))) := P; end;
       procedure TForthMachine._free cmdhdr; var P: Pointer; begin Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P); end;
-      procedure TForthMachine._last cmdhdr; var P: Pointer; begin Pointer(WP^) := C[CC-1]; Inc(WP, SizeOf(Pointer)); end;
-      procedure TForthMachine._xt_dot_n cmdhdr; begin Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Name; end;
+      procedure TForthMachine._last cmdhdr; var P: Pointer; begin Pointer(WP^) := C[High(C)]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine._xt_dot_n cmdhdr; begin Pointer(WVar(-SizeOf(Pointer))) := @(PForthCommand(WVar(-SizeOf(Pointer))).Name[0]); end;
       procedure TForthMachine._xt_dot_d cmdhdr; begin Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Data end;
     |
   )
@@ -1727,7 +1727,11 @@ end;
 
 procedure SetImmediate(Command: PForthCommand; I: Boolean);
 begin
-  Command^.Flags := Command^.Flags or Ord(I);
+  with Command^ do
+    if I then
+      Flags := Flags or 1
+    else
+      Flags := Flags and not 1
 end;
 
 function IsBuiltin(Command: PForthCommand): Boolean;
@@ -1738,6 +1742,11 @@ end;
 procedure SetBuiltin(Command: PForthCommand; I: Boolean);
 begin
   Command^.Flags := Command^.Flags or (Ord(I) shl 1);
+  with Command^ do
+    if I then
+      Flags := Flags or 2
+    else
+      Flags := Flags and not 2
 end;
 
 function CopyStrToPChar(const S: TString): PChar;
@@ -2146,6 +2155,7 @@ begin
   PName := CopyStrToPChar(Name);
   NewCommand := Machine.ReserveName('');
   NewCommand^.Code := call;
+  SetImmediate(NewCommand, False);
   Integer(NewCommand^.Data) := FMachine.EL;
   Machine.FState := FS_COMPILE;
   Machine.LUI(Machine.FLastMnemonic);
@@ -2183,6 +2193,7 @@ begin
   Machine.C[Index]^.Name := P;
   Machine.EWO('exit');
   Machine.FState := FS_INTERPRET;
+  Machine.C[Index]^.Flags := Machine.C[Index]^.Flags and not 1;
   //Writeln('LAST COMMAND ', High(Machine.C), ' ' + Machine.C[High(Machine.C)].Name);
 end;
 
