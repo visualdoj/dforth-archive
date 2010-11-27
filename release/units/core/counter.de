@@ -1,0 +1,37 @@
+// В этом модуле реализуются типы со счётчиком ссылок.
+// Каждый такой тип представляет из себя указатель, ссылающийся на память,
+// в первой ячейке которой хранится счётчик, а дальше значение, зависящее
+// от типа.
+
+// Увеличить число ссылок
+: cinc ( p-) 0; 1+! ;
+// Уменьшить число ссылок
+: cdec ( p-) 0; dup @ -1 = if exit then 1-! dup @ 0= if free then ;
+
+// стандартные стековые операции
+: cdrop ( c-) cdec ;
+: cdup ( c-cc) dup dup cinc ;
+: cnip ( cc-c) over cdec nip ;
+: cswap ( cc-cc) swap ;
+: cover ( ab-aba) over dup cinc ;
+: ctuck ( ab-bab) tuck dup cinc ;
+: clrot ( abc-bca) lrot ;
+: crrot ( abc-cab) rrot ;
+: clrotn ( c..ci-c..c) lrotn ;
+: crrotn ( c..ci-c..c) rrotn ;
+: cpick ( c..ci-c..cc) pick dup cinc ;
+
+// память, переменные
+: c@ ( p-c) @ dup cinc ;
+: c! ( cp-) dup @ cdec cover cinc ! ;
+// TODO
+// : (cto) ( c-) r> dup cell+ r> @ xt.d@ c! ;
+// : [cto] ( c "name"-) compile (cto) source-next-name o, ; immediate
+// : cto ( c "name"-) state @ if ['] [cto] execute else dup ['] to execute cinc then ; immediate
+: cvalue create , does> @ dup cinc ;
+: cconstant create , does> @ dup cinc ;
+: cvariable create 0 here ! 1 cells allot ;
+// TODO
+// : r@cell+ ( -i) r> dup cell+ r> @ ;
+// : (cliteral) ( -c) r> dup @ swap dup cell+ rrot + r> ;
+// : cliteral ( c-) compile (cliteral) dup msize dup cell+ , here swap move ;

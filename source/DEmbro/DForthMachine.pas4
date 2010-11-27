@@ -23,6 +23,9 @@ define(~WVar|, ~(Pointer(TUInt(WP) + ($1))^)|)
 define(~WInc|, ~Inc(WP, $1)|)
 define(~WDec|, ~Dec(TUInt(WP), $1)|)
 define(~PSize|, ~(SizeOf(Pointer))|)
+define(~CELL|, ~(SizeOf(Pointer))|)
+define(~cinc|, ~ if PInteger($1)^ <> -1 then Inc(PInteger($1)^); |)
+define(~cdec|, ~ if PInteger($1)^ > 0 then Dec(PInteger($1)^); |)
 define(~genname|, ~ifelse($1, ~|, $2, len($1), ~1|, $2, $1-$2)|)
 define(~typed_commands|, 
   ~
@@ -148,6 +151,132 @@ define(~typed_commands|,
      AddCommand('genname($1, variable)', _variable_$1);
      AddCommand('genname($1, literal)', literal_$1, True);
      AddCommand('genname($1, (literal))', run_literal_$1);
+    |)
+|)
+define(~counter_commands|, 
+  ~
+    procedure cdrop cmdhdr;
+    procedure cdup cmdhdr;
+    procedure cnip cmdhdr;
+    procedure cswap cmdhdr;
+    procedure cover cmdhdr;
+    procedure ctuck cmdhdr;
+    procedure clrot cmdhdr;
+    procedure crrot cmdhdr;
+    procedure clrotn cmdhdr;
+    procedure crrotn cmdhdr;
+    procedure cpick cmdhdr;
+    procedure _ccomma cmdhdr;
+    procedure _cdog cmdhdr;
+    procedure _cexclamation cmdhdr;
+    procedure ptr_plus_c$1 cmdhdr;
+    procedure _cto cmdhdr;
+    procedure _compile_cto cmdhdr;
+    procedure _run_cto cmdhdr;
+    procedure _interpret_cto cmdhdr;
+    procedure _cvalue cmdhdr;
+    procedure _cvariable cmdhdr;
+    procedure RuncValue cmdhdr;
+    procedure cliteral cmdhdr;
+    procedure run_cliteral cmdhdr
+  define(~all_implement|, all_implement 
+    ~
+      procedure TForthMachine.cdrop cmdhdr; begin Dec(WP, CELL); cdec(Pointer(WP^)); end;
+     procedure TForthMachine.cdup cmdhdr; begin Pointer(WP^) := WVar(-$2); cinc(Pointer(WP^)); WInc(CELL); end;
+     procedure TForthMachine.cnip cmdhdr; begin Dec(WP, CELL); cdec(WVar(-CELL)); WVar(-CELL) := Pointer(WP^); end;
+     procedure TForthMachine.swap cmdhdr; begin Move(WVar(-$2), WP^, $2); Move(WVar(-2*$2), WVar(-$2), $2); Move(WP^, WVar(-2*$2), $2); end;
+     procedure TForthMachine.over cmdhdr; begin Move(WVar(-2*$2), WVar(0), $2); Inc(WP, $2) end;
+     procedure TForthMachine.tuck cmdhdr; begin Move(WVar(-2*$2), WVar(-1*$2), 2*$2); Move(WVar(0), WVar(-2*$2), $2); WInc($2); end;
+     procedure TForthMachine.lrot cmdhdr; 
+     begin 
+       Move(WVar(-1*$2), WP^, $2);
+       Move(WVar(-3*$2), WVar(-1*$2), $2);
+       Move(WVar(-2*$2), WVar(-3*$2), $2);
+       Move(WP^, WVar(-2*$2), $2);
+     end;
+     procedure TForthMachine.rrot cmdhdr;
+     begin 
+       Move(WVar(-1*$2), WP^, $2);
+       Move(WVar(-2*$2), WVar(-1*$2), $2);
+       Move(WVar(-3*$2), WVar(-2*$2), $2);
+       Move(WP^, WVar(-3*$2), $2);
+     end;
+     procedure TForthMachine.lrotn cmdhdr; 
+     var
+       N: Integer;
+     begin 
+       Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       Move(WVar(-$2*N), WVar(0), $2);
+       while N > 0 do begin
+         Move(WVar(-$2*(N-1)), WVar(-$2*N), $2);
+         Dec(N);
+       end;
+       //Move(WVar(0), WVar(-$2), $2);
+     end;
+     procedure TForthMachine.rrotn cmdhdr;
+     var
+       I: Integer;
+       N: Integer;
+     begin
+       Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       //Move(WVar(-$2), WVar(0), $2);
+       for I := 0 to N - 1 do
+         Move(WVar(-$2*(I+1)), WVar(-$2*I), $2);
+       Move(WVar(0), WVar(-N*$2), $2);
+     end;
+     procedure TForthMachine.pick cmdhdr; 
+     begin 
+       Move(WVar(-SizeOf(TInt) -$2*TInt(WVar(-SizeOf(TInt)))), 
+            WVar(-SizeOf(TInt)),
+            $2);
+       WInc($2 - SizeOf(TInt));
+     end;
+     procedure TForthMachine._comma cmdhdr; begin Dec(WP, $2); Move(WP^, Here^, $2); EA($2); end;
+     procedure TForthMachine._dog cmdhdr; begin Move(Pointer(WVar(-PSize))^, WVar(-PSize), $2); Inc(WP, $2 - PSize) end;
+     procedure TForthMachine._exclamation cmdhdr; begin Move(WVar(-PSize-$2), Pointer(WVar(-PSize))^, $2); Dec(WP, PSize + $2) end;
+     procedure TForthMachine.ptr_plus cmdhdr; begin PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; end;
+     procedure TForthMachine._to cmdhdr; begin if FState <> FS_INTERPRET then _compile_to(Machine, Command) else _interpret_to(Machine, Command); end;
+     procedure TForthMachine._compile_to cmdhdr; begin EWO('run@genname($1, ~to|)'); EWO(NextName); end;
+     procedure TForthMachine._run_to cmdhdr; var O: TOpcode; begin O := ERO; Move(WVar(-$2), C[O].Data^, $2); Dec(WP, $2); end;
+     procedure TForthMachine._interpret_to cmdhdr; var N: TString; C: PForthCommand; begin N := NextName; C := FindCommand(N);
+               if C = nil then begin LogError('unkown name after genname($1, ~to|): ' + N); FSession := False; Exit; end; 
+               Move(WVar(-$2), C.Data^, $2); Dec(WP, $2);
+             end;
+     procedure TForthMachine._value cmdhdr; begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); Flags := Flags and not 1; end; end;
+     procedure TForthMachine._variable cmdhdr; begin with ReserveName(SNN)^ do begin Data := Here; Code := FDataCommands.PutDataPtr; {Dec(WP, $2); Move(WP^, Here^, $2);} EA($2); end; end;
+     procedure TForthMachine.RunValue cmdhdr; begin Move(Command.Data^, WP^, $2); Inc(WP, $2); end;
+    procedure TForthMachine.literal cmdhdr; begin EWO('genname($1, (literal))'); Dec(WP, $2); EWV(WP, $2); end;
+    procedure TForthMachine.run_literal cmdhdr; begin ERV(WP, $2); Inc(WP, $2); end;
+    |
+  )
+  define(~regist_all_commands|, regist_all_commands
+    ~
+     AddCommand('cdrop',        drop);
+     AddCommand('cdup',         dup);
+     AddCommand('cnip',         nip);
+     AddCommand('cswap',        swap);
+     AddCommand('cover',        over);
+     AddCommand('ctuck',        tuck);
+     AddCommand('clrot',        lrot);
+     AddCommand('crrot',        rrot);
+     AddCommand('clrotn',       lrotn);
+     AddCommand('crrotn',       rrotn);
+     AddCommand('cpick',        pick);
+     AddCommand('c,',           _comma);
+     AddCommand('c@',           _dog);
+     AddCommand('c!',           _exclamation);
+     AddCommand('ptr+c',        ptr_plus);
+     AddCommand('cto',          _cto, True);
+     AddCommand('[cto]',        _compile_cto);
+     AddCommand('(cto)',        _run_cto);
+     AddCommand('_cto_',        _interpret_cto);
+     AddCommand('cvalue',       _cvalue);
+     AddCommand('cconstant',    _cvalue);
+     AddCommand('cvariable',    _cvariable);
+     AddCommand('cliteral',     cliteral, True);
+     AddCommand('(cliteral))',  run_cliteral);
     |)
 |)
 define(~data_commands|, 

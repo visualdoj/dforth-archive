@@ -1,1 +1,1 @@
-..\dembro32 -s comp.de
+..\dembro32 -e comp.de -r

@@ -1,1 +1,1 @@
-..\dembro32 -s wintest.de
+..\dembro32 -e wintest.de

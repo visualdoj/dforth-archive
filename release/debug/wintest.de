@@ -1,9 +1,9 @@
 str" ..\units\windows.de" evaluate-file
 
-glFlush
+windows-load
 
 str" Parameters" str. cr
 0 pchar" Hello world!" pchar" test" 0
-str" MessageBox" str. cr 
-MessageBox
-str" Returned value: " str. .
+str" MessageBoxA" str. cr 
+MessageBoxA
+str" Result: " str. .

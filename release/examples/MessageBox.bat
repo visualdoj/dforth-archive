@@ -1,1 +1,1 @@
-..\dembro32 -s MessageBox.de
+..\dembro32 -e MessageBox.de -r

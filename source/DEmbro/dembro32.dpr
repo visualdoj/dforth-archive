@@ -47,6 +47,7 @@ var
   Repl: TRepl;
   Done: Boolean = False;
   S: String;
+  I: Integer;
 
 procedure TRepl.quit;
 begin
@@ -97,57 +98,43 @@ begin
   end;
 end;
 
-procedure Compile;
-var
-  Builder: TExeBuilder;
-begin
-  with CommandLine do begin
-    if Dest = '' then
-      Dest := GetExeName(Source);
-    Builder := TExeBuilder.Create;
-    Builder.AppType := AT_CONSOLE;
-    Builder.BuildHeader;
-    Builder.Save(Dest);
-    Builder.Free;
-  end;
-end;
-
 begin
   ParseCommandLine;
-  with CommandLine do
-    if Mode = CMD_EXE then begin
+  if CommandLine.Error then
+    Halt(-1);
+  if CommandLine.Help then
+    Halt;
+
+  Machine := TForthMachine.Create;
+  RunSystem;
+  Compiler := TCompiler.Create(Machine);
+  Repl := TRepl.Create;
+  Machine.AddCommand('quit', Repl.quit);
+  Machine.AddCommand('embro-dump', Repl.embro_dump);
+
+  with CommandLine do begin
+    {if Mode = CMD_EXE then begin
       Compile;
-    end else if (Mode = CMD_REPL) and (Source = '-') then begin
-      Machine := TForthMachine.Create;
-      RunSystem;
-      Compiler := TCompiler.Create(Machine);
-      Repl := TRepl.Create;
-      Machine.AddCommand('quit', Repl.quit);
-      Machine.AddCommand('embro-dump', Repl.embro_dump);
+    end else} 
+    for I := 0 to High(FileNames) do
+      Machine.Interpret(PChar('str" ' + FileNames[I] + '" evaluate-file'));
+    if Repl then begin
       Writeln('DEmbro v' + IntToStr(DFORTHMACHINE_VERSION div 100) + '.' + 
                            IntToStr(DFORTHMACHINE_VERSION mod 100) + 
               ' (commands available: ', Length(Machine.C), ')');
       Writeln('Type "quit" to exit');
       while not Done do begin
-        Write('dforth> ');
+        Write('dembro> ');
         Readln(S);
         SetLength(S, Length(S) + 1);
         S[Length(S)] := #0;
         Machine.Interpret(@S[1]);
-        Writeln('ok');
+        Writeln(' ok');
       end;
-      Compiler.Free;
-      Machine.Free;
     end else begin
-      Machine := TForthMachine.Create;
-      RunSystem;
-      Compiler := TCompiler.Create(Machine);
-      Repl := TRepl.Create;
-      Machine.AddCommand('quit', Repl.quit);
-      Machine.AddCommand('embro-dump', Repl.embro_dump);
-      Machine.Interpret(PChar('str" ' + Source + '" evaluate-file'));
-      Repl.Free;
-      Compiler.Free;
-      Machine.Free;
     end;
+  end;
+  Repl.Free;
+  Compiler.Free;
+  Machine.Free;
 end.
