@@ -51,6 +51,8 @@ begin
   Writeln('           --system <filename>     change system file location');
   Writeln('           --help                  print this help');
   Writeln('           <other>                 uses as filename to evaluate');  
+  Writeln('Examples: dembro32');  
+  Writeln('          dembro32 source1.de source2.de -r');  
   CommandLine.Help := True;
 end;
 
