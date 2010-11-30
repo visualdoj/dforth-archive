@@ -164,6 +164,7 @@ syn match dembroInteger '\<&-\=[0-9.]*[0-9.]\+\>'
 " recognize hex and binary numbers, the '$' and '%' notation is for gdembro
 syn match dembroInteger '\<\$\x*\x\+\>' " *1* --- dont't mess
 syn match dembroInteger '\<\x*\d\x*\>'  " *2* --- this order!
+syn match dembroInteger '\<\h\x*\x\+\>'
 syn match dembroInteger '\<%[0-1]*[0-1]\+\>'
 syn match dembroFloat '\<-\=\d*[.]\=\d\+[DdEe]\d\+\>'
 syn match dembroFloat '\<-\=\d*[.]\=\d\+[DdEe][-+]\d\+\>'
@@ -179,6 +180,44 @@ syn region dembroComment start='//S\s' end='.*' contains=dembroTodo,dembroSpaceE
 syn match dembroComment '\.(\s[^)]*)' contains=dembroTodo,dembroSpaceError
 syn region dembroComment start='\(^\|\s\)\zs(\s' skip='\\)' end=')' contains=dembroTodo,dembroSpaceError
 syn region dembroComment start='/\*' end='\*/' contains=dembroTodo,dembroSpaceError
+
+" new words
+syn match dembroClassDef '\<:class\s*[^ \t]\+\>'
+syn match dembroObjectDef '\<:object\s*[^ \t]\+\>'
+syn match dembroColonDef '\<:m\?\s*[^ \t]\+\>'
+syn match dembroColonDef ':\k* \k*'
+syn match dembroEndOfColonDef '\k*;'
+syn keyword dembroEndOfColonDef ; ;M ;m
+syn keyword dembroEndOfClassDef ;class
+syn keyword dembroEndOfObjectDef ;object
+syn keyword dembroDefine constant 2constant fconstant variable 2variable
+syn keyword dembroDefine fvariable create user value to defer is does> immediate
+syn keyword dembroDefine compile-only compile restrict interpret postpone execute
+syn keyword dembroDefine literal create-interpret/compile interpretation>
+syn keyword dembroDefine <interpretation compilation> <compilation ] lastxt
+syn keyword dembroDefine comp' postpone, find-name name>int name?int name>comp
+syn keyword dembroDefine name>string state c; cvariable
+syn keyword dembroDefine , 2, f, c, 
+syn match dembroDefine "\[ifdef]"
+syn match dembroDefine "\[ifundef]"
+syn match dembroDefine "\[then]"
+syn match dembroDefine "\[endif]"
+syn match dembroDefine "\[else]"
+syn match dembroDefine "\[?do]"
+syn match dembroDefine "\[do]"
+syn match dembroDefine "\[loop]"
+syn match dembroDefine "\[+loop]"
+syn match dembroDefine "\[next]"
+syn match dembroDefine "\[begin]"
+syn match dembroDefine "\[until]"
+syn match dembroDefine "\[again]"
+syn match dembroDefine "\[while]"
+syn match dembroDefine "\[repeat]"
+syn match dembroDefine "\[comp']"
+syn match dembroDefine "'"
+syn match dembroDefine '\<\[\>'
+syn match dembroDefine "\[']"
+syn match dembroDefine '\[compile]'
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
