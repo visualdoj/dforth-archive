@@ -63,13 +63,20 @@ const
 type
   TForthMachine = class;
 
-  TCallback = procedure (machine: Pointer); stdcall;
   PForthCommand = ^TForthCommand;
+  TCode = procedure (Machine: TForthMachine; Command: PForthCommand) of object;
+  TForthCommand = record 
+          Code: TCode;
+          Data: Pointer;
+          Flags: Byte;
+          Name: PChar; 
+          Param: Pointer;
+        end;
+
+  TCallback = procedure (machine: Pointer); stdcall;
   TForthRuntimeProc = procedure (machine: TForthMachine; Command: PForthCommand) 
                                                                       of object;
   TForthCommandProc = procedure (machine: TForthMachine) of object;
-
-  TCode = procedure (Machine: TForthMachine; Command: PForthCommand) of object;
 
   TMnemonic = TInt;
   TOpcode = TInt;
@@ -98,14 +105,6 @@ type
     Size: Integer;
   end;
   PType = ^TType;
-
-  TForthCommand = record 
-          Code: TCode;
-          Data: Pointer;
-          Flags: Byte;
-          Name: PChar; 
-          Param: Pointer;
-        end;
 
   TWordSpace = record
     C: array of PForthCommand;

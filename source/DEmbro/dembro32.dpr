@@ -29,6 +29,7 @@ uses
 
   DForthStack,
   DForthMachine,
+  DVocabulary,
   DExecutable,
   DCommandLine,
   DPlugin,

@@ -15,4 +15,15 @@
 // dyn element get
 : dyn.e@ ( id-i) dyn.ptr @ swap cells + @ ;
 
+: dyn+ ( id-) dyn.add ;
+: dyn# ( d-i) dyn.l@ ;
+: dyn[] ( id-i) dyn.ptr @ swap cells + ;
+
+: str-dyn dyn ;
+: str-dyn# dyn# ;
+: str-dyn.inclen ( d-) dup @ swap dup 1+! dyn[] str-nil swap str! ;
+: str-dyn+ ( sd-) dup str-dyn# swap dup str-dyn.inclen dyn[] str! ;
+: str-dyn@ ( id-s) dyn[] str@ ;
+: str-dyn! ( sid-) dyn[] str! ;
+
 str" Loaded dyn.de" str. cr
