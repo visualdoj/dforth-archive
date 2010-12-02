@@ -1,0 +1,4 @@
+: arr[] ( ip-p) swap cells + ;
+: array ( n "name"-) create cells allot does> ( i-p) arr[] ;
+: arr@ ( ip-i) arr[] @ ;
+: arr! ( iip-) arr[] ! ;

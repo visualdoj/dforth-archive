@@ -1,0 +1,6 @@
+str" arr.de" evaluate-file
+
+: stack ( i "name"-) 0 here @ 1+ cells allot ;
+: s? ( p-b) @ 0= ;
+: s< ( ip-) dup dup @ cells + lrot swap ! 1+! ;
+: s> ( p-i) dup @ 0; dup 1-! dup @ cells + @ ; 

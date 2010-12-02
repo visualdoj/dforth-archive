@@ -1,0 +1,21 @@
+str" units\structures\stack.de" evaluate-file
+
+1024 stack targets
+1024 stack vocs
+vocabulary vLOCALS
+
+: voc.targets< ( v-) targets s< ;
+: voc.targets> ( v-) targets s> ;
+: voc.targets@ ( v-) targets s@ ;
+
+: voc.vocs< ( v-) vocs s< ;
+: voc.vocs> ( v-) vocs s> ;
+: voc.vocs@ ( v-) vocs s@ ;
+
+: voc.use ( v-) dup voc.targets< voc.vocs< ;
+: ^^^ ( -) voc.targets> drop voc.vocs> drop ;
+
+: LOCALS vLOCALS voc.use ;
+: GLOBALS vGLOBALS voc.use ;
+
+GLOBALS vLOCALS voc.vocs<
