@@ -993,3 +993,5 @@ begin
 end;
 
 end.
+
+// К вопросу о RISC http://www.forth.org.ru/~drom/forthcpu/misc.html
