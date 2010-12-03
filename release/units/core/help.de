@@ -1,0 +1,14 @@
+1000 str-dyn help-names
+1000 str-dyn help-articles
+
+: compare-words-put-chars ( pp-88) uint8@ ;
+// оценивает степень похожести двух pchar-строк
+: compare-words ( pp-i) 2 dupn uint8@ W i8-21 uint8@ uint8= 
+  2 dupn 1+ swap 1+ compare-words if exit then
+  3 rrotn 2 dupn ;
+  // TODO
+: help ;
+: describe" ( ") source-read-string help-names str-dyn+ quote-char source-ignore 
+                 source-read-string help-articles str-dyn+ ;
+: helped ;
+: described" ( ") ;
