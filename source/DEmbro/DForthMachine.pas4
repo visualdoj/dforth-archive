@@ -276,7 +276,7 @@ define(~counter_commands|,
      AddCommand('cconstant',    _cvalue);
      AddCommand('cvariable',    _cvariable);
      AddCommand('cliteral',     cliteral, True);
-     AddCommand('(cliteral))',  run_cliteral);
+     AddCommand('(cliteral)',  run_cliteral);
     |)
 |)
 define(~data_commands|, 
@@ -295,7 +295,7 @@ define(~data_commands|,
   )
   define(~regist_all_commands|, regist_all_commands
     ~
-    |
+    |)
 |)
 define(~exception_commands|, 
   ~
@@ -349,16 +349,6 @@ define(~exception_commands|,
       AddCommand('sys-exceptions-pop', _sys_exceptions_pop);
       AddCommand('throw', _throw);
     |)
-  dnl(
-        _doc_article(~exceptions|, 
-                     ~Исключения|, 
-~Для работы с исключениями в DForth нужно подключить библиотеку exceptions.df
-_code(~str" exceptions.df" evaluate-file|)
-После этого становятся доступными две команды: throw и catch.
-_code(~catch ( ... xt -- ... i ) выполняет команду со стека (помещённую туда например командой ['']). В случае если исключения не было на стеке будет помещено 0. Если же сработало исключение (командой throw) то указатель рабочего и возвратного стека будут возвращены в состояние которое имели перед выполнением команды catch и на стек будет помещён код исключения
-throw ( ... i -- ... i ) последовательно выходит из функций до тех пор пока не встретит вызов командой catch. После чего передаёт управление в неё. |)
-                     |)
-  )
 |)
 {$IFNDEF FLAG_FPC}{$REGION 'long commands'}{$ENDIF}
 define(~long_commands|, 
@@ -801,6 +791,7 @@ define(~misc_commands|,
   procedure interpret_source_next_name_passive cmdhdr;
   procedure compile_source_next_name_passive cmdhdr;
   procedure run_source_next_name_passive cmdhdr;
+  procedure source_read_to_char cmdhdr;
   procedure ptr_nil cmdhdr;
   procedure interpret_start cmdhdr;
   procedure compile_start cmdhdr;
@@ -843,6 +834,7 @@ define(~misc_commands|,
       procedure TForthMachine.interpret_source_next_name_passive cmdhdr; begin FStringCommands.str_push(Machine, Command, NextNamePassive) end;
       procedure TForthMachine.compile_source_next_name_passive cmdhdr; begin EWO(' str"'); EWStr(NextNamePassive); end;
       procedure TForthMachine.run_source_next_name_passive cmdhdr; begin FStringCommands.str_push(Machine, Command, @E[EC]); end;
+      procedure source_read_to_char cmdhdr; var I: Integer; begin I := SC; Dec(WP, 1); while (S[I] <> #0)and(S[I] <> TChar(WP^)) do Inc(I); FStringCommands.str_push(Machine, Command, Copy(S, SC, I - SC)); end;
       procedure TForthMachine.ptr_nil cmdhdr; begin WUP(nil); end;
       procedure TForthMachine.compile_start cmdhdr; begin FState := FS_COMPILE end;
       procedure TForthMachine.interpret_start cmdhdr; begin FState := FS_INTERPRET end;
@@ -889,6 +881,7 @@ define(~misc_commands|,
      AddCommand('interpret@source-next-name-passive', source_next_name_passive);
      AddCommand('compile@source-next-name-passive', source_next_name_passive);
      AddCommand('run@source-next-name-passive', source_next_name_passive);
+     AddCommand('source-read-to-char', source_read_to_char);
      AddCommand('ptr-nil', ptr_nil);
      AddCommand('interpret@', interpret_start);
      AddCommand('compile@', compile_start);

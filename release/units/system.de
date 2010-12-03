@@ -1,1 +1,3 @@
+str" units\core\source.de" evaluate-file
+str" units\core\includes.de" evaluate-file
 str" Loaded system.de" str. cr

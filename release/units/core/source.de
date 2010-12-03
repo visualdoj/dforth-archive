@@ -1,0 +1,2 @@
+: source-char ( "c"-8) source-next-char ; immediate
+: source-quote ( " xxx""-s) source-char "source-read-to-char ;

@@ -6,11 +6,11 @@ str" units\structures\dyn.de"
 : once-find ( s-i) str-drop -1 ;
 
 // Переводит путь до include-файла из относительного в абсолютный
-: include-absolute ( s-s) ;
+: include-absolute ( s-s)  ;
 // Подключает файл, причём единственный раз
 : included ( s-) include-absolute not if str-drop exit then str-dup once-find 
              if str-drop else str-dup *once-names* str-dyn+ evaluate-file then ;
 // Синтаксический сахар к предыдущей команде
 // Можно использовать в виде include" units\core\voc.de"
 // что равносильно " units\core\voc.de" included
-: include" source-quote included ;
+: include" ( "filename") source-quote included ;
