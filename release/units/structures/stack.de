@@ -1,6 +1,15 @@
+// 2010.12.03 # Doj
+// Реализация структуры стек
+
 str" arr.de" evaluate-file
 
-: stack ( i "name"-) 0 here @ 1+ cells allot ;
+// Создаёт "стековую переменную"
+: stack ( i "name"-) create 0 here ! 1+ cells allot ;
+// Является ли стек пустым
 : s? ( p-b) @ 0= ;
+// Калдёт в стек ячейку
 : s< ( ip-) dup dup @ cells + lrot swap ! 1+! ;
+// Извлекает из стека ячейку
 : s> ( p-i) dup @ 0; dup 1-! dup @ cells + @ ; 
+
+str" Loaded stack.de" str. cr

@@ -1,3 +1,9 @@
+// 2010.12.03 # Doj
+// Модуль, реализующий работу с динамическими массивами
+// (массивами переменной длины).
+
+wp
+
 : dyn.len ( d-p) ;
 : dyn.ptr ( d-p) cell+ ;
 : dyn.max ( d-p) 2 cells + ;
@@ -26,4 +32,7 @@
 : str-dyn@ ( id-s) dyn[] str@ ;
 : str-dyn! ( sid-) dyn[] str! ;
 
-str" Loaded dyn.de" str. cr
+str" Loaded dyn.de" str. cr 
+
+: check-stack wp 1 cells - <> if str" WARRING: stack error" str. cr then ;
+check-stack

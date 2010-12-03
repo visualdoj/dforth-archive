@@ -1,10 +1,13 @@
+// 2010.12.03 # Doj
+// Заголовок к OpenGL.
+
 str" units\structures\dyn.de" evaluate-file // там реализован динамический массив
 
-ptr-nil ptr-value lib-gl // переменная для хранения загруженной либы user32
-1000 dyn user32-funcs // массив для хранения функций, которые необходимо загрузить
+ptr-nil ptr-value lib-gl // переменная для хранения загруженной либы OpenGL32
+1000 dyn gl-funcs // массив для хранения функций, которые необходимо загрузить
 
 // завершает объявление прототипа функции, которая должна браться из gl библиотеки
-: gl; ( -) stdcall ['] a; execute last user32-funcs dyn.add ; immediate
+: gl; ( -) stdcall ['] a; execute last gl-funcs dyn.add ; immediate
 
 // {{{ prototypes
 :a glBegin GLenum t_void gl;

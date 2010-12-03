@@ -1,3 +1,6 @@
+// 2010.12.03 # Doj
+// Модуль для удобной работы со словарями
+
 str" units\structures\stack.de" evaluate-file
 
 1024 stack targets
@@ -19,3 +22,5 @@ vocabulary vLOCALS
 : GLOBALS vGLOBALS voc.use ;
 
 GLOBALS vLOCALS voc.vocs<
+
+str" Loaded voc.de" str. cr

@@ -20,6 +20,7 @@ define(~all_create|, ~|)
 define(~all_free|, ~|)
 define(~cmdhdr|, ~(Machine: TForthMachine; Command: PForthCommand)|)
 define(~WVar|, ~(Pointer(TUInt(WP) + ($1))^)|)
+define(~LVar|, ~(Pointer(TUInt(LB) + ($1))^)|)
 define(~WInc|, ~Inc(WP, $1)|)
 define(~WDec|, ~Dec(TUInt(WP), $1)|)
 define(~PSize|, ~(SizeOf(Pointer))|)
@@ -781,6 +782,8 @@ define(~misc_commands|,
   procedure _r_dog cmdhdr;
   procedure _r_gt cmdhdr;
   procedure _lt_r cmdhdr;
+  procedure _l_dog cmdhdr;
+  procedure _l_exclamation cmdhdr;
   procedure version cmdhdr;
   procedure _state cmdhdr;
   procedure _time cmdhdr;
@@ -823,6 +826,8 @@ define(~misc_commands|,
       procedure TForthMachine._r_dog cmdhdr; begin Pointer(WP^) := Pointer(Pointer(Cardinal(RP) - SizeOf(Pointer))^); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._r_gt cmdhdr; begin Dec(RP, SizeOf(Pointer)); Pointer(WP^) := Pointer(RP^); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._lt_r cmdhdr; begin Dec(WP, SizeOf(Pointer)); Pointer(RP^) := Pointer(WP^); Inc(RP, SizeOf(Pointer)); end;
+      procedure TForthMachine._l_dog cmdhdr; begin Pointer(WVar(-SizeOf(Pointer))) := Pointer(LVar(Integer(WVar(-SizeOf(Pointer))))); end;
+      procedure TForthMachine._l_exclamation cmdhdr; begin Pointer(LVar(Integer(WVar(-SizeOf(Pointer))))) := Pointer(WVar(-2*SizeOf(Pointer))); Dec(WP, 2*SizeOf(Pointer)); end;
       procedure TForthMachine.version cmdhdr; begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt)); end;
       procedure TForthMachine._state cmdhdr; begin Pointer(WP^) := @FState; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._time cmdhdr; begin Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt)); end;
@@ -834,7 +839,7 @@ define(~misc_commands|,
       procedure TForthMachine.interpret_source_next_name_passive cmdhdr; begin FStringCommands.str_push(Machine, Command, NextNamePassive) end;
       procedure TForthMachine.compile_source_next_name_passive cmdhdr; begin EWO(' str"'); EWStr(NextNamePassive); end;
       procedure TForthMachine.run_source_next_name_passive cmdhdr; begin FStringCommands.str_push(Machine, Command, @E[EC]); end;
-      procedure source_read_to_char cmdhdr; var I: Integer; begin I := SC; Dec(WP, 1); while (S[I] <> #0)and(S[I] <> TChar(WP^)) do Inc(I); FStringCommands.str_push(Machine, Command, Copy(S, SC, I - SC)); end;
+      procedure TForthMachine.source_read_to_char cmdhdr; var I: Integer; begin I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); FStringCommands.str_push(Machine, Command, TString(Copy(S, SC + 1, I - SC))); SC := I; end;
       procedure TForthMachine.ptr_nil cmdhdr; begin WUP(nil); end;
       procedure TForthMachine.compile_start cmdhdr; begin FState := FS_COMPILE end;
       procedure TForthMachine.interpret_start cmdhdr; begin FState := FS_INTERPRET end;
@@ -871,6 +876,8 @@ define(~misc_commands|,
      AddCommand('r@', _r_dog);
      AddCommand('r>', _r_gt);
      AddCommand('>r', _lt_r);
+     AddCommand('l@', _l_dog);
+     AddCommand('l!', _l_exclamation);
      AddCommand('sys-version', version);
      AddCommand('state', _state);
      AddCommand('time', _time);
@@ -1042,7 +1049,7 @@ type
   TPtr = Pointer;
   TEmbroPtr = TInt;
 
-  TStrRec = record
+  TStrRec = packed record
     Ref: TInt;
     Len: TInt;
     Sym: array[0..1] of TChar;
@@ -1284,6 +1291,8 @@ TStringCommands = class
   procedure str_nil(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dot(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dollar(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_dog(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_exclamation(Machine: TForthMachine; Command: PForthCommand);
   procedure pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
   procedure Format(Machine: TForthMachine; Command: PForthCommand);
 end;
@@ -3178,13 +3187,18 @@ end;
 
 procedure TStringCommands.AddRef(S: TStr);
 begin
+  if S = nil then 
+    Exit;
   Inc(PStrRec(S)^.Ref);
 end;
 
 procedure TStringCommands.DelRef(S: TStr);
 begin
+  if S = nil then 
+    Exit;
   Dec(PStrRec(S)^.Ref);
   if PStrRec(S)^.Ref < 1 then begin
+    // Writeln('Free string "', PChar(@(PStrRec(S)^.Sym[0])), '"');
     FreeMem(S);
   end;
 end;
@@ -3369,6 +3383,24 @@ begin
   Move(S[1], PStrRec(P)^.Sym[0], Length(S));
   PStrRec(P)^.Sym[Length(S)] := #0;
   str_push(Machine, Command, P);
+end;
+
+procedure TStringCommands.str_dog(Machine: TForthMachine; Command: PForthCommand);
+begin
+  with Machine do begin
+    Pointer(WVar(-SizeOf(Pointer))) := Pointer(Pointer(WVar(-SizeOf(Pointer)))^);
+    AddRef(Pointer(WVar(-SizeOf(Pointer))));
+  end;
+end;
+
+procedure TStringCommands.str_exclamation(Machine: TForthMachine; Command: PForthCommand);
+begin
+  with Machine do begin
+    DelRef(Pointer(Pointer(WVar(-SizeOf(Pointer)))^));
+    Pointer(Pointer(WVar(-SizeOf(Pointer)))^) := Pointer(WVar(-2*SizeOf(Pointer)));
+    Dec(WP, 2*SizeOf(Pointer));
+    AddRef(Pointer(WP^));
+  end;
 end;
 
 procedure TStringCommands.pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
@@ -4455,6 +4487,8 @@ begin
   AddCommand(' str"', FStringCommands.run_str_dq);
   AddCommand('str.', FStringCommands.str_dot);
   AddCommand('str$', FStringCommands.str_dollar);
+  AddCommand('str@', FStringCommands.str_dog);
+  AddCommand('str!', FStringCommands.str_exclamation);
   AddCommand('str-len', FStringCommands.str_len);
   AddCommand('str=', FStringCommands.str_equel);
   AddCommand('str-nil', FStringCommands.str_nil);

@@ -1,3 +1,4 @@
+// 2010.12.03 # Doj
 // В этом модуле реализуются типы со счётчиком ссылок.
 // Каждый такой тип представляет из себя указатель, ссылающийся на память,
 // в первой ячейке которой хранится счётчик, а дальше значение, зависящее
@@ -28,10 +29,13 @@
 // : (cto) ( c-) r> dup cell+ r> @ xt.d@ c! ;
 // : [cto] ( c "name"-) compile (cto) source-next-name o, ; immediate
 // : cto ( c "name"-) state @ if ['] [cto] execute else dup ['] to execute cinc then ; immediate
-: cvalue create , does> @ dup cinc ;
-: cconstant create , does> @ dup cinc ;
-: cvariable create 0 here ! 1 cells allot ;
+: cvalue ( c "name"-) create , does> @ dup cinc ;
+: cconstant ( c "name"-) create , does> @ dup cinc ;
+: cvariable ( "name") create 0 here ! 1 cells allot ;
 // TODO
 // : r@cell+ ( -i) r> dup cell+ r> @ ;
 // : (cliteral) ( -c) r> dup @ swap dup cell+ rrot + r> ;
 // : cliteral ( c-) compile (cliteral) dup msize dup cell+ , here swap move ;
+
+: cl! ( ci-) l! ;
+: cl@ ( i-c) l@ dup cinc ;
