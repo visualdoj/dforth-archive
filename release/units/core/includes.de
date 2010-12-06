@@ -29,7 +29,7 @@
              else str-dup *once-names* str-dyn+ evaluate-file then ;
 // Синтаксический сахар к предыдущей команде
 // Можно использовать в виде include" units\core\voc.de"
-// что равносильно " units\core\voc.de" included
+// что равносильно str" units\core\voc.de" included
 : include" ( "filename") source-quote included ;
 
 str" Loaded includes.de" str. cr
