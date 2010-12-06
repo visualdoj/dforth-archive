@@ -5,6 +5,3 @@
 : [ 0 state ! ; immediate
 : ] 1 state ! ; immediate
 
-// ѕримитивный механизм дл€ создани€ структур
-: -- ( t "name"-) create type-size swap dup , + does> ( p-p) @ + ;
-: struct ( "name"-) constant ;

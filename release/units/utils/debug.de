@@ -6,4 +6,4 @@
                               while swap dup @ . cell+ repeat drop ;
 
 // Печатает исходный код после команды .line до конца строки
-// : .line compile (str.) ... ; immediate
+// : .line  ; immediate
