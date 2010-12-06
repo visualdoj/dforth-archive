@@ -3632,9 +3632,9 @@ var
   C: TChar;
   Temp: array of Char;
 begin
-  if Machine.FState = FS_COMPILE then begin
-    compile_str_dq(Machine, Command);
-  end else begin
+  //if Machine.FState = FS_COMPILE then begin
+  //  compile_str_dq(Machine, Command);
+  //end else begin
     SetLength(Temp, 0); 
     C := Machine.NextChar;
     while C <> '"' do begin
@@ -3648,7 +3648,7 @@ begin
     Move(Temp[0], PStrRec(S)^.Sym[0], Length(Temp));
     PStrRec(S)^.Sym[Length(Temp)] := #0;
     str_push(Machine, Command, S);
-  end;
+  //end;
 end;
 
 procedure TStringCommands.compile_str_dq(Machine: TForthMachine; Command: PForthCommand);
@@ -3657,7 +3657,7 @@ var
   E: Cardinal;
   L: Integer;
 begin
-  Machine.EWO(' str"');
+  Machine.EWO('(str)"');
   Machine.EWI(1);
   E := Machine.EL;
   Machine.EWI(0);
@@ -4856,8 +4856,9 @@ begin
   AddCommand('pchar-concat', FStringCommands.pchar_concat);
   AddCommand('pchar=', FStringCommands.pchar_equel);
 
-  AddCommand('str"', FStringCommands.str_dq, True);
-  AddCommand(' str"', FStringCommands.run_str_dq);
+  AddCommand('str"', FStringCommands.str_dq);
+  AddCommand('[str]"', FStringCommands.compile_str_dq, True);
+  AddCommand('(str)"', FStringCommands.run_str_dq);
   AddCommand('str.', FStringCommands.str_dot);
   AddCommand('str$', FStringCommands.str_dollar);
   AddCommand('str@', FStringCommands.str_dog);
@@ -5949,15 +5950,6 @@ begin
      AddCommand('file-read', file_read);
      AddCommand('file-size', file_size);
     ;
-  Interpret(': if compile ?branch >mark ; immediate');
-  Interpret(': else compile branch >mark embro-swap >resolve ; immediate');
-  Interpret(': then >resolve ; immediate');
-  Interpret(': begin <mark ; immediate');
-  Interpret(': while compile ?branch >mark embro-swap ; immediate');
-  Interpret(': repeat compile branch <resolve >resolve ; immediate');
-  Interpret(': until compile ?branch <resolve ; immediate');
-  Interpret(': [ 0 state ! ; immediate');
-  Interpret(': ] 1 state ! ; immediate');
   //Writeln('Commands count: ', Length(C));
 end;
 
@@ -10003,7 +9995,7 @@ end;
       procedure TForthMachine.source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin // if FState <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
                                                                                                    interpret_source_next_name_passive(Machine, Command) end;
       procedure TForthMachine.interpret_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, NextNamePassive) end;
-      procedure TForthMachine.compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin EWO(' str"'); EWStr(NextNamePassive); end;
+      procedure TForthMachine.compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin EWO('(str)"'); EWStr(NextNamePassive); end;
       procedure TForthMachine.run_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, @E[EC]); end;
       procedure TForthMachine.source_read_to_char (Machine: TForthMachine; Command: PForthCommand); var I: Integer; begin I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); FStringCommands.str_push(Machine, Command, TString(Copy(S, SC + 1, I - SC))); SC := I; end;
       procedure TForthMachine.ptr_nil (Machine: TForthMachine; Command: PForthCommand); begin WUP(nil); end;

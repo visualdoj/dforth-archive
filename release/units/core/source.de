@@ -1,6 +1,4 @@
-: source-char ( "c"-8) source-next-char ; immediate
+: source-char ( "c"-8) source-next-char uint8-drop source-next-char ; immediate
 // : source-quote ( " xxx""-s) source-char "source-read-to-char 
 //                             source-next-char uint8-drop ;
-: source-quote ( " xxx""-s) ['] str" execute ;
-
-str" Loaded source.de" str. cr
+: source-quote ( " xxx""-s) str" ;

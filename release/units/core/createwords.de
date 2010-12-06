@@ -1,6 +1,17 @@
 // 2010.12.06 # Doj
 // Упрощения работы с определяющими словами.
 
+// эквиваленты к value, constant и variable, которые берут имя не из входного
+// потока, а из строки со стека
 : valued ( is-) created , does> @ ;
 : constanted ( is-) valued ;
 : variabled ( s-) created ;
+
+// Создание перечислимых типов
+// Пример:
+//     enum STUDENT
+//     STUDENT IVANOV // создаёт константу 0 с названием IVANOV
+//     STUDENT SIDOROV // создаёт константу 1 с названием SIDOROV
+//     STUDENT BELOSHAPKIN // создаёт константу 2 с названием BELOSHAPKIN
+//     STUDENT PETROV // создаёт константу 3 с названием PETROV
+: enum ( "name"-) create 0 , does> ( "name"-) dup @ constant 1+! ;

@@ -12,8 +12,11 @@ wp
                        dup dyn.max lrot swap !
                        dup dyn.max @
                        cells malloc swap dyn.ptr ! ;
-// dyn set length
-: dyn.l! ( id-) ;
+// dyn alloc mem
+: dyn.alloc ( d-p) @ cells malloc ;
+: dyn.move ( dp-) swap dup dyn.ptr @ swap @ ( move) ;
+// dyn allocate
+: dyn.l! ( id-) dup ! dup dup dyn.alloc dyn.move dyn.ptr @ free ;
 // dyn length get
 : dyn.l@ ( d-i) dyn.len @ ;
 // dyn add element
@@ -33,7 +36,5 @@ wp
 : str-dyn@ ( id-s) dyn[] str@ ;
 : str-dyn! ( sid-) dyn[] str! ;
 
-str" Loaded dyn.de" str. cr 
-
-: check-stack wp 1 cells - <> if str" WARRING: stack error" str. cr then ;
+: check-stack wp 1 cells - <> if [str]" WARRING: stack error" str. cr then ;
 check-stack

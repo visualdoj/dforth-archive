@@ -277,8 +277,8 @@ h0003           constant MB_YESNOCANCEL
 // функция, пробегающая массивы с прототипами и прописывающая команды
 // её должна вызывать программа, подключившая windows.de
 : windows-load
-  str" User32.dll" lib-load 
-     0= if str" Cannot load User32.dll" str. cr lib-unload exit then 
+  [str]" User32.dll" lib-load 
+     0= if [str]" Cannot load User32.dll" str. cr lib-unload exit then 
   to lib-user32
   0 begin dup user32-funcs dyn.l@ < while 
      dup lib-user32 swap user32-funcs dyn.e@ windows-load-fun

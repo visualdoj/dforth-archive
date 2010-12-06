@@ -1,37 +1,50 @@
 // 2010.12.06 # Doj
 // Модуль для реализации встроенной помощи
 
+include" units\core\w.de"
 include" units\structures\dyn.de"
 
-1000 str-dyn help-names
-1000 str-dyn help-articles
+1000 str-dyn *help-names*
+1000 str-dyn *help-articles*
 
 // : ppi-i ( p p -1 -- p p | i) if rrot drop drop then ;
 
-: compare-words-put-chars ( pp-88) uint8@ W i8-21 uint8@ ;
+: prepare ( pp-ii) uint8@ uint8->uint swap uint8@ uint8->uint ;
 // Проверяет является ли pchar на вершине пустой строкой (указателем на 
 // нулевой символ). Если это так, то кладёт на стек кол-во символов
 // второго pchar. 
-: try-compare-top-end ( pp-i) dup uint8@ uint8-0= 
+: try-compare-top-end ( pp-i) 2dup prepare =
         if   drop pchar-len
         else drop drop -1 then ;
 // Проверяет 
-: try-compare-end ( pp-i) 2 dupn try-compare-top-end dup 
+: try-compare-end ( pp-i) 2dup try-compare-top-end dup 
                           -1 = if   swap try-compare-top-end 
                                else rrot drop drop then ;
 // оценивает похожесть двух символов, на которые указывают входные параметры
 //   возвращает 0, если они равны
 //   возвращает 1, если не равны
-: compare-chars ( pp-i) uint8@ W i8-21 uint8@ uint8<> 1 and ;
+: compare-chars ( pp-i) uint8@ uint8->uint swap uint8@ uint8->uint <> 1 and ;
 // оценивает степень похожести двух pchar-строк
-: compare-words ( pp-i) 2 dupn try-compare-end dup -1 = if rrot drop drop exit then
-  2 dupn compare-chars 0 l!
-  2 dupn 1+ swap 1+ compare-words if exit then
-  3 rrotn 2 dupn ;
+: compare-words ( pp-i) 2dup try-compare-end dup -1 = if rrot drop drop exit then
+  2dup compare-chars 0 l!
+  2dup 1+ swap 1+ recurse if exit then
+  3 rrotn 2dup ;
   // TODO
-: helped ( s-) ;
-: described" ( ") ;
+// Ищет описание
+// Если найти не удалось, то на вершине будет false.
+// Иначе, на вершине будет true, а вторым элементом -- индекс найденной
+// статьи.
+: help-find ( s-F|iT) *help-names* str-dyn# begin ?dup while 1- dup 0 l! 
+                            *help-names* str-dyn@ 
+                            ( str-swap ctuck) cover str= if str-drop 0 l@ true exit then
+                            0 l@
+                      repeat str-drop false ;
 
-: help ( "name"-) source-quote helped ;
-: describe" ( ") source-read-string help-names str-dyn+ quote-char source-ignore 
-                 source-read-string help-articles str-dyn+ ;
+: helped ( s-) str-dup str. space help-find if *help-articles* str-dyn@ str. cr 
+                                      else [.str]" not found"cr then ;
+: described ( ss-) *help-articles* str-dyn+ *help-names* str-dyn+  ;
+
+: help ( "name"-) source-next-name helped ;
+// : describe ( ") source-next-name *help-names* str-dyn+ 
+                // begin source-next-char uint8->uint [ 34 ] literal = until  
+                // source-quote *help-articles* str-dyn+ ;

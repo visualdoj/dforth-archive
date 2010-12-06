@@ -19,17 +19,16 @@
 // Переводит путь до include-файла из относительного в абсолютный
 // Кладёт true на вершину, если это удалось
 : include-absolute ( s-sb) true ;
+// Добавляет строку в массив загруженных
+: once+ ( s-) cdup *once-names* str-dyn+ [str]" Loaded " str. str. cr ;
 // Исполняет файл, если он не был исполнен раньше.
 // Конкретней -- проверяет наличие входной строки в массиве *once-names*
 // и если она не найдена, то во-первых добавляет, а во-вторых исполняет
 // файл, абсолютный путь до которого указан в строке. В противном случае
 // (когда строка в массиве *once-names* найдена) ничего не делается
 : included ( s-) include-absolute not if str-drop exit then str-dup once-find 
-             if str-drop 
-             else str-dup *once-names* str-dyn+ evaluate-file then ;
+             if str-drop else str-dup once+ evaluate-file then ;
 // Синтаксический сахар к предыдущей команде
 // Можно использовать в виде include" units\core\voc.de"
 // что равносильно str" units\core\voc.de" included
 : include" ( "filename") source-quote included ;
-
-str" Loaded includes.de" str. cr

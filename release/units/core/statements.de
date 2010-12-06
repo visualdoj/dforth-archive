@@ -1,0 +1,6 @@
+// 2010.12.06 # Doj
+// Расширенные конструкции управления потоком выполнения
+// помимо стандартных тупых if, else, begin, while, repeat и until
+
+: [ 0 state ! ; immediate
+: ] 1 state ! ; immediate

@@ -39,5 +39,3 @@
 
 : cl! ( ci-) l! ;
 : cl@ ( i-c) l@ dup cinc ;
-
-str" Loaded counter.de" str. cr

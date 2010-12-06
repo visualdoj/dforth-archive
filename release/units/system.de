@@ -1,15 +1,28 @@
 // 2010.12.03 # Doj
 // Модуль, подключающий все полезные возможности общего назначения
 
+: if compile ?branch >mark ; immediate
+: else compile branch >mark embro-swap >resolve ; immediate
+: then >resolve ; immediate
+: begin <mark ; immediate
+: while compile ?branch >mark embro-swap ; immediate
+: repeat compile branch <resolve >resolve ; immediate
+: until compile ?branch <resolve ; immediate
+
 str" units\core\counter.de" str-dup evaluate-file
 str" units\structures\dyn.de" str-dup evaluate-file
 str" units\core\source.de" str-dup evaluate-file
 str" units\core\includes.de" str-dup evaluate-file
 // т.к. только теперь подключён модуль для эксклюзивного подключения модулей
 // нужно в него добавить всё, что было подключено до него
-*once-names* str-dyn+
-*once-names* str-dyn+
-*once-names* str-dyn+
-*once-names* str-dyn+
+once+ once+ once+ once+
 
-str" Loaded system.de" str. cr
+include" units\core\statements.de"
+include" units\utils\debug.de"
+include" units\core\strings.de"
+include" units\core\w.de"
+include" units\core\help.de"
+include" units\core\createwords.de"
+include" docs\russian.de"
+
+str" Loaded system file" str. cr
