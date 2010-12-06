@@ -1,0 +1,6 @@
+// 2010.12.06 # Doj
+// ”прощени€ работы с определ€ющими словами.
+
+: valued ( is-) created , does> @ ;
+: constanted ( is-) valued ;
+: variabled ( s-) created ;

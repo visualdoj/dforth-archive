@@ -5,19 +5,19 @@
 // Предполагается, что динамические массивы уже подключены в system.de
 // str" units\structures\dyn.de" evaluate-file
 
+// В этом массиве будут храниться имена подключённых файлов
 16 str-dyn *once-names*
 
 // Пробегает массив *once-names*, выдаёт индекс+1, под которым в нём s, иначе 0 
+// Выглядит не очень презентабельно, т.к. поддержки циклов со счётчиками и
+// локальных переменных ещё нет.
 : once-find ( s-i) *once-names* str-dyn# 0 l! 
     begin 0 l@ 1- dup 0>= while
       0 l! str-dup 0 l@ *once-names* str-dyn@ str= if 1+ exit then 
     repeat 1+ ;
-// : once-find ( s-i) 0 l! *once-names* str-dyn# 
-//     begin 1- dup 0>= while 
-//       dup *once-names* str-dyn@ 0 cl@ str= if 1+ exit then 
-//     repeat 1+ ;
 
 // Переводит путь до include-файла из относительного в абсолютный
+// Кладёт true на вершину, если это удалось
 : include-absolute ( s-sb) true ;
 // Исполняет файл, если он не был исполнен раньше.
 // Конкретней -- проверяет наличие входной строке в массиве *once-names*

@@ -1,15 +1,23 @@
 // 2010.12.03 # Doj
 // Модуль, реализующий работу с массивами
 
-// arr -- массив ячеек
+include" units\core\createwords.de"
+
+// {{{ arr -- массив ячеек//
 // по номеру элемента и адресу массива выдаёт адрес элемента
 : arr[] ( ip-p) swap cells + ;
 // создаёт массив с именем name на n элементов
+// name: снимает индекс в массиве, кладёт указатель на элемент с этим индексом
 : array ( n "name"-) create cells allot does> ( i-p) arr[] ;
+// то же, что и array, но ещё и создаёт константу с именем name#,
+// хранящую размер массива
+: array-constanted# ( ns-) str" #" str-concat constanted ;
+: array# ( n "name"-) source-next-name-passive over array array-constanted# ;
 // по номеру элемента и адресу массива выдаёт значение элемента
 : arr@ ( ip-i) arr[] @ ;
 // принимает значение, индекс и указатель на массив
 // записывает значение в элемент массива с таким индексом
 : arr! ( iip-) arr[] ! ;
+// }}}
 
 str" Loaded arr.de" str. cr

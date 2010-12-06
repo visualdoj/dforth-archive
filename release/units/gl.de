@@ -1,7 +1,7 @@
 // 2010.12.03 # Doj
 // Заголовок к OpenGL.
 
-str" units\structures\dyn.de" evaluate-file // там реализован динамический массив
+include" units\structures\dyn.de"
 
 ptr-nil ptr-value lib-gl // переменная для хранения загруженной либы OpenGL32
 1000 dyn gl-funcs // массив для хранения функций, которые необходимо загрузить

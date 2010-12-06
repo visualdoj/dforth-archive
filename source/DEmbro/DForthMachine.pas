@@ -215,6 +215,7 @@ TDataCommands = class
   procedure ptr_comma(Machine: TForthMachine; Command: PForthCommand);
 
   procedure _create(Machine: TForthMachine; Command: PForthCommand);
+  procedure _created(Machine: TForthMachine; Command: PForthCommand);
   procedure putdataptr(Machine: TForthMachine; Command: PForthCommand);
   procedure here(Machine: TForthMachine; Command: PForthCommand);
   procedure allot(Machine: TForthMachine; Command: PForthCommand);
@@ -380,6 +381,7 @@ TForthMachine = class
   FEmbroDump: array of TString;
   FEmbro: array of Byte;
   FTypes: array of TType;
+  FMemoryDebug: TDebug;
 {$IFNDEF FLAG_FPC}{$REGION 'misc commands'}{$ENDIF}
   procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileLineComment(Machine: TForthMachine; Command: PForthCommand);
@@ -2743,6 +2745,17 @@ begin
   NewCommand^.Data := Machine.Here;
 end;
 
+procedure TDataCommands._created(Machine: TForthMachine; Command: PForthCommand);
+var
+  Name: TString;
+  NewCommand: PForthCommand;
+begin
+  Name := Machine.WOS;
+  NewCommand := Machine.ReserveName(Name);
+  NewCommand^.Code := putdataptr;
+  NewCommand^.Data := Machine.Here;
+end;
+
 procedure TDataCommands.putdataptr(Machine: TForthMachine; Command: PForthCommand);
 var
   P: Pointer;
@@ -3534,6 +3547,7 @@ begin
   if S = nil then 
     Exit;
   Inc(PStrRec(S)^.Ref);
+  FMachine.FMemoryDebug.Log(ToStr([' + str" ', PChar(@S^.Sym[0]), '" ', S^.Ref]));
 end;
 
 procedure TStringCommands.DelRef(S: TStr);
@@ -3544,7 +3558,9 @@ begin
   if PStrRec(S)^.Ref < 1 then begin
     // Writeln('Free string "', PChar(@(PStrRec(S)^.Sym[0])), '"');
     FreeMem(S);
-  end;
+    FMachine.FMemoryDebug.Log(ToStr([' - str" ', PChar(@S^.Sym[0]), '" (free)']));
+  end else
+    FMachine.FMemoryDebug.Log(ToStr([' - str" ', PChar(@S^.Sym[0]), '" ', S^.Ref]));
 end;
 
 procedure TStringCommands.str_push(Machine: TForthMachine; Command: PForthCommand; S: TString);
@@ -3579,10 +3595,15 @@ procedure TStringCommands.str_dup(Machine: TForthMachine; Command: PForthCommand
 var
   S: TStr;
 begin
-  S := str_pop(Machine, Command);
-  str_push(Machine, Command, S);
-  str_push(Machine, Command, S);
-  DelRef(S);
+  //S := str_pop(Machine, Command);
+  //str_push(Machine, Command, S);
+  //str_push(Machine, Command, S);
+  //DelRef(S);
+  with MAchine do begin
+    Pointer(Machine.WP^) := Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^));
+    AddRef(TStr(WP^));
+    Inc(WP, SizeOf(Pointer));
+  end;
 end;
 
 procedure TStringCommands.str_over(Machine: TForthMachine; Command: PForthCommand);
@@ -4350,6 +4371,8 @@ begin
   FReturnStack := TReturnStack.Create;
   SetLength(FData, 2048);
   //FHere := 0;
+  FMemoryDebug := TDebug.Create('memory.tmp');
+  FMemoryDebug.Console := False;
 
   // it must have zero opcode
   AddCommand('exit', FControlCommands._exit);
@@ -4618,6 +4641,7 @@ begin
   AddCommand(' 64to', FDataCommands.run_64to);}
 
   AddCommand('create', FDataCommands._create);
+  AddCommand('created', FDataCommands._created);
   AddCommand('here', _here);
   AddCommand('allot', FDataCommands.allot);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -5963,6 +5987,7 @@ begin
   FBoolCommands.Free;
   FReturnStack.Free;
   FStack.Free;
+  FMemoryDebug.Free;
 end;
 
 procedure TForthMachine.InterpretName(W: PChar);
@@ -9975,7 +10000,7 @@ end;
       procedure TForthMachine._local (Machine: TForthMachine; Command: PForthCommand); begin RunCommand(PForthCommand((@E[Integer(Command^.Data)])^)); end;
       procedure TForthMachine.source_next_char (Machine: TForthMachine; Command: PForthCommand); begin WUU8(Byte(NextChar)) end;
       procedure TForthMachine.source_next_name (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, NextName) end;
-      procedure TForthMachine.source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin if FState <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
+      procedure TForthMachine.source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin // if FState <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
                                                                                                    interpret_source_next_name_passive(Machine, Command) end;
       procedure TForthMachine.interpret_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin FStringCommands.str_push(Machine, Command, NextNamePassive) end;
       procedure TForthMachine.compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin EWO(' str"'); EWStr(NextNamePassive); end;

@@ -1,14 +1,37 @@
+// 2010.12.06 # Doj
+// Модуль для реализации встроенной помощи
+
+include" units\structures\dyn.de"
+
 1000 str-dyn help-names
 1000 str-dyn help-articles
 
-: compare-words-put-chars ( pp-88) uint8@ ;
+// : ppi-i ( p p -1 -- p p | i) if rrot drop drop then ;
+
+: compare-words-put-chars ( pp-88) uint8@ W i8-21 uint8@ ;
+// Проверяет является ли pchar на вершине пустой строкой (указателем на 
+// нулевой символ). Если это так, то кладёт на стек кол-во символов
+// второго pchar. 
+: try-compare-top-end ( pp-i) dup uint8@ uint8-0= 
+        if   drop pchar-len
+        else drop drop -1 then ;
+// Проверяет 
+: try-compare-end ( pp-i) 2 dupn try-compare-top-end dup 
+                          -1 = if   swap try-compare-top-end 
+                               else rrot drop drop then ;
+// оценивает похожесть двух символов, на которые указывают входные параметры
+//   возвращает 0, если они равны
+//   возвращает 1, если не равны
+: compare-chars ( pp-i) uint8@ W i8-21 uint8@ uint8<> 1 and ;
 // оценивает степень похожести двух pchar-строк
-: compare-words ( pp-i) 2 dupn uint8@ W i8-21 uint8@ uint8= 
+: compare-words ( pp-i) 2 dupn try-compare-end dup -1 = if rrot drop drop exit then
+  2 dupn compare-chars 0 l!
   2 dupn 1+ swap 1+ compare-words if exit then
   3 rrotn 2 dupn ;
   // TODO
-: help ;
+: helped ( s-) ;
+: described" ( ") ;
+
+: help ( "name"-) source-quote helped ;
 : describe" ( ") source-read-string help-names str-dyn+ quote-char source-ignore 
                  source-read-string help-articles str-dyn+ ;
-: helped ;
-: described" ( ") ;

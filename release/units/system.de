@@ -1,9 +1,15 @@
 // 2010.12.03 # Doj
 // Модуль, подключающий все полезные возможности общего назначения
 
-str" units\core\counter.de" evaluate-file
-str" units\structures\dyn.de" evaluate-file
-str" units\core\source.de" evaluate-file
-str" units\core\includes.de" evaluate-file
+str" units\core\counter.de" str-dup evaluate-file
+str" units\structures\dyn.de" str-dup evaluate-file
+str" units\core\source.de" str-dup evaluate-file
+str" units\core\includes.de" str-dup evaluate-file
+// т.к. только теперь подключён модуль для эксклюзивного подключения модулей
+// нужно в него добавить всё, что было подключено до него
+*once-names* str-dyn+
+*once-names* str-dyn+
+*once-names* str-dyn+
+*once-names* str-dyn+
 
 str" Loaded system.de" str. cr

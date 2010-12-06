@@ -10,6 +10,7 @@ type
 TDebug = class
 private
   FLogFile: TString;
+  FConsole: Boolean;
   procedure PrintToLogFile(S: TString);
   procedure ClearLogFile;
 public
@@ -25,6 +26,7 @@ public
   function GetLineInfo(P: Pointer): TString; 
   procedure LogStack(Li: Integer = 0; Count: Integer = 30);
   procedure UnusedVar(var V);
+  property Console: Boolean read FConsole write FConsole;
 end;
 
 var
@@ -97,12 +99,14 @@ begin
   FLogFile := LogFile;
   ClearLogFile;
   {$ENDIF}
+  FConsole := True;
 end;
 
 procedure TDebug.Log;
 begin
   {$IFDEF FLAG_CONSOLE}
-  Writeln(Group + ' ' + Mes);
+  if FConsole then
+    Writeln(Group + ' ' + Mes);
   {$ENDIF}
   {$IFNDEF FLAG_NOLOG}
   PrintToLogFile(Group + ' ' + Mes);
