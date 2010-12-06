@@ -1,0 +1,9 @@
+// 2010.12.06 # Doj
+// Функции для отладки
+
+// Печатает i верхних элемента стека без их снятия со стека
+: .w ( i-) 1+ wp over cells - begin swap 1- ?dup 
+                              while swap dup @ . cell+ repeat drop ;
+
+// Печатает исходный код после команды .line до конца строки
+// : .line compile (str.) ... ; immediate
