@@ -12,21 +12,33 @@ wp
                        dup dyn.max lrot swap !
                        dup dyn.max @
                        cells malloc swap dyn.ptr ! ;
+: dyn[] ( id-i) dyn.ptr @ swap cells + ;
 // dyn alloc mem
 : dyn.alloc ( d-p) @ cells malloc ;
-: dyn.move ( dp-) swap dup dyn.ptr @ swap @ ( move) ;
-// dyn allocate
-: dyn.l! ( id-) dup ! dup dup dyn.alloc dyn.move dyn.ptr @ free ;
+: dyn.move ( dp-) swap dup dyn.ptr @ swap @ lrot swap cells move ;
+// 
+: dyn.realloc? ( d-b) dup @ swap dyn.max @ > ;
+// dyn set length
+: dyn.l! ( id-) dup rrot ! ( d) dup dyn.realloc? ( db) 
+                if ( d) dup dup dyn.alloc ( ddp) dup rrot dyn.move 
+                   ( dp) swap dyn.ptr dup @ free !
+                else drop then ;
 // dyn length get
 : dyn.l@ ( d-i) dyn.len @ ;
+
+: high ( d-i) @ 1- ;
+: dyn.last ( d-i) dup high swap dyn[] ;
+
 // dyn add element
-: dyn.add ( id-) dup 1+! dup @ swap ( ild) dyn.ptr @ swap ( ial) 1- cells + ! ;
+: dyn.add ( id-) dup dup @ 1+ swap dyn.l! ( id) dyn.last ! ;
+   // dup 1+! dup @ swap ( ild) dyn.ptr @ swap ( ial) 1- cells + ! ;
 // dyn element get
 : dyn.e@ ( id-i) dyn.ptr @ swap cells + @ ;
 
 : dyn+ ( id-) dyn.add ;
 : dyn# ( d-i) dyn.l@ ;
-: dyn[] ( id-i) dyn.ptr @ swap cells + ;
+: dyn@ ( id-i) dyn[] @ ;
+: dyn! ( iid-) dyn[] ! ;
 
 : str-dyn dyn ;
 : str-dyn# dyn# ;

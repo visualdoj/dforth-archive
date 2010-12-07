@@ -818,6 +818,7 @@ define(~misc_commands|,
   procedure _last cmdhdr;
   procedure _xt_dot_n cmdhdr;
   procedure _xt_dot_d cmdhdr;
+  procedure _move cmdhdr;
   define(~all_implement|, all_implement 
     ~
       procedure TForthMachine._wp cmdhdr; begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
@@ -866,6 +867,7 @@ define(~misc_commands|,
       procedure TForthMachine._last cmdhdr; var P: Pointer; begin Pointer(WP^) := C[High(C)]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._xt_dot_n cmdhdr; begin Pointer(WVar(-SizeOf(Pointer))) := @(PForthCommand(WVar(-SizeOf(Pointer))).Name[0]); end;
       procedure TForthMachine._xt_dot_d cmdhdr; begin Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Data end;
+      procedure TForthMachine._move cmdhdr; begin Dec(WP, SizeOf(Pointer)*3); Move(Pointer(WVar(0))^, Pointer(WVar(SizeOf(Pointer)))^, TUint(WVar(2*SizeOf(Pointer)))); {Writeln(TUInt(WVar(0)), TUInt(WVar(SizeOf(Pointer))), TUint(WVar(2*SizeOf(Pointer))));} end;
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -911,6 +913,7 @@ define(~misc_commands|,
      AddCommand('last', _last);
      AddCommand('xt.n@', _xt_dot_n);
      AddCommand('xt.d@', _xt_dot_d);
+     AddCommand('move', _move);
     |)
 |)
 define(~file_commands|, 
@@ -3210,7 +3213,7 @@ procedure TStringCommands.DelRef(S: TStr);
 begin
   if S = nil then 
     Exit;
-  Dec(PStrRec(S)^.Ref);
+  //Dec(PStrRec(S)^.Ref);
   if PStrRec(S)^.Ref < 1 then begin
     // Writeln('Free string "', PChar(@(PStrRec(S)^.Sym[0])), '"');
     FreeMem(S);

@@ -1971,6 +1971,7 @@ TForthMachine = class
   procedure _last (Machine: TForthMachine; Command: PForthCommand);
   procedure _xt_dot_n (Machine: TForthMachine; Command: PForthCommand);
   procedure _xt_dot_d (Machine: TForthMachine; Command: PForthCommand);
+  procedure _move (Machine: TForthMachine; Command: PForthCommand);
   
   
 
@@ -3554,7 +3555,7 @@ procedure TStringCommands.DelRef(S: TStr);
 begin
   if S = nil then 
     Exit;
-  Dec(PStrRec(S)^.Ref);
+  //Dec(PStrRec(S)^.Ref);
   if PStrRec(S)^.Ref < 1 then begin
     // Writeln('Free string "', PChar(@(PStrRec(S)^.Sym[0])), '"');
     FreeMem(S);
@@ -5944,6 +5945,7 @@ begin
      AddCommand('last', _last);
      AddCommand('xt.n@', _xt_dot_n);
      AddCommand('xt.d@', _xt_dot_d);
+     AddCommand('move', _move);
     
     
       AddCommand('sys-exceptions-execute', _sys_exceptions_execute);
@@ -10033,6 +10035,7 @@ end;
       procedure TForthMachine._last (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin Pointer(WP^) := C[High(C)]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._xt_dot_n (Machine: TForthMachine; Command: PForthCommand); begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := @(PForthCommand((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)).Name[0]); end;
       procedure TForthMachine._xt_dot_d (Machine: TForthMachine; Command: PForthCommand); begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PForthCommand((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)).Data end;
+      procedure TForthMachine._move (Machine: TForthMachine; Command: PForthCommand); begin Dec(WP, SizeOf(Pointer)*3); Move(Pointer((Pointer(TUInt(WP) + (0))^))^, Pointer((Pointer(TUInt(WP) + (SizeOf(Pointer)))^))^, TUint((Pointer(TUInt(WP) + (2*SizeOf(Pointer)))^))); {Writeln(TUInt((Pointer(TUInt(WP) + (0))^)), TUInt((Pointer(TUInt(WP) + (SizeOf(Pointer)))^)), TUint((Pointer(TUInt(WP) + (2*SizeOf(Pointer)))^)));} end;
     
    
     

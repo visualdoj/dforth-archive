@@ -5,7 +5,7 @@ include" units\core\w.de"
 include" units\structures\dyn.de"
 
 1000 str-dyn *help-names*
-1000 str-dyn *help-articles*
+0 str-dyn *help-articles*
 
 // : ppi-i ( p p -1 -- p p | i) if rrot drop drop then ;
 
