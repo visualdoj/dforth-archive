@@ -3731,8 +3731,17 @@ var
   I: Integer;
 begin
   S := str_pop(Machine, Command);
-  for I := 0 to PStrRec(S)^.Len - 1 do
-    Write(PStrRec(S)^.Sym[I]);
+  I := 0;
+  while I < PStrRec(S)^.Len do begin
+    if PStrRec(S)^.Sym[I] = #13{'\'} then begin
+      //if PStrRec(S)^.Sym[I+1] = 'n' then begin
+        Writeln;
+      //  Inc(I);
+      //end;
+    end else
+      Write(PStrRec(S)^.Sym[I]);
+    Inc(I);
+  end;
   DelRef(S);
 end;
 
