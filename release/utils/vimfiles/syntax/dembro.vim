@@ -1,19 +1,28 @@
 " Vim syntax file
+" Language:    DEMBRO
+" Maintainer:  Doj V. J. Brьssow <cvjb@cvjb.de>
+" Last Change: 07 Dec 2010 11:41:04 CEST
+" Filenames:   *.de,*.dem
+" URL:	       http://code.google.com/p/dforth/wiki/DEmbro
+"
+" Файл для подсветки синтаксиса программ на DEmbro. За основу взят стандартный
+" файл syntax\forth.vim из вима.
+" 
 " Language:    FORTH
 " Maintainer:  Christian V. J. Brьssow <cvjb@cvjb.de>
 " Last Change: Di 07 Jul 2009 21:38:45 CEST
 " Filenames:   *.fs,*.ft
-" URL:	       http://www.cvjb.de/comp/vim/dembro.vim
+" URL:	       http://www.cvjb.de/comp/vim/forth.vim
 
-" $Id: dembro.vim,v 1.12 2008/07/07 21:39:12 bruessow Exp $
+" $Id: forth.vim,v 1.12 2008/07/07 21:39:12 bruessow Exp $
 
 " The list of keywords is incomplete, compared with the offical ANS
 " wordlist. If you use this language, please improve it, and send me
 " the patches.
 "
 " Before sending me patches, please download the newest version of this file
-" from http://www.cvjb.de/comp/vim/dembro.vim or http://www.vim.org/ (search
-" for dembro.vim).
+" from http://www.cvjb.de/comp/vim/forth.vim or http://www.vim.org/ (search
+" for forth.vim).
 
 " Many Thanks to...
 "
@@ -30,11 +39,11 @@
 " Benjamin Krill <ben at codiert dot org> send me a patch
 " to highlight space errors.
 " You can toggle this feature on through setting the
-" flag dembro_space_errors in you vimrc. If you have switched it on,
+" flag forth_space_errors in you vimrc. If you have switched it on,
 " you can turn off highlighting of trailing spaces in comments by
-" setting dembro_no_trail_space_error in your vimrc. If you do not want
+" setting forth_no_trail_space_error in your vimrc. If you do not want
 " the highlighting of a tabulator following a space in comments, you
-" can turn this off by setting dembro_no_tab_space_error.
+" can turn this off by setting forth_no_tab_space_error.
 "
 " 2006-05-25:
 " Bill McCarthy <WJMc@...> and Ilya Sher <ilya-vim@...>
@@ -50,18 +59,18 @@
 " 
 " 2003-05-10:
 " Andrew Gaul <andrew at gaul.org> send me a patch for
-" dembroOperators.
+" forthOperators.
 "
 " 2003-04-03:
 " Ron Aaron <ron at ronware dot org> made updates for an
 " improved Win32Forth support.
 "
 " 2002-04-22:
-" Charles Shattuck <charley at dembro dot org> helped me to settle up with the
+" Charles Shattuck <charley at forth dot org> helped me to settle up with the
 " binary and hex number highlighting.
 "
 " 2002-04-20:
-" Charles Shattuck <charley at dembro dot org> send me some code for correctly
+" Charles Shattuck <charley at forth dot org> send me some code for correctly
 " highlighting char and [char] followed by an opening paren. He also added
 " some words for operators, conditionals, and definitions; and added the
 " highlighting for s" and c".
