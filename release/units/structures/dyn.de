@@ -7,11 +7,18 @@ wp
 : dyn.len ( d-p) ;
 : dyn.ptr ( d-p) cell+ ;
 : dyn.max ( d-p) 2 cells + ;
+: dyn.init ( ip-) dup dyn.len 0 swap ! 
+                  dup dyn.max lrot swap !
+                  dup dyn.max @
+                  cells malloc swap dyn.ptr ! ;
+: dyn-struct ( -i) 3 cells ;
 : dyn ( "name" i--) create here 3 cells allot 
                        dup dyn.len 0 swap ! 
                        dup dyn.max lrot swap !
                        dup dyn.max @
                        cells malloc swap dyn.ptr ! ;
+: dyn-new ( i-p) dyn-struct malloc dup rrot dyn.init ;
+: dyn.free ( p-) dup dyn.ptr @ free free ;
 : dyn[] ( id-i) dyn.ptr @ swap cells + ;
 // dyn alloc mem
 : dyn.alloc ( d-p) @ cells malloc ;

@@ -9,6 +9,9 @@
 : repeat compile branch <resolve >resolve ; immediate
 : until compile ?branch <resolve ; immediate
 
+: off ( p-) 0 swap ! ;
+: on ( p-) true swap ! ;
+
 str" units\core\counter.de" str-dup evaluate-file
 str" units\structures\dyn.de" str-dup evaluate-file
 str" units\core\source.de" str-dup evaluate-file

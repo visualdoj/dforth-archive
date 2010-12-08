@@ -779,11 +779,13 @@ define(~misc_commands|,
   procedure _wp cmdhdr;
   procedure _rp cmdhdr;
   procedure _lp cmdhdr;
+  procedure _lb cmdhdr;
   procedure _r_dog cmdhdr;
   procedure _r_gt cmdhdr;
   procedure _lt_r cmdhdr;
   procedure _l_dog cmdhdr;
   procedure _l_exclamation cmdhdr;
+  procedure _l_plus cmdhdr;
   procedure version cmdhdr;
   procedure _state cmdhdr;
   procedure _time cmdhdr;
@@ -824,11 +826,13 @@ define(~misc_commands|,
       procedure TForthMachine._wp cmdhdr; begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._rp cmdhdr; begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._lp cmdhdr; begin Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer)); end;
+      procedure TForthMachine._lb cmdhdr; begin Pointer(WP^) := LB; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._r_dog cmdhdr; begin Pointer(WP^) := Pointer(Pointer(Cardinal(RP) - SizeOf(Pointer))^); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._r_gt cmdhdr; begin Dec(RP, SizeOf(Pointer)); Pointer(WP^) := Pointer(RP^); Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._lt_r cmdhdr; begin Dec(WP, SizeOf(Pointer)); Pointer(RP^) := Pointer(WP^); Inc(RP, SizeOf(Pointer)); end;
       procedure TForthMachine._l_dog cmdhdr; begin Pointer(WVar(-SizeOf(Pointer))) := Pointer(LVar(Integer(WVar(-SizeOf(Pointer))))); end;
       procedure TForthMachine._l_exclamation cmdhdr; begin Pointer(LVar(Integer(WVar(-SizeOf(Pointer))))) := Pointer(WVar(-2*SizeOf(Pointer))); Dec(WP, 2*SizeOf(Pointer)); end;
+      procedure TForthMachine._l_plus cmdhdr; begin Dec(WP, SizeOf(TInt)); Inc(LP, TInt(WP^)) end;
       procedure TForthMachine.version cmdhdr; begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt)); end;
       procedure TForthMachine._state cmdhdr; begin Pointer(WP^) := @FState; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._time cmdhdr; begin Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt)); end;
@@ -875,11 +879,13 @@ define(~misc_commands|,
      AddCommand('wp', _wp);
      AddCommand('rp', _rp);
      AddCommand('lp', _lp);
+     AddCommand('lb', _lb);
      AddCommand('r@', _r_dog);
      AddCommand('r>', _r_gt);
      AddCommand('>r', _lt_r);
      AddCommand('l@', _l_dog);
      AddCommand('l!', _l_exclamation);
+     AddCommand('l+', _l_plus);
      AddCommand('sys-version', version);
      AddCommand('state', _state);
      AddCommand('time', _time);
@@ -1161,6 +1167,7 @@ TControlCommands = class
   procedure recurse(Machine: TForthMachine; Command: PForthCommand);
   procedure call(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_def(Machine: TForthMachine; Command: PForthCommand);
+  procedure compile_noname(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_skip_to_end(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_enddef(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_scattered_def(Machine: TForthMachine; Command: PForthCommand);
@@ -2253,6 +2260,8 @@ begin
     Machine.FState := Machine.ROI;
   end else
     FMachine.EC := FMachine.ROI;
+  FMachine.LP := FMachine.LB;
+  FMAchine.LB := FMachine.ROP;
 end;
 
 procedure TControlCommands.recurse(Machine: TForthMachine; Command: PForthCommand);
@@ -2264,6 +2273,8 @@ procedure TControlCommands.call(Machine: TForthMachine; Command: PForthCommand);
 begin
   // Writeln('INSIDE CALL "' + Command^.Name + '"');
   //Writeln('called function ' + Command^.Name);
+  Machine.RUP(Machine.LB);
+  Machine.LB := Machine.LP;
   if Machine.FState = FS_RUN then
     Machine.RUI(Machine.EC)
   else begin
@@ -2281,11 +2292,6 @@ var
   NewCommand: PForthCommand;
   PName: PChar;
 begin
-  {Machine.CancelMnemonic;
-  Machine.WriteMnemonicByName('branch');
-  Machine.WriteMnemonicByName('>mark');
-  _gt_mark(Machine, Command);}
-  //Writeln('INSIDE compile_def');
   Name := Machine.NextName;
   PName := CopyStrToPChar(Name);
   NewCommand := Machine.ReserveName('');
@@ -2296,7 +2302,21 @@ begin
   Machine.LUI(Machine.FLastMnemonic);
   Machine.LUP(PName);
   Machine.LUI(101);
-  //Writeln('RESERVER NAME ' + NewCommand^.Name);
+end;
+
+procedure TControlCommands.compile_noname(Machine: TForthMachine; Command: PForthCommand);
+var
+  NewCommand: PForthCommand;
+begin
+  NewCommand := Machine.ReserveName('');
+  NewCommand^.Code := call;
+  SetImmediate(NewCommand, False);
+  Integer(NewCommand^.Data) := FMachine.EL;
+  Machine.FState := FS_COMPILE;
+  Machine.WUP(NewCommand);
+  Machine.LUI(Machine.FLastMnemonic);
+  Machine.LUP(Pointer(PChar('')));
+  Machine.LUI(101);
 end;
 
 procedure TControlCommands.compile_skip_to_end(Machine: TForthMachine; Command: PForthCommand);
@@ -3350,14 +3370,18 @@ begin
   if PStrRec(A)^.Len <> PStrRec(B)^.Len then
     Machine.WUI(BOOL_FALSE)
   else begin
-    for I := 0 to PStrRec(A)^.Len - 1 do
-      if PStrRec(A)^.Sym[I] <> PStrRec(B)^.Sym[I] then begin
-        Machine.WUI(BOOL_FALSE);
-        DelRef(A);
-        DelRef(B);
-        Exit;
-      end;
-    Machine.WUI(BOOL_TRUE);
+    (* for I := 0 to PStrRec(A)^.Len - 1 do *)
+    (*   if PStrRec(A)^.Sym[I] <> PStrRec(B)^.Sym[I] then begin *)
+    (*     Machine.WUI(BOOL_FALSE); *)
+    (*     DelRef(A); *)
+    (*     DelRef(B); *)
+    (*     Exit; *)
+    (*   end; *)
+    (* Machine.WUI(BOOL_TRUE); *)
+    if StrComp(@PStrRec(A)^.Sym[0], @PStrRec(B)^.Sym[0]) = 0 then
+      Machine.WUI(BOOL_TRUE)
+    else
+      Machine.WUI(BOOL_FALSE);
   end;
   DelRef(A);
   DelRef(B);
@@ -4236,6 +4260,7 @@ begin
 *)
 {$IFNDEF FLAG_FPC}{$REGION 'control commands'}{$ENDIF}
   AddCommand(':', FControlCommands.compile_def);
+  AddCommand(':noname', FControlCommands.compile_noname);
   AddCommand(';', FControlCommands.compile_enddef, True);
   AddCommand('skip-to;', FControlCommands.compile_enddef, True);
   AddCommand('...', FControlCommands.scattered_dots, True);

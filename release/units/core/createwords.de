@@ -52,3 +52,21 @@
 //      struct vec3i
 : -- ( t "name"-) create type-size swap dup , + does> ( p-p) @ + ;
 : struct ( "name"-) constant ;
+
+// Таблица решений (в разработке)
+: :solve ( i-i) 1+ :noname swap ;
+: ;solve ['] ; execute swap 1+ ; immediate
+: solve-table ( x1..xn n "xxx"--) create dup 1- , begin ?dup while swap , 1- repeat
+  does> ( i-) dup @ lrot - swap cells + @ execute ;
+
+variable sLOCAL 
+sLOCAL off
+
+: let ( "name"-) sLOCAL @ dup cell+ sLOCAL ! create immediate ,
+    does> ( W:) ( R:-p) @ ['] literal execute compile lb compile + ; immediate
+: locals sLOCAL @ ['] literal execute compile l+ ;
+: unlocals sLOCAL off ;
+// : : : [ sLOCAL @ ] compile literal compile l+ ;
+
+// : local ( "name"-) sLOCAL @ dup cell+ sLOCAL ! create immediate ,
+//    does>  ; 
