@@ -1027,8 +1027,8 @@ const
   MACHINE_MODE_WORK             = $03;
 
   FS_INTERPRET                  = $00;
-  FS_COMPILE                    = $01;
-  FS_RUN                        = $02;
+  FS_COMPILE                    = not $00;
+  // FS_RUN                        = $02;
 
   DF_FILE_R                     = $A0;
   DF_FILE_W                     = $A1;
@@ -1180,6 +1180,7 @@ end;
 TEmbroCommands = class
  public
   procedure compile(Machine: TForthMachine; Command: PForthCommand);
+  procedure q_compile_q(Machine: TForthMachine; Command: PForthCommand);
   procedure execute(Machine: TForthMachine; Command: PForthCommand);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -2253,13 +2254,19 @@ end;
 
 procedure TControlCommands._exit;
 begin
-  //Log('EXIT');
-  if TUInt(FMachine.RB) >= TUInt(FMachine.RP) then begin
+  // Log('EXIT');
+  if TUInt(FMachine.RB) < TUInt(FMachine.RP) then begin
+    FMachine.EC := FMachine.ROI;
+  end else if TUInt(FMachine.RB) = TUInt(FMachine.RP) then begin
     //FMachine.EC := Length(FMachine.FEmbro)
     Machine.RB := Machine.ROP;
-    Machine.FState := Machine.ROI;
-  end else
-    FMachine.EC := FMachine.ROI;
+    // Machine.FState := Machine.ROI;
+    FMachine.FRunning := False;
+  end else begin
+    Machine.LogError('[exit] R stack error (' +
+                       IntToStr(TUInt(FMachine.RP) - TUInt(FMachine.RB)) + ')');
+    Machine.FSession := False;
+  end;
   FMachine.LP := FMachine.LB;
   FMAchine.LB := FMachine.ROP;
 end;
@@ -2275,15 +2282,15 @@ begin
   //Writeln('called function ' + Command^.Name);
   Machine.RUP(Machine.LB);
   Machine.LB := Machine.LP;
-  if Machine.FState = FS_RUN then
+  if Machine.FRunning then
     Machine.RUI(Machine.EC)
   else begin
-    Machine.RUI(Machine.FState);
+    // Machine.RUI(Machine.FState);
     Machine.RUP(Machine.RB);
     Machine.RB := Machine.RP;
   end;
   Machine.EC := Integer(Command^.Data);
-  Machine.FState := FS_RUN;
+  Machine.FRunning := True;
 end;
 
 procedure TControlCommands.compile_def(Machine: TForthMachine; Command: PForthCommand);
@@ -2399,12 +2406,17 @@ procedure TEmbroCommands.compile(Machine: TForthMachine; Command: PForthCommand)
 var
   U: TUInt;
 begin
-  if Machine.State = FS_COMPILE then begin
-    Machine.EWO('compile');
+  //if Machine.State = FS_COMPILE then begin
+    Machine.EWO('(compile)');
     Machine.EWO(Machine.NextName);
-  end else begin
-    Machine.EWO(Machine.C[Machine.ERU].Name);
-  end;
+  //end else begin
+  //  Machine.EWO(Machine.C[Machine.ERU].Name);
+  //end;
+end;
+
+procedure TEmbroCommands.q_compile_q(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Machine.EWO(Machine.C[Machine.ERU].Name);
 end;
 
 procedure TEmbroCommands.execute(Machine: TForthMachine; Command: PForthCommand);
@@ -3558,37 +3570,15 @@ var
   M: Cardinal;
   SavedState: Integer;
 begin
-  {FRunning := True;
-  //FState := False;
-  EC := Index;
-  while FRunning and (EC < Length(FEmbro)) do begin
-    M := NextMnemonic;
-    if (M > High(C)) then begin
-      RunError('unknown mnemonic ' + IntToStr(M));
-      Break;
-    end;
-    if FState then  
-      CompileName(C[M].Name)
-    else
-      RunMnemonic(M);
-  end;
-  FRunning := False;}
-  SavedState := FState;
-  FState := FS_RUN;
-  while FReturnStack.GetSize > 0 do begin
-    M := NextMnemonic;
-    if M > High(C) then begin
-      RunError('unknown mnemonic ' + IntToStr(M));
-      Break;
-    end;
-    RunMnemonic(M);
-  end;
-  FState := SavedState;
+  // Writeln('Deprecated code');
+  LogError('Deprecated code');
+  // Halt(-1);
 end;
 
 procedure TForthMachine.RunMnemonic(M: Cardinal);
 begin
   //Writeln('RUN MNEMONIC "' + C[M].Name + '" ' + IntToStr(M) + ' EC:' + IntToStr(EC));
+  // Writeln('RUN STEP "', C[M].Name, '"');
   C[M].Code(Self, C[M]);
 end;
 
@@ -3600,7 +3590,7 @@ end;
 procedure TForthMachine.RunError(const S: TString);
 begin
   Error(' Runtime: ' + S);
-  FRunning := False;
+  // FRunning := False;
 end;
 
 procedure TForthMachine.RunWarring(const S: TString);
@@ -4277,6 +4267,7 @@ begin
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'embro commands'}{$ENDIF}
   AddCommand('compile', FEmbroCommands.compile, True);
+  AddCommand('(compile)', FEmbroCommands.q_compile_q, True);
   //AddCommand('execute', FEmbroCommands.execute, True);
   AddCommand('evaluate', Evaluate);
   ~AddCommand('evaluate-file', EvaluateFile);|
@@ -4610,6 +4601,7 @@ procedure TForthMachine.InterpretName(W: PChar);
 var
   I: Integer;
 begin
+  //Writeln('INTERPRET ', W);
   for I := High(C) downto 0 do
     if StrComp(C[I].Name, W) = 0 then begin
       //Writeln('START ' + W);
@@ -4623,7 +4615,7 @@ begin
   (* else *)
   (*   WUI(I); *)
   if ConvertStrToInt(W, I) <> 0 then
-    Error(' Unknown command: ' + W)
+    LogError('Unknown command: ' + W)
   else
     WUI(I);
 end;
@@ -4632,6 +4624,10 @@ function TForthMachine.CompileName(W: PChar): Boolean;
 var
   I: Integer;
 begin
+  (* if W = '?branch' then *)
+  (*   Writeln('Compile name "', W, '"'); *)
+  (* if W = 'compile' then *)
+  (*   Writeln('Compile name "', W, '"'); *)
   for I := High(C) downto 0 do
     if StrComp(C[I].Name, W) = 0 then begin
       if IsImmediate(C[I]) then
@@ -4648,7 +4644,7 @@ begin
   (*   EWI(I); *)
   (* end; *)
   if ConvertStrToInt(W, I) <> 0 then
-    Error(' Unknown command: ' + W)
+    LogError('Unknown command: ' + W)
   else begin
     EWO('(literal)');
     EWI(I);
@@ -4657,34 +4653,34 @@ end;
 
 procedure TForthMachine.Interpret(const S: PChar);
 begin
-  {FSource := S;
-  FCurrentChar := 0;
-  while not EOS do begin
-    FCurrentName := NextName;
-    if FState = FS_COMPILE then
-      CompileName(PChar(FCurrentName))
-    else
-      InterpretName(PChar(FCurrentName));
-  end;}
+  if S = nil then
+    Exit;
+  (* Writeln('RB=', Cardinal(RB), *)
+  (*         ' RP=', Cardinal(RP),  *)
+  (*         ' SC=', SC,  *)
+  (*         ' EC=', EC, *)
+  (*         ' S=', S); *)
   RUI(FState);
   RUI(Ord(FSession) * BOOL_TRUE);
+  RUI(Ord(FRunning) * BOOL_TRUE);
   RUI(EC);
   RUP(Self.S);
   RUI(SC);
   RUP(RB);
-  if S = nil then
-    Exit;
   Self.S := S;
   //Self.SB := S;
   Self.SC := 0;
   FState := FS_INTERPRET;
   FSession := True;
+  FRunning := False;
   MainLoop;
-  RB := ROP;
+  RB := ROP; 
   SC := ROI;
   Self.S  := ROP;
   EC := ROI;
+  FRunning := ROI <> BOOL_FALSE;
   FSession := ROI <> BOOL_FALSE;
+  // Writeln('RB=', Cardinal(RB), ' SC=', SC, ' S=', Integer(S), ' EC=', EC);
   FState := ROI;
 end;
 
@@ -4732,6 +4728,7 @@ var
   T: TString;
 begin
   S := MAchine.FStringCommands.str_pop(Machine, Command);
+  // Writeln('Evaluate file "', PChar(@(PStrRec(S)^.Sym[0])), '"');
   Assign(F, PChar(GetCurrentDirectory) + '\' + PChar(@(PStrRec(S)^.Sym[0])));
   {$I-}
   Reset(F);
@@ -4754,29 +4751,39 @@ begin
   Close(F);
   Machine.Interpret(PChar(B));
   Machine.FStringCommands.DelRef(S);
+  // Writeln('End of evaluate file "', PChar(@S^.Sym[0]), '"');
 end;
 
 procedure TForthMachine.MainLoop;
 begin
-  while FSession do
-    case FState of
-      FS_INTERPRET: InterpretStep;
-      FS_COMPILE:   CompileStep;
-      FS_RUN:       RunStep;
-    end;
+  while FSession do begin
+    if FRunning then
+      RunStep
+    else
+      case FState of
+        FS_INTERPRET: InterpretStep;
+        FS_COMPILE:   CompileStep;
+      else
+        LogError('Illegal FState');
+        FSession := False;
+      end;
+    // Writeln('Main Loop FState="', FState, '" FRunning="', FRunning, '"');
+  end;
 end;
 
 procedure TForthMachine.InterpretStep;
 begin
+  // Writeln('INTERPRET STEP');
   SSS;
-  if SE then
-    FSession := False
-  else
+  if SE then begin
+    FSession := False;
+  end else
     InterpretName(PChar(SNN));
 end;
 
 procedure TForthMachine.CompileStep;
 begin
+  // Writeln('COMPILE STEP');
   SSS;
   if SE then
     FSession := False
@@ -4786,7 +4793,6 @@ end;
 
 procedure TForthMachine.RunStep;
 begin
-  //Writeln('RUN STEP');
   RunMnemonic(ERO);
 end;
 
@@ -4936,7 +4942,7 @@ begin
   (*   WriteEmbroInt(I); *)
   (* end; *)
   if ConvertStrToInt(Name, I) <> 0 then
-    Error(' Unknown command: ' + Name)
+    LogError('Unknown command: ' + Name)
   else begin
     EWO('(literal)');
     EWI(I);
