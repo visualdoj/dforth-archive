@@ -83,18 +83,18 @@ procedure RunSystem;
 begin
   // 1. command line
   // 2. current dir
-  if FileExist(GetCurrentDirectory + '\system.de') then begin
-    Machine.InterpretFile(GetCurrentDirectory + '\system.de');
+  if FileExist(GetCurrentDirectory + '\' + CommandLine.System) then begin
+    Machine.InterpretFile(GetCurrentDirectory + '\' + CommandLine.System);
     Exit;
   end;
   // 3. exe
-  if FileExist(GetExeDirectory + '\system.de') then begin
-    Machine.InterpretFile(GetExeDirectory + '\system.de');
+  if FileExist(GetExeDirectory + '\' + CommandLine.System) then begin
+    Machine.InterpretFile(GetExeDirectory + '\' + CommandLine.System);
     Exit;
   end;
   // 3. exe\units
-  if FileExist(GetExeDirectory + '\units\system.de') then begin
-    Machine.InterpretFile(GetExeDirectory + '\units\system.de');
+  if FileExist(GetExeDirectory + '\units\' + CommandLine.System) then begin
+    Machine.InterpretFile(GetExeDirectory + '\units\' + CommandLine.System);
     Exit;
   end;
 end;

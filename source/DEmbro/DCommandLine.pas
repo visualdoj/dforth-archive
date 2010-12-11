@@ -49,6 +49,7 @@ begin
   Writeln('           --repl                  run REPL after evaluated all files (default)');
   Writeln('           --norepl                do not run REPL after evaluated all files');
   Writeln('           --system <filename>     change system file location');
+  Writeln('                                   (default "system.de")');  
   Writeln('           --help                  print this help');
   Writeln('           <other>                 uses as filename to evaluate');  
   Writeln('Examples: dembro32');  
