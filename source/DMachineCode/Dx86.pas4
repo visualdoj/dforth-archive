@@ -559,7 +559,7 @@ define(~mnekdib|, ~AsmCode($1, ~(Dst: Tx86Reg$3; Imm: Byte)|,  WriteB($2);
   ModRM(3, $4, Dst);
   WriteB(Imm);)|)
 
-mnei_(ADD, Hex(04), Hex(05), Hex(05))
+dnl mnei_(ADD, Hex(04), Hex(05), Hex(05))
 dnl mnekbib(ADD,  Hex(80), B)
 dnl mnekwiw(ADD,  Hex(81), W)
 mnekdib(ADD,  Hex(83), , 0)
@@ -584,7 +584,7 @@ mnekr(_AND, Hex(21))
 dnl mnerk(SUB, Hex(23))
 dnl mnekr(SUB, Hex(21))
 dnl mnei_(SUB, Hex(23), Hex(23), Hex(23))
-mnekdib(SUB,  Hex(83), , 0)
+mnekdib(SUB,  Hex(83), , 5)
 
 mnerk(_XOR, Hex(23))
 mnekr(_XOR, Hex(21))

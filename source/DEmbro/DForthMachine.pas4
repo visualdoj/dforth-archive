@@ -3105,6 +3105,7 @@ begin
       Sizes[I] := Types[I]^.Size;
     FAlien.GenerateCallback(Machine.Here, ES - EC, Sizes, ReturnType^.Size,
                             @Machine.WP, Machine, XT, @__Callback);
+    Writeln('@WP = ', TUInt(@Machine.WP));
     Machine.IncHere(FAlien.MachineCode.Size);
   end;
 end;

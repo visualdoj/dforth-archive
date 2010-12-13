@@ -96,10 +96,6 @@ type
   public
     constructor Create(BaseSize: Integer);
     // x86 mnemonics
-    procedure ADD(B: Tx86b); overload;
-    procedure ADD(W: Tx86w); overload;
-    procedure ADD(D: Tx86d); overload;
-    procedure ADD(D: LongInt); overload;
     procedure ADD(Dst: Tx86Reg; Imm: Byte); overload;
     procedure NOP; overload;
     procedure REPNE; overload;
@@ -473,42 +469,10 @@ begin
   FMode := X86_MODE_32;
 end;
 
-procedure Tx86.ADD(B: Tx86b);
-begin
-  WriteB($04);
-  WriteB(Byte(B));
-end;
-
-procedure Tx86.ADD(W: Tx86w);
-begin
-  if FMode = X86_MODE_16 then
-    WriteB($66); 
-  WriteB($05);
-  WriteW(Word(W));
-end;
-
-procedure Tx86.ADD(D: Tx86d);
-begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);
-  WriteB($05);
-  WriteI(LongInt(D));
-end;
-
-procedure Tx86.ADD(D: LongInt);
-begin
-  if (D >= -128) and (D <= 127) then
-    ADD(x86b(ShortInt(D)))
-  else if (D >= -32768) and (D <= 32767) then
-    ADD(x86w(SmallInt(D)))
-  else
-    ADD(x86d(D));
-end;
-
 procedure Tx86.ADD(Dst: Tx86Reg; Imm: Byte);
 begin
   WriteB($83);
-  WriteB(((3) shl 6) + ((Ord(0)) shl 3) + (Ord(Dst)));
+  WriteB(((3) shl 6) + ((Ord(Dst)) shl 3) + (Ord(0)));
   WriteB(Imm);
 end;
 
@@ -2226,7 +2190,7 @@ end;
 procedure Tx86.SUB(Dst: Tx86Reg; Imm: Byte);
 begin
   WriteB($83);
-  WriteB(((3) shl 6) + ((Ord(0)) shl 3) + (Ord(Dst)));
+  WriteB(((3) shl 6) + ((Ord(Dst)) shl 3) + (Ord(5)));
   WriteB(Imm);
 end;
 

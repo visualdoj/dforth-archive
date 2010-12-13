@@ -1,0 +1,22 @@
+// 2010.12.13 # Doj
+// Тест на создание Callback'ов.
+// ..\dembro32 callback.de -r
+
+:noname  [str]" Callback: " str. . . . . -100 cr ; 
+:c Callback t_int t_int t_int t_int  t_int stdcall c;
+:a Loop t_ptr t_void stdcall a;
+
+str" == Test ==" str. cr
+:a Test t_int t_int t_int t_int  t_int stdcall c;
+Callback to Test
+5 6 7 8 Test . cr
+str" == Test done ==" str. cr
+
+str" Callback: " str. Callback . cr
+
+str" Callback.dll" lib-load . str" Loop" lib-fun dup . to Loop
+cr 4 .w cr
+str" wp: " str. wp . cr 
+Callback Loop
+str" wp: " str. wp . cr 
+4 .w cr

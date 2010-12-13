@@ -50,14 +50,16 @@ begin
   // mov EBP, ESP
   Fx86.PUSH(EBP);
   Fx86.MOV(EBP, ESP);
-  // mov ECX, [@WP]
-  Fx86.MOV(ECX, Tx86d(DogWP));
-  (* // mov eax, @WP *)
-  (* // mov ecx, [eax] *)
-  (* Fx86.MOV(EAX, DogWP); *)
-  (* Fx86.MOV(ECX, [EAX]); *)
+  (* // mov ECX, [@WP] *)
+  (* // Fx86.MOV(ECX, Tx86d(DogWP)); *)
+  // mov eax, @WP
+  // mov ecx, [eax]
+  Fx86.MOV(EAX, LongInt(DogWP));
+  Fx86.MOV(ECX, [EAX]);
+  Fx86.MOV(EDX, ECX);
 
   FullSize := 0;
+  //Writeln('Start parameters ');
   for I := 0 to High(Sizes) do begin
     if Sizes[I] = 4 then begin
       // mov eax, [esp + 2*SizeOf(TInt) + FullSize]
@@ -66,6 +68,7 @@ begin
       Fx86.MOV(EAX, [EBP], 8 + FullSize);
       Fx86.MOV([ECX], EAX);
       Fx86.ADD(ECX, 4);
+      //Writeln('Parameter ', Sizes[I]);
     end else begin
       Result := False;
       Error('[TAlien.GenerateCallback]: underconstruction param size ' 
@@ -74,9 +77,12 @@ begin
     end;
     Inc(FullSize, Sizes[I]);
   end;
+  //Writeln('Finish parameters ');
   
-  // mov [@WP], ecx ; update WP
-  Fx86.MOV([DogWP], ECX);
+  (* // mov [@WP], ecx ; update WP *)
+  (* Fx86.MOV([DogWP], ECX); *)
+  Fx86.MOV(EAX, LongInt(DogWP));
+  Fx86.MOV([EAX], ECX);
 
   // ; invoking command
   Fx86.PUSH(Tx86d(Command)); // push Command
@@ -93,10 +99,13 @@ begin
   
   if ReturnSize = 4 then begin
     // mov ECX, [@WP]
-    Fx86.MOV(ECX, LongInt(DogWP));
+    Fx86.MOV(ECX, [Tx86d(DogWP)]);
     Fx86.SUB(ECX, 4);
     Fx86.MOV(EAX, [ECX]);
-    Fx86.MOV(DogWP, ECX);
+    Fx86.MOV([DogWP], ECX);
+    Fx86.MOV(EAX, LongInt(DogWP));
+    Fx86.MOV(EAX, [EAX]);
+    Fx86.MOV(EAX, EDX);
   end else if ReturnSize = 0 then begin
     // ; nothing
     Fx86.MOV(EAX, LongInt(-1));
