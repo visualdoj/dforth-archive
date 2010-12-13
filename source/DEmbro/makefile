@@ -5,6 +5,7 @@
 .PHONY: DMachineCode
 .PHONY: Dx86
 .PHONY: DArm
+.PHONY: asm
 
 all: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
@@ -40,3 +41,7 @@ clean:
 	del temp\* /Q
 	del *.o /Q
 	del *.ppu /Q
+
+asm: clean
+	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
+	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp

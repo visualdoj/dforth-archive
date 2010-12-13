@@ -5,11 +5,6 @@ interface
 uses
   DMachineCode;
 
-const
-  // errors
-  X86_ERROR_ESP                                 = 1;
-  X86_ERROR_K_PARAM_ONE                         = 2;
-
 type
   // x86 types
   Tx86b = packed record V: ShortInt; end;
@@ -86,6 +81,12 @@ type
   // coeff in [register1 + register2*mul + offset]
   Tx86Mul = (m1 = 0, m2 = 1, m4 = 2, m8 = 3);
 
+const
+  NOREG = ESP;
+  // errors
+  X86_ERROR_ESP                                 = 1;
+  X86_ERROR_K_PARAM_ONE                         = 2;
+
 type
   Tx86 = class(TMachineCode)
   private
@@ -99,43 +100,13 @@ type
     procedure ADD(W: Tx86w); overload;
     procedure ADD(D: Tx86d); overload;
     procedure ADD(D: LongInt); overload;
-    procedure ADD(Reg: Tx86RegB; B: Tx86b); overload;
-    procedure ADD(Reg: Tx86RegW; W: Tx86w); overload;
-    procedure ADD(Reg: Tx86Reg; D: LongInt); overload;
-    procedure ADD(Ptr: Tx86d; Src: Tx86Reg); overload;
-    procedure ADD(Ptr: Pointer; Src: Tx86Reg); overload;
-    procedure ADD(Ptr: Cardinal; Src: Tx86Reg); overload;
-    procedure ADD(const Dst: array of Tx86Reg; Src: Tx86Reg); overload;
-    procedure ADD(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg); overload;
-    procedure ADD(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure ADD(const Dst: array of Tx86Reg; Offset: LongInt; Src: Tx86Reg); overload;
-    procedure ADD(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
-    procedure ADD(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
-    procedure ADD(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure ADD(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg); overload;
-    procedure ADD(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
-    procedure ADD(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
-    procedure ADD(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure ADD(Dst: Tx86Reg; Ptr: Tx86d); overload;
-    procedure ADD(Dst: Tx86Reg; Ptr: Pointer); overload;
-    procedure ADD(Dst: Tx86Reg; Ptr: Cardinal); overload;
-    procedure ADD(Dst: Tx86Reg; const Src: array of Tx86Reg); overload;
-    procedure ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b); overload;
-    procedure ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d); overload;
-    procedure ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: LongInt); overload;
-    procedure ADD(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul); overload;
-    procedure ADD(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
-    procedure ADD(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
-    procedure ADD(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt); overload;
-    procedure ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul); overload;
-    procedure ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
-    procedure ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
+    procedure ADD(Dst: Tx86Reg; Imm: Byte); overload;
     procedure NOP; overload;
     procedure REPNE; overload;
     procedure SCASD; overload;
-    procedure _OR(Dst: Tx86Reg; Ptr: Tx86d); overload;
-    procedure _OR(Dst: Tx86Reg; Ptr: Pointer); overload;
-    procedure _OR(Dst: Tx86Reg; Ptr: Cardinal); overload;
+    procedure _OR(Dst: Tx86Reg; const Ptr: array of Tx86d); overload;
+    procedure _OR(Dst: Tx86Reg; const Ptr: array of Pointer); overload;
+    procedure _OR(Dst: Tx86Reg; const Ptr: array of Cardinal); overload;
     procedure _OR(Dst: Tx86Reg; const Src: array of Tx86Reg); overload;
     procedure _OR(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b); overload;
     procedure _OR(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d); overload;
@@ -147,9 +118,9 @@ type
     procedure _OR(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul); overload;
     procedure _OR(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
     procedure _OR(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
-    procedure _OR(Ptr: Tx86d; Src: Tx86Reg); overload;
-    procedure _OR(Ptr: Pointer; Src: Tx86Reg); overload;
-    procedure _OR(Ptr: Cardinal; Src: Tx86Reg); overload;
+    procedure _OR(const Ptr: array of Tx86d; Src: Tx86Reg); overload;
+    procedure _OR(const Ptr: array of Pointer; Src: Tx86Reg); overload;
+    procedure _OR(const Ptr: array of Cardinal; Src: Tx86Reg); overload;
     procedure _OR(const Dst: array of Tx86Reg; Src: Tx86Reg); overload;
     procedure _OR(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure _OR(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg); overload;
@@ -161,9 +132,9 @@ type
     procedure _OR(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
     procedure _OR(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure _OR(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure ADC(Dst: Tx86Reg; Ptr: Tx86d); overload;
-    procedure ADC(Dst: Tx86Reg; Ptr: Pointer); overload;
-    procedure ADC(Dst: Tx86Reg; Ptr: Cardinal); overload;
+    procedure ADC(Dst: Tx86Reg; const Ptr: array of Tx86d); overload;
+    procedure ADC(Dst: Tx86Reg; const Ptr: array of Pointer); overload;
+    procedure ADC(Dst: Tx86Reg; const Ptr: array of Cardinal); overload;
     procedure ADC(Dst: Tx86Reg; const Src: array of Tx86Reg); overload;
     procedure ADC(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b); overload;
     procedure ADC(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d); overload;
@@ -175,9 +146,9 @@ type
     procedure ADC(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul); overload;
     procedure ADC(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
     procedure ADC(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
-    procedure ADC(Ptr: Tx86d; Src: Tx86Reg); overload;
-    procedure ADC(Ptr: Pointer; Src: Tx86Reg); overload;
-    procedure ADC(Ptr: Cardinal; Src: Tx86Reg); overload;
+    procedure ADC(const Ptr: array of Tx86d; Src: Tx86Reg); overload;
+    procedure ADC(const Ptr: array of Pointer; Src: Tx86Reg); overload;
+    procedure ADC(const Ptr: array of Cardinal; Src: Tx86Reg); overload;
     procedure ADC(const Dst: array of Tx86Reg; Src: Tx86Reg); overload;
     procedure ADC(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure ADC(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg); overload;
@@ -189,9 +160,9 @@ type
     procedure ADC(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
     procedure ADC(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure ADC(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure SBB(Dst: Tx86Reg; Ptr: Tx86d); overload;
-    procedure SBB(Dst: Tx86Reg; Ptr: Pointer); overload;
-    procedure SBB(Dst: Tx86Reg; Ptr: Cardinal); overload;
+    procedure SBB(Dst: Tx86Reg; const Ptr: array of Tx86d); overload;
+    procedure SBB(Dst: Tx86Reg; const Ptr: array of Pointer); overload;
+    procedure SBB(Dst: Tx86Reg; const Ptr: array of Cardinal); overload;
     procedure SBB(Dst: Tx86Reg; const Src: array of Tx86Reg); overload;
     procedure SBB(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b); overload;
     procedure SBB(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d); overload;
@@ -203,9 +174,9 @@ type
     procedure SBB(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul); overload;
     procedure SBB(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
     procedure SBB(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
-    procedure SBB(Ptr: Tx86d; Src: Tx86Reg); overload;
-    procedure SBB(Ptr: Pointer; Src: Tx86Reg); overload;
-    procedure SBB(Ptr: Cardinal; Src: Tx86Reg); overload;
+    procedure SBB(const Ptr: array of Tx86d; Src: Tx86Reg); overload;
+    procedure SBB(const Ptr: array of Pointer; Src: Tx86Reg); overload;
+    procedure SBB(const Ptr: array of Cardinal; Src: Tx86Reg); overload;
     procedure SBB(const Dst: array of Tx86Reg; Src: Tx86Reg); overload;
     procedure SBB(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure SBB(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg); overload;
@@ -217,9 +188,9 @@ type
     procedure SBB(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
     procedure SBB(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure SBB(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure _AND(Dst: Tx86Reg; Ptr: Tx86d); overload;
-    procedure _AND(Dst: Tx86Reg; Ptr: Pointer); overload;
-    procedure _AND(Dst: Tx86Reg; Ptr: Cardinal); overload;
+    procedure _AND(Dst: Tx86Reg; const Ptr: array of Tx86d); overload;
+    procedure _AND(Dst: Tx86Reg; const Ptr: array of Pointer); overload;
+    procedure _AND(Dst: Tx86Reg; const Ptr: array of Cardinal); overload;
     procedure _AND(Dst: Tx86Reg; const Src: array of Tx86Reg); overload;
     procedure _AND(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b); overload;
     procedure _AND(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d); overload;
@@ -231,9 +202,9 @@ type
     procedure _AND(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul); overload;
     procedure _AND(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
     procedure _AND(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
-    procedure _AND(Ptr: Tx86d; Src: Tx86Reg); overload;
-    procedure _AND(Ptr: Pointer; Src: Tx86Reg); overload;
-    procedure _AND(Ptr: Cardinal; Src: Tx86Reg); overload;
+    procedure _AND(const Ptr: array of Tx86d; Src: Tx86Reg); overload;
+    procedure _AND(const Ptr: array of Pointer; Src: Tx86Reg); overload;
+    procedure _AND(const Ptr: array of Cardinal; Src: Tx86Reg); overload;
     procedure _AND(const Dst: array of Tx86Reg; Src: Tx86Reg); overload;
     procedure _AND(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure _AND(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg); overload;
@@ -245,37 +216,10 @@ type
     procedure _AND(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
     procedure _AND(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure _AND(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure SUB(Dst: Tx86Reg; Ptr: Tx86d); overload;
-    procedure SUB(Dst: Tx86Reg; Ptr: Pointer); overload;
-    procedure SUB(Dst: Tx86Reg; Ptr: Cardinal); overload;
-    procedure SUB(Dst: Tx86Reg; const Src: array of Tx86Reg); overload;
-    procedure SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b); overload;
-    procedure SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d); overload;
-    procedure SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: LongInt); overload;
-    procedure SUB(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul); overload;
-    procedure SUB(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
-    procedure SUB(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
-    procedure SUB(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt); overload;
-    procedure SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul); overload;
-    procedure SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
-    procedure SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
-    procedure SUB(Ptr: Tx86d; Src: Tx86Reg); overload;
-    procedure SUB(Ptr: Pointer; Src: Tx86Reg); overload;
-    procedure SUB(Ptr: Cardinal; Src: Tx86Reg); overload;
-    procedure SUB(const Dst: array of Tx86Reg; Src: Tx86Reg); overload;
-    procedure SUB(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg); overload;
-    procedure SUB(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure SUB(const Dst: array of Tx86Reg; Offset: LongInt; Src: Tx86Reg); overload;
-    procedure SUB(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
-    procedure SUB(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
-    procedure SUB(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure SUB(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg); overload;
-    procedure SUB(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
-    procedure SUB(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
-    procedure SUB(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure _XOR(Dst: Tx86Reg; Ptr: Tx86d); overload;
-    procedure _XOR(Dst: Tx86Reg; Ptr: Pointer); overload;
-    procedure _XOR(Dst: Tx86Reg; Ptr: Cardinal); overload;
+    procedure SUB(Dst: Tx86Reg; Imm: Byte); overload;
+    procedure _XOR(Dst: Tx86Reg; const Ptr: array of Tx86d); overload;
+    procedure _XOR(Dst: Tx86Reg; const Ptr: array of Pointer); overload;
+    procedure _XOR(Dst: Tx86Reg; const Ptr: array of Cardinal); overload;
     procedure _XOR(Dst: Tx86Reg; const Src: array of Tx86Reg); overload;
     procedure _XOR(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b); overload;
     procedure _XOR(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d); overload;
@@ -287,9 +231,9 @@ type
     procedure _XOR(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul); overload;
     procedure _XOR(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
     procedure _XOR(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
-    procedure _XOR(Ptr: Tx86d; Src: Tx86Reg); overload;
-    procedure _XOR(Ptr: Pointer; Src: Tx86Reg); overload;
-    procedure _XOR(Ptr: Cardinal; Src: Tx86Reg); overload;
+    procedure _XOR(const Ptr: array of Tx86d; Src: Tx86Reg); overload;
+    procedure _XOR(const Ptr: array of Pointer; Src: Tx86Reg); overload;
+    procedure _XOR(const Ptr: array of Cardinal; Src: Tx86Reg); overload;
     procedure _XOR(const Dst: array of Tx86Reg; Src: Tx86Reg); overload;
     procedure _XOR(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure _XOR(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg); overload;
@@ -301,9 +245,9 @@ type
     procedure _XOR(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
     procedure _XOR(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure _XOR(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure CMP(Dst: Tx86Reg; Ptr: Tx86d); overload;
-    procedure CMP(Dst: Tx86Reg; Ptr: Pointer); overload;
-    procedure CMP(Dst: Tx86Reg; Ptr: Cardinal); overload;
+    procedure CMP(Dst: Tx86Reg; const Ptr: array of Tx86d); overload;
+    procedure CMP(Dst: Tx86Reg; const Ptr: array of Pointer); overload;
+    procedure CMP(Dst: Tx86Reg; const Ptr: array of Cardinal); overload;
     procedure CMP(Dst: Tx86Reg; const Src: array of Tx86Reg); overload;
     procedure CMP(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b); overload;
     procedure CMP(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d); overload;
@@ -315,9 +259,9 @@ type
     procedure CMP(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul); overload;
     procedure CMP(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
     procedure CMP(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
-    procedure CMP(Ptr: Tx86d; Src: Tx86Reg); overload;
-    procedure CMP(Ptr: Pointer; Src: Tx86Reg); overload;
-    procedure CMP(Ptr: Cardinal; Src: Tx86Reg); overload;
+    procedure CMP(const Ptr: array of Tx86d; Src: Tx86Reg); overload;
+    procedure CMP(const Ptr: array of Pointer; Src: Tx86Reg); overload;
+    procedure CMP(const Ptr: array of Cardinal; Src: Tx86Reg); overload;
     procedure CMP(const Dst: array of Tx86Reg; Src: Tx86Reg); overload;
     procedure CMP(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure CMP(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg); overload;
@@ -329,9 +273,9 @@ type
     procedure CMP(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
     procedure CMP(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure CMP(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure TEST(Ptr: Tx86d; Src: Tx86Reg); overload;
-    procedure TEST(Ptr: Pointer; Src: Tx86Reg); overload;
-    procedure TEST(Ptr: Cardinal; Src: Tx86Reg); overload;
+    procedure TEST(const Ptr: array of Tx86d; Src: Tx86Reg); overload;
+    procedure TEST(const Ptr: array of Pointer; Src: Tx86Reg); overload;
+    procedure TEST(const Ptr: array of Cardinal; Src: Tx86Reg); overload;
     procedure TEST(const Dst: array of Tx86Reg; Src: Tx86Reg); overload;
     procedure TEST(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure TEST(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg); overload;
@@ -343,9 +287,9 @@ type
     procedure TEST(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg); overload;
     procedure TEST(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure TEST(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg); overload;
-    procedure XCHG(Dst: Tx86Reg; Ptr: Tx86d); overload;
-    procedure XCHG(Dst: Tx86Reg; Ptr: Pointer); overload;
-    procedure XCHG(Dst: Tx86Reg; Ptr: Cardinal); overload;
+    procedure XCHG(Dst: Tx86Reg; const Ptr: array of Tx86d); overload;
+    procedure XCHG(Dst: Tx86Reg; const Ptr: array of Pointer); overload;
+    procedure XCHG(Dst: Tx86Reg; const Ptr: array of Cardinal); overload;
     procedure XCHG(Dst: Tx86Reg; const Src: array of Tx86Reg); overload;
     procedure XCHG(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b); overload;
     procedure XCHG(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d); overload;
@@ -367,9 +311,9 @@ type
     procedure MOV(S: Tx86RegSreg; Reg: Tx86RegW); overload;
     procedure MOV(M: Tx86w; S: Tx86RegSreg); overload;
     procedure MOV(S: Tx86RegSreg; M: Tx86w); overload;
-    procedure MOV(Dst: Tx86Reg; Ptr: Tx86d); overload;
-    procedure MOV(Dst: Tx86Reg; Ptr: Pointer); overload;
-    procedure MOV(Dst: Tx86Reg; Ptr: Cardinal); overload;
+    procedure MOV(Dst: Tx86Reg; const Ptr: array of Tx86d); overload;
+    procedure MOV(Dst: Tx86Reg; const Ptr: array of Pointer); overload;
+    procedure MOV(Dst: Tx86Reg; const Ptr: array of Cardinal); overload;
     procedure MOV(Dst: Tx86Reg; const Src: array of Tx86Reg); overload;
     procedure MOV(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b); overload;
     procedure MOV(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d); overload;
@@ -381,9 +325,9 @@ type
     procedure MOV(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul); overload;
     procedure MOV(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b); overload;
     procedure MOV(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d); overload;
-    procedure MOV(Ptr: Tx86d; Src: Tx86Reg); overload;
-    procedure MOV(Ptr: Pointer; Src: Tx86Reg); overload;
-    procedure MOV(Ptr: Cardinal; Src: Tx86Reg); overload;
+    procedure MOV(const Ptr: array of Tx86d; Src: Tx86Reg); overload;
+    procedure MOV(const Ptr: array of Pointer; Src: Tx86Reg); overload;
+    procedure MOV(const Ptr: array of Cardinal; Src: Tx86Reg); overload;
     procedure MOV(const Dst: array of Tx86Reg; Src: Tx86Reg); overload;
     procedure MOV(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg); overload;
     procedure MOV(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg); overload;
@@ -398,7 +342,18 @@ type
     procedure INC(Reg: Tx86Reg); overload;
     procedure DEC(Reg: Tx86Reg); overload;
     procedure PUSH(Reg: Tx86Reg); overload;
+    procedure PUSH(I: LongInt); overload;
+    procedure PUSH(I: Tx86d); overload;
     procedure POP(Reg: Tx86Reg); overload;
+    procedure CALL(Reg: Tx86Reg); overload;
+    procedure CALL(Ptr: Pointer); overload;
+    procedure RETnear; overload;
+    procedure RETfar; overload;
+    procedure RETnear(W: Word); overload;
+    procedure RETnear(W: Tx86w); overload;
+    procedure RETfar(W: Word); overload;
+    procedure RETfar(W: Tx86w); overload;
+    procedure LEAVE; overload;
     procedure JA(Rel: Tx86b); overload;
     procedure JAE(Rel: Tx86b); overload;
     procedure JB(Rel: Tx86b); overload;
@@ -550,446 +505,11 @@ begin
     ADD(x86d(D));
 end;
 
-procedure Tx86.ADD(Reg: Tx86RegB; B: Tx86b);
+procedure Tx86.ADD(Dst: Tx86Reg; Imm: Byte);
 begin
-  WriteB($80 + Ord(Reg));
-  WriteB(Byte(B));
-end;
-
-procedure Tx86.ADD(Reg: Tx86RegW; W: Tx86w);
-begin
-  WriteB($81 + Ord(Reg));
-  WriteW(Word(W));
-end;
-
-procedure Tx86.ADD(Reg: Tx86Reg; D: LongInt);
-begin
-  WriteB($81 + Ord(Reg));
-  WriteI(LongInt(D));
-end;
-
-procedure Tx86.ADD(Ptr: Tx86d; Src: Tx86Reg);
-begin
-  WriteB($01);
-  WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86.ADD(Ptr: Pointer; Src: Tx86Reg);
-begin
-  WriteB($01);
-  WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86.ADD(Ptr: Cardinal; Src: Tx86Reg);
-begin
-  WriteB($01);
-  WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86.ADD(const Dst: array of Tx86Reg; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end;
-  WriteB($01);
-  if Dst[0] = EBP then begin
-    WriteB(((1) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-    WriteB(0);
-  end else if Dst[0] = ESP then begin
-    WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(ESP)));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst[0])));
-  end;
-end;
-
-procedure Tx86.ADD(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end;
-  WriteB($01);
-  if Dst[0] = ESP then begin
-    WriteB(((1) shl 6) + ((Ord(Src)) shl 3) + (Ord(ESP)));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((1) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst[0])));
-  end;
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end;
-  WriteB($01);
-  if Dst[0] = ESP then begin
-    WriteB(((2) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst[0])));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((2) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst[0])));
-  end;
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(const Dst: array of Tx86Reg; Offset: LongInt; Src: Tx86Reg);
-begin
-  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
-    ADD(Dst, x86b(Offset), Src)
-  else
-    ADD(Dst, x86d(Offset), Src)
-end;
-
-procedure Tx86.ADD(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg);
-begin
-  if Length(Dst1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst1 must have only one element');
-    Exit;
-  end; 
-  if Length(Dst2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst2 must have only one element');
-    Exit;
-  end;
-  if Dst2[0] = ESP then begin
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($01);
-  if Dst1[0] = EBP then begin
-    WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  end else
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Dst2[0])) shl 3) + (Ord(Ord(Mul))));
-end;
-
-procedure Tx86.ADD(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg);
-begin
-  if Length(Dst1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst1 must have only one element');
-    Exit;
-  end; 
-  if Length(Dst2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst2 must have only one element');
-    Exit;
-  end;
-  if Dst2[0] = ESP then begin
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($01);
-  WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Dst2[0])) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg);
-begin
-  if Length(Dst1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst1 must have only one element');
-    Exit;
-  end; 
-  if Length(Dst2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst2 must have only one element');
-    Exit;
-  end;
-  if Dst2[0] = ESP then begin
-    if Mul = m1 then begin
-      ADD(Dst1, Dst2, Mul, Offset, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($01);
-  WriteB(((2) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Dst2[0])) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
-begin
-  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
-    ADD(Dst1, Dst2, Mul, x86b(Offset), Src)
-  else
-    ADD(Dst1, Dst2, Mul, x86d(Offset), Src);
-end;
-
-procedure Tx86.ADD(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end; 
-  if Dst[0] = ESP then begin
-    if Mul = m1 then begin
-      ADD(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($01);
-  WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-end;
-
-procedure Tx86.ADD(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end; 
-  if Dst[0] = ESP then begin
-    if Mul = m1 then begin
-      ADD(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($01);
-  WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end; 
-  if Dst[0] = ESP then begin
-    if Mul = m1 then begin
-      ADD(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($01);
-  WriteB(((2) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; Ptr: Tx86d);
-begin
-  WriteB($03);
-  WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; Ptr: Pointer);
-begin
-  WriteB($03);
-  WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; Ptr: Cardinal);
-begin
-  WriteB($03);
-  WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src: array of Tx86Reg);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end;
-  WriteB($03);
-  if Src[0] = EBP then begin
-    WriteB(((1) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-    WriteB(0);
-  end else if Src[0] = ESP then begin
-    WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(ESP)));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src[0])));
-  end;
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end;
-  WriteB($03);
-  if Src[0] = ESP then begin
-    WriteB(((1) shl 6) + ((Ord(Dst)) shl 3) + (Ord(ESP)));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((1) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src[0])));
-  end;
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end;
-  WriteB($03);
-  if Src[0] = ESP then begin
-    WriteB(((2) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src[0])));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((2) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src[0])));
-  end;
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: LongInt);
-begin
-  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
-    ADD(Dst, Src, x86b(Offset))
-  else
-    ADD(Dst, Src, x86d(Offset))
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul);
-begin
-  if Length(Src1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src1 must have only one element');
-    Exit;
-  end; 
-  if Length(Src2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src2 must have only one element');
-    Exit;
-  end;
-  if Src2[0] = ESP then begin
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($03);
-  if Src1[0] = EBP then begin
-    WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  end else
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Src2[0])) shl 3) + (Ord(Ord(Mul))));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b);
-begin
-  if Length(Src1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src1 must have only one element');
-    Exit;
-  end; 
-  if Length(Src2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src2 must have only one element');
-    Exit;
-  end;
-  if Src2[0] = ESP then begin
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($03);
-  WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Src2[0])) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d);
-begin
-  if Length(Src1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src1 must have only one element');
-    Exit;
-  end; 
-  if Length(Src2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src2 must have only one element');
-    Exit;
-  end;
-  if Src2[0] = ESP then begin
-    if Mul = m1 then begin
-      ADD(Dst, Src2, Src1, Mul, Offset);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($03);
-  WriteB(((2) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Src2[0])) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
-begin
-  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
-    ADD(Dst, Src1, Src2, Mul, x86b(Offset))
-  else
-    ADD(Dst, Src1, Src2, Mul, x86d(Offset));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end; 
-  if Src[0] = ESP then begin
-    if Mul = m1 then begin
-      ADD(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($03);
-  WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end; 
-  if Src[0] = ESP then begin
-    if Mul = m1 then begin
-      ADD(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($03);
-  WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.ADD(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end; 
-  if Src[0] = ESP then begin
-    if Mul = m1 then begin
-      ADD(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($03);
-  WriteB(((2) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
+  WriteB($83);
+  WriteB(((3) shl 6) + ((Ord(0)) shl 3) + (Ord(Dst)));
+  WriteB(Imm);
 end;
 
 procedure Tx86.NOP;
@@ -1007,25 +527,25 @@ begin
   WriteB($AF);
 end;
 
-procedure Tx86._OR(Dst: Tx86Reg; Ptr: Tx86d);
+procedure Tx86._OR(Dst: Tx86Reg; const Ptr: array of Tx86d);
 begin
   WriteB($0B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86._OR(Dst: Tx86Reg; Ptr: Pointer);
+procedure Tx86._OR(Dst: Tx86Reg; const Ptr: array of Pointer);
 begin
   WriteB($0B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86._OR(Dst: Tx86Reg; Ptr: Cardinal);
+procedure Tx86._OR(Dst: Tx86Reg; const Ptr: array of Cardinal);
 begin
   WriteB($0B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86._OR(Dst: Tx86Reg; const Src: array of Tx86Reg);
@@ -1219,25 +739,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86._OR(Ptr: Tx86d; Src: Tx86Reg);
+procedure Tx86._OR(const Ptr: array of Tx86d; Src: Tx86Reg);
 begin
   WriteB($09);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86._OR(Ptr: Pointer; Src: Tx86Reg);
+procedure Tx86._OR(const Ptr: array of Pointer; Src: Tx86Reg);
 begin
   WriteB($09);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86._OR(Ptr: Cardinal; Src: Tx86Reg);
+procedure Tx86._OR(const Ptr: array of Cardinal; Src: Tx86Reg);
 begin
   WriteB($09);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86._OR(const Dst: array of Tx86Reg; Src: Tx86Reg);
@@ -1431,25 +951,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86.ADC(Dst: Tx86Reg; Ptr: Tx86d);
+procedure Tx86.ADC(Dst: Tx86Reg; const Ptr: array of Tx86d);
 begin
   WriteB($13);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.ADC(Dst: Tx86Reg; Ptr: Pointer);
+procedure Tx86.ADC(Dst: Tx86Reg; const Ptr: array of Pointer);
 begin
   WriteB($13);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.ADC(Dst: Tx86Reg; Ptr: Cardinal);
+procedure Tx86.ADC(Dst: Tx86Reg; const Ptr: array of Cardinal);
 begin
   WriteB($13);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86.ADC(Dst: Tx86Reg; const Src: array of Tx86Reg);
@@ -1643,25 +1163,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86.ADC(Ptr: Tx86d; Src: Tx86Reg);
+procedure Tx86.ADC(const Ptr: array of Tx86d; Src: Tx86Reg);
 begin
   WriteB($11);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.ADC(Ptr: Pointer; Src: Tx86Reg);
+procedure Tx86.ADC(const Ptr: array of Pointer; Src: Tx86Reg);
 begin
   WriteB($11);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.ADC(Ptr: Cardinal; Src: Tx86Reg);
+procedure Tx86.ADC(const Ptr: array of Cardinal; Src: Tx86Reg);
 begin
   WriteB($11);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86.ADC(const Dst: array of Tx86Reg; Src: Tx86Reg);
@@ -1855,25 +1375,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86.SBB(Dst: Tx86Reg; Ptr: Tx86d);
+procedure Tx86.SBB(Dst: Tx86Reg; const Ptr: array of Tx86d);
 begin
   WriteB($1B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.SBB(Dst: Tx86Reg; Ptr: Pointer);
+procedure Tx86.SBB(Dst: Tx86Reg; const Ptr: array of Pointer);
 begin
   WriteB($1B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.SBB(Dst: Tx86Reg; Ptr: Cardinal);
+procedure Tx86.SBB(Dst: Tx86Reg; const Ptr: array of Cardinal);
 begin
   WriteB($1B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86.SBB(Dst: Tx86Reg; const Src: array of Tx86Reg);
@@ -2067,25 +1587,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86.SBB(Ptr: Tx86d; Src: Tx86Reg);
+procedure Tx86.SBB(const Ptr: array of Tx86d; Src: Tx86Reg);
 begin
   WriteB($10);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.SBB(Ptr: Pointer; Src: Tx86Reg);
+procedure Tx86.SBB(const Ptr: array of Pointer; Src: Tx86Reg);
 begin
   WriteB($10);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.SBB(Ptr: Cardinal; Src: Tx86Reg);
+procedure Tx86.SBB(const Ptr: array of Cardinal; Src: Tx86Reg);
 begin
   WriteB($10);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86.SBB(const Dst: array of Tx86Reg; Src: Tx86Reg);
@@ -2279,25 +1799,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86._AND(Dst: Tx86Reg; Ptr: Tx86d);
+procedure Tx86._AND(Dst: Tx86Reg; const Ptr: array of Tx86d);
 begin
   WriteB($23);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86._AND(Dst: Tx86Reg; Ptr: Pointer);
+procedure Tx86._AND(Dst: Tx86Reg; const Ptr: array of Pointer);
 begin
   WriteB($23);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86._AND(Dst: Tx86Reg; Ptr: Cardinal);
+procedure Tx86._AND(Dst: Tx86Reg; const Ptr: array of Cardinal);
 begin
   WriteB($23);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86._AND(Dst: Tx86Reg; const Src: array of Tx86Reg);
@@ -2491,25 +2011,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86._AND(Ptr: Tx86d; Src: Tx86Reg);
+procedure Tx86._AND(const Ptr: array of Tx86d; Src: Tx86Reg);
 begin
   WriteB($21);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86._AND(Ptr: Pointer; Src: Tx86Reg);
+procedure Tx86._AND(const Ptr: array of Pointer; Src: Tx86Reg);
 begin
   WriteB($21);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86._AND(Ptr: Cardinal; Src: Tx86Reg);
+procedure Tx86._AND(const Ptr: array of Cardinal; Src: Tx86Reg);
 begin
   WriteB($21);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86._AND(const Dst: array of Tx86Reg; Src: Tx86Reg);
@@ -2703,449 +2223,32 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86.SUB(Dst: Tx86Reg; Ptr: Tx86d);
+procedure Tx86.SUB(Dst: Tx86Reg; Imm: Byte);
+begin
+  WriteB($83);
+  WriteB(((3) shl 6) + ((Ord(0)) shl 3) + (Ord(Dst)));
+  WriteB(Imm);
+end;
+
+procedure Tx86._XOR(Dst: Tx86Reg; const Ptr: array of Tx86d);
 begin
   WriteB($23);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.SUB(Dst: Tx86Reg; Ptr: Pointer);
+procedure Tx86._XOR(Dst: Tx86Reg; const Ptr: array of Pointer);
 begin
   WriteB($23);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.SUB(Dst: Tx86Reg; Ptr: Cardinal);
+procedure Tx86._XOR(Dst: Tx86Reg; const Ptr: array of Cardinal);
 begin
   WriteB($23);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src: array of Tx86Reg);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end;
-  WriteB($23);
-  if Src[0] = EBP then begin
-    WriteB(((1) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-    WriteB(0);
-  end else if Src[0] = ESP then begin
-    WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(ESP)));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src[0])));
-  end;
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86b);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end;
-  WriteB($23);
-  if Src[0] = ESP then begin
-    WriteB(((1) shl 6) + ((Ord(Dst)) shl 3) + (Ord(ESP)));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((1) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src[0])));
-  end;
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: Tx86d);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end;
-  WriteB($23);
-  if Src[0] = ESP then begin
-    WriteB(((2) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src[0])));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((2) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src[0])));
-  end;
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Offset: LongInt);
-begin
-  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
-    SUB(Dst, Src, x86b(Offset))
-  else
-    SUB(Dst, Src, x86d(Offset))
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul);
-begin
-  if Length(Src1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src1 must have only one element');
-    Exit;
-  end; 
-  if Length(Src2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src2 must have only one element');
-    Exit;
-  end;
-  if Src2[0] = ESP then begin
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($23);
-  if Src1[0] = EBP then begin
-    WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  end else
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Src2[0])) shl 3) + (Ord(Ord(Mul))));
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b);
-begin
-  if Length(Src1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src1 must have only one element');
-    Exit;
-  end; 
-  if Length(Src2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src2 must have only one element');
-    Exit;
-  end;
-  if Src2[0] = ESP then begin
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($23);
-  WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Src2[0])) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d);
-begin
-  if Length(Src1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src1 must have only one element');
-    Exit;
-  end; 
-  if Length(Src2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src2 must have only one element');
-    Exit;
-  end;
-  if Src2[0] = ESP then begin
-    if Mul = m1 then begin
-      SUB(Dst, Src2, Src1, Mul, Offset);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($23);
-  WriteB(((2) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Src2[0])) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src1: array of Tx86Reg; const Src2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt);
-begin
-  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
-    SUB(Dst, Src1, Src2, Mul, x86b(Offset))
-  else
-    SUB(Dst, Src1, Src2, Mul, x86d(Offset));
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end; 
-  if Src[0] = ESP then begin
-    if Mul = m1 then begin
-      SUB(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($23);
-  WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end; 
-  if Src[0] = ESP then begin
-    if Mul = m1 then begin
-      SUB(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($23);
-  WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(Dst: Tx86Reg; const Src: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d);
-begin
-  if Length(Src) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Src must have only one element');
-    Exit;
-  end; 
-  if Src[0] = ESP then begin
-    if Mul = m1 then begin
-      SUB(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($23);
-  WriteB(((2) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Dst)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(Ptr: Tx86d; Src: Tx86Reg);
-begin
-  WriteB($21);
-  WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86.SUB(Ptr: Pointer; Src: Tx86Reg);
-begin
-  WriteB($21);
-  WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86.SUB(Ptr: Cardinal; Src: Tx86Reg);
-begin
-  WriteB($21);
-  WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86.SUB(const Dst: array of Tx86Reg; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end;
-  WriteB($21);
-  if Dst[0] = EBP then begin
-    WriteB(((1) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-    WriteB(0);
-  end else if Dst[0] = ESP then begin
-    WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(ESP)));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst[0])));
-  end;
-end;
-
-procedure Tx86.SUB(const Dst: array of Tx86Reg; Offset: Tx86b; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end;
-  WriteB($21);
-  if Dst[0] = ESP then begin
-    WriteB(((1) shl 6) + ((Ord(Src)) shl 3) + (Ord(ESP)));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((1) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst[0])));
-  end;
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(const Dst: array of Tx86Reg; Offset: Tx86d; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end;
-  WriteB($21);
-  if Dst[0] = ESP then begin
-    WriteB(((2) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst[0])));
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(0)));
-  end else begin
-    WriteB(((2) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst[0])));
-  end;
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(const Dst: array of Tx86Reg; Offset: LongInt; Src: Tx86Reg);
-begin
-  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
-    SUB(Dst, x86b(Offset), Src)
-  else
-    SUB(Dst, x86d(Offset), Src)
-end;
-
-procedure Tx86.SUB(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg);
-begin
-  if Length(Dst1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst1 must have only one element');
-    Exit;
-  end; 
-  if Length(Dst2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst2 must have only one element');
-    Exit;
-  end;
-  if Dst2[0] = ESP then begin
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($21);
-  if Dst1[0] = EBP then begin
-    WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  end else
-    WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Dst2[0])) shl 3) + (Ord(Ord(Mul))));
-end;
-
-procedure Tx86.SUB(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg);
-begin
-  if Length(Dst1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst1 must have only one element');
-    Exit;
-  end; 
-  if Length(Dst2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst2 must have only one element');
-    Exit;
-  end;
-  if Dst2[0] = ESP then begin
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($21);
-  WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Dst2[0])) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg);
-begin
-  if Length(Dst1) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst1 must have only one element');
-    Exit;
-  end; 
-  if Length(Dst2) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst2 must have only one element');
-    Exit;
-  end;
-  if Dst2[0] = ESP then begin
-    if Mul = m1 then begin
-      SUB(Dst1, Dst2, Mul, Offset, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($21);
-  WriteB(((2) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(Dst2[0])) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(const Dst1: array of Tx86Reg; const Dst2: array of Tx86Reg; Mul: Tx86Mul; Offset: LongInt; Src: Tx86Reg);
-begin
-  if (Low(ShortInt) <= Offset) and (Offset <= High(ShortInt)) then
-    SUB(Dst1, Dst2, Mul, x86b(Offset), Src)
-  else
-    SUB(Dst1, Dst2, Mul, x86d(Offset), Src);
-end;
-
-procedure Tx86.SUB(const Dst: array of Tx86Reg; Mul: Tx86Mul; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end; 
-  if Dst[0] = ESP then begin
-    if Mul = m1 then begin
-      SUB(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($21);
-  WriteB(((0) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-end;
-
-procedure Tx86.SUB(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86b; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end; 
-  if Dst[0] = ESP then begin
-    if Mul = m1 then begin
-      SUB(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($21);
-  WriteB(((1) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86.SUB(const Dst: array of Tx86Reg; Mul: Tx86Mul; Offset: Tx86d; Src: Tx86Reg);
-begin
-  if Length(Dst) <> 1 then begin
-    AddError(X86_ERROR_K_PARAM_ONE, FSize, 'Parameter Dst must have only one element');
-    Exit;
-  end; 
-  if Dst[0] = ESP then begin
-    if Mul = m1 then begin
-      SUB(Dst, Src);
-      Exit;
-    end;
-    AddError(X86_ERROR_ESP, FSize, 'It''s impossible to use ESP register as second register');
-    Exit;
-  end;
-  WriteB($21);
-  WriteB(((2) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Src)));
-  WriteB(((Ord(Mul)) shl 6) + ((Ord(ESP)) shl 3) + (Ord(Ord(Mul))));
-  Write(@Offset, SizeOf(Offset));
-end;
-
-procedure Tx86._XOR(Dst: Tx86Reg; Ptr: Tx86d);
-begin
-  WriteB($23);
-  WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86._XOR(Dst: Tx86Reg; Ptr: Pointer);
-begin
-  WriteB($23);
-  WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
-end;
-
-procedure Tx86._XOR(Dst: Tx86Reg; Ptr: Cardinal);
-begin
-  WriteB($23);
-  WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86._XOR(Dst: Tx86Reg; const Src: array of Tx86Reg);
@@ -3339,25 +2442,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86._XOR(Ptr: Tx86d; Src: Tx86Reg);
+procedure Tx86._XOR(const Ptr: array of Tx86d; Src: Tx86Reg);
 begin
   WriteB($21);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86._XOR(Ptr: Pointer; Src: Tx86Reg);
+procedure Tx86._XOR(const Ptr: array of Pointer; Src: Tx86Reg);
 begin
   WriteB($21);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86._XOR(Ptr: Cardinal; Src: Tx86Reg);
+procedure Tx86._XOR(const Ptr: array of Cardinal; Src: Tx86Reg);
 begin
   WriteB($21);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86._XOR(const Dst: array of Tx86Reg; Src: Tx86Reg);
@@ -3551,25 +2654,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86.CMP(Dst: Tx86Reg; Ptr: Tx86d);
+procedure Tx86.CMP(Dst: Tx86Reg; const Ptr: array of Tx86d);
 begin
   WriteB($3B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.CMP(Dst: Tx86Reg; Ptr: Pointer);
+procedure Tx86.CMP(Dst: Tx86Reg; const Ptr: array of Pointer);
 begin
   WriteB($3B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.CMP(Dst: Tx86Reg; Ptr: Cardinal);
+procedure Tx86.CMP(Dst: Tx86Reg; const Ptr: array of Cardinal);
 begin
   WriteB($3B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86.CMP(Dst: Tx86Reg; const Src: array of Tx86Reg);
@@ -3763,25 +2866,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86.CMP(Ptr: Tx86d; Src: Tx86Reg);
+procedure Tx86.CMP(const Ptr: array of Tx86d; Src: Tx86Reg);
 begin
   WriteB($39);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.CMP(Ptr: Pointer; Src: Tx86Reg);
+procedure Tx86.CMP(const Ptr: array of Pointer; Src: Tx86Reg);
 begin
   WriteB($39);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.CMP(Ptr: Cardinal; Src: Tx86Reg);
+procedure Tx86.CMP(const Ptr: array of Cardinal; Src: Tx86Reg);
 begin
   WriteB($39);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86.CMP(const Dst: array of Tx86Reg; Src: Tx86Reg);
@@ -3975,25 +3078,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86.TEST(Ptr: Tx86d; Src: Tx86Reg);
+procedure Tx86.TEST(const Ptr: array of Tx86d; Src: Tx86Reg);
 begin
   WriteB($85);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.TEST(Ptr: Pointer; Src: Tx86Reg);
+procedure Tx86.TEST(const Ptr: array of Pointer; Src: Tx86Reg);
 begin
   WriteB($85);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.TEST(Ptr: Cardinal; Src: Tx86Reg);
+procedure Tx86.TEST(const Ptr: array of Cardinal; Src: Tx86Reg);
 begin
   WriteB($85);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86.TEST(const Dst: array of Tx86Reg; Src: Tx86Reg);
@@ -4187,25 +3290,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86.XCHG(Dst: Tx86Reg; Ptr: Tx86d);
+procedure Tx86.XCHG(Dst: Tx86Reg; const Ptr: array of Tx86d);
 begin
   WriteB($87);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.XCHG(Dst: Tx86Reg; Ptr: Pointer);
+procedure Tx86.XCHG(Dst: Tx86Reg; const Ptr: array of Pointer);
 begin
   WriteB($87);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.XCHG(Dst: Tx86Reg; Ptr: Cardinal);
+procedure Tx86.XCHG(Dst: Tx86Reg; const Ptr: array of Cardinal);
 begin
   WriteB($87);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86.XCHG(Dst: Tx86Reg; const Src: array of Tx86Reg);
@@ -4402,23 +3505,23 @@ end;
 procedure Tx86.MOV(Dst, Src: Tx86RegB);
 begin
   WriteB($88); 
-  WriteB(((3) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src)));
+  WriteB(((3) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst)));
 end;
 
 procedure Tx86.MOV(Dst, Src: Tx86RegW);
 begin
   if FMode = X86_MODE_32 then
-    WriteB($66);; 
+    WriteB($66); 
   WriteB($89);
-  WriteB(((3) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src)));
+  WriteB(((3) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst)));
 end;
 
 procedure Tx86.MOV(Dst, Src: Tx86Reg);
 begin
-  if FMode = X86_MODE_32 then
-    WriteB($66);;
+  if FMode = X86_MODE_16 then
+    WriteB($66);
   WriteB($89); 
-  WriteB(((3) shl 6) + ((Ord(Dst)) shl 3) + (Ord(Src)));
+  WriteB(((3) shl 6) + ((Ord(Src)) shl 3) + (Ord(Dst)));
 end;
 
 procedure Tx86.MOV(Reg: Tx86RegB; B: Tx86b);
@@ -4459,25 +3562,25 @@ begin
   WriteB($8E); // TODO
 end;
 
-procedure Tx86.MOV(Dst: Tx86Reg; Ptr: Tx86d);
+procedure Tx86.MOV(Dst: Tx86Reg; const Ptr: array of Tx86d);
 begin
   WriteB($8B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.MOV(Dst: Tx86Reg; Ptr: Pointer);
+procedure Tx86.MOV(Dst: Tx86Reg; const Ptr: array of Pointer);
 begin
   WriteB($8B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.MOV(Dst: Tx86Reg; Ptr: Cardinal);
+procedure Tx86.MOV(Dst: Tx86Reg; const Ptr: array of Cardinal);
 begin
   WriteB($8B);
   WriteB(((0) shl 6) + ((Ord(Dst)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86.MOV(Dst: Tx86Reg; const Src: array of Tx86Reg);
@@ -4671,25 +3774,25 @@ begin
   Write(@Offset, SizeOf(Offset));
 end;
 
-procedure Tx86.MOV(Ptr: Tx86d; Src: Tx86Reg);
+procedure Tx86.MOV(const Ptr: array of Tx86d; Src: Tx86Reg);
 begin
   WriteB($89);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.MOV(Ptr: Pointer; Src: Tx86Reg);
+procedure Tx86.MOV(const Ptr: array of Pointer; Src: Tx86Reg);
 begin
   WriteB($89);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
-procedure Tx86.MOV(Ptr: Cardinal; Src: Tx86Reg);
+procedure Tx86.MOV(const Ptr: array of Cardinal; Src: Tx86Reg);
 begin
   WriteB($89);
   WriteB(((0) shl 6) + ((Ord(Src)) shl 3) + (Ord(EBP)));
-  Write(@Ptr, SizeOf(Ptr));
+  Write(@Ptr[0], SizeOf(Ptr[0]));
 end;
 
 procedure Tx86.MOV(const Dst: array of Tx86Reg; Src: Tx86Reg);
@@ -4898,9 +4001,73 @@ begin
   WriteB($50 + Ord(Reg));
 end;
 
+procedure Tx86.PUSH(I: LongInt);
+begin
+  WriteB($68);
+  WriteI(I);
+end;
+
+procedure Tx86.PUSH(I: Tx86d);
+begin
+  WriteB($68);
+  WriteI(Integer(I));
+end;
+
 procedure Tx86.POP(Reg: Tx86Reg);
 begin
   WriteB($58 + Ord(Reg));
+end;
+
+procedure Tx86.CALL(Reg: Tx86Reg);
+begin
+  WriteB($FF);
+  WriteB(((3) shl 6) + ((Ord(2)) shl 3) + (Ord(Reg)));
+end;
+
+procedure Tx86.CALL(Ptr: Pointer);
+begin
+  WriteB($FF);
+  WriteB(((0) shl 6) + ((Ord(2)) shl 3) + (Ord(5)));
+  Write(@Ptr, SizeOf(Ptr));
+end;
+
+procedure Tx86.RETnear;
+begin
+  WriteB($C3);
+end;
+
+procedure Tx86.RETfar;
+begin
+  WriteB($CB);
+end;
+
+procedure Tx86.RETnear(W: Word);
+begin
+  WriteB($C2);
+  WriteW(W);
+end;
+
+procedure Tx86.RETnear(W: Tx86w);
+begin
+  WriteB($C2);
+  WriteW(Word(W));
+end;
+
+procedure Tx86.RETfar(W: Word);
+begin
+  WriteB($CA);
+  WriteW(W);
+end;
+
+procedure Tx86.RETfar(W: Tx86w);
+begin
+  WriteB($CA);
+  WriteW(Word(W));
+end;
+
+procedure Tx86.LEAVE;
+begin
+  WriteB($C9);
 end;
 
 procedure Tx86.JA(Rel: Tx86b);

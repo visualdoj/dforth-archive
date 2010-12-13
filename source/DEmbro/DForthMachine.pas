@@ -3,7 +3,7 @@ unit DForthMachine;
 interface
 
 uses
-  {$I units.inc},Math,strings,DForthStack;
+  {$I units.inc},Math,strings,DAlien,DForthStack;
 
 const
   DFORTHMACHINE_VERSION = 11;
@@ -281,6 +281,8 @@ TAlienCommands = class
   procedure lib_fun(Machine: TForthMachine; Command: PForthCommand);
   procedure alien_fun(Machine: TForthMachine; Command: PForthCommand);
   procedure alien_endfun(Machine: TForthMachine; Command: PForthCommand);
+  procedure callback_fun(Machine: TForthMachine; Command: PForthCommand);
+  procedure callback_endfun(Machine: TForthMachine; Command: PForthCommand);
   procedure invoke_stdcall(Machine: TForthMachine; Command: PForthCommand);
   procedure invoke_cdecl(Machine: TForthMachine; Command: PForthCommand);
   procedure _conv_stdcall(Machine: TForthMachine; Command: PForthCommand);
@@ -384,6 +386,7 @@ TForthMachine = class
   FEmbro: array of Byte;
   FTypes: array of TType;
   FMemoryDebug: TDebug;
+  FAlien: TAlien;
 {$IFNDEF FLAG_FPC}{$REGION 'misc commands'}{$ENDIF}
   procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileLineComment(Machine: TForthMachine; Command: PForthCommand);
@@ -3381,6 +3384,68 @@ begin
   //Log('Created command ' + C^.Name);
 end;
 
+procedure __Callback(Machine: TForthMachine; Command: PForthCommand); stdcall;
+begin
+  // Writeln('** __Callback **');
+  Command^.Code(Machine, Command);
+end;
+
+procedure TAlienCommands.callback_fun;
+var
+  Name: TString;
+  C: PForthCommand;
+begin
+  Name := Machine.NextName;
+  New(C);
+  C^.Name := StrAlloc(Length(Name) + 1);
+  StrCopy(C^.Name, PChar(Name));
+  Machine.WUP(C);
+  Machine.WUP(@Machine.FTypes[0]);
+end;
+
+procedure TAlienCommands.callback_endfun;
+var
+  Conv: Integer;
+  ReturnType: PType;
+  T: PType;
+  Types: array of PType;
+  NewC,C2: PForthCommand;
+  XT: PForthCommand;
+  Sizes: array of Integer;
+  I: Integer;
+begin
+  with Machine do begin
+    if Machine.State = FS_COMPILE then begin
+      Machine.LogError(Command^.Name + ' command cannot work in compile mode');
+      Exit;
+    end;
+    Conv := Machine.WOI;
+    ReturnType := Machine.WOP;
+    T := Machine.WOP;
+    SetLength(Types, 0);
+    while T <> @Machine.FTypes[0] do begin
+      //Log(IntToStr(Length(Types)) + ': ' + T^.Name);
+      SetLength(Types, Length(Types) + 1);
+      Types[High(Types)] := T;
+      T := Machine.WOP;
+    end;
+    C2 := Machine.WOP;
+    //Log('Poped command ' + C2^.Name);
+    NewC := Machine.ReserveName(TString(C2^.Name));
+    StrDispose(C2^.Name);
+    Dispose(C2);
+    NewC^.Code := FDataCommands.PutDataPtr;
+    NewC^.Data := Machine.Here;
+    XT := WOP;
+    SetLength(Sizes, Length(Types));
+    for I := 0 to High(Types) do
+      Sizes[I] := Types[I]^.Size;
+    FAlien.GenerateCallback(Machine.Here, ES - EC, Sizes, ReturnType^.Size,
+                            @Machine.WP, Machine, XT, @__Callback);
+    Machine.IncHere(FAlien.MachineCode.Size);
+  end;
+end;
+
 procedure TAlienCommands.invoke_stdcall(Machine: TForthMachine; Command: PForthCommand);
 var
   Fun: Pointer;
@@ -4394,6 +4459,8 @@ begin
   FMemoryDebug := TDebug.Create('memory.tmp');
   FMemoryDebug.Console := False;
 
+  FAlien := TAlien.Create;
+
   // it must have zero opcode
   AddCommand('exit', FControlCommands._exit);
 
@@ -4865,6 +4932,8 @@ begin
   AddCommand('lib-fun', FAlienCommands.lib_fun);
   AddCommand(':a', FAlienCommands.alien_fun);
   AddCommand('a;', FAlienCommands.alien_endfun);
+  AddCommand(':c', FAlienCommands.callback_fun);
+  AddCommand('c;', FAlienCommands.callback_endfun);
   AddCommand('stdcall', FAlienCommands._conv_stdcall);
   AddCommand('cdecl', FAlienCommands._conv_cdecl);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -5981,6 +6050,7 @@ end;
 destructor TForthMachine.Destroy; 
 begin
   ;
+  FAlien.Free;
   FAlienCommands.Free;
   FStringCommands.Free;
   FDataCommands.Free;

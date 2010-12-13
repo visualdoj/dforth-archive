@@ -27,6 +27,10 @@ uses
   DDebug in '..\DEngine\DDebug.pas',
   DParser in '..\DEngine\DParser.pas',
 
+  DMachineCode in '..\DMachineCode\DMachineCode.pas',
+  Dx86 in '..\DMachineCode\Dx86.pas',
+
+  DAlien,
   DForthStack,
   DForthMachine,
   DVocabulary,
@@ -99,7 +103,45 @@ begin
   end;
 end;
 
+type
+  TProc = procedure (A, B, C, D: Integer); stdcall;
+  
+var
+  Buffer: array[0..64*1024] of Byte;
+  Stack: array[0..64*1024] of Byte;
+  WP: Pointer;
+  F: File of Byte;
+
+procedure __Test(Machine: Pointer; Command: Pointer); stdcall;
 begin
+  Writeln('Machine = ', TUInt(Machine), ' Command = ', TUInt(Command));
+  Writeln('Param1 = ', Integer(Pointer(@Stack[0])^));
+  Writeln('Param2 = ', Integer(Pointer(@Stack[4])^));
+  Writeln('Param3 = ', Integer(Pointer(@Stack[8])^));
+  Writeln('Param4 = ', Integer(Pointer(@Stack[12])^));
+  Writeln('Param5 = ', Integer(Pointer(@Stack[16])^));
+  Writeln('Param6 = ', Integer(Pointer(@Stack[20])^));
+  Writeln('Param7 = ', Integer(Pointer(@Stack[24])^));
+  Writeln('Param8 = ', Integer(Pointer(@Stack[28])^));
+  Writeln('@Stack = ', Integer(Pointer(@Stack[0])));
+  Writeln('WP     = ', Integer(WP));
+end;
+
+begin
+  with TAlien.Create do begin
+    WP := @Stack[0];
+    GenerateCallback(@Buffer[0], 64*1024, [4, 4, 4, 4], 0,
+                     @WP, 998877, 112233, @__Test);
+    // __Test(998877, 112233);
+    // TProc(@Buffer[0])(12,13,14,15);
+    // TProc(@Buffer[0])(16,17,18,19);
+    Assign(F, 'call.bin');
+    Rewrite(F);
+    BlockWrite(F, (@Buffer[0])^, MachineCode.Size);
+    Close(F);
+    Free;
+    // Exit;
+  end;
   ParseCommandLine;
   if CommandLine.Error then
     Halt(-1);
@@ -138,4 +180,5 @@ begin
   Repl.Free;
   Compiler.Free;
   Machine.Free;
+  // Writeln('dembro32 out');
 end.

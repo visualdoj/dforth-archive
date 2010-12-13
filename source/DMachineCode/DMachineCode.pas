@@ -19,6 +19,8 @@ TMachineCode = class
 protected
   FData: array of Byte;
   FSize: Integer;
+  FPtr: Pointer;
+  FMaxSize: Integer;
   FErrors: array of TMachineCodeError;
   FMarkers: array of TMachineCodeMarker;
   procedure Resize(NewSize: Integer);
@@ -34,9 +36,12 @@ protected
   function FindMarker(const Name: String; var Index: Integer): Boolean;
 public
   constructor Create(BaseSize: Integer = 64*1024);
+  procedure SetData(Ptr: Pointer; MaxSize: Integer);
+  function IsError: Boolean;
   function GetError(Error: PMachineCodeError): Boolean;
   function SetLabel(const Name: String): Integer;
   property _SetLabel[Name: String]: Integer read SetLabel;
+  property Size: Integer read FSize;
 end;
 
 implementation
@@ -54,8 +59,18 @@ end;
 
 procedure TMachineCode.Write(V: Pointer; S: Integer);
 begin
-  Resize(FSize + S);
-  Move(V^, FData[FSize], S);
+  if FPtr = nil then begin
+    Resize(FSize + S);
+    Move(V^, FData[FSize], S);
+  end else begin
+    if S + FSize > FMaxSize then begin
+      AddError($F0000001, FSize, 'not enougth buffer space')
+    end else begin
+      Move(V^, FPtr^, S);
+      Inc(FSize, S);
+      Inc(FPtr, S);
+    end;
+  end;
 end;
 
 procedure TMachineCode.WriteB(B: Byte);
@@ -115,6 +130,19 @@ constructor TMachineCode.Create(BaseSize: Integer = 64*1024);
 begin
   SetLength(FData, BaseSize);
   FSize := 0;
+  FPtr := nil;
+end;
+
+procedure TMachineCode.SetData(Ptr: Pointer; MaxSize: Integer);
+begin
+  FPtr := Ptr;
+  FMaxSize := MaxSize;
+  FSize := 0;
+end;
+
+function TMachineCode.IsError: Boolean;
+begin
+  Result := Length(FErrors) > 0;
 end;
 
 function TMachineCode.GetError(Error: PMachineCodeError): Boolean;

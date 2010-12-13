@@ -27,7 +27,7 @@
 // файл, абсолютный путь до которого указан в строке. В противном случае
 // (когда строка в массиве *once-names* найдена) ничего не делается
 : included ( s-) include-absolute not if str-drop exit then str-dup once-find 
-             if str-drop else str-dup once+ evaluate-file then ;
+             if str-drop else str-dup evaluate-file once+ then ;
 // Синтаксический сахар к предыдущей команде
 // Можно использовать в виде include" units\core\voc.de"
 // что равносильно str" units\core\voc.de" included

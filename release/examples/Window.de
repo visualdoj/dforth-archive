@@ -1,0 +1,95 @@
+// 2010.12.12 # Doj
+// Пример создания окна в Windows
+
+include" units\utils\debug.de"
+include" units\windows.de"
+
+:noname  ( hWnd:uint Msg:uint wParam:int lParam:int -- )
+  -200 . 4 pick . wp . cr
+  // DefWindowProcA wp . cr
+  // [str]" wp " str. wp . [str]" params: " str. 4 .w cr
+  // wp @ .
+  // wp cell+ @ .
+  // wp 2 cells + @ .
+  // wp 3 cells + @ .
+  3 pick WM_DESTROY = if 0 PostQuitMessage drop drop drop drop 
+                      else DefWindowProcA then
+  1 1 1 
+  // [str]" Yes! Yes!!! YEEEEES!!!!" str. 4 .w cr
+; :c WindowProc ( t_WindowProc) t_int t_int t_int t_int t_void stdcall c;
+
+// Структура WNDCLASSEX
+0 value hCursor
+0 value hIcon
+0 value lpszClassName
+create WNDCLASSEX
+    here // см. в конце подсчёт размера
+    0 , // cbSize
+    CS_HREDRAW CS_VREDRAW or CS_OWNDC or , // style
+    WindowProc , // WndProc
+    0 , // cbClsExtra
+    0 , // cbWndExtra
+    0 , // hInstance
+    here to hIcon 0 ,
+    here to hCursor 0 ,
+    0 , // hbrBackground
+    0 , // lpszMenuName
+    here to lpszClassName 0 ,
+    0 , // hIconSm
+    here swap - WNDCLASSEX ! // заполняем cbSize
+
+pchar" DEMBRO_WND" constant DEMBRO_WND
+WS_OVERLAPPEDWINDOW WS_VISIBLE or constant DEMBRO_STYLE
+
+// Функция, создающая новый класс окна
+// На выходе — флаг успеха
+: CreateWindowClass ( -f) 0 IDC_ARROW       LoadCursorA  hCursor !
+                          0 pchar" Icon_1"  LoadIconA    hIcon   !
+                          DEMBRO_WND               lpszClassName !
+                          WNDCLASSEX RegisterClassExA ;
+
+// Функция, создающая окно
+// Возвращает флаг успеха
+: CreateWindow ( -f) 0 DEMBRO_WND pchar" DEmbro application" DEMBRO_STYLE
+                     160 120 640 480 ( xywh) 0 0 0 0
+                     CreateWindowExA dup . cr ;
+
+// *msg* — сюда будем получать инфу о приходящих сообщениях
+create *msg*
+    0 , // hWnd
+    0 , // message
+    0 , // wParam
+    0 , // lParam
+    0 , // time
+    0 , // pt.x
+    0 , // pt.y
+
+: check' ( s-) [str]" ! Failed " str. str. cr ;
+// Проверка на ошибку
+// i — результат winapi-функции, s - строка с описанием действия
+// Если была ошибка, то выйдет из объемлющей функции
+: check ( is-) compile swap compile 0= 
+               ['] if execute compile check' compile exit ['] then execute ;
+
+: check' ( is-f) swap if cdrop false else [str]" ! Failed " str. str. 
+                         [str]"  " str. GetLastError . cr true then ;
+: check ( C:) ( R: is) compile check' ['] if execute compile exit ['] then execute ; immediate
+                         
+// Главная функция
+:noname
+  windows-load // загружаем WinApi функции
+  CreateWindowClass [str]" creating window class" check
+       // 0= if [str]" ! Failed creating window class." str. cr exit then
+  CreateWindow dup [str]" creating window" check
+       // 0= if [str]" ! Failed creating window." str. cr exit then
+  [str]" Window created" str. cr
+  DestroyWindow [str]" destroying window" check
+  // begin
+  //   *msg* 0 0 0 GetMessageA dup .
+  // while
+  //   [str]" Loop" str. cr
+  //   *msg* TranslateMessage [str]" translating message" check
+  //   *msg* DispatchMessageA [str]" dispatching message" check
+  // repeat
+  // DestroyWindow [str]" destroying window" check
+; execute

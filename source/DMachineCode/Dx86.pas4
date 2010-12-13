@@ -51,7 +51,21 @@ define(~mne0|, ~AsmCode($1, ~|, WriteB($2);)|)
 
 // xxx int
 define(~mnei|, ~AsmCode($1, ~(I: LongInt)|, WriteB($2);
-  WriteI(I);)|)
+  WriteI(I);)
+                AsmCode($1, ~(I: Tx86d)|, WriteB($2);
+  WriteI(Integer(I));)|)
+// xxx word
+define(~mnew|, ~AsmCode($1, ~(W: Word)|, WriteB($2);
+  WriteW(W);)
+                AsmCode($1, ~(W: Tx86w)|, WriteB($2);
+  WriteW(Word(W));)|)
+
+// xxx k
+define(~mnek|, ~AsmCode($1, ~(Reg: Tx86Reg$3)|, WriteB($2);
+  ModRM(3, $4, Reg);)
+                AsmCode($1, ~(Ptr: Pointer)|, WriteB($2);
+  ModRM(0, $4, 5);
+  Write(@Ptr, SizeOf(Ptr));)|)
 
 // TODO
 define(~mnegxix|, ~
@@ -85,15 +99,15 @@ define(~mnegxix|, ~
 // косвенность
 define(~mnerk|, ~
 // [ptr]
- AsmCode($1, (Dst: Tx86Reg$3; Ptr: Tx86d),  WriteB($2);
+ AsmCode($1, (Dst: Tx86Reg$3; const Ptr: array of Tx86d),  WriteB($2);
   ModRM(0, Dst, EBP);
-  Write(@Ptr, SizeOf(Ptr));)
- AsmCode($1, (Dst: Tx86Reg$3; Ptr: Pointer),  WriteB($2);
+  Write(@Ptr[0], SizeOf(Ptr[0]));)
+ AsmCode($1, (Dst: Tx86Reg$3; const Ptr: array of Pointer),  WriteB($2);
   ModRM(0, Dst, EBP);
-  Write(@Ptr, SizeOf(Ptr));)
- AsmCode($1, (Dst: Tx86Reg$3; Ptr: Cardinal),  WriteB($2);
+  Write(@Ptr[0], SizeOf(Ptr[0]));)
+ AsmCode($1, (Dst: Tx86Reg$3; const Ptr: array of Cardinal),  WriteB($2);
   ModRM(0, Dst, EBP);
-  Write(@Ptr, SizeOf(Ptr));)
+  Write(@Ptr[0], SizeOf(Ptr[0]));)
 // [reg]
  AsmCode($1, (Dst: Tx86Reg$3; K(Src, Tx86Reg$3)),  AK(Src);
   WriteB($2);
@@ -223,15 +237,15 @@ define(~mnerk|, ~
 
 define(~mnekr|, ~
 // [ptr]
- AsmCode($1, (Ptr: Tx86d; Src: Tx86Reg$3),  WriteB($2);
+ AsmCode($1, (const Ptr: array of Tx86d; Src: Tx86Reg$3),  WriteB($2);
   ModRM(0, Src, EBP);
-  Write(@Ptr, SizeOf(Ptr));)
- AsmCode($1, (Ptr: Pointer; Src: Tx86Reg$3),  WriteB($2);
+  Write(@Ptr[0], SizeOf(Ptr[0]));)
+ AsmCode($1, (const Ptr: array of Pointer; Src: Tx86Reg$3),  WriteB($2);
   ModRM(0, Src, EBP);
-  Write(@Ptr, SizeOf(Ptr));)
- AsmCode($1, (Ptr: Cardinal; Src: Tx86Reg$3),  WriteB($2);
+  Write(@Ptr[0], SizeOf(Ptr[0]));)
+ AsmCode($1, (const Ptr: array of Cardinal; Src: Tx86Reg$3),  WriteB($2);
   ModRM(0, Src, EBP);
-  Write(@Ptr, SizeOf(Ptr));)
+  Write(@Ptr[0], SizeOf(Ptr[0]));)
 // [reg]
  AsmCode($1, (K(Dst, Tx86Reg$3); Src: Tx86Reg$3),  AK(Dst);
   WriteB($2);
@@ -426,15 +440,15 @@ define(~mnerxrx|, ~
   define(~mner$1r$1|, ~AsmCode($|~1, (Dst, Src: Tx86Reg$|~3),  $2)|)
 |)
 mnerxrx(b, WriteB($2); 
-  ModRM(3, Dst, Src);, 
+  ModRM(3, Src, Dst);, 
   Tx86b, Byte);
-mnerxrx(w, SwitchMode(X86_MODE_32); 
+mnerxrx(w, SwitchMode(X86_MODE_32) 
   WriteB($2);
-  ModRM(3, Dst, Src);, 
+  ModRM(3, Src, Dst);, 
   Tx86w, Word);
-mnerxrx(d, SwitchMode(X86_MODE_32);
+mnerxrx(d, SwitchMode(X86_MODE_16)
   WriteB($2); 
-  ModRM(3, Dst, Src);, 
+  ModRM(3, Src, Dst);, 
   LongIng, LongInt);
 define(~mnemxrx|, ~
  define(~mner$1m$1|, ~AsmCode($|~1, (Reg: Tx86Reg$|~3; K(Mem, LongInt)), AK(Mem); 
@@ -539,22 +553,21 @@ define(~mnerkmo32|, ~AsmCode($1, ~(Dst: Tx86Reg$3; K(Reg1, Tx86Reg$3); K(Reg2, T
   WriteB(SIB_Mul(Mul - 1) + SIB_Reg2(Ord(Reg2[0])) + SIB_Reg1(Ord(Reg1[0])));
   WriteI(Offset);)|)
 
+// OPCODE reg, int
+// OPCODE [...], int
+define(~mnekdib|, ~AsmCode($1, ~(Dst: Tx86Reg$3; Imm: Byte)|,  WriteB($2);
+  ModRM(3, $4, Dst);
+  WriteB(Imm);)|)
+
 mnei_(ADD, Hex(04), Hex(05), Hex(05))
-mnerbib(ADD,  Hex(80), B)
-mnerwiw(ADD,  Hex(81), W)
-mnerdid(ADD,  Hex(81))
-mnekr(ADD, Hex(01))
-mnerk(ADD, Hex(03))
+dnl mnekbib(ADD,  Hex(80), B)
+dnl mnekwiw(ADD,  Hex(81), W)
+mnekdib(ADD,  Hex(83), , 0)
+dnl mnekr(ADD, Hex(01))
+dnl mnerk(ADD, Hex(03))
 mne0(NOP,  Hex(90))
 mne0(REPNE,  Hex(F2))
 mne0(SCASD,  Hex(AF))
-dnl mneri(MOV,  Hex(B8))
-dnl mnerr(MOV,  Hex(8B))
-dnl mnerk(MOV,  Hex(8B))
-dnl mnerko8(MOV,  Hex(8B))
-dnl mnerko32(MOV,  Hex(8B))
-dnl mnerkmo8(MOV,  Hex(8B))
-dnl mnerkmo32(MOV,  Hex(8B))
 
 mnerk(_OR, Hex(0B))
 mnekr(_OR, Hex(09))
@@ -568,8 +581,10 @@ mnekr(SBB, Hex(10))
 mnerk(_AND, Hex(23))
 mnekr(_AND, Hex(21))
 
-mnerk(SUB, Hex(23))
-mnekr(SUB, Hex(21))
+dnl mnerk(SUB, Hex(23))
+dnl mnekr(SUB, Hex(21))
+dnl mnei_(SUB, Hex(23), Hex(23), Hex(23))
+mnekdib(SUB,  Hex(83), , 0)
 
 mnerk(_XOR, Hex(23))
 mnekr(_XOR, Hex(21))
@@ -603,7 +618,18 @@ mnekr(MOV, Hex(89))
 mner(INC,  Hex(40))
 mner(DEC,  Hex(48))
 mner(PUSH, Hex(50))
+mnei(PUSH, Hex(68))
 mner(POP,  Hex(58))
+
+dnl mnei(CALL,  Hex(E8))
+mnek(CALL,  Hex(FF), , 2)
+
+mne0(RETnear, Hex(C3))
+mne0(RETfar, Hex(CB))
+mnew(RETnear, Hex(C2))
+mnew(RETfar, Hex(CA))
+
+mne0(LEAVE, Hex(C9))
 
 mnej(JA,     1, Hex(77), Hex(00), b)
 mnej(JAE,    1, Hex(73), Hex(00), b)
@@ -700,11 +726,6 @@ mnej(JS,     1, Hex(0F), Hex(88), w)
 uses
   DMachineCode;
 
-const
-  // errors
-  X86_ERROR_ESP                                 = 1;
-  X86_ERROR_K_PARAM_ONE                         = 2;
-
 type
   // x86 types
   Tx86b = packed record V: ShortInt; end;
@@ -780,6 +801,12 @@ type
   Tx86Mode = (X86_MODE_32, X86_MODE_16);
   // coeff in [register1 + register2*mul + offset]
   Tx86Mul = (m1 = 0, m2 = 1, m4 = 2, m8 = 3);
+
+const
+  NOREG = ESP;
+  // errors
+  X86_ERROR_ESP                                 = 1;
+  X86_ERROR_K_PARAM_ONE                         = 2;
 
 type
   Tx86 = class(TMachineCode)
