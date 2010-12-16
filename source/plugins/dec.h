@@ -41,44 +41,6 @@ typedef command_t* commands_t;
 const unsigned int EMBRO_DATA           = 0;
 const unsigned int EMBRO_CODE           = 1;
 
-// // Чаники типа DATA являются недилимыми, их нужно оставить в таком виде,
-// // в каком они и были
-// // Чаники типа CODE можно разрезать там, где начинается какой-то опкод
-// // При этом нужно не забывать, что важно сохранить порядок выполняемых
-// // действий и менять ссылки, расположение которых указано в массиве refs
-// typedef struct chunk_s {
-//   unsigned int          pos;
-//   unsigned int          type; // см. EMBRO_* константы
-//   unsigned int          size;
-//   // Только при type==EMBRO_CODE
-//   // Массив номеров байтов, начиная с которых находятся 
-//   // опкоды вызова команд данного чанка
-//   // Все опкоды являются 32-битными числами.
-//   // Опкод — номер команды в таблице ID_COMMANDS.
-//   // Их нужно менять при изменении в таблицы команд
-//   //
-//   // Пример получения нулевого опкода: 
-//   // unsigned int op = *(&embro[opcodes[0]])
-//   unsigned int*         opcodes; 
-//   unsigned int          ocount;
-// } chunk_t;
-// 
-// typedef struct code_s {
-//   // указатель на шитый код
-//   unsigned char*        embro;
-//   // Чанки
-//   chunk_t*              chunks;
-//   unsigned int          ccount;
-//   // массив указателей на места, где находятся embro-указатели
-//   // все embro-указатели являются 32-битными числами 
-//   // embro-указатель — номер байта в embro, на который ссылаются
-//   // 
-//   // Пример получения нулевого embroptr: 
-//   // unsigned int embropts = *(&embro[refs[0]])
-//   unsigned int*         refs;
-//   unsigned int          rcount;
-// } code_t;
-
 typedef struct chunk_s {
   unsigned int          opcode;
   unsigned int          len; // bytes in data
@@ -95,7 +57,7 @@ typedef struct chunk_s {
   // refs[i] является отступом в data до указателя
   // Фактически, указатель получается по формуле 
   //                                       *((unsigned int*)(&data[refs[i]]))
-  unsigned int          count; // кол-во
+  unsigned int          rcount; // кол-во
   unsigned int*         refs; // отступы в data
 } chunk_t;
 
