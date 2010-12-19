@@ -3,20 +3,6 @@
 #include <stdlib.h>
 #include "..\dec.h"
 
-// Является ли чанк данными
-int IsChunkData(const chunk_t& chunk)
-{
-  return (chunk.opcode == 0 && chunk.len != 0);
-}
-
-// Вычисление размера, занимаемого чанком в шитом коде
-//   В случае, если это чанк вызова команды, нужно ещё учесть место,
-//   занимаемое опкодом команды
-unsigned int GetChunkSize(const chunk_t& chunk)
-{
-  return chunk.len + (IsChunkData(chunk)?0:sizeof(unsigned int));
-}
-
 // Размер кода (сумма размеров всех чанков)
 unsigned int GetCodeSize(code_t* code)
 {
@@ -25,31 +11,18 @@ unsigned int GetCodeSize(code_t* code)
     size += GetChunkSize(code->chunks[i]);
   return size;
 }
-
-// Вычисление номера байта (embroptr) начала чанка с номером index
-// Вернёт -1, если index не является индексом никакого чанка
-int GetChunkPos(const code_t& code, int index)
-{
-  int pos = 0;
-  if (0 > index || index >= code.count)
-    return -1;
-  for (int i = 0; i < index-1; ++i)
-    pos += GetChunkSize(code.chunks[i]);
-  return pos;
-}
-
 // Возвращает указатель в шитый код исходя из индексов
 unsigned int GetEmbroPtr(code_t* code, int command, int refindex)
 {
   return *((unsigned int*)&(code->chunks[command]
-                          .data[code->chunks[command].refs[refindex]]));
+                          .data[code->chunks[command].r[refindex]]));
 }
 
 // Меняет указателя в шитом код исходя из индексов
 void SetEmbroPtr(code_t* code, int command, int refindex, unsigned int val)
 {
   *((unsigned int*)&(code->chunks[command]
-                     .data[code->chunks[command].refs[refindex]])) = val;
+                     .data[code->chunks[command].r[refindex]])) = val;
 }
 
 // Вычисление чанка, в который ссылается данный embroptr
@@ -100,11 +73,11 @@ code_t* CopyCode(code_t* code, unsigned char** embro)
     other->chunks[i].opcode = code->chunks[i].opcode;
     other->chunks[i].len = code->chunks[i].len;
     other->chunks[i].data = &((*embro)[pos]);
-    other->chunks[i].count = code->chunks[i].count;
-    other->chunks[i].refs = (unsigned int*)malloc(sizeof(unsigned int)*
-                                               other->chunks[i].count);
-    for (int j = 0; j < other->chunks[i].count; ++j)
-      other->chunks[i].refs[j] = code->chunks[i].refs[j];
+    other->chunks[i].rcount = code->chunks[i].rcount;
+    other->chunks[i].r = (unsigned int*)malloc(sizeof(unsigned int)*
+                                               other->chunks[i].rcount);
+    for (int j = 0; j < other->chunks[i].rcount; ++j)
+      other->chunks[i].r[j] = code->chunks[i].r[j];
     pos += GetChunkSize(code->chunks[i]);
   }
   return other;
@@ -114,7 +87,7 @@ code_t* CopyCode(code_t* code, unsigned char** embro)
 void FreeCode(code_t* code, unsigned char* embro)
 {
   for (int i = 0; i < code->count; ++i)
-    free(code->chunks[i].refs);
+    free(code->chunks[i].r);
   free(code->chunks);
   free(code);
   free(embro);
@@ -168,7 +141,7 @@ void UpdateRef(unsigned int &ref, unsigned int pos, unsigned int len,
 void UpdateEmbroRefsOnMove(code_t* code, int pos, int len, int other)
 {
   for (int i = 0; i < code->count; ++i)
-    for (int j = 0; j < code->chunks[i].count; ++j) {
+    for (int j = 0; j < code->chunks[i].rcount; ++j) {
       int ref = GetEmbroPtr(code, i, j);
       if (pos <= ref && ref < pos + len)
         SetEmbroPtr(code, i, j, ref - pos + other);
