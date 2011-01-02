@@ -68,7 +68,6 @@ begin
       Fx86.MOV(EAX, [EBP], 8 + FullSize);
       Fx86.MOV([ECX], EAX);
       Fx86.ADD(ECX, 4);
-      //Writeln('Parameter ', Sizes[I]);
     end else begin
       Result := False;
       Error('[TAlien.GenerateCallback]: underconstruction param size ' 
@@ -85,6 +84,7 @@ begin
   Fx86.MOV([EAX], ECX);
 
   // ; invoking command
+  Fx86.PUSH(Tx86d(DogWP)); // push @WP, debug
   Fx86.PUSH(Tx86d(Command)); // push Command
   Fx86.PUSH(Tx86d(Machine)); // push Machine
   // Fx86.CALL(Code); // call Code
@@ -99,13 +99,18 @@ begin
   
   if ReturnSize = 4 then begin
     // mov ECX, [@WP]
-    Fx86.MOV(ECX, [Tx86d(DogWP)]);
-    Fx86.SUB(ECX, 4);
-    Fx86.MOV(EAX, [ECX]);
-    Fx86.MOV([DogWP], ECX);
+    (* Fx86.MOV(ECX, [Tx86d(DogWP)]); *)
+    (* Fx86.SUB(ECX, 4); *)
+    (* Fx86.MOV(EAX, [ECX]); *)
+    (* Fx86.MOV([DogWP], ECX); *)
+    (* Fx86.MOV(EAX, LongInt(DogWP)); *)
+    (* Fx86.MOV(EAX, [EAX]); *)
+    (* Fx86.MOV(EAX, EDX); *)
     Fx86.MOV(EAX, LongInt(DogWP));
-    Fx86.MOV(EAX, [EAX]);
-    Fx86.MOV(EAX, EDX);
+    Fx86.MOV(ECX, [EAX]);
+    Fx86.SUB(ECX, 4);
+    Fx86.MOV([EAX], ECX);
+    Fx86.MOV(EAX, [ECX]);
   end else if ReturnSize = 0 then begin
     // ; nothing
     Fx86.MOV(EAX, LongInt(-1));

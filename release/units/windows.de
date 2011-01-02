@@ -97,7 +97,7 @@ ptr-nil ptr-value *lib-kernel32* // то же для kernel32
 : WIN32FINDDATAA t_ptr ( WIN32_FIND_DATA) ;
 : PWIN32FINDDATA t_ptr ( ^WIN32_FIND_DATA) ;
 
-: t_WindowProc HWND UINT WPARAM LPARAM ( LRESULT) t_void stdcall ;
+: t_WindowProc HWND UINT WPARAM LPARAM LRESULT stdcall ;
 // }}}
 // {{{ constants
 1               constant CF_TEXT

@@ -2,19 +2,19 @@
 // Тест на создание Callback'ов.
 // ..\dembro32 callback.de -r
 
-:noname  [str]" Callback: " str. . . . . -100 cr ; 
+:noname  @wp . wp . [str]" Callback: " str. . . . . -100 cr ; 
 :c Callback t_int t_int t_int t_int  t_int stdcall c;
 :a Loop t_ptr t_void stdcall a;
 
-str" == Test ==" str. cr
-:a Test t_int t_int t_int t_int  t_int stdcall c;
-Callback to Test
-5 6 7 8 Test . cr
-str" == Test done ==" str. cr
+// str" == Test ==" str. cr
+// :a Test t_int t_int t_int t_int  t_int stdcall a;
+// ." Callback to test"cr
+//  Callback to Test
+// ." Test"cr
+// 5 6 7 8 Test . cr
+// str" == Test done ==" str. cr
 
-str" Callback: " str. Callback . cr
-
-str" Callback.dll" lib-load . str" Loop" lib-fun dup . to Loop
+str" Callback.dll" lib-load . str" Loop" lib-fun to Loop
 cr 4 .w cr
 str" wp: " str. wp . cr 
 Callback Loop

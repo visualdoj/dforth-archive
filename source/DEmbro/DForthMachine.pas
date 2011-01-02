@@ -1934,6 +1934,7 @@ TForthMachine = class
   
 ;
   
+  procedure _DogwpTemp (Machine: TForthMachine; Command: PForthCommand);
   procedure _wp (Machine: TForthMachine; Command: PForthCommand);
   procedure _rp (Machine: TForthMachine; Command: PForthCommand);
   procedure _lp (Machine: TForthMachine; Command: PForthCommand);
@@ -2019,6 +2020,7 @@ TForthMachine = class
   procedure InterpretFile(const FileName: TString);
   procedure Evaluate(Machine: TForthMachine; Command: PForthCommand);
   procedure EvaluateFile(Machine: TForthMachine; Command: PForthCommand);
+  procedure CallCommand(Command: PForthCommand);
   procedure MainLoop;
   procedure InterpretStep;
   procedure CompileStep;
@@ -2632,6 +2634,7 @@ begin
   end;
   Machine.EC := Integer(Command^.Data);
   Machine.FRunning := True;
+  // Writeln('WP = ', Cardinal(Machine.WP));
 end;
 
 procedure TControlCommands.compile_def(Machine: TForthMachine; Command: PForthCommand);
@@ -3384,10 +3387,11 @@ begin
   //Log('Created command ' + C^.Name);
 end;
 
-procedure __Callback(Machine: TForthMachine; Command: PForthCommand); stdcall;
+procedure __Callback(Machine: TForthMachine; Command: PForthCommand; DogWP: Pointer); stdcall;
 begin
-  // Writeln('** __Callback **');
-  Command^.Code(Machine, Command);
+  // Writeln('** __Callback ** ', Cardinal(@Machine.WP), ' ', Cardinal(DogWP), ' ', Cardinal(Machine.WP), ' ', Cardinal(Pointer(Cardinal(Machine.WP)-SizeOf(Integer))^), ' ', Cardinal(Machine));
+  // Command^.Code(Machine, Command);
+  Machine.CallCommand(Command);
 end;
 
 procedure TAlienCommands.callback_fun;
@@ -3413,6 +3417,7 @@ var
   XT: PForthCommand;
   Sizes: array of Integer;
   I: Integer;
+  F: File;
 begin
   with Machine do begin
     if Machine.State = FS_COMPILE then begin
@@ -3434,16 +3439,30 @@ begin
     NewC := Machine.ReserveName(TString(C2^.Name));
     StrDispose(C2^.Name);
     Dispose(C2);
-    NewC^.Code := FDataCommands.PutDataPtr;
-    NewC^.Data := Machine.Here;
     XT := WOP;
+    NewC^.Code := FDataCommands.PutDataPtr;
     SetLength(Sizes, Length(Types));
     for I := 0 to High(Types) do
       Sizes[I] := Types[I]^.Size;
+    while (Integer(Machine.Here) mod 16) <> 6 do begin
+      Byte(Machine.Here^) := 0;
+      Machine.IncHere(1);
+    end;
+    // Machine.IncHere(22 - (Integer(Machine.Here) mod 16));
+    // Writeln('AFTER INC HERE ', Integer(Machine.Here));
+    NewC^.Data := Machine.Here;
     FAlien.GenerateCallback(Machine.Here, ES - EC, Sizes, ReturnType^.Size,
                             @Machine.WP, Machine, XT, @__Callback);
-    Writeln('@WP = ', TUInt(@Machine.WP));
+    // Writeln('@WP = ', TUInt(@Machine.WP), ' ', FAlien.MachineCode.GetError(nil), ' Machine=', Cardinal(Machine));
+    Assign(F, 'generated.bin');
+    Rewrite(F);
+    BlockWrite(F, Machine.Here^, FAlien.MachineCode.Size);
+    Close(F);
     Machine.IncHere(FAlien.MachineCode.Size);
+    for I := 0 to 256 - 1 do begin
+      Byte(Machine.Here^) := 0;
+      Machine.IncHere(1);
+    end;
   end;
 end;
 
@@ -5987,6 +6006,7 @@ begin
     
     
      AddCommand('wp', _wp);
+     AddCommand('@wp', _DogwpTemp);
      AddCommand('rp', _rp);
      AddCommand('lp', _lp);
      AddCommand('lb', _lb);
@@ -6233,6 +6253,27 @@ begin
   Machine.Interpret(PChar(B));
   Machine.FStringCommands.DelRef(S);
   // Writeln('End of evaluate file "', PChar(@S^.Sym[0]), '"');
+end;
+
+procedure TForthMachine.CallCommand(Command: PForthCommand);
+begin
+  if Command = nil then
+    Exit;
+  RUI(Ord(FSession) * BOOL_TRUE);
+  RUI(Ord(FRunning) * BOOL_TRUE);
+  RUI(EC);
+  RUP(RB);
+  RUP(RP);
+  RB := RP;
+  FSession := True;
+  FRunning := False;
+  Command^.Code(Self, Command);
+  MainLoop;
+  RP := ROP;
+  RB := ROP; 
+  EC := ROI;
+  FRunning := ROI <> BOOL_FALSE;
+  FSession := ROI <> BOOL_FALSE;
 end;
 
 procedure TForthMachine.MainLoop;
@@ -10089,6 +10130,7 @@ end;
     
    
     
+      procedure TForthMachine._DogwpTemp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := @WP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._wp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._rp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._lp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer)); end;
@@ -10211,10 +10253,10 @@ end;
         S: TInt;
         F: PdfFile;
       begin 
-        S := WOI; 
-        Src := WOP; 
-        //F := WOP; 
-        PdfFile((Pointer(TUInt(WP) + (-SizeOf(PdfFile)))^))^.Data.WriteVar(Src, S);
+        F := WOP;
+        S := WOI;
+        Src := WOP;
+        F^.Data.WriteVar(WOP, S);
       end;
       procedure TForthMachine.file_read (Machine: TForthMachine; Command: PForthCommand);
       var
@@ -10222,11 +10264,15 @@ end;
         S: TInt;
         F: PdfFile;
       begin 
-        S := WOI; 
-        Src := WOP; 
+        //S := WOI; 
+        //Src := WOP; 
         //F := WOP; 
         //F^.Data.ReadVar(Src, S);
-        PdfFile((Pointer(TUInt(WP) + (-SizeOf(PdfFile)))^))^.Data.ReadVar(Src, S);
+        //PdfFile((Pointer(TUInt(WP) + (-SizeOf(PdfFile)))^))^.Data.ReadVar(Src, S);
+        F := WOP;
+        S := WOI;
+        Src := WOP;
+        F^.Data.WriteVar(WOP, S);
       end;
       procedure TForthMachine.file_write_from_w (Machine: TForthMachine; Command: PForthCommand);
       begin

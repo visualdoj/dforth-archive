@@ -559,12 +559,7 @@ define(~mnekdib|, ~AsmCode($1, ~(Dst: Tx86Reg$3; Imm: Byte)|,  WriteB($2);
   ModRM(3, $4, Dst);
   WriteB(Imm);)|)
 
-dnl mnei_(ADD, Hex(04), Hex(05), Hex(05))
-dnl mnekbib(ADD,  Hex(80), B)
-dnl mnekwiw(ADD,  Hex(81), W)
 mnekdib(ADD,  Hex(83), , 0)
-dnl mnekr(ADD, Hex(01))
-dnl mnerk(ADD, Hex(03))
 mne0(NOP,  Hex(90))
 mne0(REPNE,  Hex(F2))
 mne0(SCASD,  Hex(AF))

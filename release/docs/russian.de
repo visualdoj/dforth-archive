@@ -1,7 +1,31 @@
 // 2010.12.06 # Doj
 // Встроенная помощь для русскоязычных пользователей
 
+// {{{ topics
+" topics" " 
+    Набирите 'help topic' без кавычек, где topic -- какое-то слово из списка
+      #stack        Базовые команды по работе со стеками
+      #arithmetic   Команды по работе с числами
+      #bool&bits    Команды для работы с битами и булевыми значениями
+      #createwords  Команды для создания своих слов
+      #ptr          Команды для работы с указателями
+      #statements   Команды для создания ветвлений в программе
+      #console      Команды для работы со стандартной консолью в файле
+      #dyn          Команды для работы с динамическими массивами
+" described
+// }}}
 // {{{ stack
+" #stack" " 
+    См. команды
+      drop 
+      nip
+      dup
+      over
+      tuck
+      swap
+      lrot
+      rrot
+      pick" described
 " drop"         " ( a-) удаляет с вершины стека значение" described
 " nip"          " ( ab-b) удаляет второй по счёту элемент стека" described
 " dup"          " ( a-aa) дублирует верхний элемент стека" described
@@ -12,7 +36,16 @@
 " rrot"         " ( abc-cab) вращает три верхних элемента стека циклически вправо" described
 " pick"         " ( a1 a2 .. an n -- a1 a2 .. an a1) копирует n-ный по счёту элемент стека на вершину" described
 // }}}
-// {{{ arythmetic
+// {{{ arithmetic
+" #arithmetic" " 
+    Команды для всех чисел
+      + - * = <> < > <= >= 0= 0< 0> 0<= 0>= ?dup 0; max min minmax
+    Команды для целых чисел
+      div mod divmod inc dec 1+ 1-
+    Команды для знаковых чисел
+      abs neg
+    Команды для нецелых чисел
+      / cos sin tan atan atan2" described
 " +" " ( a b -- a+b) складывает два верхних элемента стека" described
 " -" " ( a b -- a-b) вычитает из второго элемента первый" described
 " *" " ( a b -- a*b) перемножает два верхних элемента стека" described
@@ -53,6 +86,8 @@
 " atan2" " ( yx -- atan2(y, x)) см. в гугле atan2" described
 // }}}
 // {{{ bool & bits
+" #bool&bits" " 
+    false true not or and xor" described
 " false" " ( -- false) кладёт на стек ложь (ячейка со сброшенными всеми битами, т.е. 0)" described
 " true" " ( -- false) кладёт на стек ложь (ячейка с выставленными всеми битами)" described
 " not" " ( a -- not a) побитовое НЕ. Применённое к true и false даёт булевский вариант" described
@@ -61,6 +96,8 @@
 " xor" " ( a b -- a xor b) побитовое исключающее ИЛИ. Применённая к true и false даёт булевский вариант" described
 // }}}
 // {{{ createwords
+" #createword" " 
+    create allot here , to variable value constant does>" described
 " create" " ( 'name'-) создаёт новую команду с именем name" described
 " allot" " ( i-) выделяет i байт в шитом коде для последней созданной команды" described
 " here" " ( -p) текущий указатель на незанятую область шитого кода" described
@@ -72,6 +109,8 @@
 " does>" " в режиме компиляции приостанавливает компиляцию текущего определения и включает компиляцию для последнего созданного слова" described
 // }}}
 // {{{ ptr
+" #ptr" " 
+    @ ! 1+! 1-! cell+ cells malloc free move on off" described
 " @" " ( p-i) читает ячейку, на которую ссылается указатель" described
 " !" " ( ip-) записывает ячейку по заданному адресу" described
 " 1+!" " ( p-) увеличивает ячейку по заданному адресу на 1" described
@@ -90,6 +129,9 @@
 " off" " ( ptr -- ) Выталкивает указатель, записывает 0 в него." described
 // }}}
 // {{{ statements
+" #statements" " 
+    branch ?branch >mark >resolve <mark <resolve : ; immediate exit recurse
+    if else then" described
 " branch" " совершает скачек на определённый адрес в коде. При этом адрес берётся из последующего после команды числа в шитом коде." described
 " ?branch" " ( i-) если i рано нулю, то действует как branch, в противном случае ничего не делает" described
 " >mark" " I ( C:-- embroptr) при исполнении ничего не делает, при компиляции кладёт текущий адрес на стек и выделяет в шитом коде место под запись адреса" described
@@ -155,9 +197,13 @@
 // Если +loop пересекает границу limit и limit-1, то выполнение прекращается" described
 // }}}
 // {{{ console
+" #console" " 
+    ." described
 " ." " ( i-) выводит число с вершины стека на консоль" described
 // }}}
 // {{{ dyn
+" #dyn" " 
+    dyn dyn# dyn[] dyn@ dyn! dyn+ high dyn.l@ dyn.l! dyn.last dyn-new dyn.free" described
 " dyn" " ( start-length `name` -- )
     Создаёт переменную динамический массив с именем name и изначально 
     выделенной памятью под start-length элементов. Начальная длина
@@ -235,4 +281,45 @@
     Удаляет созданный ранее при помощи dyn-new массив.
   
   См. dyn dyn-new" described
+// }}}
+// {{{ file
+" #file" " 
+    file-open file-close file-w file-r file-write file-read file-size" described
+" file-open" " ( filename:str mode:int -- file) 
+    Открывает файл. mode можно получить вызовом file-w или file-r.
+    file совместимо с обычной ячейкой, представляет из себя указатель на
+    структуру, описывающую текущее состояние работы с файлом. Каждый открытый
+    файл должен быть закрыт вызовом file-close как только файл становится
+    ненужным. В случае, если файл открыть не удалось, file будет нулевым.
+  См. file-close file-w file-r file-write file-read file-size" described
+" file-close" " ( file --) 
+    Закрывает открытый ранее файл.
+  См. file-open" described
+" file-w" " ( -- mode:int) 
+    Кладёт идентификатор режима, указывающий на то, что файл требуется открыть
+    на запись. К открытому в этом режиме файлу можно применять команду
+    file-write. При вызове file-open с этим режимом, если файла с именем 
+    filename не существует, будет создан новый. Если существует, то его 
+    содержимое будет стёрто, а запись будет производится в чистый файл.
+  См. file-open file-write" described
+" file-r" " ( -- mode:int) 
+    Кладёт идентификатор режима, указывающий на то, что файл требуется открыть
+    на чтение. К открытому в этом режиме файлу можно применять команды
+    file-read и file-size. При вызове file-open с этим режимом если файла с именем 
+    filename не существует, то в качестве file вернётся 0.
+  См. file-open file-read file-size" described
+" file-write" " ( ptr size:int file --) 
+    Записывает size байт из ptr в файл с ненулевым, открытым на чтение
+    файлом file. Если file нулевой или открыт не на запись, действие 
+    команды неопределёно.
+  См. file-open file-w" described
+" file-read" " ( ptr size:int file --) 
+    Считывает size байт из ненулевого, открытого на чтение файла file,
+    в ptr. Если file нулевой или открыт не на чтение, действие команды
+    неопределено.
+  См. file-open file-r" described
+" file-size" " ( file -- int) 
+    Считывает ненулевой, открытый на чтение файл, и кладёт его размер в байтах.
+    Если файл нулевой или не открыт на чтение, то действие команды неопределено. 
+  См. file-open file-r" described
 // }}}

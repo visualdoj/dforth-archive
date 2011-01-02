@@ -472,7 +472,7 @@ end;
 procedure Tx86.ADD(Dst: Tx86Reg; Imm: Byte);
 begin
   WriteB($83);
-  WriteB(((3) shl 6) + ((Ord(Dst)) shl 3) + (Ord(0)));
+  WriteB(((3) shl 6) + ((Ord(0)) shl 3) + (Ord(Dst)));
   WriteB(Imm);
 end;
 
@@ -2190,7 +2190,7 @@ end;
 procedure Tx86.SUB(Dst: Tx86Reg; Imm: Byte);
 begin
   WriteB($83);
-  WriteB(((3) shl 6) + ((Ord(Dst)) shl 3) + (Ord(5)));
+  WriteB(((3) shl 6) + ((Ord(5)) shl 3) + (Ord(Dst)));
   WriteB(Imm);
 end;
 

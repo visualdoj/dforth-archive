@@ -62,6 +62,7 @@ begin
   if FPtr = nil then begin
     Resize(FSize + S);
     Move(V^, FData[FSize], S);
+    IncSize(S);
   end else begin
     if S + FSize > FMaxSize then begin
       AddError($F0000001, FSize, 'not enougth buffer space')
