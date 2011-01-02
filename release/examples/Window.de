@@ -1,7 +1,6 @@
 // 2010.12.12 # Doj
-// Пример создания окна в Windows
+// РџСЂРёРјРµСЂ СЃРѕР·РґР°РЅРёСЏ РѕРєРЅР° РІ Windows
 
-include" units\utils\debug.de"
 include" units\windows.de"
 
 :noname  ( hWnd:uint Msg:uint wParam:int lParam:int -- )
@@ -9,12 +8,12 @@ include" units\windows.de"
                       else DefWindowProcA then
 ; :c WindowProc t_WindowProc c;
 
-// Структура WNDCLASSEX
+// РЎС‚СЂСѓРєС‚СѓСЂР° WNDCLASSEX
 0 value hCursor
 0 value hIcon
 0 value lpszClassName
 create WNDCLASSEX
-    here // см. в конце подсчёт размера
+    here // СЃРј. РІ РєРѕРЅС†Рµ РїРѕРґСЃС‡С‘С‚ СЂР°Р·РјРµСЂР°
     0 , // cbSize
     CS_HREDRAW CS_VREDRAW or CS_OWNDC or , // style
     WindowProc , // WndProc
@@ -27,25 +26,25 @@ create WNDCLASSEX
     0 , // lpszMenuName
     here to lpszClassName 0 ,
     0 , // hIconSm
-    here swap - WNDCLASSEX ! // заполняем cbSize
+    here swap - WNDCLASSEX ! // Р·Р°РїРѕР»РЅСЏРµРј cbSize
 
 pchar" DEMBRO_WND" constant DEMBRO_WND
 WS_OVERLAPPEDWINDOW WS_VISIBLE or constant DEMBRO_STYLE
 
-// Функция, создающая новый класс окна
-// На выходе — флаг успеха
+// Р¤СѓРЅРєС†РёСЏ, СЃРѕР·РґР°СЋС‰Р°СЏ РЅРѕРІС‹Р№ РєР»Р°СЃСЃ РѕРєРЅР°
+// РќР° РІС‹С…РѕРґРµ вЂ” С„Р»Р°Рі СѓСЃРїРµС…Р°
 : CreateWindowClass ( -f) 0 IDC_ARROW       LoadCursorA  hCursor !
                           0 pchar" Icon_1"  LoadIconA    hIcon   !
                           DEMBRO_WND               lpszClassName !
                           WNDCLASSEX RegisterClassExA ;
 
-// Функция, создающая окно
-// Возвращает флаг успеха
+// Р¤СѓРЅРєС†РёСЏ, СЃРѕР·РґР°СЋС‰Р°СЏ РѕРєРЅРѕ
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі СѓСЃРїРµС…Р°
 : CreateWindow ( -f) 0 DEMBRO_WND pchar" DEmbro application" DEMBRO_STYLE
                      160 120 640 480 ( xywh) 0 0 0 0
                      CreateWindowExA cr ;
 
-// *msg* — сюда будем получать инфу о приходящих сообщениях
+// *msg* вЂ” СЃСЋРґР° Р±СѓРґРµРј РїРѕР»СѓС‡Р°С‚СЊ РёРЅС„Сѓ Рѕ РїСЂРёС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёСЏС…
 create *msg*
     0 , // hWnd
     0 , // message
@@ -55,19 +54,19 @@ create *msg*
     0 , // pt.x
     0 , // pt.y
 
-// Проверяет произошла ли ошибка, сравнивая i с нулём. Если равна, то печатает
-// на консоль строку s и код, возвращённый вызовом GetLastError, иначе нет. 
-// На консоль кладёт флаг ошибки, выставленный если ошибка имела место.
+// РџСЂРѕРІРµСЂСЏРµС‚ РїСЂРѕРёР·РѕС€Р»Р° Р»Рё РѕС€РёР±РєР°, СЃСЂР°РІРЅРёРІР°СЏ i СЃ РЅСѓР»С‘Рј. Р•СЃР»Рё СЂР°РІРЅР°, С‚Рѕ РїРµС‡Р°С‚Р°РµС‚
+// РЅР° РєРѕРЅСЃРѕР»СЊ СЃС‚СЂРѕРєСѓ s Рё РєРѕРґ, РІРѕР·РІСЂР°С‰С‘РЅРЅС‹Р№ РІС‹Р·РѕРІРѕРј GetLastError, РёРЅР°С‡Рµ РЅРµС‚. 
+// РќР° РєРѕРЅСЃРѕР»СЊ РєР»Р°РґС‘С‚ С„Р»Р°Рі РѕС€РёР±РєРё, РІС‹СЃС‚Р°РІР»РµРЅРЅС‹Р№ РµСЃР»Рё РѕС€РёР±РєР° РёРјРµР»Р° РјРµСЃС‚Рѕ.
 : check' ( is-f) swap if cdrop false else [str]" ! Failed " str. str. 
                          [str]"  " str. GetLastError . cr true then ;
-// Слово немедленного исполнения. Выполняет check' и если была ошибка,
-// то выходит из текущей команды если возвращённый командой check' флаг выставлен
-// в true
+// РЎР»РѕРІРѕ РЅРµРјРµРґР»РµРЅРЅРѕРіРѕ РёСЃРїРѕР»РЅРµРЅРёСЏ. Р’С‹РїРѕР»РЅСЏРµС‚ check' Рё РµСЃР»Рё Р±С‹Р»Р° РѕС€РёР±РєР°,
+// С‚Рѕ РІС‹С…РѕРґРёС‚ РёР· С‚РµРєСѓС‰РµР№ РєРѕРјР°РЅРґС‹ РµСЃР»Рё РІРѕР·РІСЂР°С‰С‘РЅРЅС‹Р№ РєРѕРјР°РЅРґРѕР№ check' С„Р»Р°Рі РІС‹СЃС‚Р°РІР»РµРЅ
+// РІ true
 : check ( C:) ( R: is) compile check' ['] if execute compile exit ['] then execute ; immediate
                          
-// Главная функция, точка входа в программу
+// Р“Р»Р°РІРЅР°СЏ С„СѓРЅРєС†РёСЏ, С‚РѕС‡РєР° РІС…РѕРґР° РІ РїСЂРѕРіСЂР°РјРјСѓ
 :noname
-  windows-load // загружаем WinApi функции
+  windows-load // Р·Р°РіСЂСѓР¶Р°РµРј WinApi С„СѓРЅРєС†РёРё
   CreateWindowClass [str]" creating window class" check
   CreateWindow dup [str]" creating window" check
   [str]" Window created" str. cr
