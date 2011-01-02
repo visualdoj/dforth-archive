@@ -42,7 +42,7 @@ WS_OVERLAPPEDWINDOW WS_VISIBLE or constant DEMBRO_STYLE
 // Возвращает флаг успеха
 : CreateWindow ( -f) 0 DEMBRO_WND pchar" DEmbro application" DEMBRO_STYLE
                      160 120 640 480 ( xywh) 0 0 0 0
-                     CreateWindowExA cr ;
+                     CreateWindowExA ;
 
 // *msg* — сюда будем получать инфу о приходящих сообщениях
 create *msg*
