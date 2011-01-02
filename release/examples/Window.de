@@ -3,6 +3,8 @@
 
 include" units\windows.de"
 
+// Функция WindowsProc, в неё будут передаваться сообщения, приходящие
+// окну из системы.
 :noname  ( hWnd:uint Msg:uint wParam:int lParam:int -- )
   3 pick WM_DESTROY = if 0 PostQuitMessage drop drop drop drop 
                       else DefWindowProcA then
