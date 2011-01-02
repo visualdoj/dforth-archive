@@ -41,8 +41,9 @@ WS_OVERLAPPEDWINDOW WS_VISIBLE or constant DEMBRO_STYLE
                           WNDCLASSEX RegisterClassExA ;
 
 // Функция, создающая окно
-// Возвращает флаг успеха
-: CreateWindow ( -f) 0 DEMBRO_WND pchar" DEmbro application" DEMBRO_STYLE
+// Возвращает HANDLE окна. Если он равен 0, то при создании окна произошла
+// ошибка
+: CreateWindow ( -i) 0 DEMBRO_WND pchar" DEmbro application" DEMBRO_STYLE
                      160 120 640 480 ( xywh) 0 0 0 0
                      CreateWindowExA ;
 
@@ -64,7 +65,8 @@ create *msg*
 // Слово немедленного исполнения. Выполняет check' и если была ошибка,
 // то выходит из текущей команды если возвращённый командой check' флаг выставлен
 // в true
-: check ( C:) ( R: is) compile check' ['] if execute compile exit ['] then execute ; immediate
+: check ( C:) ( R: is) compile check' ['] if execute compile exit 
+                                      ['] then execute ; immediate
                          
 // Главная функция, точка входа в программу
 :noname
