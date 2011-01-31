@@ -1,5 +1,5 @@
 // 2011.01.31 # Doj
-// Пример использования MMSystem
+// РџСЂРёРјРµСЂ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ MMSystem
 
 include" units\headers\mmsystem.de" mmsystem-load
 pchar" rail.wav" SND_ASYNC sndPlaySoundA drop
