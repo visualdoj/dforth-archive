@@ -1,0 +1,186 @@
+// 2011.01.30 # Doj
+// Заголовок к MMSystem (вывод звука в windows)
+
+include" units\windows.de"
+include" units\utils\headers.de"
+
+stdcall declare-header winmm.dll
+// {{{ constants
+0       constant MMSYSERR_BASE
+32      constant WAVERR_BASE
+
+h3B9    constant MM_MCINOTIFY 
+h3BB    constant MM_WOM_OPEN 
+h3BC    constant MM_WOM_CLOSE 
+h3BD    constant MM_WOM_DONE 
+h3BE    constant MM_WIM_OPEN 
+h3BF    constant MM_WIM_CLOSE 
+h3C0    constant MM_WIM_DATA 
+h3C1    constant MM_MIM_OPEN 
+h3C2    constant MM_MIM_CLOSE 
+h3C3    constant MM_MIM_DATA 
+h3C4    constant MM_MIM_LONGDATA 
+h3C5    constant MM_MIM_ERROR 
+h3C6    constant MM_MIM_LONGERROR 
+h3C7    constant MM_MOM_OPEN 
+h3C8    constant MM_MOM_CLOSE 
+h3C9    constant MM_MOM_DONE 
+h3D0    constant MM_DRVM_OPEN 
+h3D1    constant MM_DRVM_CLOSE 
+h3D2    constant MM_DRVM_DATA 
+h3D3    constant MM_DRVM_ERROR 
+h3D4    constant MM_STREAM_OPEN 
+h3D5    constant MM_STREAM_CLOSE 
+h3D6    constant MM_STREAM_DONE 
+h3D7    constant MM_STREAM_ERROR 
+h3CA    constant MM_MOM_POSITIONCB 
+h3CB    constant MM_MCISIGNAL 
+0       constant WAVE_INVALIDFORMAT 
+1       constant WAVE_FORMAT_1M08 
+2       constant WAVE_FORMAT_1S08 
+4       constant WAVE_FORMAT_1M16 
+8       constant WAVE_FORMAT_1S16 
+16      constant WAVE_FORMAT_2M08 
+32      constant WAVE_FORMAT_2S08 
+64      constant WAVE_FORMAT_2M16 
+128     constant WAVE_FORMAT_2S16 
+256     constant WAVE_FORMAT_4M08 
+512     constant WAVE_FORMAT_4S08 
+h400    constant WAVE_FORMAT_4M16 
+h800    constant WAVE_FORMAT_4S16 
+h3CC    constant MM_MIM_MOREDATA 
+h3D0    constant MM_MIXM_LINE_CHANGE 
+h3D1    constant MM_MIXM_CONTROL_CHANGE 
+0       constant MMSYSERR_BASE 
+32      constant WAVERR_BASE 
+64      constant MIDIERR_BASE 
+96      constant TIMERR_BASE 
+160     constant JOYERR_BASE 
+256     constant MCIERR_BASE 
+1024    constant MIXERR_BASE 
+512     constant MCI_STRING_OFFSET 
+1024    constant MCI_VD_OFFSET 
+1088    constant MCI_CD_OFFSET 
+1152    constant MCI_WAVE_OFFSET 
+1216    constant MCI_SEQ_OFFSET 
+0       constant MMSYSERR_NOERROR 
+MMSYSERR_BASE 1  +      constant MMSYSERR_ERROR 
+MMSYSERR_BASE 2  +     constant MMSYSERR_BADDEVICEID 
+MMSYSERR_BASE 3  +     constant MMSYSERR_NOTENABLED 
+MMSYSERR_BASE 4  +     constant MMSYSERR_ALLOCATED 
+MMSYSERR_BASE 5  +     constant MMSYSERR_INVALHANDLE 
+MMSYSERR_BASE 6  +     constant MMSYSERR_NODRIVER 
+MMSYSERR_BASE 7  +     constant MMSYSERR_NOMEM 
+MMSYSERR_BASE 8  +     constant MMSYSERR_NOTSUPPORTED 
+MMSYSERR_BASE 9  +     constant MMSYSERR_BADERRNUM 
+MMSYSERR_BASE 10 +     constant MMSYSERR_INVALFLAG 
+MMSYSERR_BASE 11 +     constant MMSYSERR_INVALPARAM 
+MMSYSERR_BASE 12 +     constant MMSYSERR_HANDLEBUSY 
+MMSYSERR_BASE 13 +     constant MMSYSERR_INVALIDALIAS 
+MMSYSERR_BASE 14 +     constant MMSYSERR_BADDB 
+MMSYSERR_BASE 15 +     constant MMSYSERR_KEYNOTFOUND 
+MMSYSERR_BASE 16 +     constant MMSYSERR_READERROR 
+MMSYSERR_BASE 17 +     constant MMSYSERR_WRITEERROR 
+MMSYSERR_BASE 18 +     constant MMSYSERR_DELETEERROR 
+MMSYSERR_BASE 19 +     constant MMSYSERR_VALNOTFOUND 
+MMSYSERR_BASE 20 +     constant MMSYSERR_NODRIVERCB 
+MMSYSERR_BASE 20 +     constant MMSYSERR_LASTERROR 
+h3A0    constant MM_JOY1MOVE 
+h3A1    constant MM_JOY2MOVE 
+h3A2    constant MM_JOY1ZMOVE 
+h3A3    constant MM_JOY2ZMOVE 
+h3B5    constant MM_JOY1BUTTONDOWN 
+h3B6    constant MM_JOY2BUTTONDOWN 
+h3B7    constant MM_JOY1BUTTONUP 
+h3B8    constant MM_JOY2BUTTONUP 
+h70000  constant CALLBACK_TYPEMASK 
+0       constant CALLBACK_NULL 
+h50000  constant CALLBACK_EVENT 
+h10000  constant CALLBACK_WINDOW 
+h20000  constant CALLBACK_TASK 
+CALLBACK_TASK   constant CALLBACK_THREAD 
+h30000  constant CALLBACK_FUNCTION 
+
+2               constant SND_NODEFAULT 
+4               constant SND_MEMORY 
+8               constant SND_LOOP 
+16              constant SND_NOSTOP 
+0               constant SND_SYNC 
+1               constant SND_ASYNC 
+64              constant SND_PURGE 
+128             constant SND_APPLICATION 
+0               constant SND_ALIAS_START 
+18515           constant SND_ALIAS_SYSTEMHAND 
+8531            constant SND_ALIAS_SYSTEMEXCLAMATION 
+10835           constant SND_ALIAS_SYSTEMASTERISK 
+16211           constant SND_ALIAS_SYSTEMQUESTION 
+17491           constant SND_ALIAS_SYSTEMDEFAULT 
+17747           constant SND_ALIAS_SYSTEMEXIT 
+21331           constant SND_ALIAS_SYSTEMSTART 
+22355           constant SND_ALIAS_SYSTEMWELCOME 
+h2000           constant SND_NOWAIT 
+h10000          constant SND_ALIAS 
+h110000                 constant SND_ALIAS_ID 
+h20000          constant SND_FILENAME 
+h40004          constant SND_RESOURCE 
+WAVERR_BASE 0 + constant WAVERR_BADFORMAT 
+WAVERR_BASE 1 + constant WAVERR_STILLPLAYING 
+WAVERR_BASE 2 + constant WAVERR_UNPREPARED 
+WAVERR_BASE 3 + constant WAVERR_SYNC 
+WAVERR_BASE 3 + constant WAVERR_LASTERROR 
+MM_WOM_OPEN             constant WOM_OPEN 
+MM_WOM_CLOSE            constant WOM_CLOSE 
+MM_WOM_DONE             constant WOM_DONE 
+MM_WIM_OPEN             constant WIM_OPEN 
+MM_WIM_CLOSE            constant WIM_CLOSE 
+MM_WIM_DATA             constant WIM_DATA 
+-1              constant WAVE_MAPPER 
+1               constant WAVE_FORMAT_QUERY 
+2               constant WAVE_ALLOWSYNC 
+4               constant WAVE_MAPPED 
+8               constant WAVE_FORMAT_DIRECT 
+WAVE_FORMAT_QUERY WAVE_FORMAT_DIRECT or constant WAVE_FORMAT_DIRECT_QUERY 
+MM_MIM_OPEN        constant MIM_OPEN 
+MM_MIM_CLOSE       constant MIM_CLOSE 
+MM_MIM_DATA        constant MIM_DATA 
+MM_MIM_LONGDATA    constant MIM_LONGDATA 
+MM_MIM_ERROR       constant MIM_ERROR 
+MM_MIM_LONGERROR   constant MIM_LONGERROR 
+MM_MOM_OPEN        constant MOM_OPEN 
+MM_MOM_CLOSE       constant MOM_CLOSE 
+MM_MOM_DONE        constant MOM_DONE 
+MM_MIM_MOREDATA    constant MIM_MOREDATA 
+MM_MOM_POSITIONCB  constant MOM_POSITIONCB 
+-1              constant MIDIMAPPER 
+-1              constant MIDI_MAPPER 
+32              constant MIDI_IO_STATUS 
+1               constant MIDI_CACHE_ALL 
+2               constant MIDI_CACHE_BESTFIT 
+3               constant MIDI_CACHE_QUERY 
+4               constant MIDI_UNCACHE 
+1               constant WHDR_DONE 
+2               constant WHDR_PREPARED 
+h4              constant WHDR_BEGINLOOP 
+h8              constant WHDR_ENDLOOP 
+h10             constant WHDR_INQUEUE 
+1               constant MOD_MIDIPORT 
+2               constant MOD_SYNTH 
+3               constant MOD_SQSYNTH 
+4               constant MOD_FMSYNTH 
+5               constant MOD_MAPPER 
+1               constant MIDICAPS_VOLUME 
+2               constant MIDICAPS_LRVOLUME 
+4               constant MIDICAPS_CACHE 
+8               constant MIDICAPS_STREAM 
+1               constant MHDR_DONE 
+2               constant MHDR_PREPARED 
+h4              constant MHDR_INQUEUE 
+h8              constant MHDR_ISSTRM 
+0               constant MEVT_F_SHORT 
+h80000000       constant MEVT_F_LONG 
+h40000000       constant MEVT_F_CALLBACK 
+// }}}
+// {{{ prototypes
+:a sndPlaySoundA LPCSTR UINT BOOL winmm.dll header;
+// }}}
+: mmsystem-load winmm.dll header-load ;

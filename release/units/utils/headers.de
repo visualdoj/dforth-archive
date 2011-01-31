@@ -1,0 +1,44 @@
+// 2011.01.30 # Doj
+// Слова для упрощения написания файлов-заголовков
+
+include" units\structures\dyn.de"
+
+// Структура, хранящая библиотеку и список функций, которые необходимо загрузить
+0
+        t_str -- .name  // имя файла библиотеки
+        t_ptr -- .lib   // загруженная динамическая библиотека
+        t_int -- .conv  // тип функций, который находится в библиотеке
+        t_ptr -- .funcs // дин. массив, хранящий список xt с функциями, которые
+                        // необходимо загрузить из библиотеки
+struct s_header
+
+// Создаёт переменную типа s_header и инициализирует стандартными значениями
+: declare-header ( conv "name" --) source-next-name-passive create
+   here s_header allot ( conv name ptr) 
+   dup .funcs 128 dyn-new swap ! ( conv name ptr) 
+   tuck .name c! ( conv ptr) .conv ! ;
+// Завершить объявление alien-функции с добалением в переданную структуру s_header
+: header; ( .h-) dup 0 l! .conv @ ['] a; execute 0 l@ last swap .funcs @ dyn+ ; immediate
+
+// Обработка ошибки в случае, если функцию не удалось запустить
+: header-load-fun-error ( s-) [str]" [windows] Cannot load fun: " str. str. cr ;
+// Загружает функцию
+: header-load-xt-fun ( lx-) tuck xt.n@ pchar->str ctuck lib-fun
+                 dup 0= if cover header-load-fun-error then cnip swap xt.d@ ! ;
+// Загружает i-ую функцию из заголовка h
+: header-load-indexed-fun ( hi) swap dup .lib @ rrot .funcs @ dyn@ header-load-xt-fun ;
+// Загружает функции для заданного заголовка
+// 0 -- удалось, иначе нет
+: header-load ( h-i) dup .name c@ lib-load 0= if lib-unload drop -1 exit then
+   ( hl) over .lib ! 
+   0 begin ( hi) over .funcs @ dyn# over > while 
+     over over header-load-indexed-fun 
+   1+ repeat drop drop 0 
+;
+// Выгружает загаловок
+: header-unload ( h-) .lib @ lib-unload ;
+
+: header.name .name ;
+: header.lib .lib ;
+: header.conv .conv ;
+: header.funcs .funcs ;

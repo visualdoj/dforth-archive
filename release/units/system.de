@@ -1,6 +1,7 @@
 // 2010.12.03 # Doj
 // Модуль, подключающий все полезные возможности общего назначения
 
+// Основные синтаксические конструкции
 : if compile ?branch >mark ; immediate
 : else compile branch >mark embro-swap >resolve ; immediate
 : then >resolve ; immediate
