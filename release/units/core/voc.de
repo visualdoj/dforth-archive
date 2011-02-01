@@ -1,26 +1,34 @@
 // 2010.12.03 # Doj
 // Модуль для удобной работы со словарями
 
-str" units\structures\stack.de" evaluate-file
+// str" units\\structures\\stack.de" evaluate-file
+// 
+// 32 stack targets
+// 32 stack vocs
+// vocabulary vLOCALS
+// 
+// : voc.targets< ( v-) targets s< ;
+// : voc.targets> ( v-) targets s> ;
+// : voc.targets@ ( v-) targets s@ ;
+// 
+// : voc.vocs< ( v-) vocs s< ;
+// : voc.vocs> ( v-) vocs s> ;
+// : voc.vocs@ ( v-) vocs s@ ;
+// 
+// : voc.use ( v-) dup voc.targets< voc.vocs< ;
+// : ^^^ ( -) voc.targets> drop voc.vocs> drop ; immediate
+// 
+// : LOCALS vLOCALS voc.use ; immediate
+// : GLOBALS vGLOBALS voc.use ; immediate
+// 
+// GLOBALS vLOCALS voc.vocs<
 
-1024 stack targets
-1024 stack vocs
-vocabulary vLOCALS
-
-: voc.targets< ( v-) targets s< ;
-: voc.targets> ( v-) targets s> ;
-: voc.targets@ ( v-) targets s@ ;
-
-: voc.vocs< ( v-) vocs s< ;
-: voc.vocs> ( v-) vocs s> ;
-: voc.vocs@ ( v-) vocs s@ ;
-
-: voc.use ( v-) dup voc.targets< voc.vocs< ;
-: ^^^ ( -) voc.targets> drop voc.vocs> drop ;
-
-: LOCALS vLOCALS voc.use ;
-: GLOBALS vGLOBALS voc.use ;
-
-GLOBALS vLOCALS voc.vocs<
+: vocabulary ( "name") vocabulary-new value ;
+: voc.use ( v) dup target< context< ;
+: declare-namespace ( "name") vocabulary immediate does> @ voc.use ; 
+: namespace ( "name") declare-namespace last execute ; 
+: GLOBAL vGLOBAL voc.use ; immediate
+: LOCAL vLOCAL voc.use ; immediate
+: ^^^ target> drop context> drop ; immediate
 
 str" Loaded voc.de" str. cr

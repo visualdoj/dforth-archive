@@ -34,7 +34,7 @@ str" units\utils\debug.de" evaluate-file
 // : cto ( c "name"-) state @ if ['] [cto] execute else dup ['] to execute cinc then ; immediate
 : cvalue ( c "name"-) create , does> @ dup cinc ;
 : cconstant ( c "name"-) create , does> @ dup cinc ;
-: cvariable ( "name") create 0 here ! 1 cells allot ;
+: cvariable ( "name") create 0 , ;
 // TODO
 // : r@cell+ ( -i) r> dup cell+ r> @ ;
 // : (cliteral) ( -c) r> dup @ swap dup cell+ rrot + r> ;

@@ -2,9 +2,6 @@ unit DVocabulary;
 
 interface
 
-uses
-  DForthMachine;
-
 {
         vocabulary xxx                  создать новый словарь
         xxx                             положить в стек созданный ранее словарь
@@ -27,69 +24,115 @@ uses
 }
 
 type
-  TVocabulary = class
-  private
-    FCommands: array of PForthCommand;  
-  public
+  PVocItem = ^TVocItem;
+  TVocItem = packed record
+    Index: Integer; // индекс в таблице команд
+    Next: PVocItem;
   end;
 
-  TVocabularySpace = class
-  private
-    FStack: array of TVocabulary;
-    FCount: Integer;
-    FTarget: array of TVocabulary;
-    FTargets: Integer;
-    FGlobals: TVocabulary;
-    FLocals: TVocabulary;
-  public
-    procedure TargetPush(V: TVocabulary);
-    function TargetPop: TVocabulary;
-    function TargetTop: TVocabulary;
-    procedure Push(V: TVocabulary);
-    function Pop: TVocabulary;
-    function Top: TVocabulary;
+  PVoc = ^TVoc;
+  TVoc = packed record
+    sFIND: Integer;
+    sNOTFOUND: Integer;
+    Item: PVocItem;
+    Time: Integer;
   end;
+(*  *)
+(*   TVocabulary = class *)
+(*   private *)
+(*     FCommands: array of PForthCommand;   *)
+(*   public *)
+(*   end; *)
+(*  *)
+(*   TVocabularySpace = class *)
+(*   private *)
+(*     FStack: array of TVocabulary; *)
+(*     FCount: Integer; *)
+(*     FTarget: array of TVocabulary; *)
+(*     FTargets: Integer; *)
+(*     FGlobals: TVocabulary; *)
+(*     FLocals: TVocabulary; *)
+(*   public *)
+(*     procedure TargetPush(V: TVocabulary); *)
+(*     function TargetPop: TVocabulary; *)
+(*     function TargetTop: TVocabulary; *)
+(*     procedure Push(V: TVocabulary); *)
+(*     function Pop: TVocabulary; *)
+(*     function Top: TVocabulary; *)
+(*   end; *)
+(*  *)
+  function VocAdd(V: PVocItem; Index: Integer): PVocItem; overload;
+  function VocDel(V: PVocItem; Marker: PVocItem): PVocItem; overload;
+  procedure VocAdd(V: PVoc; Index: Integer); overload;
+  procedure VocDel(V: PVoc; Marker: PVocItem); overload;
 
 implementation
-
-procedure TVocabularySpace.TargetPush(V: TVocabulary);
+(*  *)
+(* procedure TVocabularySpace.TargetPush(V: TVocabulary); *)
+(* begin *)
+(*   if FTargets = Length(FTarget) then *)
+(*     SetLength(FTarget, Length(FTarget) + 10); *)
+(*   Inc(FTargets); *)
+(*   FTarget[FTargets - 1] := V; *)
+(* end; *)
+(*  *)
+(* function TVocabularySpace.TargetPop: TVocabulary; *)
+(* begin *)
+(*   if FTargets > 0 then *)
+(*     Dec(FTargets); *)
+(*   Result := FTarget[FTargets]; *)
+(* end; *)
+(*  *)
+(* function TVocabularySpace.TargetTop: TVocabulary; *)
+(* begin *)
+(*   Result := FTarget[FTargets - 1]; *)
+(* end; *)
+(*  *)
+(* procedure TVocabularySpace.Push(V: TVocabulary); *)
+(* begin *)
+(*   if FCount = Length(FStack) then *)
+(*     SetLength(FStack, Length(FStack) + 10); *)
+(*   Inc(FTargets); *)
+(*   FTarget[FTargets - 1] := V; *)
+(* end; *)
+(*  *)
+(* function TVocabularySpace.Pop: TVocabulary; *)
+(* begin *)
+(*   if FCount > 0 then *)
+(*     Dec(FCount); *)
+(*   Result := FStack[FCount]; *)
+(* end; *)
+(*  *)
+(* function TVocabularySpace.Top: TVocabulary; *)
+(* begin *)
+(*   Result := FStack[FCount - 1]; *)
+(* end; *)
+(*  *)
+function VocAdd(V: PVocItem; Index: Integer): PVocItem;
 begin
-  if FTargets = Length(FTarget) then
-    SetLength(FTarget, Length(FTarget) + 10);
-  Inc(FTargets);
-  FTarget[FTargets - 1] := V;
+  New(Result);
+  Result^.Index := Index;
+  Result^.Next := V;
 end;
 
-function TVocabularySpace.TargetPop: TVocabulary;
+function VocDel(V: PVocItem; Marker: PVocItem): PVocItem;
 begin
-  if FTargets > 0 then
-    Dec(FTargets);
-  Result := FTarget[FTargets];
+  Result := V;
+  while (Result <> nil) and (Result <> Marker) do begin
+    Result := Result^.Next;
+    Dispose(V);
+    V := Result;
+  end;
 end;
 
-function TVocabularySpace.TargetTop: TVocabulary;
+procedure VocAdd(V: PVoc; Index: Integer);
 begin
-  Result := FTarget[FTargets - 1];
+  V^.Item := VocAdd(V^.Item, Index);
 end;
 
-procedure TVocabularySpace.Push(V: TVocabulary);
+procedure VocDel(V: PVoc; Marker: PVocItem);
 begin
-  if FCount = Length(FStack) then
-    SetLength(FStack, Length(FStack) + 10);
-  Inc(FTargets);
-  FTarget[FTargets - 1] := V;
-end;
-
-function TVocabularySpace.Pop: TVocabulary;
-begin
-  if FCount > 0 then
-    Dec(FCount);
-  Result := FStack[FCount];
-end;
-
-function TVocabularySpace.Top: TVocabulary;
-begin
-  Result := FStack[FCount - 1];
+  V^.Item := VocDel(V^.Item, Marker);
 end;
 
 end.

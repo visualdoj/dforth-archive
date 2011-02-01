@@ -9,6 +9,7 @@ uses
   Math,
   strings,
   DAlien,
+  DVocabulary,
   DForthStack;
 
 const
@@ -1373,6 +1374,13 @@ TForthMachine = class
   procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileLineComment(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileSource(Source: PChar);
+  procedure _vocabulary(Machine: TForthMachine; Command: PForthCommand);
+  procedure _vLOCAL(Machine: TForthMachine; Command: PForthCommand);
+  procedure _vGLOBAL(Machine: TForthMachine; Command: PForthCommand);
+  procedure _TargetPush(Machine: TForthMachine; Command: PForthCommand);
+  procedure _TargetPop(Machine: TForthMachine; Command: PForthCommand);
+  procedure _ContextPush(Machine: TForthMachine; Command: PForthCommand);
+  procedure _ContextPop(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   function CompileName(W: PChar): Boolean; overload;
   function NextMnemonic: Cardinal;
@@ -1563,6 +1571,19 @@ TForthMachine = class
   pop_interface(LOU32, TUInt32, LP);
   pop_interface(LOU64, TUInt64, LP);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'V'}{$ENDIF}
+ public
+  Context: array of PVoc;
+  Target: array of PVoc;
+  vGLOBAL: PVoc;
+  vLOCAL: PVoc;
+  procedure ContextPush(V: PVoc);
+  function ContextPop: PVoc;
+  procedure TargetPush(V: PVoc);
+  function TargetPop: PVoc;
+  procedure UseVoc(V: PVoc);
+  procedure UnuseVoc;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'plugin datas'}{$ENDIF}
  public
@@ -1683,6 +1704,8 @@ TForthMachine = class
   destructor Destroy; override;
   procedure AddCommand(Name: PChar; Code: TCode; Immediate: Boolean = False;
                        Builtin: Boolean = True);
+  procedure OnUpdateCommand(Opcode: Integer); overload;
+  procedure OnUpdateCommand(Command: PForthCommand); overload;
 
   procedure InterpretName(W: PChar); overload;
   procedure Interpret(const S: PChar); overload;
@@ -1733,7 +1756,9 @@ TForthMachine = class
 
   function GetEmbroDumpLines: Integer;
   function GetEmbroDumpLine(Index: Integer): TString;
-  function FindCommand(const Name: TString): PForthCommand;
+  procedure _FIND_(Machine: TForthMachine; Command: PForthCommand);
+  procedure _NOTFOUND_(Machine: TForthMachine; Command: PForthCommand);
+  function FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
 
   property UserData: Pointer read FUserData write FUserData;
   property Stack: TForthStack read FStack;
@@ -2369,6 +2394,7 @@ begin
   Machine.EWO('exit');
   Machine.FState := FS_INTERPRET;
   Machine.C[Index]^.Flags := Machine.C[Index]^.Flags and not 1;
+  Machine.OnUpdateCommand(Index);
   //Writeln('LAST COMMAND ', High(Machine.C), ' ' + Machine.C[High(Machine.C)].Name);
 end;
 
@@ -2447,6 +2473,7 @@ begin
   NewCommand := Machine.ReserveName(Name);
   NewCommand^.Code := putdataptr;
   NewCommand^.Data := Machine.Here;
+  Machine.OnUpdateCommand(NewCommand);
 end;
 
 procedure TDataCommands._created(Machine: TForthMachine; Command: PForthCommand);
@@ -2458,6 +2485,7 @@ begin
   NewCommand := Machine.ReserveName(Name);
   NewCommand^.Code := putdataptr;
   NewCommand^.Data := Machine.Here;
+  Machine.OnUpdateCommand(NewCommand);
 end;
 
 procedure TDataCommands.putdataptr(Machine: TForthMachine; Command: PForthCommand);
@@ -3611,6 +3639,28 @@ begin
   C[High(C)].Code := Code;
   SetImmediate(C[High(C)], Immediate);
   SetBuiltin(C[High(C)], Builtin);
+  OnUpdateCommand(High(C));
+end;
+
+procedure TForthMachine.OnUpdateCommand(Opcode: Integer);
+begin
+  VocAdd(Target[High(Target)], Opcode);
+  // Writeln('Add command ', C[Opcode]^.Name);
+  if C[Opcode]^.Name = '_FIND_' then
+    Target[High(Target)].sFIND := Opcode
+  else if C[Opcode]^.Name = '_NOTFOUND_' then
+    Target[High(Target)].sNOTFOUND := Opcode
+end;
+
+procedure TForthMachine.OnUpdateCommand(Command: PForthCommand);
+var
+  I: Integer;
+begin
+  for I := High(C) downto 0 do
+    if C[I] = Command then begin
+      OnUpdateCommand(I);
+      Exit;
+    end;
 end;
 
 procedure TForthMachine.CompileSource(Source: PChar);
@@ -3632,6 +3682,47 @@ begin
   //  Write(IntToHex(FEmbro[I], 2), ' ');
   //Writeln;
   FCompilation := False;
+end;
+
+procedure TForthMachine._vocabulary(Machine: TForthMachine; Command: PForthCommand);
+var
+  V: PVoc;
+begin
+  New(V);
+  V^.Item := nil;
+  V^.sFIND := -1;
+  V^.sNOTFOUND := -1;
+  WUP(V);
+end;
+
+procedure TForthMachine._vLOCAL(Machine: TForthMachine; Command: PForthCommand);
+begin 
+  WUP(vLOCAL);
+end;
+
+procedure TForthMachine._vGLOBAL(Machine: TForthMachine; Command: PForthCommand);
+begin 
+  WUP(vGLOBAL);
+end;
+
+procedure TForthMachine._TargetPush(Machine: TForthMachine; Command: PForthCommand);
+begin
+  TargetPush(WOP);
+end;
+
+procedure TForthMachine._TargetPop(Machine: TForthMachine; Command: PForthCommand);
+begin
+  WUP(TargetPop);
+end;
+
+procedure TForthMachine._ContextPush(Machine: TForthMachine; Command: PForthCommand);
+begin
+  ContextPush(WOP);
+end;
+
+procedure TForthMachine._ContextPop(Machine: TForthMachine; Command: PForthCommand);
+begin
+  WUP(ContextPop);
 end;
 
 procedure TForthMachine.CompileComment(Machine: TForthMachine; Command: PForthCommand);
@@ -3671,6 +3762,10 @@ procedure TForthMachine.RunMnemonic(M: Cardinal);
 begin
   //Writeln('RUN MNEMONIC "' + C[M].Name + '" ' + IntToStr(M) + ' EC:' + IntToStr(EC));
   // Writeln('RUN STEP "', C[M].Name, '"');
+  if M = Cardinal(-1) then begin
+    LogError('trying to run command with opcode -1');
+    Exit;
+  end;
   C[M].Code(Self, C[M]);
 end;
 
@@ -4095,6 +4190,55 @@ begin
   Dec(LP, Size);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
+procedure TForthMachine.ContextPush(V: PVoc);
+begin
+  SetLength(Context, Length(Context) + 1);
+  Context[High(Context)] := V;
+end;
+
+function TForthMachine.ContextPop: PVoc;
+begin
+  if Length(Context) = 0 then
+    Exit;
+  Result := Context[High(Context)];
+  if Length(Context) = 1 then begin
+    LogError('trying to pop root context vocabulary');
+    Exit;
+  end;
+  SetLength(Context, Length(Context) - 1);
+end;
+
+procedure TForthMachine.TargetPush(V: PVoc);
+begin
+  SetLength(Target, Length(Target) + 1);
+  Target[High(Target)] := V;
+end;
+
+function TForthMachine.TargetPop: PVoc;
+begin
+  if Length(Target) = 0 then
+    Exit;
+  Result := Target[High(Target)];
+  if Length(Target) = 1 then begin
+    LogError('trying to pop root target vocabulary');
+    Exit;
+  end;
+  SetLength(Target, Length(Target) - 1);
+end;
+
+procedure TForthMachine.UseVoc(V: PVoc);
+begin
+  TargetPush(V);
+  ContextPush(V);
+end;
+
+procedure TForthMachine.UnuseVoc;
+begin
+  TargetPop;
+  ContextPop;
+end;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 constructor TForthMachine.Create;
 var
@@ -4150,8 +4294,27 @@ begin
 
   FAlien := TAlien.Create;
 
+  new(vGLOBAL);
+  new(vLOCAL);
+  vGLOBAL^.Item := nil;
+  vLOCAL^.Item := nil;
+  vGLOBAL^.sFIND := -1;
+  vGLOBAL^.sNOTFOUND := -1;
+  vLOCAL^.sFIND := -1;
+  vLOCAL^.sNOTFOUND := -1;
+  UseVoc(vGLOBAL);
+  ContextPush(vLOCAL);
   // it must have zero opcode
   AddCommand('exit', FControlCommands._exit);
+  AddCommand('_FIND_', _FIND_);
+  AddCommand('_NOTFOUND_', _NOTFOUND_);
+  AddCommand('vocabulary-new', _vocabulary);
+  AddCommand('vLOCAL', _vLOCAL);
+  AddCommand('vGLOBAL', _vGLOBAL);
+  AddCommand('target<', _TargetPush);
+  AddCommand('target>', _TargetPop);
+  AddCommand('context<', _ContextPush);
+  AddCommand('context>', _ContextPop);
 
   SetLength(FTypes, 0);
   all_create;
@@ -4697,49 +4860,59 @@ end;
 procedure TForthMachine.InterpretName(W: PChar);
 var
   I: Integer;
+  Command: PForthCommand;
+  S: TString;
+  //Time: Integer;
 begin
-  //Writeln('INTERPRET ', W);
-  for I := High(C) downto 0 do
-    if StrComp(C[I].Name, W) = 0 then begin
-      //Writeln('START ' + W);
-      C[I].Code(Self, C[I]);
-      // Writeln('DONE ' + W);
+  // Writeln('INTERPRET ', W);
+  (* for I := High(C) downto 0 do *)
+  (*   if StrComp(C[I].Name, W) = 0 then begin *)
+  (*     //Writeln('START ' + W); *)
+  (*     C[I].Code(Self, C[I]); *)
+  (*     // Writeln('DONE ' + W); *)
+  (*     Exit; *)
+  (*   end; *)
+  S := W;
+  Command := FindCommand(S);
+  // Writeln('FOUND COMMAND: ', Integer(Command));
+  if Command <> nil then begin
+    // Writeln('INTERPRET COMMAND ', Command^.Name);
+    Command.Code(Self, Command);
+    Exit;
+  end;
+  //Time := GetTimer;
+  for I := High(Context) downto 0 do begin
+    if Context[I]^.sNOTFOUND = -1 then
+      continue;
+    WUS(S);
+    CallCommand(C[Context[I]^.sNOTFOUND]);
+    if WOI = 0 then
       Exit;
-    end;
-  (* I := StrToIntDef(W, -3535); *)
-  (* if I = -3535 then *)
-  (*   Error(' Unknown command: ' + W) *)
-  (* else *)
-  (*   WUI(I); *)
-  if ConvertStrToInt(W, I) <> 0 then
-    LogError('Unknown command: ' + W)
-  else
-    WUI(I);
+  end;
+  LogError('unknown command "' + S + '"');
 end;
 
 function TForthMachine.CompileName(W: PChar): Boolean;
 var
   I: Integer;
+  Command: PForthCommand;
 begin
-  (* if W = '?branch' then *)
-  (*   Writeln('Compile name "', W, '"'); *)
-  (* if W = 'compile' then *)
-  (*   Writeln('Compile name "', W, '"'); *)
-  for I := High(C) downto 0 do
-    if StrComp(C[I].Name, W) = 0 then begin
-      if IsImmediate(C[I]) then
-        C[I].Code(Self, C[I])
-      else
-        EWO(I);
-      Exit;
-    end;
-  (* I := StrToIntDef(W, -3535); *)
-  (* if I = -3535 then *)
-  (*   Error('Unknown command: ' + W) *)
-  (* else begin *)
-  (*   EWO('(literal)'); *)
-  (*   EWI(I); *)
-  (* end; *)
+  Command := FindCommand(W, @I);
+  if Command <> nil then begin
+    if IsImmediate(C[I]) then
+      C[I].Code(Self, C[I])
+    else
+      EWO(I);
+    Exit;
+  end;
+  (* for I := High(C) downto 0 do *)
+  (*   if StrComp(C[I].Name, W) = 0 then begin *)
+  (*     if IsImmediate(C[I]) then *)
+  (*       C[I].Code(Self, C[I]) *)
+  (*     else *)
+  (*       EWO(I); *)
+  (*     Exit; *)
+  (*   end; *)
   if ConvertStrToInt(W, I) <> 0 then
     LogError('Unknown command: ' + W)
   else begin
@@ -4855,6 +5028,7 @@ procedure TForthMachine.CallCommand(Command: PForthCommand);
 begin
   if Command = nil then
     Exit;
+  // Writeln('Call command ', Command^.Name);
   RUI(Ord(FSession) * BOOL_TRUE);
   RUI(Ord(FRunning) * BOOL_TRUE);
   RUI(EC);
@@ -4864,17 +5038,20 @@ begin
   FSession := True;
   FRunning := False;
   Command^.Code(Self, Command);
-  MainLoop;
+  if FRunning then
+    MainLoop;
   RP := ROP;
   RB := ROP; 
   EC := ROI;
   FRunning := ROI <> BOOL_FALSE;
   FSession := ROI <> BOOL_FALSE;
+  // Writeln('Command done');
 end;
 
 procedure TForthMachine.MainLoop;
 begin
   while FSession do begin
+    //Writeln('MainLoop');
     if FRunning then
       RunStep
     else
@@ -5112,6 +5289,8 @@ begin
   C[High(C)].Code := FControlCommands.call;
   FLastMnemonic := High(C);
   Result := C[High(C)];
+  if Name <> '' then
+    OnUpdateCommand(High(C));
 end;
 
 procedure TForthMachine.ReadEmbro(P: Pointer; Size: Integer);
@@ -5191,17 +5370,86 @@ begin
   Result := FEmbroDump[Index];
 end;
 
-function TForthMachine.FindCommand(const Name: TString): PForthCommand;
+procedure TForthMachine._FIND_(Machine: TForthMachine; Command: PForthCommand);
+var
+  S: TString;
+  I: Integer;
+  Item: PVocItem;
+begin
+  S := WOS;
+  for I := High(Context) downto 0 do begin
+    Item := Context[I].Item;
+    while Item <> nil do begin
+      if TString(C[Item^.Index]^.Name) = S then begin
+        //Writeln('FOUND ', Item^.Index, ' ', C[Item^.Index]^.Name);
+        WUI(Item^.Index);
+        WUI(0);
+        Exit;
+      end;
+      Item := Item^.Next;
+    end;
+  end;
+  // Writeln('_FIND_(', S, ')');
+  //for I := High(C) downto 0 do
+  //  if TString(C[I].Name) = S then begin
+  //    WUI(I);
+  //    WUI(0);
+  //    // Writeln('_FIND_(', S, ') done');
+  //    Exit;
+  //  end;
+  WUI(-1);
+  // Writeln('_FIND_(', S, ') failed');
+end;
+
+procedure TForthMachine._NOTFOUND_(Machine: TForthMachine; Command: PForthCommand);
+var
+  S: TString;
+  I: Integer;
+begin
+  S := WOS;
+  // Writeln('_NOTFOUND_(', S, ')');
+  if ConvertStrToInt(S, I) = 0 then begin
+    WUI(I);
+    WUI(BOOL_FALSE);
+    Exit;
+  end;
+  WUI(BOOL_TRUE);
+end;
+
+function TForthMachine.FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
 var
   I: Integer;
 begin
-  for I := High(C) downto 0 do
+  I := High(Context);
+  while I >= 0 do
+    if Context[I].sFIND = -1 then
+      Dec(I)
+    else
+      Break;
+  // Writeln('I = ', I);
+  if I <> -1 then begin
+    WUS(Name);
+    CallCommand(C[Context[I].sFIND]);
+    if WOI = 0 then begin
+      if Index <> nil then begin
+        Index^ := WOI;
+        Result := C[Index^];
+      end else
+        Result := C[WOI];
+    end else begin
+      Result := nil;
+    end;
+  end else
+    Result := nil;
+  // if Result = nil then
+  //   Writeln('Command not found');
+  {for I := High(C) downto 0 do
     if TString(C[I].Name) = Name then begin
       //Writeln('Found command ', C[I].Name);
       Result := C[I];
       Exit;
     end;
-  Result := nil;
+  Result := nil;}
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TIntArithmetic'}{$ENDIF}

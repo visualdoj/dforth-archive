@@ -28,5 +28,6 @@ include" units\core\w.de"
 include" units\core\help.de"
 include" units\core\createwords.de"
 include" docs\russian.de"
+include" units\core\voc.de"
 
 str" Loaded system file" str. cr
