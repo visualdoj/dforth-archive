@@ -30,5 +30,3 @@
 : GLOBAL vGLOBAL voc.use ; immediate
 : LOCAL vLOCAL voc.use ; immediate
 : ^^^ target> drop context> drop ; immediate
-
-str" Loaded voc.de" str. cr

@@ -4,4 +4,4 @@ include" units\structures\arr.de"
 // реально подключения не произойдёт
 include" units\structures\arr.de"
 // подключать можно и вычислив строку на стеке
-str" units\" str" windows.de" str-concat included
+str" units\" str" windows.de" str+ included

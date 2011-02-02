@@ -1,0 +1,17 @@
+// 2011.02.02 # Doj
+// Команды для обработки строк.
+
+// Возвращает строку, содержащую первые i символов строки
+: str-left ( si-s) 0 swap str-copy ;
+// Возвращает строку, содержащую последние i символов строки
+: str-right ( si-s) cover str# over - swap str-copy ;
+// : parse-right ( si-s) | p| cdup str# dup p@ - p@ str-copy ;
+// : parse-right s:str,p:int return str-copy(s,str#(s)-p,p) ;
+
+// Удаляет из строки фрагмент (p,p+l-1), она распадается на две подстроки - l и r
+: parse-break ( spl-lr) rrot cover rrot parse-left rrot swap parse-right ;
+
+// Разбивает строку на две при помощи строки b, т.е. s = l b r
+// Если s не содержит b, то l=s, r=str0
+: parse-binary ( sb-lr) cover cover str-pos dup -1 = if drop cdrop str0 exit then 
+                        swap str# parse-break ;

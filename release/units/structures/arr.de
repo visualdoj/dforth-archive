@@ -11,7 +11,7 @@ include" units\core\createwords.de"
 : array ( n "name"-) create cells allot does> ( i-p) arr[] ;
 // то же, что и array, но ещё и создаёт константу с именем name#,
 // хранящую размер массива
-: array-constanted# ( ns-) [str]" #" str-concat constanted ;
+: array-constanted# ( ns-) [str]" #" str+ constanted ;
 : array# ( n "name"-) source-next-name-passive over array array-constanted# ;
 // по номеру элемента и адресу массива выдаёт значение элемента
 : arr@ ( ip-i) arr[] @ ;

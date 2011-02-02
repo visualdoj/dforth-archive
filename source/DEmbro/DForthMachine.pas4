@@ -4801,10 +4801,10 @@ begin
   AddCommand('str$', FStringCommands.str_dollar);
   AddCommand('str@', FStringCommands.str_dog);
   AddCommand('str!', FStringCommands.str_exclamation);
-  AddCommand('str-len', FStringCommands.str_len);
+  AddCommand('str#', FStringCommands.str_len);
   AddCommand('str=', FStringCommands.str_equel);
-  AddCommand('str-nil', FStringCommands.str_nil);
-  AddCommand('str-concat', FStringCommands.str_concat);
+  AddCommand('str0', FStringCommands.str_nil);
+  AddCommand('str+', FStringCommands.str_concat);
   AddCommand('str-drop', FStringCommands.str_drop);
   AddCommand('str-dup', FStringCommands.str_dup);
   AddCommand('str-swap', FPtrStackCommands.swap);

@@ -49,7 +49,7 @@ wp
 
 : str-dyn dyn ;
 : str-dyn# dyn# ;
-: str-dyn.inclen ( d-) dup @ swap dup 1+! dyn[] str-nil swap str! ;
+: str-dyn.inclen ( d-) dup @ swap dup 1+! dyn[] str0 swap str! ;
 // : str-dyn+ ( sd-) dup str-dyn# swap dup str-dyn.inclen dyn[] str! ;
 : str-dyn+ ( sd-) over swap dyn+ cinc ;
 : str-dyn@ ( id-s) dyn[] str@ ;

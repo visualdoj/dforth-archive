@@ -1,12 +1,12 @@
 // 2010.12.06 # Doj
 // Команды для упрощения работы со строками
 
-// Универсальная команда для строк.
+// Универсальная команда для строковых констант.
 // В режиме интерпретации работает как str", а в режиме исполнения как "
 : " ( "xxx""-s) ( C:"xxx""-) ( R:-s) 
-          state @ 1 = if ['] [str]" execute else str" then ; immediate
+        state @ if ['] [str]" execute else str" then ; immediate
 // Печатает строку
 : .str" ( "xxx"-) str" str. ;
 : [.str]" ( C:"xxx") ( R:-) ['] [str]" execute compile str. ; immediate
 : ." ( "xxx"-) ( C:"xxx") ( R:-) 
-     state @ 1 = if ['] [.str]" execute else .str" then ; immediate
+        state @ if ['] [.str]" execute else .str" then ; immediate

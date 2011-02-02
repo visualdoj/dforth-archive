@@ -10,6 +10,9 @@
 : repeat compile branch <resolve >resolve ; immediate
 : until compile ?branch <resolve ; immediate
 
+// : " ( xxx"-) state @ if ['] [str]" execute else ['] [str]" execute then ; immediate
+// : ." ( xxx"-) ['] " execute str. ; immediate
+
 : off ( p-) 0 swap ! ;
 : on ( p-) true swap ! ;
 
