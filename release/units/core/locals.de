@@ -1,0 +1,13 @@
+// 2011.02.02 # Doj
+//  оманды дл€ работы с локальными переменными
+
+0 value *local-offset*
+
+: variable-local@ ( p) @ l@ ;
+: variable-local! ( p) @ l! ;
+: local-created ( s) ['] LOCAL execute created ['] ^^^ execute ;
+: make-local-created ( ss) str+ created *local-offset* @ , ;
+: make-local@ ( s) " @" make-local-created does> variable-local@ ;
+: make-local! ( s) " !" make-local-created does> variable-local! ;
+: localed ( s) str-dup make-local@ make-local! 
+               *local-offset* @ cell+ *local-offset* ! ;

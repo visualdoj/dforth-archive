@@ -1,0 +1,1486 @@
+// 2011.02.02 # Doj
+// Заголовок к OpenGL (1.1)
+
+// {{{ types
+: GLenum        t_uint32 ;
+: GLboolean     t_uint8 ;
+: GLbitfield    t_uint32 ;
+: GLbyte        t_int8 ;
+: GLshort       t_int16 ;
+: GLint         t_int32 ;
+: GLsizei       t_int32 ;
+: GLubyte       t_uint8 ;
+: GLushort      t_uint16 ;
+: GLuint        t_uint32 ;
+: GLfloat       t_single ;
+: GLclampf      t_single ;
+: GLdouble      t_double ;
+: GLclampd      t_double ;
+: GLvoid        t_void ;
+: GLenum*       t_ptr ;
+: GLboolean*    t_ptr ;
+: GLbitfield*   t_ptr ;
+: GLbyte*       t_ptr ;
+: GLshort*      t_ptr ;
+: GLint*        t_ptr ;
+: GLsizei*      t_ptr ;
+: GLubyte*      t_ptr ;
+: GLushort*     t_ptr ;
+: GLuint*       t_ptr ;
+: GLfloat*      t_ptr ;
+: GLclampf*     t_ptr ;
+: GLdouble*     t_ptr ;
+: GLclampd*     t_ptr ;
+: GLvoid*       t_ptr ;
+: GLvoid**      t_ptr ;
+// }}}
+// {{{ constants
+  // Version
+  1 constant GL_VERSION_1_1                    
+
+  // AccumOp
+  h0100 constant GL_ACCUM                          
+  h0101 constant GL_LOAD                           
+  h0102 constant GL_RETURN                         
+  h0103 constant GL_MULT                           
+  h0104 constant GL_ADD                            
+
+  // AlphaFunction
+  h0200 constant GL_NEVER                          
+  h0201 constant GL_LESS                           
+  h0202 constant GL_EQUAL                          
+  h0203 constant GL_LEQUAL                         
+  h0204 constant GL_GREATER                        
+  h0205 constant GL_NOTEQUAL                       
+  h0206 constant GL_GEQUAL                         
+  h0207 constant GL_ALWAYS                         
+
+  // AttribMask
+  h00000001 constant GL_CURRENT_BIT                    
+  h00000002 constant GL_POINT_BIT                      
+  h00000004 constant GL_LINE_BIT                       
+  h00000008 constant GL_POLYGON_BIT                    
+  h00000010 constant GL_POLYGON_STIPPLE_BIT            
+  h00000020 constant GL_PIXEL_MODE_BIT                 
+  h00000040 constant GL_LIGHTING_BIT                   
+  h00000080 constant GL_FOG_BIT                        
+  h00000100 constant GL_DEPTH_BUFFER_BIT               
+  h00000200 constant GL_ACCUM_BUFFER_BIT               
+  h00000400 constant GL_STENCIL_BUFFER_BIT             
+  h00000800 constant GL_VIEWPORT_BIT                   
+  h00001000 constant GL_TRANSFORM_BIT                  
+  h00002000 constant GL_ENABLE_BIT                     
+  h00004000 constant GL_COLOR_BUFFER_BIT               
+  h00008000 constant GL_HINT_BIT                       
+  h00010000 constant GL_EVAL_BIT                       
+  h00020000 constant GL_LIST_BIT                       
+  h00040000 constant GL_TEXTURE_BIT                    
+  h00080000 constant GL_SCISSOR_BIT                    
+  h000FFFFF constant GL_ALL_ATTRIB_BITS                
+
+  // BeginMode
+  h0000 constant GL_POINTS                         
+  h0001 constant GL_LINES                          
+  h0002 constant GL_LINE_LOOP                      
+  h0003 constant GL_LINE_STRIP                     
+  h0004 constant GL_TRIANGLES                      
+  h0005 constant GL_TRIANGLE_STRIP                 
+  h0006 constant GL_TRIANGLE_FAN                   
+  h0007 constant GL_QUADS                          
+  h0008 constant GL_QUAD_STRIP                     
+  h0009 constant GL_POLYGON                        
+
+  // BlendingFactorDest
+  0 constant GL_ZERO                           
+  1 constant GL_ONE                            
+  h0300 constant GL_SRC_COLOR                      
+  h0301 constant GL_ONE_MINUS_SRC_COLOR            
+  h0302 constant GL_SRC_ALPHA                      
+  h0303 constant GL_ONE_MINUS_SRC_ALPHA            
+  h0304 constant GL_DST_ALPHA                      
+  h0305 constant GL_ONE_MINUS_DST_ALPHA            
+
+  // BlendingFactorSrc
+  //      GL_ZERO
+  //      GL_ONE
+  h0306 constant GL_DST_COLOR                      
+  h0307 constant GL_ONE_MINUS_DST_COLOR            
+  h0308 constant GL_SRC_ALPHA_SATURATE             
+  //      GL_SRC_ALPHA
+  //      GL_ONE_MINUS_SRC_ALPHA
+  //      GL_DST_ALPHA
+  //      GL_ONE_MINUS_DST_ALPHA
+
+  // Boolean
+  1 constant GL_TRUE                           
+  0 constant GL_FALSE                          
+
+  // ClearBufferMask
+  //      GL_COLOR_BUFFER_BIT
+  //      GL_ACCUM_BUFFER_BIT
+  //      GL_STENCIL_BUFFER_BIT
+  //      GL_DEPTH_BUFFER_BIT
+
+  // ClientArrayType
+  //      GL_VERTEX_ARRAY
+  //      GL_NORMAL_ARRAY
+  //      GL_COLOR_ARRAY
+  //      GL_INDEX_ARRAY
+  //      GL_TEXTURE_COORD_ARRAY
+  //      GL_EDGE_FLAG_ARRAY
+
+  // ClipPlaneName
+  h3000 constant GL_CLIP_PLANE0                    
+  h3001 constant GL_CLIP_PLANE1                    
+  h3002 constant GL_CLIP_PLANE2                    
+  h3003 constant GL_CLIP_PLANE3                    
+  h3004 constant GL_CLIP_PLANE4                    
+  h3005 constant GL_CLIP_PLANE5                    
+
+  // ColorMaterialFace
+  //      GL_FRONT
+  //      GL_BACK
+  //      GL_FRONT_AND_BACK
+
+  // ColorMaterialParameter
+  //      GL_AMBIENT
+  //      GL_DIFFUSE
+  //      GL_SPECULAR
+  //      GL_EMISSION
+  //      GL_AMBIENT_AND_DIFFUSE
+
+  // ColorPointerType
+  //      GL_BYTE
+  //      GL_UNSIGNED_BYTE
+  //      GL_SHORT
+  //      GL_UNSIGNED_SHORT
+  //      GL_INT
+  //      GL_UNSIGNED_INT
+  //      GL_FLOAT
+  //      GL_DOUBLE
+
+  // CullFaceMode
+  //      GL_FRONT
+  //      GL_BACK
+  //      GL_FRONT_AND_BACK
+
+  // DataType
+  h1400 constant GL_BYTE                           
+  h1401 constant GL_UNSIGNED_BYTE                  
+  h1402 constant GL_SHORT                          
+  h1403 constant GL_UNSIGNED_SHORT                 
+  h1404 constant GL_INT                            
+  h1405 constant GL_UNSIGNED_INT                   
+  h1406 constant GL_FLOAT                          
+  h1407 constant GL_2_BYTES                        
+  h1408 constant GL_3_BYTES                        
+  h1409 constant GL_4_BYTES                        
+  h140A constant GL_DOUBLE                         
+
+  // DepthFunction
+  //      GL_NEVER
+  //      GL_LESS
+  //      GL_EQUAL
+  //      GL_LEQUAL
+  //      GL_GREATER
+  //      GL_NOTEQUAL
+  //      GL_GEQUAL
+  //      GL_ALWAYS
+
+  // DrawBufferMode
+  0 constant GL_NONE                           
+  h0400 constant GL_FRONT_LEFT                     
+  h0401 constant GL_FRONT_RIGHT                    
+  h0402 constant GL_BACK_LEFT                      
+  h0403 constant GL_BACK_RIGHT                     
+  h0404 constant GL_FRONT                          
+  h0405 constant GL_BACK                           
+  h0406 constant GL_LEFT                           
+  h0407 constant GL_RIGHT                          
+  h0408 constant GL_FRONT_AND_BACK                 
+  h0409 constant GL_AUX0                           
+  h040A constant GL_AUX1                           
+  h040B constant GL_AUX2                           
+  h040C constant GL_AUX3                           
+
+  // Enable
+  //      GL_FOG
+  //      GL_LIGHTING
+  //      GL_TEXTURE_1D
+  //      GL_TEXTURE_2D
+  //      GL_LINE_STIPPLE
+  //      GL_POLYGON_STIPPLE
+  //      GL_CULL_FACE
+  //      GL_ALPHA_TEST
+  //      GL_BLEND
+  //      GL_INDEX_LOGIC_OP
+  //      GL_COLOR_LOGIC_OP
+  //      GL_DITHER
+  //      GL_STENCIL_TEST
+  //      GL_DEPTH_TEST
+  //      GL_CLIP_PLANE0
+  //      GL_CLIP_PLANE1
+  //      GL_CLIP_PLANE2
+  //      GL_CLIP_PLANE3
+  //      GL_CLIP_PLANE4
+  //      GL_CLIP_PLANE5
+  //      GL_LIGHT0
+  //      GL_LIGHT1
+  //      GL_LIGHT2
+  //      GL_LIGHT3
+  //      GL_LIGHT4
+  //      GL_LIGHT5
+  //      GL_LIGHT6
+  //      GL_LIGHT7
+  //      GL_TEXTURE_GEN_S
+  //      GL_TEXTURE_GEN_T
+  //      GL_TEXTURE_GEN_R
+  //      GL_TEXTURE_GEN_Q
+  //      GL_MAP1_VERTEX_3
+  //      GL_MAP1_VERTEX_4
+  //      GL_MAP1_COLOR_4
+  //      GL_MAP1_INDEX
+  //      GL_MAP1_NORMAL
+  //      GL_MAP1_TEXTURE_COORD_1
+  //      GL_MAP1_TEXTURE_COORD_2
+  //      GL_MAP1_TEXTURE_COORD_3
+  //      GL_MAP1_TEXTURE_COORD_4
+  //      GL_MAP2_VERTEX_3
+  //      GL_MAP2_VERTEX_4
+  //      GL_MAP2_COLOR_4
+  //      GL_MAP2_INDEX
+  //      GL_MAP2_NORMAL
+  //      GL_MAP2_TEXTURE_COORD_1
+  //      GL_MAP2_TEXTURE_COORD_2
+  //      GL_MAP2_TEXTURE_COORD_3
+  //      GL_MAP2_TEXTURE_COORD_4
+  //      GL_POINT_SMOOTH
+  //      GL_LINE_SMOOTH
+  //      GL_POLYGON_SMOOTH
+  //      GL_SCISSOR_TEST
+  //      GL_COLOR_MATERIAL
+  //      GL_NORMALIZE
+  //      GL_AUTO_NORMAL
+  //      GL_VERTEX_ARRAY
+  //      GL_NORMAL_ARRAY
+  //      GL_COLOR_ARRAY
+  //      GL_INDEX_ARRAY
+  //      GL_TEXTURE_COORD_ARRAY
+  //      GL_EDGE_FLAG_ARRAY
+  //      GL_POLYGON_OFFSET_POINT
+  //      GL_POLYGON_OFFSET_LINE
+  //      GL_POLYGON_OFFSET_FILL
+
+  // ErrorCode
+  0 constant GL_NO_ERROR                       
+  h0500 constant GL_INVALID_ENUM                   
+  h0501 constant GL_INVALID_VALUE                  
+  h0502 constant GL_INVALID_OPERATION              
+  h0503 constant GL_STACK_OVERFLOW                 
+  h0504 constant GL_STACK_UNDERFLOW                
+  h0505 constant GL_OUT_OF_MEMORY                  
+
+  // FeedBackMode
+  h0600 constant GL_2D                             
+  h0601 constant GL_3D                             
+  h0602 constant GL_3D_COLOR                       
+  h0603 constant GL_3D_COLOR_TEXTURE               
+  h0604 constant GL_4D_COLOR_TEXTURE               
+
+  // FeedBackToken
+  h0700 constant GL_PASS_THROUGH_TOKEN             
+  h0701 constant GL_POINT_TOKEN                    
+  h0702 constant GL_LINE_TOKEN                     
+  h0703 constant GL_POLYGON_TOKEN                  
+  h0704 constant GL_BITMAP_TOKEN                   
+  h0705 constant GL_DRAW_PIXEL_TOKEN               
+  h0706 constant GL_COPY_PIXEL_TOKEN               
+  h0707 constant GL_LINE_RESET_TOKEN               
+
+  // FogMode
+  //      GL_LINEAR
+  h0800 constant GL_EXP                            
+  h0801 constant GL_EXP2                           
+
+  // FogParameter
+  //      GL_FOG_COLOR
+  //      GL_FOG_DENSITY
+  //      GL_FOG_END
+  //      GL_FOG_INDEX
+  //      GL_FOG_MODE
+  //      GL_FOG_START
+
+  // FrontFaceDirection
+  h0900 constant GL_CW                             
+  h0901 constant GL_CCW                            
+
+  // GetMapTarget
+  h0A00 constant GL_COEFF                          
+  h0A01 constant GL_ORDER                          
+  h0A02 constant GL_DOMAIN                         
+
+  // GetPixelMap
+  //      GL_PIXEL_MAP_I_TO_I
+  //      GL_PIXEL_MAP_S_TO_S
+  //      GL_PIXEL_MAP_I_TO_R
+  //      GL_PIXEL_MAP_I_TO_G
+  //      GL_PIXEL_MAP_I_TO_B
+  //      GL_PIXEL_MAP_I_TO_A
+  //      GL_PIXEL_MAP_R_TO_R
+  //      GL_PIXEL_MAP_G_TO_G
+  //      GL_PIXEL_MAP_B_TO_B
+  //      GL_PIXEL_MAP_A_TO_A
+
+  // GetPointerTarget
+  //      GL_VERTEX_ARRAY_POINTER
+  //      GL_NORMAL_ARRAY_POINTER
+  //      GL_COLOR_ARRAY_POINTER
+  //      GL_INDEX_ARRAY_POINTER
+  //      GL_TEXTURE_COORD_ARRAY_POINTER
+  //      GL_EDGE_FLAG_ARRAY_POINTER
+
+  // GetTarget
+  h0B00 constant GL_CURRENT_COLOR                  
+  h0B01 constant GL_CURRENT_INDEX                  
+  h0B02 constant GL_CURRENT_NORMAL                 
+  h0B03 constant GL_CURRENT_TEXTURE_COORDS         
+  h0B04 constant GL_CURRENT_RASTER_COLOR           
+  h0B05 constant GL_CURRENT_RASTER_INDEX           
+  h0B06 constant GL_CURRENT_RASTER_TEXTURE_COORDS  
+  h0B07 constant GL_CURRENT_RASTER_POSITION        
+  h0B08 constant GL_CURRENT_RASTER_POSITION_VALID  
+  h0B09 constant GL_CURRENT_RASTER_DISTANCE        
+  h0B10 constant GL_POINT_SMOOTH                   
+  h0B11 constant GL_POINT_SIZE                     
+  h0B12 constant GL_POINT_SIZE_RANGE               
+  h0B13 constant GL_POINT_SIZE_GRANULARITY         
+  h0B20 constant GL_LINE_SMOOTH                    
+  h0B21 constant GL_LINE_WIDTH                     
+  h0B22 constant GL_LINE_WIDTH_RANGE               
+  h0B23 constant GL_LINE_WIDTH_GRANULARITY         
+  h0B24 constant GL_LINE_STIPPLE                   
+  h0B25 constant GL_LINE_STIPPLE_PATTERN           
+  h0B26 constant GL_LINE_STIPPLE_REPEAT            
+  h0B30 constant GL_LIST_MODE                      
+  h0B31 constant GL_MAX_LIST_NESTING               
+  h0B32 constant GL_LIST_BASE                      
+  h0B33 constant GL_LIST_INDEX                     
+  h0B40 constant GL_POLYGON_MODE                   
+  h0B41 constant GL_POLYGON_SMOOTH                 
+  h0B42 constant GL_POLYGON_STIPPLE                
+  h0B43 constant GL_EDGE_FLAG                      
+  h0B44 constant GL_CULL_FACE                      
+  h0B45 constant GL_CULL_FACE_MODE                 
+  h0B46 constant GL_FRONT_FACE                     
+  h0B50 constant GL_LIGHTING                       
+  h0B51 constant GL_LIGHT_MODEL_LOCAL_VIEWER       
+  h0B52 constant GL_LIGHT_MODEL_TWO_SIDE           
+  h0B53 constant GL_LIGHT_MODEL_AMBIENT            
+  h0B54 constant GL_SHADE_MODEL                    
+  h0B55 constant GL_COLOR_MATERIAL_FACE            
+  h0B56 constant GL_COLOR_MATERIAL_PARAMETER       
+  h0B57 constant GL_COLOR_MATERIAL                 
+  h0B60 constant GL_FOG                            
+  h0B61 constant GL_FOG_INDEX                      
+  h0B62 constant GL_FOG_DENSITY                    
+  h0B63 constant GL_FOG_START                      
+  h0B64 constant GL_FOG_END                        
+  h0B65 constant GL_FOG_MODE                       
+  h0B66 constant GL_FOG_COLOR                      
+  h0B70 constant GL_DEPTH_RANGE                    
+  h0B71 constant GL_DEPTH_TEST                     
+  h0B72 constant GL_DEPTH_WRITEMASK                
+  h0B73 constant GL_DEPTH_CLEAR_VALUE              
+  h0B74 constant GL_DEPTH_FUNC                     
+  h0B80 constant GL_ACCUM_CLEAR_VALUE              
+  h0B90 constant GL_STENCIL_TEST                   
+  h0B91 constant GL_STENCIL_CLEAR_VALUE            
+  h0B92 constant GL_STENCIL_FUNC                   
+  h0B93 constant GL_STENCIL_VALUE_MASK             
+  h0B94 constant GL_STENCIL_FAIL                   
+  h0B95 constant GL_STENCIL_PASS_DEPTH_FAIL        
+  h0B96 constant GL_STENCIL_PASS_DEPTH_PASS        
+  h0B97 constant GL_STENCIL_REF                    
+  h0B98 constant GL_STENCIL_WRITEMASK              
+  h0BA0 constant GL_MATRIX_MODE                    
+  h0BA1 constant GL_NORMALIZE                      
+  h0BA2 constant GL_VIEWPORT                       
+  h0BA3 constant GL_MODELVIEW_STACK_DEPTH          
+  h0BA4 constant GL_PROJECTION_STACK_DEPTH         
+  h0BA5 constant GL_TEXTURE_STACK_DEPTH            
+  h0BA6 constant GL_MODELVIEW_MATRIX               
+  h0BA7 constant GL_PROJECTION_MATRIX              
+  h0BA8 constant GL_TEXTURE_MATRIX                 
+  h0BB0 constant GL_ATTRIB_STACK_DEPTH             
+  h0BB1 constant GL_CLIENT_ATTRIB_STACK_DEPTH      
+  h0BC0 constant GL_ALPHA_TEST                     
+  h0BC1 constant GL_ALPHA_TEST_FUNC                
+  h0BC2 constant GL_ALPHA_TEST_REF                 
+  h0BD0 constant GL_DITHER                         
+  h0BE0 constant GL_BLEND_DST                      
+  h0BE1 constant GL_BLEND_SRC                      
+  h0BE2 constant GL_BLEND                          
+  h0BF0 constant GL_LOGIC_OP_MODE                  
+  h0BF1 constant GL_INDEX_LOGIC_OP                 
+  h0BF2 constant GL_COLOR_LOGIC_OP                 
+  h0C00 constant GL_AUX_BUFFERS                    
+  h0C01 constant GL_DRAW_BUFFER                    
+  h0C02 constant GL_READ_BUFFER                    
+  h0C10 constant GL_SCISSOR_BOX                    
+  h0C11 constant GL_SCISSOR_TEST                   
+  h0C20 constant GL_INDEX_CLEAR_VALUE              
+  h0C21 constant GL_INDEX_WRITEMASK                
+  h0C22 constant GL_COLOR_CLEAR_VALUE              
+  h0C23 constant GL_COLOR_WRITEMASK                
+  h0C30 constant GL_INDEX_MODE                     
+  h0C31 constant GL_RGBA_MODE                      
+  h0C32 constant GL_DOUBLEBUFFER                   
+  h0C33 constant GL_STEREO                         
+  h0C40 constant GL_RENDER_MODE                    
+  h0C50 constant GL_PERSPECTIVE_CORRECTION_HINT    
+  h0C51 constant GL_POINT_SMOOTH_HINT              
+  h0C52 constant GL_LINE_SMOOTH_HINT               
+  h0C53 constant GL_POLYGON_SMOOTH_HINT            
+  h0C54 constant GL_FOG_HINT                       
+  h0C60 constant GL_TEXTURE_GEN_S                  
+  h0C61 constant GL_TEXTURE_GEN_T                  
+  h0C62 constant GL_TEXTURE_GEN_R                  
+  h0C63 constant GL_TEXTURE_GEN_Q                  
+  h0C70 constant GL_PIXEL_MAP_I_TO_I               
+  h0C71 constant GL_PIXEL_MAP_S_TO_S               
+  h0C72 constant GL_PIXEL_MAP_I_TO_R               
+  h0C73 constant GL_PIXEL_MAP_I_TO_G               
+  h0C74 constant GL_PIXEL_MAP_I_TO_B               
+  h0C75 constant GL_PIXEL_MAP_I_TO_A               
+  h0C76 constant GL_PIXEL_MAP_R_TO_R               
+  h0C77 constant GL_PIXEL_MAP_G_TO_G               
+  h0C78 constant GL_PIXEL_MAP_B_TO_B               
+  h0C79 constant GL_PIXEL_MAP_A_TO_A               
+  h0CB0 constant GL_PIXEL_MAP_I_TO_I_SIZE          
+  h0CB1 constant GL_PIXEL_MAP_S_TO_S_SIZE          
+  h0CB2 constant GL_PIXEL_MAP_I_TO_R_SIZE          
+  h0CB3 constant GL_PIXEL_MAP_I_TO_G_SIZE          
+  h0CB4 constant GL_PIXEL_MAP_I_TO_B_SIZE          
+  h0CB5 constant GL_PIXEL_MAP_I_TO_A_SIZE          
+  h0CB6 constant GL_PIXEL_MAP_R_TO_R_SIZE          
+  h0CB7 constant GL_PIXEL_MAP_G_TO_G_SIZE          
+  h0CB8 constant GL_PIXEL_MAP_B_TO_B_SIZE          
+  h0CB9 constant GL_PIXEL_MAP_A_TO_A_SIZE          
+  h0CF0 constant GL_UNPACK_SWAP_BYTES              
+  h0CF1 constant GL_UNPACK_LSB_FIRST               
+  h0CF2 constant GL_UNPACK_ROW_LENGTH              
+  h0CF3 constant GL_UNPACK_SKIP_ROWS               
+  h0CF4 constant GL_UNPACK_SKIP_PIXELS             
+  h0CF5 constant GL_UNPACK_ALIGNMENT               
+  h0D00 constant GL_PACK_SWAP_BYTES                
+  h0D01 constant GL_PACK_LSB_FIRST                 
+  h0D02 constant GL_PACK_ROW_LENGTH                
+  h0D03 constant GL_PACK_SKIP_ROWS                 
+  h0D04 constant GL_PACK_SKIP_PIXELS               
+  h0D05 constant GL_PACK_ALIGNMENT                 
+  h0D10 constant GL_MAP_COLOR                      
+  h0D11 constant GL_MAP_STENCIL                    
+  h0D12 constant GL_INDEX_SHIFT                    
+  h0D13 constant GL_INDEX_OFFSET                   
+  h0D14 constant GL_RED_SCALE                      
+  h0D15 constant GL_RED_BIAS                       
+  h0D16 constant GL_ZOOM_X                         
+  h0D17 constant GL_ZOOM_Y                         
+  h0D18 constant GL_GREEN_SCALE                    
+  h0D19 constant GL_GREEN_BIAS                     
+  h0D1A constant GL_BLUE_SCALE                     
+  h0D1B constant GL_BLUE_BIAS                      
+  h0D1C constant GL_ALPHA_SCALE                    
+  h0D1D constant GL_ALPHA_BIAS                     
+  h0D1E constant GL_DEPTH_SCALE                    
+  h0D1F constant GL_DEPTH_BIAS                     
+  h0D30 constant GL_MAX_EVAL_ORDER                 
+  h0D31 constant GL_MAX_LIGHTS                     
+  h0D32 constant GL_MAX_CLIP_PLANES                
+  h0D33 constant GL_MAX_TEXTURE_SIZE               
+  h0D34 constant GL_MAX_PIXEL_MAP_TABLE            
+  h0D35 constant GL_MAX_ATTRIB_STACK_DEPTH         
+  h0D36 constant GL_MAX_MODELVIEW_STACK_DEPTH      
+  h0D37 constant GL_MAX_NAME_STACK_DEPTH           
+  h0D38 constant GL_MAX_PROJECTION_STACK_DEPTH     
+  h0D39 constant GL_MAX_TEXTURE_STACK_DEPTH        
+  h0D3A constant GL_MAX_VIEWPORT_DIMS              
+  h0D3B constant GL_MAX_CLIENT_ATTRIB_STACK_DEPTH  
+  h0D50 constant GL_SUBPIXEL_BITS                  
+  h0D51 constant GL_INDEX_BITS                     
+  h0D52 constant GL_RED_BITS                       
+  h0D53 constant GL_GREEN_BITS                     
+  h0D54 constant GL_BLUE_BITS                      
+  h0D55 constant GL_ALPHA_BITS                     
+  h0D56 constant GL_DEPTH_BITS                     
+  h0D57 constant GL_STENCIL_BITS                   
+  h0D58 constant GL_ACCUM_RED_BITS                 
+  h0D59 constant GL_ACCUM_GREEN_BITS               
+  h0D5A constant GL_ACCUM_BLUE_BITS                
+  h0D5B constant GL_ACCUM_ALPHA_BITS               
+  h0D70 constant GL_NAME_STACK_DEPTH               
+  h0D80 constant GL_AUTO_NORMAL                    
+  h0D90 constant GL_MAP1_COLOR_4                   
+  h0D91 constant GL_MAP1_INDEX                     
+  h0D92 constant GL_MAP1_NORMAL                    
+  h0D93 constant GL_MAP1_TEXTURE_COORD_1           
+  h0D94 constant GL_MAP1_TEXTURE_COORD_2           
+  h0D95 constant GL_MAP1_TEXTURE_COORD_3           
+  h0D96 constant GL_MAP1_TEXTURE_COORD_4           
+  h0D97 constant GL_MAP1_VERTEX_3                  
+  h0D98 constant GL_MAP1_VERTEX_4                  
+  h0DB0 constant GL_MAP2_COLOR_4                   
+  h0DB1 constant GL_MAP2_INDEX                     
+  h0DB2 constant GL_MAP2_NORMAL                    
+  h0DB3 constant GL_MAP2_TEXTURE_COORD_1           
+  h0DB4 constant GL_MAP2_TEXTURE_COORD_2           
+  h0DB5 constant GL_MAP2_TEXTURE_COORD_3           
+  h0DB6 constant GL_MAP2_TEXTURE_COORD_4           
+  h0DB7 constant GL_MAP2_VERTEX_3                  
+  h0DB8 constant GL_MAP2_VERTEX_4                  
+  h0DD0 constant GL_MAP1_GRID_DOMAIN               
+  h0DD1 constant GL_MAP1_GRID_SEGMENTS             
+  h0DD2 constant GL_MAP2_GRID_DOMAIN               
+  h0DD3 constant GL_MAP2_GRID_SEGMENTS             
+  h0DE0 constant GL_TEXTURE_1D                     
+  h0DE1 constant GL_TEXTURE_2D                     
+  h0DF0 constant GL_FEEDBACK_BUFFER_POINTER        
+  h0DF1 constant GL_FEEDBACK_BUFFER_SIZE           
+  h0DF2 constant GL_FEEDBACK_BUFFER_TYPE           
+  h0DF3 constant GL_SELECTION_BUFFER_POINTER       
+  h0DF4 constant GL_SELECTION_BUFFER_SIZE          
+  //      GL_TEXTURE_BINDING_1D
+  //      GL_TEXTURE_BINDING_2D
+  //      GL_VERTEX_ARRAY
+  //      GL_NORMAL_ARRAY
+  //      GL_COLOR_ARRAY
+  //      GL_INDEX_ARRAY
+  //      GL_TEXTURE_COORD_ARRAY
+  //      GL_EDGE_FLAG_ARRAY
+  //      GL_VERTEX_ARRAY_SIZE
+  //      GL_VERTEX_ARRAY_TYPE
+  //      GL_VERTEX_ARRAY_STRIDE
+  //      GL_NORMAL_ARRAY_TYPE
+  //      GL_NORMAL_ARRAY_STRIDE
+  //      GL_COLOR_ARRAY_SIZE
+  //      GL_COLOR_ARRAY_TYPE
+  //      GL_COLOR_ARRAY_STRIDE
+  //      GL_INDEX_ARRAY_TYPE
+  //      GL_INDEX_ARRAY_STRIDE
+  //      GL_TEXTURE_COORD_ARRAY_SIZE
+  //      GL_TEXTURE_COORD_ARRAY_TYPE
+  //      GL_TEXTURE_COORD_ARRAY_STRIDE
+  //      GL_EDGE_FLAG_ARRAY_STRIDE
+  //      GL_POLYGON_OFFSET_FACTOR
+  //      GL_POLYGON_OFFSET_UNITS
+
+  // GetTextureParameter
+  //      GL_TEXTURE_MAG_FILTER
+  //      GL_TEXTURE_MIN_FILTER
+  //      GL_TEXTURE_WRAP_S
+  //      GL_TEXTURE_WRAP_T
+  h1000 constant GL_TEXTURE_WIDTH                  
+  h1001 constant GL_TEXTURE_HEIGHT                 
+  h1003 constant GL_TEXTURE_INTERNAL_FORMAT        
+  h1004 constant GL_TEXTURE_BORDER_COLOR           
+  h1005 constant GL_TEXTURE_BORDER                 
+  //      GL_TEXTURE_RED_SIZE
+  //      GL_TEXTURE_GREEN_SIZE
+  //      GL_TEXTURE_BLUE_SIZE
+  //      GL_TEXTURE_ALPHA_SIZE
+  //      GL_TEXTURE_LUMINANCE_SIZE
+  //      GL_TEXTURE_INTENSITY_SIZE
+  //      GL_TEXTURE_PRIORITY
+  //      GL_TEXTURE_RESIDENT
+
+  // HintMode
+  h1100 constant GL_DONT_CARE                      
+  h1101 constant GL_FASTEST                        
+  h1102 constant GL_NICEST                         
+
+  // HintTarget
+  //      GL_PERSPECTIVE_CORRECTION_HINT
+  //      GL_POINT_SMOOTH_HINT
+  //      GL_LINE_SMOOTH_HINT
+  //      GL_POLYGON_SMOOTH_HINT
+  //      GL_FOG_HINT
+
+  // IndexPointerType
+  //      GL_SHORT
+  //      GL_INT
+  //      GL_FLOAT
+  //      GL_DOUBLE
+
+  // LightModelParameter
+  //      GL_LIGHT_MODEL_AMBIENT
+  //      GL_LIGHT_MODEL_LOCAL_VIEWER
+  //      GL_LIGHT_MODEL_TWO_SIDE
+
+  // LightName
+  h4000 constant GL_LIGHT0                         
+  h4001 constant GL_LIGHT1                         
+  h4002 constant GL_LIGHT2                         
+  h4003 constant GL_LIGHT3                         
+  h4004 constant GL_LIGHT4                         
+  h4005 constant GL_LIGHT5                         
+  h4006 constant GL_LIGHT6                         
+  h4007 constant GL_LIGHT7                         
+
+  // LightParameter
+  h1200 constant GL_AMBIENT                        
+  h1201 constant GL_DIFFUSE                        
+  h1202 constant GL_SPECULAR                       
+  h1203 constant GL_POSITION                       
+  h1204 constant GL_SPOT_DIRECTION                 
+  h1205 constant GL_SPOT_EXPONENT                  
+  h1206 constant GL_SPOT_CUTOFF                    
+  h1207 constant GL_CONSTANT_ATTENUATION           
+  h1208 constant GL_LINEAR_ATTENUATION             
+  h1209 constant GL_QUADRATIC_ATTENUATION          
+
+  // InterleavedArrays
+  //      GL_V2F
+  //      GL_V3F
+  //      GL_C4UB_V2F
+  //      GL_C4UB_V3F
+  //      GL_C3F_V3F
+  //      GL_N3F_V3F
+  //      GL_C4F_N3F_V3F
+  //      GL_T2F_V3F
+  //      GL_T4F_V4F
+  //      GL_T2F_C4UB_V3F
+  //      GL_T2F_C3F_V3F
+  //      GL_T2F_N3F_V3F
+  //      GL_T2F_C4F_N3F_V3F
+  //      GL_T4F_C4F_N3F_V4F
+
+  // ListMode
+  h1300 constant GL_COMPILE                        
+  h1301 constant GL_COMPILE_AND_EXECUTE            
+
+  // ListNameType
+  //      GL_BYTE
+  //      GL_UNSIGNED_BYTE
+  //      GL_SHORT
+  //      GL_UNSIGNED_SHORT
+  //      GL_INT
+  //      GL_UNSIGNED_INT
+  //      GL_FLOAT
+  //      GL_2_BYTES
+  //      GL_3_BYTES
+  //      GL_4_BYTES
+
+  // LogicOp
+  h1500 constant GL_CLEAR                          
+  h1501 constant GL_AND                            
+  h1502 constant GL_AND_REVERSE                    
+  h1503 constant GL_COPY                           
+  h1504 constant GL_AND_INVERTED                   
+  h1505 constant GL_NOOP                           
+  h1506 constant GL_XOR                            
+  h1507 constant GL_OR                             
+  h1508 constant GL_NOR                            
+  h1509 constant GL_EQUIV                          
+  h150A constant GL_INVERT                         
+  h150B constant GL_OR_REVERSE                     
+  h150C constant GL_COPY_INVERTED                  
+  h150D constant GL_OR_INVERTED                    
+  h150E constant GL_NAND                           
+  h150F constant GL_SET                            
+
+  // MapTarget
+  //      GL_MAP1_COLOR_4
+  //      GL_MAP1_INDEX
+  //      GL_MAP1_NORMAL
+  //      GL_MAP1_TEXTURE_COORD_1
+  //      GL_MAP1_TEXTURE_COORD_2
+  //      GL_MAP1_TEXTURE_COORD_3
+  //      GL_MAP1_TEXTURE_COORD_4
+  //      GL_MAP1_VERTEX_3
+  //      GL_MAP1_VERTEX_4
+  //      GL_MAP2_COLOR_4
+  //      GL_MAP2_INDEX
+  //      GL_MAP2_NORMAL
+  //      GL_MAP2_TEXTURE_COORD_1
+  //      GL_MAP2_TEXTURE_COORD_2
+  //      GL_MAP2_TEXTURE_COORD_3
+  //      GL_MAP2_TEXTURE_COORD_4
+  //      GL_MAP2_VERTEX_3
+  //      GL_MAP2_VERTEX_4
+
+  // MaterialFace
+  //      GL_FRONT
+  //      GL_BACK
+  //      GL_FRONT_AND_BACK
+
+  // MaterialParameter
+  h1600 constant GL_EMISSION                       
+  h1601 constant GL_SHININESS                      
+  h1602 constant GL_AMBIENT_AND_DIFFUSE            
+  h1603 constant GL_COLOR_INDEXES                  
+  //      GL_AMBIENT
+  //      GL_DIFFUSE
+  //      GL_SPECULAR
+
+  // MatrixMode
+  h1700 constant GL_MODELVIEW                      
+  h1701 constant GL_PROJECTION                     
+  h1702 constant GL_TEXTURE                        
+
+  // MeshMode1
+  //      GL_POINT
+  //      GL_LINE
+
+  // MeshMode2
+  //      GL_POINT
+  //      GL_LINE
+  //      GL_FILL
+
+  // NormalPointerType
+  //      GL_BYTE
+  //      GL_SHORT
+  //      GL_INT
+  //      GL_FLOAT
+  //      GL_DOUBLE
+
+  // PixelCopyType
+  h1800 constant GL_COLOR                          
+  h1801 constant GL_DEPTH                          
+  h1802 constant GL_STENCIL                        
+
+  // PixelFormat
+  h1900 constant GL_COLOR_INDEX                    
+  h1901 constant GL_STENCIL_INDEX                  
+  h1902 constant GL_DEPTH_COMPONENT                
+  h1903 constant GL_RED                            
+  h1904 constant GL_GREEN                          
+  h1905 constant GL_BLUE                           
+  h1906 constant GL_ALPHA                          
+  h1907 constant GL_RGB                            
+  h1908 constant GL_RGBA                           
+  h1909 constant GL_LUMINANCE                      
+  h190A constant GL_LUMINANCE_ALPHA                
+
+  // PixelMap
+  //      GL_PIXEL_MAP_I_TO_I
+  //      GL_PIXEL_MAP_S_TO_S
+  //      GL_PIXEL_MAP_I_TO_R
+  //      GL_PIXEL_MAP_I_TO_G
+  //      GL_PIXEL_MAP_I_TO_B
+  //      GL_PIXEL_MAP_I_TO_A
+  //      GL_PIXEL_MAP_R_TO_R
+  //      GL_PIXEL_MAP_G_TO_G
+  //      GL_PIXEL_MAP_B_TO_B
+  //      GL_PIXEL_MAP_A_TO_A
+
+  // PixelStore
+  //      GL_UNPACK_SWAP_BYTES
+  //      GL_UNPACK_LSB_FIRST
+  //      GL_UNPACK_ROW_LENGTH
+  //      GL_UNPACK_SKIP_ROWS
+  //      GL_UNPACK_SKIP_PIXELS
+  //      GL_UNPACK_ALIGNMENT
+  //      GL_PACK_SWAP_BYTES
+  //      GL_PACK_LSB_FIRST
+  //      GL_PACK_ROW_LENGTH
+  //      GL_PACK_SKIP_ROWS
+  //      GL_PACK_SKIP_PIXELS
+  //      GL_PACK_ALIGNMENT
+
+  // PixelTransfer
+  //      GL_MAP_COLOR
+  //      GL_MAP_STENCIL
+  //      GL_INDEX_SHIFT
+  //      GL_INDEX_OFFSET
+  //      GL_RED_SCALE
+  //      GL_RED_BIAS
+  //      GL_GREEN_SCALE
+  //      GL_GREEN_BIAS
+  //      GL_BLUE_SCALE
+  //      GL_BLUE_BIAS
+  //      GL_ALPHA_SCALE
+  //      GL_ALPHA_BIAS
+  //      GL_DEPTH_SCALE
+  //      GL_DEPTH_BIAS
+
+  // PixelType
+  h1A00 constant GL_BITMAP                         
+  //      GL_BYTE
+  //      GL_UNSIGNED_BYTE
+  //      GL_SHORT
+  //      GL_UNSIGNED_SHORT
+  //      GL_INT
+  //      GL_UNSIGNED_INT
+  //      GL_FLOAT
+
+  // PolygonMode
+  h1B00 constant GL_POINT                          
+  h1B01 constant GL_LINE                           
+  h1B02 constant GL_FILL                           
+
+  // ReadBufferMode
+  //      GL_FRONT_LEFT
+  //      GL_FRONT_RIGHT
+  //      GL_BACK_LEFT
+  //      GL_BACK_RIGHT
+  //      GL_FRONT
+  //      GL_BACK
+  //      GL_LEFT
+  //      GL_RIGHT
+  //      GL_AUX0
+  //      GL_AUX1
+  //      GL_AUX2
+  //      GL_AUX3
+
+  // RenderingMode
+  h1C00 constant GL_RENDER                         
+  h1C01 constant GL_FEEDBACK                       
+  h1C02 constant GL_SELECT                         
+
+  // ShadingModel
+  h1D00 constant GL_FLAT                           
+  h1D01 constant GL_SMOOTH                         
+
+  // StencilFunction
+  //      GL_NEVER
+  //      GL_LESS
+  //      GL_EQUAL
+  //      GL_LEQUAL
+  //      GL_GREATER
+  //      GL_NOTEQUAL
+  //      GL_GEQUAL
+  //      GL_ALWAYS
+
+  // StencilOp
+  //      GL_ZERO
+  h1E00 constant GL_KEEP                           
+  h1E01 constant GL_REPLACE                        
+  h1E02 constant GL_INCR                           
+  h1E03 constant GL_DECR                           
+  //      GL_INVERT
+
+  // StringName
+  h1F00 constant GL_VENDOR                         
+  h1F01 constant GL_RENDERER                       
+  h1F02 constant GL_VERSION                        
+  h1F03 constant GL_EXTENSIONS                     
+
+  // TextureCoordName
+  h2000 constant GL_S                              
+  h2001 constant GL_T                              
+  h2002 constant GL_R                              
+  h2003 constant GL_Q                              
+
+  // TexCoordPointerType
+  //      GL_SHORT
+  //      GL_INT
+  //      GL_FLOAT
+  //      GL_DOUBLE
+
+  // TextureEnvMode
+  h2100 constant GL_MODULATE                       
+  h2101 constant GL_DECAL                          
+  //      GL_BLEND
+  //      GL_REPLACE
+
+  // TextureEnvParameter
+  h2200 constant GL_TEXTURE_ENV_MODE               
+  h2201 constant GL_TEXTURE_ENV_COLOR              
+
+  // TextureEnvTarget
+  h2300 constant GL_TEXTURE_ENV                    
+
+  // TextureGenMode
+  h2400 constant GL_EYE_LINEAR                     
+  h2401 constant GL_OBJECT_LINEAR                  
+  h2402 constant GL_SPHERE_MAP                     
+
+  // TextureGenParameter
+  h2500 constant GL_TEXTURE_GEN_MODE               
+  h2501 constant GL_OBJECT_PLANE                   
+  h2502 constant GL_EYE_PLANE                      
+
+  // TextureMagFilter
+  h2600 constant GL_NEAREST                        
+  h2601 constant GL_LINEAR                         
+
+  // TextureMinFilter
+  //      GL_NEAREST
+  //      GL_LINEAR
+  h2700 constant GL_NEAREST_MIPMAP_NEAREST         
+  h2701 constant GL_LINEAR_MIPMAP_NEAREST          
+  h2702 constant GL_NEAREST_MIPMAP_LINEAR          
+  h2703 constant GL_LINEAR_MIPMAP_LINEAR           
+
+  // TextureParameterName
+  h2800 constant GL_TEXTURE_MAG_FILTER             
+  h2801 constant GL_TEXTURE_MIN_FILTER             
+  h2802 constant GL_TEXTURE_WRAP_S                 
+  h2803 constant GL_TEXTURE_WRAP_T                 
+  //      GL_TEXTURE_BORDER_COLOR
+  //      GL_TEXTURE_PRIORITY
+
+  // TextureTarget
+  //      GL_TEXTURE_1D
+  //      GL_TEXTURE_2D
+  //      GL_PROXY_TEXTURE_1D
+  //      GL_PROXY_TEXTURE_2D
+
+  // TextureWrapMode
+  h2900 constant GL_CLAMP                          
+  h2901 constant GL_REPEAT                         
+
+  // VertexPointerType
+  //      GL_SHORT
+  //      GL_INT
+  //      GL_FLOAT
+  //      GL_DOUBLE
+
+  // ClientAttribMask
+  h00000001 constant GL_CLIENT_PIXEL_STORE_BIT         
+  h00000002 constant GL_CLIENT_VERTEX_ARRAY_BIT        
+  hFFFFFFFF constant GL_CLIENT_ALL_ATTRIB_BITS         
+
+  // polygon_offset
+  h8038 constant GL_POLYGON_OFFSET_FACTOR          
+  h2A00 constant GL_POLYGON_OFFSET_UNITS           
+  h2A01 constant GL_POLYGON_OFFSET_POINT           
+  h2A02 constant GL_POLYGON_OFFSET_LINE            
+  h8037 constant GL_POLYGON_OFFSET_FILL            
+
+  // texture
+  h803B constant GL_ALPHA4                         
+  h803C constant GL_ALPHA8                         
+  h803D constant GL_ALPHA12                        
+  h803E constant GL_ALPHA16                        
+  h803F constant GL_LUMINANCE4                     
+  h8040 constant GL_LUMINANCE8                     
+  h8041 constant GL_LUMINANCE12                    
+  h8042 constant GL_LUMINANCE16                    
+  h8043 constant GL_LUMINANCE4_ALPHA4              
+  h8044 constant GL_LUMINANCE6_ALPHA2              
+  h8045 constant GL_LUMINANCE8_ALPHA8              
+  h8046 constant GL_LUMINANCE12_ALPHA4             
+  h8047 constant GL_LUMINANCE12_ALPHA12            
+  h8048 constant GL_LUMINANCE16_ALPHA16            
+  h8049 constant GL_INTENSITY                      
+  h804A constant GL_INTENSITY4                     
+  h804B constant GL_INTENSITY8                     
+  h804C constant GL_INTENSITY12                    
+  h804D constant GL_INTENSITY16                    
+  h2A10 constant GL_R3_G3_B2                       
+  h804F constant GL_RGB4                           
+  h8050 constant GL_RGB5                           
+  h8051 constant GL_RGB8                           
+  h8052 constant GL_RGB10                          
+  h8053 constant GL_RGB12                          
+  h8054 constant GL_RGB16                          
+  h8055 constant GL_RGBA2                          
+  h8056 constant GL_RGBA4                          
+  h8057 constant GL_RGB5_A1                        
+  h8058 constant GL_RGBA8                          
+  h8059 constant GL_RGB10_A2                       
+  h805A constant GL_RGBA12                         
+  h805B constant GL_RGBA16                         
+  h805C constant GL_TEXTURE_RED_SIZE               
+  h805D constant GL_TEXTURE_GREEN_SIZE             
+  h805E constant GL_TEXTURE_BLUE_SIZE              
+  h805F constant GL_TEXTURE_ALPHA_SIZE             
+  h8060 constant GL_TEXTURE_LUMINANCE_SIZE         
+  h8061 constant GL_TEXTURE_INTENSITY_SIZE         
+  h8063 constant GL_PROXY_TEXTURE_1D               
+  h8064 constant GL_PROXY_TEXTURE_2D               
+
+  // texture_object
+  h8066 constant GL_TEXTURE_PRIORITY               
+  h8067 constant GL_TEXTURE_RESIDENT               
+  h8068 constant GL_TEXTURE_BINDING_1D             
+  h8069 constant GL_TEXTURE_BINDING_2D             
+
+  // vertex_array
+  h8074 constant GL_VERTEX_ARRAY                   
+  h8075 constant GL_NORMAL_ARRAY                   
+  h8076 constant GL_COLOR_ARRAY                    
+  h8077 constant GL_INDEX_ARRAY                    
+  h8078 constant GL_TEXTURE_COORD_ARRAY            
+  h8079 constant GL_EDGE_FLAG_ARRAY                
+  h807A constant GL_VERTEX_ARRAY_SIZE              
+  h807B constant GL_VERTEX_ARRAY_TYPE              
+  h807C constant GL_VERTEX_ARRAY_STRIDE            
+  h807E constant GL_NORMAL_ARRAY_TYPE              
+  h807F constant GL_NORMAL_ARRAY_STRIDE            
+  h8081 constant GL_COLOR_ARRAY_SIZE               
+  h8082 constant GL_COLOR_ARRAY_TYPE               
+  h8083 constant GL_COLOR_ARRAY_STRIDE             
+  h8085 constant GL_INDEX_ARRAY_TYPE               
+  h8086 constant GL_INDEX_ARRAY_STRIDE             
+  h8088 constant GL_TEXTURE_COORD_ARRAY_SIZE       
+  h8089 constant GL_TEXTURE_COORD_ARRAY_TYPE       
+  h808A constant GL_TEXTURE_COORD_ARRAY_STRIDE     
+  h808C constant GL_EDGE_FLAG_ARRAY_STRIDE         
+  h808E constant GL_VERTEX_ARRAY_POINTER           
+  h808F constant GL_NORMAL_ARRAY_POINTER           
+  h8090 constant GL_COLOR_ARRAY_POINTER            
+  h8091 constant GL_INDEX_ARRAY_POINTER            
+  h8092 constant GL_TEXTURE_COORD_ARRAY_POINTER    
+  h8093 constant GL_EDGE_FLAG_ARRAY_POINTER        
+  h2A20 constant GL_V2F                            
+  h2A21 constant GL_V3F                            
+  h2A22 constant GL_C4UB_V2F                       
+  h2A23 constant GL_C4UB_V3F                       
+  h2A24 constant GL_C3F_V3F                        
+  h2A25 constant GL_N3F_V3F                        
+  h2A26 constant GL_C4F_N3F_V3F                    
+  h2A27 constant GL_T2F_V3F                        
+  h2A28 constant GL_T4F_V4F                        
+  h2A29 constant GL_T2F_C4UB_V3F                   
+  h2A2A constant GL_T2F_C3F_V3F                    
+  h2A2B constant GL_T2F_N3F_V3F                    
+  h2A2C constant GL_T2F_C4F_N3F_V3F                
+  h2A2D constant GL_T4F_C4F_N3F_V4F                
+
+  // Extensions
+  1 constant GL_EXT_vertex_array               
+  1 constant GL_WIN_swap_hint                  
+  1 constant GL_EXT_bgra                       
+  1 constant GL_EXT_paletted_texture           
+
+  // EXT_vertex_array
+  h8074 constant GL_VERTEX_ARRAY_EXT               
+  h8075 constant GL_NORMAL_ARRAY_EXT               
+  h8076 constant GL_COLOR_ARRAY_EXT                
+  h8077 constant GL_INDEX_ARRAY_EXT                
+  h8078 constant GL_TEXTURE_COORD_ARRAY_EXT        
+  h8079 constant GL_EDGE_FLAG_ARRAY_EXT            
+  h807A constant GL_VERTEX_ARRAY_SIZE_EXT          
+  h807B constant GL_VERTEX_ARRAY_TYPE_EXT          
+  h807C constant GL_VERTEX_ARRAY_STRIDE_EXT        
+  h807D constant GL_VERTEX_ARRAY_COUNT_EXT         
+  h807E constant GL_NORMAL_ARRAY_TYPE_EXT          
+  h807F constant GL_NORMAL_ARRAY_STRIDE_EXT        
+  h8080 constant GL_NORMAL_ARRAY_COUNT_EXT         
+  h8081 constant GL_COLOR_ARRAY_SIZE_EXT           
+  h8082 constant GL_COLOR_ARRAY_TYPE_EXT           
+  h8083 constant GL_COLOR_ARRAY_STRIDE_EXT         
+  h8084 constant GL_COLOR_ARRAY_COUNT_EXT          
+  h8085 constant GL_INDEX_ARRAY_TYPE_EXT           
+  h8086 constant GL_INDEX_ARRAY_STRIDE_EXT         
+  h8087 constant GL_INDEX_ARRAY_COUNT_EXT          
+  h8088 constant GL_TEXTURE_COORD_ARRAY_SIZE_EXT   
+  h8089 constant GL_TEXTURE_COORD_ARRAY_TYPE_EXT   
+  h808A constant GL_TEXTURE_COORD_ARRAY_STRIDE_EXT 
+  h808B constant GL_TEXTURE_COORD_ARRAY_COUNT_EXT  
+  h808C constant GL_EDGE_FLAG_ARRAY_STRIDE_EXT     
+  h808D constant GL_EDGE_FLAG_ARRAY_COUNT_EXT      
+  h808E constant GL_VERTEX_ARRAY_POINTER_EXT       
+  h808F constant GL_NORMAL_ARRAY_POINTER_EXT       
+  h8090 constant GL_COLOR_ARRAY_POINTER_EXT        
+  h8091 constant GL_INDEX_ARRAY_POINTER_EXT        
+  h8092 constant GL_TEXTURE_COORD_ARRAY_POINTER_EXT 
+  h8093 constant GL_EDGE_FLAG_ARRAY_POINTER_EXT    
+  GL_DOUBLE constant GL_DOUBLE_EXT                     
+
+  // EXT_bgra
+  h80E0 constant GL_BGR_EXT                        
+  h80E1 constant GL_BGRA_EXT                       
+
+  // EXT_paletted_texture
+
+  // These must match the GL_COLOR_TABLE_*_SGI enumerants
+  h80D8 constant GL_COLOR_TABLE_FORMAT_EXT         
+  h80D9 constant GL_COLOR_TABLE_WIDTH_EXT          
+  h80DA constant GL_COLOR_TABLE_RED_SIZE_EXT       
+  h80DB constant GL_COLOR_TABLE_GREEN_SIZE_EXT     
+  h80DC constant GL_COLOR_TABLE_BLUE_SIZE_EXT      
+  h80DD constant GL_COLOR_TABLE_ALPHA_SIZE_EXT     
+  h80DE constant GL_COLOR_TABLE_LUMINANCE_SIZE_EXT 
+  h80DF constant GL_COLOR_TABLE_INTENSITY_SIZE_EXT 
+
+  h80E2 constant GL_COLOR_INDEX1_EXT               
+  h80E3 constant GL_COLOR_INDEX2_EXT               
+  h80E4 constant GL_COLOR_INDEX4_EXT               
+  h80E5 constant GL_COLOR_INDEX8_EXT               
+  h80E6 constant GL_COLOR_INDEX12_EXT              
+  h80E7 constant GL_COLOR_INDEX16_EXT              
+
+  // For compatibility with OpenGL v1.0
+  GL_INDEX_LOGIC_OP constant GL_LOGIC_OP                       
+  GL_TEXTURE_INTERNAL_FORMAT constant GL_TEXTURE_COMPONENTS             
+// }}}
+// {{{ prototypes
+:a glAccum ( op) GLenum ( value) GLfloat GLvoid extdecl;
+:a glAlphaFunc ( func) GLenum ( ref) GLclampf GLvoid extdecl;
+:a glAreTexturesResident  ( n) GLsizei ( textures) PGLuint ( residences) PGLboolean GLboolean extdecl;
+:a glArrayElement ( i) GLint GLvoid  extdecl;
+:a glBegin ( mode) GLenum GLvoid  extdecl;
+:a glBindTexture ( target) GLenum ( texture) GLuint GLvoid  extdecl;
+:a glBitmap  ( width height) GLsizei GLsizei ( xorig yorig)  GLfloat GLfloat 
+             ( xmove ymove)  GLfloat GLfloat ( bitmap) PGLubyte
+             GLvoid extdecl;
+:a glBlendFunc ( sfactor) GLenum ( dfactor) GLenum GLvoid extdecl;
+:a glCallList ( list) GLuint GLvoid  extdecl;
+:a glCallLists ( n) GLsizei ( atype) GLenum ( lists) GLvoid* GLvoid extdecl;
+:a glClear ( mask) GLbitfield GLvoid  extdecl;
+:a glClearAccum ( red green blue alpha) GLfloat dup dup dup GLvoid extdecl;
+:a glClearColor ( red green blue alpha) GLclampf dup dup dup GLvoid extdecl;
+:a glClearDepth ( depth) GLclampd GLvoid  extdecl;
+:a glClearIndex ( c) GLfloat GLvoid  extdecl;
+:a glClearStencil ( s) GLint GLvoid  extdecl;
+:a glClipPlane ( plane) GLenum ( equation) GLdouble* GLvoid  extdecl;
+:a glColor3b ( red green blue) GLbyte dup dup GLvoid  extdecl;
+:a glColor3bv ( v) GLbyte* GLvoid  extdecl;
+:a glColor3d ( red green blue) GLdouble dup dup GLvoid   extdecl;
+:a glColor3dv ( v) GLdouble* GLvoid   extdecl;
+:a glColor3f ( red green blue) GLfloat dup dup GLvoid   extdecl;
+:a glColor3fv ( v) PGLfloat GLvoid   extdecl;
+:a glColor3i ( red green blue) GLint dup dup GLvoid   extdecl;
+:a glColor3iv ( v) PGLint GLvoid   extdecl;
+:a glColor3s ( red green blue) GLshort dup dup GLvoid   extdecl;
+:a glColor3sv ( v) GLshort* GLvoid extdecl;
+:a glColor3ub ( red green blue) GLubyte GLvoid extdecl;
+:a glColor3ubv ( v) GLubyte* GLvoid extdecl;
+:a glColor3ui ( red green blue) GLuint dup dup GLvoid extdecl;
+:a glColor3uiv ( v) PGLuint GLvoid extdecl;
+:a glColor3us ( red green blue) GLushort dup dup GLvoid extdecl;
+:a glColor3usv ( v) PGLushort GLvoid extdecl;
+:a glColor4b ( red green blue alpha) GLbyte dup dup dup GLvoid extdecl;
+:a glColor4bv ( v) PGLbyte GLvoid extdecl;
+:a glColor4d ( red green blue alpha) GLdouble dup dup dup GLvoid extdecl;
+:a glColor4dv ( v) PGLdouble GLvoid extdecl;
+:a glColor4f ( red green blue alpha) GLfloat dup dup dup GLvoid extdecl;
+:a glColor4fv ( v) GLfloat* GLvoid extdecl;
+:a glColor4i ( red green blue alpha) GLint dup dup dup GLvoid extdecl;
+:a glColor4iv ( v) GLint* GLvoid extdecl;
+:a glColor4s ( red green blue alpha) GLshort dup dup dup GLvoid extdecl;
+:a glColor4sv ( v) GLshort* GLvoid  extdecl;
+:a glColor4ub ( red green blue alpha) GLubyte dup dup dup GLvoid extdecl;
+:a glColor4ubv ( v) GLubyte* GLvoid extdecl;
+:a glColor4ui ( red green blue alpha) GLuint dup dup dup GLvoid extdecl;
+:a glColor4uiv ( v) GLuint* GLvoid  extdecl;
+:a glColor4us ( red green blue alpha) GLushort dup dup dup GLvoid extdecl;
+:a glColor4usv ( v) GLushort* GLvoid  extdecl;
+:a glColorMask ( red green blue alpha) GLboolean dup dup dup GLvoid extdecl;
+:a glColorMaterial ( face mode) GLenum* GLvoid extdecl;
+:a glColorPointer ( size) GLint ( atype) GLenum ( stride) GLsizei 
+                  ( pointer) GLvoid extdecl;
+:a glCopyPixels ( x y) GLint ( width height) GLsizei ( atype) GLenum GLvoid  extdecl;
+:a glCopyTexImage1D  ( target) GLenum ( level) GLint ( internalFormat) GLenum 
+                     ( x y) GLint ( width) GLsizei ( border) GLint GLvoid  extdecl;
+:a glCopyTexImage2D ( target) GLenum ( level) GLint ( internalFormat) GLenum
+                    ( x y) GLint ( width height) GLsizei dup 
+                    ( border) GLint GLvoid  extdecl;
+:a glCopyTexSubImage1D ( target) GLenum ( level xoffset x y) GLint dup dup dup 
+                       ( width) GLsizei GLvoid  extdecl;
+:a glCopyTexSubImage2D ( target) GLenum 
+                       ( level xoffset yoffset x y) GLint dup dup dup dup 
+                       ( width height) GLsizei dup GLvoid  extdecl;
+:a glCullFace ( mode) GLenum GLvoid  extdecl;
+:a glDeleteLists ( list) GLuint ( range) GLsizei GLvoid extdecl;
+:a glDeleteTextures ( n) GLsizei ( textures) GLuint* GLvoid  extdecl;
+:a glDepthFunc ( func) GLenum GLvoid  extdecl;
+:a glDepthMask ( flag) GLboolean GLvoid  extdecl;
+:a glDepthRange ( zNear zFar) GLclampd GLvoid  extdecl;
+:a glDisable ( cap) GLenum GLvoid  extdecl;
+:a glDisableClientState ( aarray) GLenum GLvoid  extdecl;
+:a glDrawArrays ( mode) GLenum ( first) GLint ( count) GLsizei GLvoid extdecl;
+:a glDrawBuffer ( mode) GLenum GLvoid extdecl;
+:a glDrawElements ( mode) GLenum ( count) GLsizei ( atype) GLenum 
+                  ( indices) GLvoid* GLvoid extdecl;
+:a glDrawPixels ( width height) GLsizei dup ( format atype) GLenum dup 
+                ( pixels) GLvoid* GLvoid extdecl;
+:a glEdgeFlag ( flag) GLboolean GLvoid extdecl;
+:a glEdgeFlagPointer ( stride) GLsizei ( pointer) GLvoid* GLvoid extdecl;
+:a glEdgeFlagv ( flag) GLboolean* GLvoid extdecl;
+:a glEnable ( cap) GLenum GLvoid extdecl;
+:a glEnableClientState ( aarray) GLenum GLvoid extdecl;
+:a glEnd extdecl;
+:a glEndList extdecl;
+:a glEvalCoord1d ( u) GLdouble GLvoid extdecl;
+:a glEvalCoord1dv ( u) GLdouble* GLvoid extdecl;
+:a glEvalCoord1f ( u) GLfloat GLvoid extdecl;
+:a glEvalCoord1fv ( u) GLfloat* GLvoid extdecl;
+:a glEvalCoord2d ( u v) GLdouble dup GLvoid extdecl;
+:a glEvalCoord2dv ( u) GLdouble* GLvoid extdecl;
+:a glEvalCoord2f ( u v) GLfloat GLvoid extdecl;
+:a glEvalCoord2fv ( u) GLfloat* extdecl;
+:a glEvalMesh1 ( mode) GLenum ( i1 i2) GLint dup GLvoid extdecl;
+:a glEvalMesh2 ( mode) GLenum ( i1 i2 j1 j2) GLint dup dup dup GLvoid extdecl;
+:a glEvalPoint1 ( i) GLint GLvoid extdecl;
+:a glEvalPoint2 ( i j) GLint GLvoid extdecl;
+:a glFeedbackBuffer ( size) GLsizei ( atype) GLenum ( buffer) GLfloat* GLvoid extdecl;
+:a glFinish extdecl;
+:a glFlush extdecl;
+:a glFogf ( pname) GLenum ( param) GLfloat GLvoid extdecl;
+:a glFogfv ( pname) GLenum ( params) GLfloat* GLvoid extdecl;
+:a glFogi ( pname) GLenum ( param) GLint* GLvoid extdecl;
+:a glFogiv ( pname) GLenum ( params) GLint* GLvoid extdecl;
+:a glFrontFace ( mode) GLenum* GLvoid extdecl;
+:a glFrustum ( left right bottom top zNear zFar) 
+             GLdouble dup dup dup dup dup GLvoid extdecl;
+:a glGenLists ( range) GLsizei GLuint extdecl;
+:a glGenTextures ( n) GLsizei ( textures) GLuint* GLvoid extdecl;
+:a glGetBooleanv ( pname) GLenum ( params) GLboolean* GLvoid extdecl;
+:a glGetClipPlane ( plane) GLenum ( equation) GLdouble* GLvoid extdecl;
+:a glGetDoublev ( pname) GLenum ( params) GLdouble* GLvoid extdecl;
+:a glGetError GLenum extdecl;
+:a glGetFloatv ( pname) GLenum ( params) GLfloat* GLvoid extdecl;
+:a glGetIntegerv ( pname) GLenum ( params) PGLint GLvoid extdecl;
+:a glGetLightfv ( light pname) GLenum dup ( params) GLfloat* extdecl;
+:a glGetLightiv ( light pname) GLenum dup ( params) GLint* extdecl;
+:a glGetMapdv ( target query) GLenum dup ( v) GLdouble* GLvoid extdecl;
+:a glGetMapfv ( target query) GLenum dup ( v) GLfloat* GLvoid extdecl;
+:a glGetMapiv ( target query) GLenum dup ( v) GLint* GLvoid extdecl;
+:a glGetMaterialfv ( face pname) GLenum ( params) PGLfloat GLvoid extdecl;
+:a glGetMaterialiv ( face pname) GLenum ( params) PGLint GLvoid extdecl;
+:a glGetPixelMapfv ( map) GLenum ( values) GLfloat* GLvoid extdecl;
+:a glGetPixelMapuiv ( map) GLenum ( values) GLuint* GLvoid extdecl;
+:a glGetPixelMapusv ( map) GLenum ( values) GLushort* GLvoid extdecl;
+:a glGetPointerv ( pname) GLenum ( params) GLvoid* GLvoid extdecl;
+:a glGetPolygonStipple ( mask) GLubyte* GLvoid extdecl;
+:a glGetString ( name) GLenum t_pchar extdecl;
+:a glGetTexEnvfv ( target pname) GLenum dup ( params) GLfloat* GLvoid extdecl;
+:a glGetTexEnviv ( target pname) GLenum dup ( params) GLint* GLvoid extdecl;
+:a glGetTexGendv ( coord pname) GLenum ( params) GLdouble* GLvoid extdecl;
+:a glGetTexGenfv ( coord pname) GLenum ( params) GLfloat* GLvoid extdecl;
+:a glGetTexGeniv ( coord pname) GLenum ( params) GLint* GLvoid extdecl;
+:a glGetTexImage ( target) GLenum ( level) GLint ( format) GLenum 
+                 ( atype) GLenum ( pixels) GLvoid* GLvoid extdecl;
+:a glGetTexLevelParameterfv ( target) GLenum ( level) GLint ( pname) GLenum 
+                            ( params) GLvoid* GLvoid extdecl;
+:a glGetTexLevelParameteriv ( target) GLenum ( level) GLint ( pname) GLenum 
+                            ( params) GLint* GLvoid extdecl;
+:a glGetTexParameterfv ( target pname) GLenum ( params) GLfloat* GLvoid extdecl;
+:a glGetTexParameteriv ( target pname) GLenum ( params) GLint* GLvoid extdecl;
+:a glHint ( target mode) GLenum dup GLvoid extdecl;
+:a glIndexMask ( mask) GLuint GLvoid extdecl;
+:a glIndexPointer ( atype) GLenum ( stride) GLsizei ( pointer) GLvoid* GLvoid extdecl;
+:a glIndexd ( c) GLdouble GLvoid extdecl;
+:a glIndexdv ( c) GLdouble* GLvoid extdecl;
+:a glIndexf ( c) GLfloat GLvoid extdecl;
+:a glIndexfv ( c) GLfloat* GLvoid extdecl;
+:a glIndexi ( c) GLint GLvoid extdecl;
+:a glIndexiv ( c) GLint* GLvoid extdecl;
+:a glIndexs ( c) GLshort GLvoid extdecl;
+:a glIndexsv ( c) GLshort* GLvoid extdecl;
+:a glIndexub ( c) GLubyte GLvoid extdecl;
+:a glIndexubv ( c) GLubyte* GLvoid extdecl;
+:a glInitNames GLvoid extdecl;
+:a glInterleavedArrays ( format) GLenum ( stride) GLsizei 
+                       ( pointer) GLvoid* GLvoid extdecl;
+:a glIsEnabled ( cap) GLenum GLboolean extdecl;
+:a glIsList ( list) GLuint GLboolean extdecl;
+:a glIsTexture ( texture) GLuint GLboolean extdecl;
+:a glLightModelf ( pname) GLenum ( param) GLfloat GLvoid extdecl;
+:a glLightModelfv ( pname) GLenum ( params) GLfloat* GLvoid extdecl;
+:a glLightModeli ( pname) GLenum ( param) GLint GLvoid extdecl;
+:a glLightModeliv ( pname) GLenum ( params) GLint* GLvoid extdecl;
+:a glLightf ( light pname) GLenum dup ( param) GLfloat GLvoid extdecl;
+:a glLightfv ( light pname) GLenum dup ( params) GLfloat* GLvoid extdecl;
+:a glLighti ( light pname) GLenum dup ( param) GLint GLvoid extdecl;
+:a glLightiv ( light pname) GLenum dup ( params) GLint* GLvoid extdecl;
+:a glLineStipple ( factor) GLint ( pattern) GLushort GLvoid extdecl;
+:a glLineWidth ( width) GLfloat GLvoid extdecl;
+:a glListBase ( base) GLuint GLvoid extdecl;
+:a glLoadIdentity GLvoid extdecl;
+:a glLoadMatrixd ( m) GLdouble* GLvoid extdecl;
+:a glLoadMatrixf ( m) GLfloat* GLvoid extdecl;
+:a glLoadName ( name) GLuint GLvoid extdecl;
+:a glLogicOp ( opcode) GLenum GLvoid extdecl;
+:a glMap1d ( target) GLenum ( u1 u2) GLdouble dup ( stride order) GLint dup 
+           ( points) GLdouble* GLvoid extdecl;
+:a glMap1f ( target) GLenum ( u1 u2) GLfloat dup ( stride order) GLint dup 
+           ( points) GLfloat* extdecl;
+:a glMap2d ( target) GLenum ( u1 u2) GLdouble dup ( ustride uorder) GLint dup 
+           ( v1 v2) GLdouble dup ( vstride vorder) GLint dup 
+           ( points) GLdouble* dup GLvoid extdecl;
+:a glMap2f ( target) GLenum ( u1 u2) GLfloat dup ( ustride uorder) GLint dup 
+           ( v1 v2) GLfloat dup ( vstride vorder) GLint dup 
+           ( points) GLfloat* GLvoid extdecl;
+:a glMapGrid1d ( un) GLint ( u1 u2) GLdouble dup GLvoid extdecl;
+:a glMapGrid1f ( un) GLint ( u1 u2) GLfloat dup GLvoid extdecl;
+:a glMapGrid2d ( un) GLint ( u1 u2) GLdouble dup ( vn) GLint 
+               ( v1 v2) GLdouble dup GLvoid extdecl;
+:a glMapGrid2f ( un) GLint ( u1 u2) GLfloat ( vn) GLint ( v1 v2) GLfloat 
+               GLvoid extdecl;
+:a glMaterialf ( face pname) GLenum dup ( param) GLfloat GLvoid extdecl;
+:a glMaterialfv ( face pname) GLenum dup ( params) GLfloat* GLvoid extdecl;
+:a glMateriali ( face pname) GLenum dup ( param) GLint GLvoid extdecl;
+:a glMaterialiv ( face pname) GLenum dup ( params) GLint* GLvoid extdecl;
+:a glMatrixMode ( mode) GLenum GLvoid extdecl;
+:a glMultMatrixd ( m) GLdouble* GLvoid extdecl;
+:a glMultMatrixf ( m) GLfloat* GLvoid extdecl;
+:a glNewList ( list) GLuint ( mode) GLenum GLvoid extdecl;
+:a glNormal3b ( nx ny nz) GLbyte dup dup GLvoid extdecl;
+:a glNormal3bv ( v) GLbyte* GLvoid extdecl;
+:a glNormal3d ( nx ny nz) GLdouble dup dup GLvoid extdecl;
+:a glNormal3dv ( v) GLdouble* GLvoid extdecl;
+:a glNormal3f ( nx ny nz) GLfloat dup dup GLvoid extdecl;
+:a glNormal3fv ( v) GLfloat* GLvoid extdecl;
+:a glNormal3i ( nx ny nz) GLint dup dup GLvoid extdecl;
+:a glNormal3iv ( v) GLint* GLvoid extdecl;
+:a glNormal3s ( nx ny nz) GLshort dup dup GLvoid extdecl;
+:a glNormal3sv ( v) GLshort* GLvoid extdecl;
+:a glNormalPointer ( atype) GLenum ( stride) GLsizei ( pointer) GLvoid* 
+                   GLvoid extdecl;
+:a glOrtho ( left right bottom top zNear zFar) 
+           GLdouble dup dup dup dup dup GLvoid extdecl;
+:a glPassThrough ( token) GLfloat GLvoid extdecl;
+:a glPixelMapfv ( map) GLenum ( mapsize) GLsizei ( values) GLfloat* GLvoid extdecl;
+:a glPixelMapuiv ( map) GLenum ( mapsize) GLsizei ( values) GLuint* GLvoid extdecl;
+:a glPixelMapusv ( map) GLenum ( mapsize) GLsizei ( values) GLushort* GLvoid extdecl;
+:a glPixelStoref ( pname) GLenum ( param) GLfloat GLvoid extdecl;
+:a glPixelStorei ( pname) GLenum ( param) GLint GLvoid extdecl;
+:a glPixelTransferf ( pname) GLenum ( param) GLfloat GLvoid extdecl;
+:a glPixelTransferi ( pname) GLenum ( param) GLint GLvoid extdecl;
+:a glPixelZoom ( xfactor yfactor) GLfloat dup GLvoid extdecl;
+:a glPointSize ( size) GLfloat GLvoid extdecl;
+:a glPolygonMode ( face mode) GLenum dup GLvoid extdecl;
+:a glPolygonOffset ( factor units) GLfloat dup GLvoid extdecl;
+:a glPolygonStipple ( mask) GLubyte* GLvoid extdecl;
+:a glPopAttrib GLvoid extdecl;
+:a glPopClientAttrib GLvoid extdecl;
+:a glPopMatrix GLvoid extdecl;
+:a glPopName GLvoid extdecl;
+:a glPrioritizeTextures ( n) GLsizei ( textures) GLuint* ( priorities) GLclampf*
+                        GLvoid extdecl;
+:a glPushAttrib ( mask) GLbitfield GLvoid extdecl;
+:a glPushClientAttrib ( mask) GLbitfield GLvoid extdecl;
+:a glPushMatrix GLvoid extdecl;
+:a glPushName ( name) GLuint GLvoid extdecl;
+:a glRasterPos2d ( x y) GLdouble dup GLvoid extdecl;
+:a glRasterPos2dv ( v) GLdouble* GLvoid extdecl;
+:a glRasterPos2f ( x y) GLfloat dup GLvoid extdecl;
+:a glRasterPos2fv ( v) GLfloat* GLvoid extdecl;
+:a glRasterPos2i ( x y) GLint dup GLvoid extdecl;
+:a glRasterPos2iv ( v) GLint* GLvoid extdecl;
+:a glRasterPos2s ( x y) GLshort dup GLvoid extdecl;
+:a glRasterPos2sv ( v) GLshort* GLvoid extdecl;
+:a glRasterPos3d ( x y z) GLdouble dup dup GLvoid extdecl;
+:a glRasterPos3dv ( v) GLdouble* GLvoid extdecl;
+:a glRasterPos3f ( x y z) GLfloat dup dup GLvoid extdecl;
+:a glRasterPos3fv ( v) GLfloat* GLvoid extdecl;
+:a glRasterPos3i ( x y z) GLint dup dup GLvoid extdecl;
+:a glRasterPos3iv ( v) PGLint GLvoid extdecl;
+:a glRasterPos3s ( x y z) GLshort dup dup GLvoid extdecl;
+:a glRasterPos3sv ( v) GLshort* GLvoid extdecl;
+:a glRasterPos4d ( x y z w) GLdouble dup dup dup GLvoid extdecl;
+:a glRasterPos4dv ( v) GLdouble* GLvoid extdecl;
+:a glRasterPos4f ( x y z w) GLfloat dup dup dup GLvoid extdecl;
+:a glRasterPos4fv ( v) GLfloat GLvoid extdecl;
+:a glRasterPos4i ( x y z w) GLint dup dup dup GLvoid extdecl;
+:a glRasterPos4iv ( v) GLint* GLvoid extdecl;
+:a glRasterPos4s ( x y z w) GLshort dup dup dup GLvoid extdecl;
+:a glRasterPos4sv ( v) GLshort* GLvoid extdecl;
+:a glReadBuffer ( mode) GLenum GLvoid extdecl;
+:a glReadPixels ( x y) GLint dup ( width height) GLsizei dup 
+                ( format atype) GLenum dup ( pixels) GLvoid* GLvoid extdecl;
+:a glRectd ( x1 y1 x2 y2) GLdouble dup dup dup GLvoid extdecl;
+:a glRectdv ( v1 v2) GLdouble* dup GLvoid extdecl;
+:a glRectf ( x1 y1 x2 y2) GLfloat dup dup dup GLvoid extdecl;
+:a glRectfv ( v1 v2) PGLfloat* dup GLvoid extdecl;
+:a glRecti ( x1 y1 x2 y2) GLint dup dup dup GLvoid extdecl;
+:a glRectiv ( v1 v2) PGLint* dup GLvoid extdecl;
+:a glRects ( x1 y1 x2 y2) GLshort dup dup dup GLvoid extdecl;
+:a glRectsv ( v1 v2) GLshort* dup GLvoid extdecl;
+:a glRenderMode ( mode) GLint GLint extdecl;
+:a glRotated ( angle x y z) GLdouble dup dup dup GLvoid extdecl;
+:a glRotatef ( angle x y z) GLfloat dup dup dup GLvoid extdecl;
+:a glScaled ( x y z) GLdouble dup dup GLvoid extdecl;
+:a glScalef ( x y z) GLfloat dup dup GLvoid extdecl;
+:a glScissor ( x y) GLint dup ( width height) GLsizei dup GLvoid extdecl;
+:a glSelectBuffer ( size) GLsizei ( buffer) GLuint* GLvoid extdecl;
+:a glShadeModel ( mode) GLenum GLvoid extdecl;
+:a glStencilFunc ( func) GLenum ( ref) GLint ( mask) GLuint GLvoid extdecl;
+:a glStencilMask ( mask) GLuint GLvoid extdecl;
+:a glStencilOp ( fail zfail zpass) GLenum dup dup GLvoid extdecl;
+:a glTexCoord1d ( s) GLdouble GLvoid extdecl;
+:a glTexCoord1dv ( v) GLdouble* GLvoid extdecl;
+:a glTexCoord1f ( s) GLfloat GLvoid extdecl;
+:a glTexCoord1fv ( v) GLfloat* GLvoid extdecl;
+:a glTexCoord1i ( s) GLint GLvoid extdecl;
+:a glTexCoord1iv ( v) GLint* GLvoid extdecl;
+:a glTexCoord1s ( s) GLshort GLvoid extdecl;
+:a glTexCoord1sv ( v) GLshort* GLvoid extdecl;
+:a glTexCoord2d ( s t) GLdouble dup GLvoid extdecl;
+:a glTexCoord2dv ( v) GLdouble* GLvoid extdecl;
+:a glTexCoord2f ( s t) GLfloat dup GLvoid extdecl;
+:a glTexCoord2fv ( v) GLfloat* GLvoid extdecl;
+:a glTexCoord2i ( s t) GLint dup GLvoid extdecl;
+:a glTexCoord2iv ( v) GLint* extdecl;
+:a glTexCoord2s ( s t) GLshort dup GLvoid extdecl;
+:a glTexCoord2sv ( v) GLshort* GLvoid extdecl;
+:a glTexCoord3d ( s t r) GLdouble dup dup GLvoid extdecl;
+:a glTexCoord3dv ( v) GLdouble* GLvoid extdecl;
+:a glTexCoord3f ( s t r) GLfloat dup dup GLvoid extdecl;
+:a glTexCoord3fv ( v) GLfloat* GLvoid extdecl;
+:a glTexCoord3i ( s t r) GLint dup dup GLvoid extdecl;
+:a glTexCoord3iv ( v) GLint* GLvoid extdecl;
+:a glTexCoord3s ( s t r) GLshort dup dup GLvoid extdecl;
+:a glTexCoord3sv ( v) GLshort* GLvoid extdecl;
+:a glTexCoord4d ( s t r q) GLdouble dup dup dup GLvoid extdecl;
+:a glTexCoord4dv ( v) GLdouble* GLvoid extdecl;
+:a glTexCoord4f ( s t r q) GLfloat dup dup dup GLvoid extdecl;
+:a glTexCoord4fv ( v) GLfloat* GLvoid extdecl;
+:a glTexCoord4i ( s t r q) GLint GLvoid extdecl;
+:a glTexCoord4iv ( v) GLint* GLvoid extdecl;
+:a glTexCoord4s ( s t r q) GLshort dup dup dup GLvoid extdecl;
+:a glTexCoord4sv ( v) GLshort* GLvoid extdecl;
+:a glTexCoordPointer ( size) GLint ( atype) GLenum ( stride) GLsizei 
+                     ( pointer) GLvoid* GLvoid extdecl;
+:a glTexEnvf ( target) GLenum ( pname) GLenum ( param) GLfloat GLvoid extdecl;
+:a glTexEnvfv ( target) GLenum ( pname) GLenum ( params) GLfloat* GLvoid extdecl;
+:a glTexEnvi ( target) GLenum ( pname) GLenum ( param) GLint GLvoid extdecl;
+:a glTexEnviv ( target) GLenum ( pname) GLenum ( params) GLint* GLvoid extdecl;
+:a glTexGend ( coord) GLenum ( pname) GLenum ( param) GLdouble GLvoid extdecl;
+:a glTexGendv ( coord) GLenum ( pname) GLenum ( params) GLdouble* GLvoid extdecl;
+:a glTexGenf ( coord) GLenum ( pname) GLenum ( param) GLfloat GLvoid extdecl;
+:a glTexGenfv ( coord) GLenum ( pname) GLenum ( params) GLfloat* GLvoid extdecl;
+:a glTexGeni ( coord) GLenum ( pname) GLenum ( param) GLint GLvoid extdecl;
+:a glTexGeniv ( coord) GLenum ( pname) GLenum ( params) PGLint* GLvoid extdecl;
+:a glTexImage1D ( target) GLenum ( level internalformat) GLint dup 
+                ( width) GLsizei ( border) GLint ( format atype) GLenum dup
+                ( pixels) GLvoid* GLvoid extdecl;
+:a glTexImage2D ( target) GLenum ( level internalformat) GLint dup 
+                ( width height) GLsizei dup ( border) GLint 
+                ( format atype) GLenum ( pixels) GLvoid* extdecl;
+:a glTexParameterf ( target) GLenum ( pname) GLenum ( param) GLfloat GLvoid extdecl;
+:a glTexParameterfv ( target) GLenum ( pname) GLenum ( params) GLfloat* 
+                    GLvoid extdecl;
+:a glTexParameteri ( target) GLenum ( pname) GLenum ( param) GLint GLvoid extdecl;
+:a glTexParameteriv ( target) GLenum ( pname) GLenum ( params) PGLint* GLvoid extdecl;
+:a glTexSubImage1D ( target) GLenum ( level xoffset) GLint dup 
+                   ( width) GLsizei ( format atype) GLenum dup 
+                   ( pixels) GLvoid* GLvoid extdecl;
+:a glTexSubImage2D ( target) GLenum ( level xoffset yoffset) GLint dup dup 
+                   ( width height) GLsizei dup ( format atype) GLenum dup 
+                   ( pixels) GLvoid* GLvoid extdecl;
+:a glTranslated ( x y z) GLdouble dup dup GLvoid extdecl;
+:a glTranslatef ( x y z) GLfloat dup dup GLvoid extdecl;
+:a glVertex2d ( x y) GLdouble dup GLvoid extdecl;
+:a glVertex2dv ( v) GLdouble* GLvoid extdecl;
+:a glVertex2f ( x y) GLfloat dup GLvoid extdecl;
+:a glVertex2fv ( v) GLfloat* GLvoid extdecl;
+:a glVertex2i ( x y) GLint dup GLvoid extdecl;
+:a glVertex2iv ( v) GLint* GLvoid extdecl;
+:a glVertex2s ( x y) GLshort dup GLvoid extdecl;
+:a glVertex2sv ( v) GLshort* GLvoid extdecl;
+:a glVertex3d ( x y z) GLdouble dup dup GLvoid extdecl;
+:a glVertex3dv ( v) GLdouble* GLvoid extdecl;
+:a glVertex3f ( x y z) GLfloat dup dup GLvoid extdecl;
+:a glVertex3fv ( v) GLfloat* GLvoid extdecl;
+:a glVertex3i ( x y z) GLint dup dup GLvoid extdecl;
+:a glVertex3iv ( v) GLint* GLvoid extdecl;
+:a glVertex3s ( x y z) GLshort dup dup GLvoid extdecl;
+:a glVertex3sv ( v) PGLshort* GLvoid extdecl;
+:a glVertex4d ( x y z w) GLdouble dup dup dup GLvoid extdecl;
+:a glVertex4dv ( v) GLdouble* GLvoid extdecl;
+:a glVertex4f ( x y z w) GLfloat dup dup dup GLvoid extdecl;
+:a glVertex4fv ( v) GLfloat* GLvoid extdecl;
+:a glVertex4i ( x y z w) GLint dup dup dup GLvoid extdecl;
+:a glVertex4iv ( v) GLint* GLvoid extdecl;
+:a glVertex4s ( x y z w) GLshort dup dup dup GLvoid extdecl;
+:a glVertex4sv ( v) GLshort* GLvoid extdecl;
+:a glVertexPointer ( size) GLint ( atype) GLenum ( stride) GLsizei 
+                   ( pointer) GLvoid* extdecl;
+:a glViewport ( x y) GLint dup ( width height) GLsizei dup GLvoid extdecl;
+// }}}
