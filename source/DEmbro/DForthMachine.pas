@@ -530,6 +530,14 @@ TForthMachine = class
   WB: Pointer; // Work stack Base (@W[0])
   WP: Pointer; // Work stack Pointer
   WS: Integer; // Work stack Size
+  CW: array of Pointer; // Counter Work stack
+  CWB: Pointer;
+  CWP: Pointer;
+  CWS: Integer;
+  procedure CWU(C: Pointer); // Counter Work pUsh
+  function CWO: Pointer; // Counter Work pOp
+  procedure _CtoW(Machine: TForthMachine; Command: PForthCommand);
+  procedure _WtoC(Machine: TForthMachine; Command: PForthCommand);
   procedure WUI(const V: TInt); overload 
   ; // Work stack pUsh Integer
   procedure WUP(const V: Pointer); overload 
@@ -1954,6 +1962,7 @@ TForthMachine = class
   
 ;
   
+  procedure _timer (Machine: TForthMachine; Command: PForthCommand);
   procedure _DogwpTemp (Machine: TForthMachine; Command: PForthCommand);
   procedure _wp (Machine: TForthMachine; Command: PForthCommand);
   procedure _rp (Machine: TForthMachine; Command: PForthCommand);
@@ -4477,6 +4486,28 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
+procedure TForthMachine.CWU(C: Pointer);
+begin
+  Pointer(CWP^) := C;
+  Inc(CWP, SizeOf(Pointer));
+end;
+
+function TForthMachine.CWO: Pointer;
+begin
+  Dec(CWP, SizeOf(Pointer));
+  Result := Pointer(CWP^);
+end;
+
+procedure TForthMachine._CtoW(Machine: TForthMachine; Command: PForthCommand);
+begin
+  WUP(CWO);
+end;
+
+procedure TForthMachine._WtoC(Machine: TForthMachine; Command: PForthCommand);
+begin
+  CWU(WOP);
+end;
+
 procedure TForthMachine.WUV(const P: Pointer; Size: Integer);
 begin
   if P <> nil then
@@ -4598,6 +4629,10 @@ begin
   WB := @W[0];
   WP := WB;
   WS := Length(W);
+  SetLength(CW,  4 * 1024);
+  CWB := @CW[0];
+  CWP := CWB;
+  CWS := Length(CW);
   SetLength(C,   0);
   CB := @C[0];
   CC := 0;
@@ -6167,6 +6202,7 @@ begin
     
     
     
+     AddCommand('timer', _timer);
      AddCommand('wp', _wp);
      AddCommand('@wp', _DogwpTemp);
      AddCommand('rp', _rp);
@@ -10377,6 +10413,7 @@ end;
     
    
     
+      procedure TForthMachine._timer (Machine: TForthMachine; Command: PForthCommand); begin WUI(GetTimer); end;
       procedure TForthMachine._DogwpTemp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := @WP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._wp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._rp (Machine: TForthMachine; Command: PForthCommand); begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); end;

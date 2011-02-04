@@ -778,6 +778,7 @@ define(~pop_interface|, ~function $1: $2
   |)
 define(~misc_commands|, 
   ~
+  procedure _timer cmdhdr;
   procedure _DogwpTemp cmdhdr;
   procedure _wp cmdhdr;
   procedure _rp cmdhdr;
@@ -826,6 +827,7 @@ define(~misc_commands|,
   procedure _move cmdhdr;
   define(~all_implement|, all_implement 
     ~
+      procedure TForthMachine._timer cmdhdr; begin WUI(GetTimer); end;
       procedure TForthMachine._DogwpTemp cmdhdr; begin Pointer(WP^) := @WP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._wp cmdhdr; begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); end;
       procedure TForthMachine._rp cmdhdr; begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); end;
@@ -880,6 +882,7 @@ define(~misc_commands|,
   )
   define(~regist_all_commands|, regist_all_commands
     ~
+     AddCommand('timer', _timer);
      AddCommand('wp', _wp);
      AddCommand('@wp', _DogwpTemp);
      AddCommand('rp', _rp);
@@ -1483,7 +1486,7 @@ TForthMachine = class
   CW: array of Pointer; // Counter Work stack
   CWB: Pointer;
   CWP: Pointer;
-  CWS: Pointer;
+  CWS: Integer;
   procedure CWU(C: Pointer); // Counter Work pUsh
   function CWO: Pointer; // Counter Work pOp
   procedure _CtoW(Machine: TForthMachine; Command: PForthCommand);
