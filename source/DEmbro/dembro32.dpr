@@ -39,27 +39,19 @@ uses
   DPlugin,
   DCompiler;
 
-type
-TRepl = class
- public
-  procedure quit(Machine: TForthMachine; Command: PForthCommand);
-  procedure embro_dump(Machine: TForthMachine; Command: PForthCommand);
-end;
-
 var
   Machine: TForthMachine;
   Compiler: TCompiler;
-  Repl: TRepl;
   Done: Boolean = False;
   S: String;
   I: Integer;
 
-procedure TRepl.quit;
+procedure quit(Machine: TForthMachine; Command: PForthCommand);
 begin
   Done := True;
 end;
 
-procedure TRepl.embro_dump(Machine: TForthMachine; Command: PForthCommand);
+procedure embro_dump(Machine: TForthMachine; Command: PForthCommand);
 var
   I: Integer;
 begin
@@ -151,9 +143,8 @@ begin
   Machine := TForthMachine.Create;
   RunSystem;
   Compiler := TCompiler.Create(Machine);
-  Repl := TRepl.Create;
-  Machine.AddCommand('quit', Repl.quit);
-  Machine.AddCommand('embro-dump', Repl.embro_dump);
+  Machine.AddCommand('quit', quit);
+  Machine.AddCommand('embro-dump', embro_dump);
 
   with CommandLine do begin
     {if Mode = CMD_EXE then begin
@@ -177,7 +168,6 @@ begin
     end else begin
     end;
   end;
-  Repl.Free;
   Compiler.Free;
   Machine.Free;
   // Writeln('dembro32 out');

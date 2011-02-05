@@ -13,26 +13,27 @@ private
   FMachine: TForthMachine;
   FAppType: Integer;
   FOutput: TString;
-  procedure UpdateCode;
-  function Compile(Plugin: TPlugin): Boolean;
+public
+  constructor Create(Machine: TForthMachine);
+  destructor Destroy; override;
+end;
+
+  procedure UpdateCode(Machine: TForthMachine);
+  function Compile(Machine: TForthMachine; Plugin: TPlugin): Boolean;
   procedure cOUTPUT(machine: TForthMachine; command: PForthCommand);
   procedure cCOMPILE(machine: TForthMachine; command: PForthCommand);
   procedure cAPPTYPE_CONSOLE(machine: TForthMachine; command: PForthCommand);
   procedure cAPPTYPE_GUI(machine: TForthMachine; command: PForthCommand);
   procedure cAPPTYPE_GARBAGE(machine: TForthMachine; command: PForthCommand);
   procedure cPLUGINS(machine: TForthMachine; command: PForthCommand);
-public
-  constructor Create(Machine: TForthMachine);
-  destructor Destroy; override;
-end;
 
 implementation
 
-procedure TCompiler.UpdateCode;
+procedure UpdateCode;
 var
   I: Integer;
 begin
-  with FMachine do begin
+  with Machine do begin
     Code.Count := Length(Chunks);
     Code.Chunks := @Chunks[0];
     for I := 0 to Code.Count - 1 do begin
@@ -50,17 +51,17 @@ begin
   end;
 end;
 
-function TCompiler.Compile(Plugin: TPlugin): Boolean;
+function Compile(Machine: TForthMachine; Plugin: TPlugin): Boolean;
 var
   Id, Pos: Integer;
 begin
   Result := True;
-  Plugin.SetParam(DEC_ID_APPTYPE, DEC_TYPE_INT, Pointer(FAppType));
-  Plugin.SetParam(DEC_ID_OUTPUT, DEC_TYPE_STR, PChar(FOutPut));
-  UpdateCode;
-  Plugin.SetParam(DEC_ID_CODE, DEC_TYPE_DATA, @FMachine.Code, 0);
-  Plugin.SetParam(DEC_ID_COMMANDS, DEC_TYPE_DATA, @FMachine.Commands[0], 
-                                                  Length(FMachine.Commands));
+  Plugin.SetParam(DEC_ID_APPTYPE, DEC_TYPE_INT, Pointer(Machine.FAppType));
+  Plugin.SetParam(DEC_ID_OUTPUT, DEC_TYPE_STR, PChar(Machine.FOutPut));
+  UpdateCode(Machine);
+  Plugin.SetParam(DEC_ID_CODE, DEC_TYPE_DATA, @Machine.Code, 0);
+  Plugin.SetParam(DEC_ID_COMMANDS, DEC_TYPE_DATA, @Machine.Commands[0], 
+                                                  Length(Machine.Commands));
   Plugin.Compile;
   if Plugin.Ready <> 0 then begin
     Writeln('Compilation error [', Plugin.Name, '] plugin failed with error', Plugin.Ready);
@@ -74,36 +75,36 @@ begin
   end;
 end;
 
-procedure TCompiler.cOUTPUT(machine: TForthMachine; command: PForthCommand);
+procedure cOUTPUT(machine: TForthMachine; command: PForthCommand);
 begin
-  FOutput := machine.WOS;
+  Machine.FOutput := machine.WOS;
 end;
 
-procedure TCompiler.cCOMPILE(machine: TForthMachine; command: PForthCommand);
+procedure cCOMPILE(machine: TForthMachine; command: PForthCommand);
 var
   I: Integer;
 begin
   for I := 0 to High(Plugins) do
-    if Compile(Plugins[I]) then
+    if Compile(Machine, Plugins[I]) then
       Break;
 end;
 
-procedure TCompiler.cAPPTYPE_CONSOLE(machine: TForthMachine; command: PForthCommand);
+procedure cAPPTYPE_CONSOLE(machine: TForthMachine; command: PForthCommand);
 begin
-  FAppType := 1;
+  Machine.FAppType := 1;
 end;
 
-procedure TCompiler.cAPPTYPE_GUI(machine: TForthMachine; command: PForthCommand);
+procedure cAPPTYPE_GUI(machine: TForthMachine; command: PForthCommand);
 begin
-  FAppType := 2;
+  Machine.FAppType := 2;
 end;
 
-procedure TCompiler.cAPPTYPE_GARBAGE(machine: TForthMachine; command: PForthCommand);
+procedure cAPPTYPE_GARBAGE(machine: TForthMachine; command: PForthCommand);
 begin
-  FAppType := 5679;
+  Machine.FAppType := 5679;
 end;
 
-procedure TCompiler.cPLUGINS(machine: TForthMachine; command: PForthCommand);
+procedure cPLUGINS(machine: TForthMachine; command: PForthCommand);
 var
   I: Integer;
 begin
