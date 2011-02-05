@@ -3,6 +3,9 @@ unit DForthMachine;
 
 interface
 
+{$DEFINE FLAG_X86}
+{$DEFINE FLAG_IA32}
+
 uses
   {$I units.inc},
 
@@ -1051,7 +1054,11 @@ type
   TForthMachine = class;
 
   PForthCommand = ^TForthCommand;
+
+  // Machine размещается в EAX
+  // Command размещается в EDX
   TCode = procedure (Machine: TForthMachine; Command: PForthCommand); register;
+
   TForthCommand = record 
           Code: TCode;
           Data: Pointer;

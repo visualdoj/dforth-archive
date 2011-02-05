@@ -13,5 +13,9 @@
 
 // Разбивает строку на две при помощи строки b, т.е. s = l b r
 // Если s не содержит b, то l=s, r=str0
-: parse-binary ( sb-lr) cover cover str-pos dup -1 = if drop cdrop str0 exit then 
-                        swap str# parse-break ;
+: parse-binary? ( sb-lri) cover cover str-pos dup -1 = 
+                        if drop cdrop str0 true exit then 
+                        swap str# parse-break false ;
+
+: parse-list ( sbd-d) | d| b| b| begin b parse-binary if bdrop d bdyn+ d exit then
+                      swap d bdyn+ false until ;
