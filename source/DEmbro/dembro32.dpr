@@ -120,7 +120,6 @@ begin
 end;
 
 begin
-  TCode(778899)(TForthMachine(112233), PForthCommand(445566));
   with TAlien.Create do begin
     WP := @Stack[0];
     GenerateCallback(@Buffer[0], 64*1024, [4, 4, 4, 4], 4,
@@ -141,7 +140,8 @@ begin
   if CommandLine.Help then
     Halt;
 
-  Machine := TForthMachine.Create;
+  New(Machine);
+  Machine.Create;
   RunSystem;
   Compiler := TCompiler.Create(Machine);
   Machine.AddCommand('quit', quit);
@@ -170,6 +170,7 @@ begin
     end;
   end;
   Compiler.Free;
-  Machine.Free;
+  Machine.Destroy;
+  Dispose(Machine);
   // Writeln('dembro32 out');
 end.

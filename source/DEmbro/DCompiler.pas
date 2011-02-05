@@ -33,7 +33,7 @@ procedure UpdateCode;
 var
   I: Integer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Code.Count := Length(Chunks);
     Code.Chunks := @Chunks[0];
     for I := 0 to Code.Count - 1 do begin

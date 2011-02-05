@@ -2,6 +2,9 @@ unit DForthMachine;
 
 interface
 
+{$DEFINE FLAG_X86}
+{$DEFINE FLAG_IA32}
+
 uses
   {$I units.inc},Math,strings,DAlien,DVocabulary,DForthStack;
 
@@ -62,10 +65,14 @@ const
   EOL: String                   = #13;
 
 type
-  TForthMachine = class;
+  TForthMachine = ^OForthMachine;
 
   PForthCommand = ^TForthCommand;
+
+  // Machine размещается в EAX
+  // Command размещается в EDX
   TCode = procedure (Machine: TForthMachine; Command: PForthCommand); register;
+
   TForthCommand = record 
           Code: TCode;
           Data: Pointer;
@@ -113,9 +120,90 @@ type
     S: Integer;
   end;
 {$IFNDEF FLAG_FPC}{$REGION 'TForthMachine'}{$ENDIF}
-TForthMachine = class
- private
-  FUserData: Pointer;
+OForthMachine = object
+{$IFNDEF FLAG_FPC}{$REGION 'machine datas'}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
+  WP: Pointer; // Work stack Pointer
+  W: array of Byte; // Work stack
+  WB: Pointer; // Work stack Base (@W[0])
+  WS: Integer; // Work stack Size
+  CW: array of Pointer; // Counter Work stack
+  CWB: Pointer;
+  CWP: Pointer;
+  CWS: Integer;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'E'}{$ENDIF}
+  E: array of Byte; // Embro
+  EB: Pointer; // Embro Base (@E[0])
+  EC: Integer; // Embro Counter (E[EC])
+  EL: Integer; // Embro Last compiled
+  ES: Integer; // Embro Size (Length(E))
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'R'}{$ENDIF}
+  R: array of Byte; // Return stack
+  RB: Pointer; // Return stack Base
+  RP: Pointer; // Return stack Pointer
+  RS: Integer; // Return stack Size
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'C'}{$ENDIF}
+  C: array of PForthCommand; // Commands
+  CB: Pointer; // Commands Base (@C[0])
+  CC: Integer; // Commands Counter (C[CC] - last added command)
+  CS: Integer; // Commands Size (Length(C))
+  // Command REserve
+  // Command FInd
+  // Command EXecute
+  // Command COmpile
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'LOCALS'}{$ENDIF}
+   Local: TWordSpace;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
+ {D: array of Byte; // Data
+  DB: Pointer; // Data Base
+  DP: Pointer; // Data Pointer (traditionaly called HERE in forth)
+  DS: Integer; // Data Size
+  procedure DA(Size: Integer); // Data Allot}
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'S'}{$ENDIF}
+  // doesn't work in run state
+  S: PChar; // Source
+  SC: Integer; // Source Counter
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
+  L: array of Byte; // Local stack
+  LB: Pointer; // Local stack Base (@W[0])
+  LP: Pointer; // Local stack Pointer
+  LS: Integer; // Local stack Size
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'V'}{$ENDIF}
+  Context: array of PVoc;
+  Target: array of PVoc;
+  vGLOBAL: PVoc;
+  vLOCAL: PVoc;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'plugin datas'}{$ENDIF}
+  Code: packed record
+    Count: Cardinal;
+    Chunks: Pointer;
+  end;
+  Chunks: array of packed record
+                            Opcode: Cardinal;
+                            Len: Cardinal;
+                            Data: Pointer;
+                            Count: Cardinal;
+                            Refs: Pointer;
+                          end;
+  Refs: array of array of Cardinal;
+  Commands: array of packed record
+                       Name: PChar;
+                       Flags: Integer;
+                       Code: Integer;
+                       Data: Integer;
+                     end;
+  FOutput: TString;
+  FAppType: Integer;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'Strings'}{$ENDIF}
   // когда они создаются при интерпритации,нужно где-то хранить
   FPChars: array of array of TChar;
@@ -124,12 +212,13 @@ TForthMachine = class
   FStrNil: TStr;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'exceptions'}{$ENDIF}
- public
   Exceptions: array of Byte;
   ExceptionsB: Pointer;
   ExceptionsP: Pointer;
   ExceptionsS: Integer;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+  UserData: Pointer;
   //C: array of TForthCommand;
   FData: array of Byte;
   //FHere: Integer;
@@ -140,7 +229,7 @@ TForthMachine = class
   //FPC: Cardinal;
   FCurrentName: TString;
   // FS_*
-  FState: Integer;
+  State: Integer;
   FSession: Boolean;
   FLastMnemonic: Integer;
   FEmbroDump: array of TString;
@@ -148,6 +237,9 @@ TForthMachine = class
   FTypes: array of TType;
   FMemoryDebug: TDebug;
   FAlien: TAlien;
+  FCurrentFileName: TString;
+  FCurrentLine: Integer;
+  FCurrentPos: Integer;
   procedure CompileSource(Source: PChar);
   function CompileName(W: PChar): Boolean; overload;
   function NextMnemonic: Cardinal;
@@ -158,7 +250,6 @@ TForthMachine = class
   procedure RunWarring(const S: TString);
   procedure IncHere(Count: Integer);
   procedure AddType(const Name: TString; Size: Integer);
- public
   
   procedure EW_ (V: TInt);
   function ER_: TInt
@@ -289,12 +380,6 @@ TForthMachine = class
 ;
 {$IFNDEF FLAG_FPC}{$REGION 'machine datas'}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'E'}{$ENDIF}
- public
-  E: array of Byte; // Embro
-  EB: Pointer; // Embro Base (@E[0])
-  EC: Integer; // Embro Counter (E[EC])
-  EL: Integer; // Embro Last compiled
-  ES: Integer; // Embro Size (Length(E))
   procedure EA(Size: Integer); // Embro Alloc
   function Here: Pointer; overload;
   procedure EWV(V: Pointer; Size: Integer); // Embro Write Var
@@ -338,11 +423,6 @@ TForthMachine = class
   function ERPChar: PChar;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'R'}{$ENDIF}
- public
-  R: array of Byte; // Return stack
-  RB: Pointer; // Return stack Base
-  RP: Pointer; // Return stack Pointer
-  RS: Integer; // Return stack Size
   procedure RUV(const P: Pointer; Size: Integer);
   procedure ROV(const P: Pointer; Size: Integer);
   function ROP: Pointer 
@@ -391,15 +471,6 @@ TForthMachine = class
   ;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
- public
-  W: array of Byte; // Work stack
-  WB: Pointer; // Work stack Base (@W[0])
-  WP: Pointer; // Work stack Pointer
-  WS: Integer; // Work stack Size
-  CW: array of Pointer; // Counter Work stack
-  CWB: Pointer;
-  CWP: Pointer;
-  CWS: Integer;
   procedure CWU(C: Pointer); // Counter Work pUsh
   function CWO: Pointer; // Counter Work pOp
   procedure WUI(const V: TInt); overload 
@@ -452,44 +523,21 @@ TForthMachine = class
   function WOS: TString;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'C'}{$ENDIF}
- public
-  C: array of PForthCommand; // Commands
-  CB: Pointer; // Commands Base (@C[0])
-  CC: Integer; // Commands Counter (C[CC] - last added command)
-  CS: Integer; // Commands Size (Length(C))
   // Command REserve
   // Command FInd
   // Command EXecute
   // Command COmpile
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'LOCALS'}{$ENDIF}
- public
-   Local: TWordSpace;
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
- public
- {D: array of Byte; // Data
-  DB: Pointer; // Data Base
-  DP: Pointer; // Data Pointer (traditionaly called HERE in forth)
-  DS: Integer; // Data Size
-  procedure DA(Size: Integer); // Data Allot}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'S'}{$ENDIF}
- public
   // doesn't work in run state
-  S: PChar; // Source
-  SC: Integer; // Source Counter
   function SE: Boolean; // Source End
   function SNC: TChar; // Source Next Char
   function SNN: TString; // Source Next Name
   procedure SSS; // Source Skip Spaces
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
- public
-  L: array of Byte; // Local stack
-  LB: Pointer; // Local stack Base (@W[0])
-  LP: Pointer; // Local stack Pointer
-  LS: Integer; // Local stack Size
   procedure LUV(const P: Pointer; Size: Integer);
   procedure LOV(const P: Pointer; Size: Integer);
   procedure LUI(const V: TInt); overload 
@@ -538,11 +586,6 @@ TForthMachine = class
   ;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'V'}{$ENDIF}
- public
-  Context: array of PVoc;
-  Target: array of PVoc;
-  vGLOBAL: PVoc;
-  vLOCAL: PVoc;
   procedure ContextPush(V: PVoc);
   function ContextPop: PVoc;
   procedure TargetPush(V: PVoc);
@@ -551,38 +594,15 @@ TForthMachine = class
   procedure UnuseVoc;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'plugin datas'}{$ENDIF}
- public
-  Code: packed record
-    Count: Cardinal;
-    Chunks: Pointer;
-  end;
-  Chunks: array of packed record
-                            Opcode: Cardinal;
-                            Len: Cardinal;
-                            Data: Pointer;
-                            Count: Cardinal;
-                            Refs: Pointer;
-                          end;
-  Refs: array of array of Cardinal;
-  Commands: array of packed record
-                       Name: PChar;
-                       Flags: Integer;
-                       Code: Integer;
-                       Data: Integer;
-                     end;
-  FOutput: TString;
-  FAppType: Integer;
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   constructor Create;
-  destructor Destroy; override;
+  destructor Destroy;
   procedure AddCommand(Name: PChar; Code: TCode; Immediate: Boolean = False;
                        Builtin: Boolean = True);
   procedure OnUpdateCommand(Opcode: Integer); overload;
   procedure OnUpdateCommand(Command: PForthCommand); overload;
 
   procedure InterpretName(W: PChar); overload;
-  procedure Interpret(const S: PChar); overload;
+  procedure Interpret(const Line: PChar); overload;
   procedure InterpretFile(const FileName: TString);
   procedure CallCommand(Command: PForthCommand);
   procedure MainLoop;
@@ -618,10 +638,6 @@ TForthMachine = class
   function GetEmbroDumpLines: Integer;
   function GetEmbroDumpLine(Index: Integer): TString;
   function FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
-
-  property UserData: Pointer read FUserData write FUserData;
-  property Current: Integer;
-  property State: Integer read FState write FState;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'all commands'}{$ENDIF}
@@ -2075,7 +2091,7 @@ procedure _bool_push;
 var
   B: TInt;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Machine.ReadEmbro(@B, SizeOf(B));
     Machine.WUI(B);
   end;
@@ -2085,7 +2101,7 @@ end;
 var
   Name: TString;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Name := Machine.NextName;
     if Name = 'true' then
       Machine.WriteEmbroInt(BOOL_TRUE)
@@ -2098,14 +2114,14 @@ end;}
 
 procedure _false;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Machine.WUI(BOOL_FALSE);
   end;
 end;
 
 procedure _true;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Machine.WUI(BOOL_TRUE);
   end;
 end;
@@ -2114,7 +2130,7 @@ procedure _not;
 //var
 //  a: TInt;
 begin
-  with Machine do begin
+  with Machine^ do begin
     {Machine.WUI(a);
     if a = BOOL_FALSE then
       a := BOOL_TRUE
@@ -2129,7 +2145,7 @@ procedure _or;
 var
   a,b: TInt;
 begin
-  with Machine do begin
+  with Machine^ do begin
     {Machine.WUI(a);
     Machine.WUI(b);
     if (a = BOOL_FALSE) and (b = BOOL_FALSE) then
@@ -2145,7 +2161,7 @@ procedure _and;
 //var
 //  a,b: TInt;
 begin
-  with Machine do begin
+  with Machine^ do begin
     {a := Machine.WOI;
     b := Machine.WOI;
     if (a = BOOL_FALSE) or (b = BOOL_FALSE) then
@@ -2161,7 +2177,7 @@ procedure _xor;
 //var
 //  a,b: TInt;
 begin
-  with Machine do begin
+  with Machine^ do begin
     {a := Machine.WOI;
     b := Machine.WOI;
     if (a = BOOL_FALSE) xor (b = BOOL_FALSE) then
@@ -2177,7 +2193,7 @@ procedure _bool_dot;
 var
   a: TInt;
 begin
-  with Machine do begin
+  with Machine^ do begin
     a := Machine.WOI;
     if a = 0 then
       Write('FALSE ')
@@ -2189,7 +2205,7 @@ end;
 {$IFNDEF FLAG_FPC}{$REGION 'TConsoleCommands'}{$ENDIF}
 procedure cr;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Writeln;
   end;
 end;
@@ -2198,7 +2214,7 @@ procedure emit;
 var
   I: Integer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     //Machine.Stack.Pop(@I, SizeOf(I));
     Write(TChar(I));
   end;
@@ -2206,7 +2222,7 @@ end;
 
 procedure space;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Write(' ');
   end;
 end;
@@ -2215,7 +2231,7 @@ procedure spaces;
 var
   I: TInt;
 begin
-  with Machine do begin
+  with Machine^ do begin
     I := Machine.WOI;
     while I > 0 do begin
       SPACE(Machine, Command);
@@ -2227,7 +2243,7 @@ end;
 {$IFNDEF FLAG_FPC}{$REGION 'TControlCommands'}{$ENDIF}
 procedure branch;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Machine.EC := Machine.ERU;
   end;
 end;
@@ -2237,7 +2253,7 @@ var
   B: TInt;
   Temp: Cardinal;
 begin
-  with Machine do begin
+  with Machine^ do begin
     B := Machine.WOI;
     Temp := Machine.ERU;
     if B = BOOL_FALSE then
@@ -2249,7 +2265,7 @@ procedure _gt_mark;
 var
   Temp: Cardinal;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Temp := Machine.EL;
     Machine.WUU(Temp);
     Machine.EWU(Temp);
@@ -2261,7 +2277,7 @@ var
   Temp: Cardinal;
   PC: Cardinal;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Temp := Machine.WOU;
     PC := Machine.EL;
     Move(PC, Pointer(@Machine.E[Temp])^, SizeOf(PC));
@@ -2272,7 +2288,7 @@ procedure _lt_mark;
 var
   Temp: Cardinal;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Temp := Machine.EL;
     Machine.WUU(Temp);
   end;
@@ -2283,7 +2299,7 @@ var
   Temp: Cardinal;
   PC: Cardinal;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Temp := Machine.WOU;
     Machine.EWU(Temp);
   end;
@@ -2291,14 +2307,14 @@ end;
 
 procedure _exit;
 begin
-  with Machine do begin
+  with Machine^ do begin
     // Log('EXIT');
     if TUInt(Machine.RB) < TUInt(Machine.RP) then begin
       Machine.EC := Machine.ROI;
     end else if TUInt(Machine.RB) = TUInt(Machine.RP) then begin
       //Machine.EC := Length(Machine.FEmbro)
       Machine.RB := Machine.ROP;
-      // Machine.FState := Machine.ROI;
+      // Machine.State := Machine.ROI;
       Machine.FRunning := False;
     end else begin
       Machine.LogError('[exit] R stack error (' +
@@ -2312,14 +2328,14 @@ end;
 
 procedure recurse(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     Machine.EWO(Machine.FLastMnemonic);
   end;
 end;
 
 procedure call(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     // Writeln('INSIDE CALL "' + Command^.Name + '"');
     //Writeln('called function ' + Command^.Name);
     Machine.RUP(Machine.LB);
@@ -2327,7 +2343,7 @@ begin
     if Machine.FRunning then
       Machine.RUI(Machine.EC)
     else begin
-      // Machine.RUI(Machine.FState);
+      // Machine.RUI(Machine.State);
       Machine.RUP(Machine.RB);
       Machine.RB := Machine.RP;
     end;
@@ -2343,14 +2359,14 @@ var
   NewCommand: PForthCommand;
   PName: PChar;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Name := Machine.NextName;
     PName := CopyStrToPChar(Name);
     NewCommand := Machine.ReserveName('');
     NewCommand^.Code := call;
     SetImmediate(NewCommand, False);
     Integer(NewCommand^.Data) := Machine.EL;
-    Machine.FState := FS_COMPILE;
+    Machine.State := FS_COMPILE;
     Machine.LUI(Machine.FLastMnemonic);
     Machine.LUP(PName);
     Machine.LUI(101);
@@ -2361,12 +2377,12 @@ procedure compile_noname(Machine: TForthMachine; Command: PForthCommand);
 var
   NewCommand: PForthCommand;
 begin
-  with Machine do begin
+  with Machine^ do begin
     NewCommand := Machine.ReserveName('');
     NewCommand^.Code := call;
     SetImmediate(NewCommand, False);
     Integer(NewCommand^.Data) := Machine.EL;
-    Machine.FState := FS_COMPILE;
+    Machine.State := FS_COMPILE;
     Machine.WUP(NewCommand);
     Machine.LUI(Machine.FLastMnemonic);
     Machine.LUP(Pointer(PChar('')));
@@ -2376,7 +2392,7 @@ end;
 
 procedure compile_skip_to_end(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Integer(Machine.LP^) <> 101 then begin
       Machine.LogError('Нельзя использовать skip-to; внутри конструкций (на вершине стека не colon-id)');
       Exit;
@@ -2393,7 +2409,7 @@ var
   P: PChar;
   ID: Integer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     //B := str_pop(Machine, Command);
     //Machine.C[Machine.WOI]^.Name := PChar(TString(PChar(@TStrRec(B^).Sym[0])));
     //DelRef(B);
@@ -2405,7 +2421,7 @@ begin
     Index := Machine.LOI;
     Machine.C[Index]^.Name := P;
     Machine.EWO('exit');
-    Machine.FState := FS_INTERPRET;
+    Machine.State := FS_INTERPRET;
     Machine.C[Index]^.Flags := Machine.C[Index]^.Flags and not 1;
     Machine.OnUpdateCommand(Index);
     //Writeln('LAST COMMAND ', High(Machine.C), ' ' + Machine.C[High(Machine.C)].Name);
@@ -2417,8 +2433,8 @@ var
   Name: TString;
   C: PForthCommand;
 begin
- // with Machine do begin
-    Machine.FState := FS_COMPILE;
+ // with Machine^ do begin
+    Machine.State := FS_COMPILE;
     Name := Machine.NextName;
     C := Machine.FindCommand(Name);
     if C = nil then begin
@@ -2436,19 +2452,19 @@ var
   C: PForthCommand;
   P: Cardinal;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     C := Machine.WOP;
     P := Cardinal(C^.Param);
     Machine.EWO('branch');
     Cardinal(C^.Param) := Machine.EL;
     Machine.EWU(Machine.WOU);
-    Machine.FState := FS_INTERPRET;
+    Machine.State := FS_INTERPRET;
  // end;
 end;
 
 procedure scattered_dots(Machine: TForthMachine; Command: PForthCommand); 
 begin
-  with Machine do begin
+  with Machine^ do begin
     Machine.EWO('branch');
     Cardinal(Machine.C[Machine.FLastMnemonic]^.Param) := Machine.EL;
     Machine.EWU(Machine.EL + SizeOf(TUInt));
@@ -2457,7 +2473,7 @@ end;
 
 procedure immediate(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     SetImmediate(Machine.C[Machine.FLastMnemonic], True);
   end;
 end;
@@ -2467,7 +2483,7 @@ procedure compile(Machine: TForthMachine; Command: PForthCommand);
 var
   U: TUInt;
 begin
-  with Machine do begin
+  with Machine^ do begin
     //if Machine.State = FS_COMPILE then begin
       Machine.EWO('(compile)');
       Machine.EWO(Machine.NextName);
@@ -2479,14 +2495,14 @@ end;
 
 procedure q_compile_q(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     Machine.EWO(Machine.C[Machine.ERU].Name);
   end;
 end;
 
 procedure _execute(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     Machine.InterpretName(PChar(Machine.NextName));
   end;
 end;
@@ -2497,7 +2513,7 @@ var
   Name: TString;
   NewCommand: PForthCommand;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Name := Machine.NextName;
     NewCommand := Machine.ReserveName(Name);
     NewCommand^.Code := putdataptr;
@@ -2511,7 +2527,7 @@ var
   Name: TString;
   NewCommand: PForthCommand;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Name := Machine.WOS;
     NewCommand := Machine.ReserveName(Name);
     NewCommand^.Code := putdataptr;
@@ -2524,7 +2540,7 @@ procedure putdataptr(Machine: TForthMachine; Command: PForthCommand);
 var
   P: Pointer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     P := Command^.Data;
     Machine.WUP(P);
   end;
@@ -2534,7 +2550,7 @@ procedure here(Machine: TForthMachine; Command: PForthCommand);
 var
   P: Pointer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     // FIXME: P не постоянен
     P := Machine.Here;
     Machine.WUP(P);
@@ -2545,7 +2561,7 @@ procedure allot(Machine: TForthMachine; Command: PForthCommand);
 var
   I: Integer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     I := Machine.WOI;
     Machine.IncHere(I);
   end;
@@ -2553,7 +2569,7 @@ end;
 
 procedure to_int(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(TInt))
     else
@@ -2563,7 +2579,7 @@ end;
 
 procedure to_int8(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(TInt8))
     else
@@ -2573,7 +2589,7 @@ end;
 
 procedure to_int16(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(TInt16))
     else
@@ -2583,7 +2599,7 @@ end;
 
 procedure to_int32(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(TInt32))
     else
@@ -2593,7 +2609,7 @@ end;
 
 procedure to_int64(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(TInt64))
     else
@@ -2603,7 +2619,7 @@ end;
 
 procedure to_uint(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(TUInt))
     else
@@ -2613,7 +2629,7 @@ end;
 
 procedure to_uint8(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(TUInt8))
     else
@@ -2623,7 +2639,7 @@ end;
 
 procedure to_uint16(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(TUInt16))
     else
@@ -2633,7 +2649,7 @@ end;
 
 procedure to_uint32(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(TUInt32))
     else
@@ -2643,7 +2659,7 @@ end;
 
 procedure to_uint64(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(TUint64))
     else
@@ -2653,7 +2669,7 @@ end;
 
 procedure to_ptr(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_to(Machine, Machine.NextName, SizeOf(Pointer))
     else
@@ -2663,7 +2679,7 @@ end;
 
 procedure compile_to;
 begin
-  with Machine do begin
+  with Machine^ do begin
     case Size of
       1: Machine.WriteMnemonicByName(' 8to');
       2: Machine.WriteMnemonicByName(' 16to');
@@ -2682,7 +2698,7 @@ var
   C: PForthCommand;
   Temp: array of Byte;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     C := Machine.FindCommand(Name);
     if C = nil then begin
       Machine.LogError('cannot find command ' + Name);
@@ -2699,7 +2715,7 @@ procedure _nil(Machine: TForthMachine; Command: PForthCommand);
 var
   P: Pointer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     P := nil;
     Machine.WUP(nil);
   end;
@@ -2709,7 +2725,7 @@ procedure ptr_comma(Machine: TForthMachine; Command: PForthCommand);
 var
   P: Pointer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     P := Machine.WOP;
     Move(P, Machine.Here^, SizeOf(Pointer));
     Machine.IncHere(SizeOf(Pointer)); 
@@ -2723,7 +2739,7 @@ var
   I: Integer;
   P: PType;
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then
       compile_type(Machine, PChar(Machine.NextName))
     else begin
@@ -2743,7 +2759,7 @@ procedure type_size(Machine: TForthMachine; Command: PForthCommand);
 var
   P: PType;
 begin
-  with Machine do begin
+  with Machine^ do begin
     P := Machine.WOP;
     Machine.WUI(P^.Size);
   end;
@@ -2754,7 +2770,7 @@ var
   I: Integer;
   P: PType;
 begin
-  with Machine do begin
+  with Machine^ do begin
     for I := 0 to High(Machine.FTypes) do
       if TString(Machine.FTypes[I].Name) = TString(Name) then begin
         Machine.EWO(' typeof');
@@ -2770,7 +2786,7 @@ var
   I: Integer;
   P: PType;
 begin
-  with Machine do begin
+  with Machine^ do begin
     for I := 0 to High(Machine.FTypes) do
       if TString(Machine.FTypes[I].Name) = TString(Name) then begin
         Machine.WUP(@Machine.FTypes[I]);
@@ -2785,7 +2801,7 @@ var
   I: TInt;
   P: PType;
 begin
-  with Machine do begin
+  with Machine^ do begin
     I := Machine.ERI;
     P := @Machine.FTypes[I];
     Machine.WUP(P);
@@ -2794,8 +2810,8 @@ end;
 
 procedure _void(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'void')
     else
       interpete_type(Machine, 'void');
@@ -2804,8 +2820,8 @@ end;
 
 procedure _int(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'int')
     else
       interpete_type(Machine, 'int');
@@ -2814,8 +2830,8 @@ end;
 
 procedure _int8(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'int8')
     else
       interpete_type(Machine, 'int8');
@@ -2824,8 +2840,8 @@ end;
 
 procedure _int16(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'int16')
     else
       interpete_type(Machine, 'int16');
@@ -2834,8 +2850,8 @@ end;
 
 procedure _int32(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'int32')
     else
       interpete_type(Machine, 'int32');
@@ -2844,8 +2860,8 @@ end;
 
 procedure _int64(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'int64')
     else
       interpete_type(Machine, 'int64');
@@ -2854,8 +2870,8 @@ end;
 
 procedure _uint(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'uint')
     else
       interpete_type(Machine, 'uint');
@@ -2864,8 +2880,8 @@ end;
 
 procedure _uint8(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'uint8')
     else
       interpete_type(Machine, 'uint8');
@@ -2874,8 +2890,8 @@ end;
 
 procedure _uint16(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'uint16')
     else
       interpete_type(Machine, 'uint16');
@@ -2884,8 +2900,8 @@ end;
 
 procedure _uint32(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'uint32')
     else
       interpete_type(Machine, 'uint32');
@@ -2894,8 +2910,8 @@ end;
 
 procedure _uint64(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'uint64')
     else
       interpete_type(Machine, 'uint64');
@@ -2904,8 +2920,8 @@ end;
 
 procedure _bool(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'bool')
     else
       interpete_type(Machine, 'bool');
@@ -2914,8 +2930,8 @@ end;
 
 procedure _str(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'str')
     else
       interpete_type(Machine, 'str');
@@ -2924,8 +2940,8 @@ end;
 
 procedure _pchar(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'pchar')
     else
       interpete_type(Machine, 'pchar');
@@ -2934,8 +2950,8 @@ end;
 
 procedure _ptr(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'ptr')
     else
       interpete_type(Machine, 'ptr');
@@ -2944,8 +2960,8 @@ end;
 
 procedure _type(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'type')
     else
       interpete_type(Machine, 'type');
@@ -2954,8 +2970,8 @@ end;
 
 procedure _single(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'single')
     else
       interpete_type(Machine, 'single');
@@ -2964,8 +2980,8 @@ end;
 
 procedure _double(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'double')
     else
       interpete_type(Machine, 'double');
@@ -2974,8 +2990,8 @@ end;
 
 procedure _extended(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    if Machine.FState = FS_COMPILE then
+  with Machine^ do begin
+    if Machine.State = FS_COMPILE then
       compile_type(Machine, 'extended')
     else
       interpete_type(Machine, 'extended');
@@ -2989,7 +3005,7 @@ var
   L: TLib;
   I: TInt;
 begin
-  //with Machine do begin
+  //with Machine^ do begin
     //Machine.FPtrStackCommands.Pop(@P);
     B := Machine.WOS;
     L := TLib.Create(PChar(B));   
@@ -3003,7 +3019,7 @@ procedure lib_unload(Machine: TForthMachine; Command: PForthCommand);
 var
   L: TLib;
 begin
-  //with Machine do begin
+  //with Machine^ do begin
     L := Machine.WOP;
     L.Free;
   //end;
@@ -3015,7 +3031,7 @@ var
   B: TString;
   P: Pointer;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     B := Machine.WOS;
     L := Machine.WOP;
     P := L.GetProcAddress(PChar(B));
@@ -3030,7 +3046,7 @@ var
   C: PForthCommand;
   T: PType;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     if Machine.State = FS_COMPILE then begin
       Machine.LogError(Command^.Name + ' command cannot work in compile mode');
       Exit;
@@ -3075,7 +3091,7 @@ var
   I: Integer;
   Small: TInt8;
 begin
-  //with Machine do begin
+  //with Machine^ do begin
     if Machine.State = FS_COMPILE then begin
       Machine.LogError(Command^.Name + ' command cannot work in compile mode');
       Exit;
@@ -3178,7 +3194,7 @@ var
   Name: TString;
   C: PForthCommand;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     Name := Machine.NextName;
     New(C);
     C^.Name := StrAlloc(Length(Name) + 1);
@@ -3200,7 +3216,7 @@ var
   I: Integer;
   F: File;
 begin
-  with Machine do begin
+  with Machine^ do begin
     if Machine.State = FS_COMPILE then begin
       Machine.LogError(Command^.Name + ' command cannot work in compile mode');
       Exit;
@@ -3253,7 +3269,7 @@ var
   Stack: Pointer;
   Data: Pointer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Data := Command^.Data;
     Fun := Pointer(Command^.Data^);
     Stack := Machine.WP;
@@ -3327,7 +3343,7 @@ var
   P: Pointer;
   Size: Integer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Size := Machine.WOI;
     GetMem(P, Size + 1);
     Machine.WUP(P);
@@ -3338,7 +3354,7 @@ procedure pchar_free(Machine: TForthMachine; Command: PForthCommand);
 var
   P: Pointer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     P := Machine.WOP;
     FreeMem(P);
   end;
@@ -3349,7 +3365,7 @@ var
   P: PByte;
   L: Integer;
 begin
-  //with Machine do begin
+  //with Machine^ do begin
     P := Machine.WOP;
     L := strlen(PChar(P));
     Machine.WUI(L);
@@ -3360,7 +3376,7 @@ procedure pchar_concat(Machine: TForthMachine; Command: PForthCommand);
 var
   S1,S2,D: PChar;
 begin
-  with Machine do begin
+  with Machine^ do begin
     S2 := Machine.WOP;
     S1 := Machine.WOP;
     D := StrAlloc(StrLen(S1) + StrLen(S2) + 1);
@@ -3375,7 +3391,7 @@ procedure pchar_equel(Machine: TForthMachine; Command: PForthCommand);
 var
   S1,S2: PChar;
 begin
-  with Machine do begin
+  with Machine^ do begin
     S1 := Machine.WOP;
     S2 := Machine.WOP;
     if StrComp(S1, S2) = 0 then
@@ -3390,8 +3406,8 @@ var
   P: Pointer;
   C: TChar;
 begin
- // with Machine do begin
-    if Machine.FState = FS_COMPILE then begin
+ // with Machine^ do begin
+    if Machine.State = FS_COMPILE then begin
       compile_pchar_dq(Machine, Command);
     end else begin
       SetLength(Machine.FPChars, Length(Machine.FPChars) + 1);
@@ -3413,7 +3429,7 @@ procedure compile_pchar_dq(Machine: TForthMachine; Command: PForthCommand);
 var
   C: TChar;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     Machine.EWO(' pchar"');
     C := Machine.NextChar;
     while C <> '"' do begin
@@ -3429,7 +3445,7 @@ procedure run_pchar_dq(Machine: TForthMachine; Command: PForthCommand);
 var
   P: Pointer;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     P := @Machine.E[Machine.EC];
     Machine.WUP(P);
     while Machine.E[Machine.EC] <> 0 do
@@ -3471,34 +3487,28 @@ procedure str_push(Machine: TForthMachine; Command: PForthCommand; B: TString);
 var
   FS: TStr;
 begin
-  with Machine do begin
-    GetMem(FS, SizeOf(Integer)*2 + Length(B) + 1);
-    PStrRec(FS)^.Len := Length(B);
-    PStrRec(FS)^.Ref := 0;
-    Move(B[1], PStrRec(FS)^.Sym[0], Length(B));
-    PStrRec(FS)^.Sym[Length(B)] := #0;
-    str_push(Machine, Command, FS);
-  end;
+  GetMem(FS, SizeOf(Integer)*2 + Length(B) + 1);
+  PStrRec(FS)^.Len := Length(B);
+  PStrRec(FS)^.Ref := 0;
+  Move(B[1], PStrRec(FS)^.Sym[0], Length(B));
+  PStrRec(FS)^.Sym[Length(B)] := #0;
+  str_push(Machine, Command, FS);
 end;
 
 procedure str_push(Machine: TForthMachine; Command: PForthCommand; B: TStr);
 begin
-  with Machine do begin
-    AddRef(B);
-    Machine.WUP(B);
-  end;
+  AddRef(B);
+  Machine.WUP(B);
 end;
 
 function str_pop(Machine: TForthMachine; Command: PForthCommand): TStr;
 begin
-  with Machine do begin
-    Result := Machine.WOP;
-  end;
+  Result := Machine.WOP;
 end;
 
 procedure str_drop(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     DelRef(str_pop(Machine, Command));
   end;
 end;
@@ -3507,12 +3517,12 @@ procedure str_dup(Machine: TForthMachine; Command: PForthCommand);
 var
   B: TStr;
 begin
-  with Machine do begin
+  with Machine^ do begin
     //B := str_pop(Machine, Command);
     //str_push(Machine, Command, B);
     //str_push(Machine, Command, B);
     //DelRef(B);
-    with MAchine do begin
+    with Machine^ do begin
       Pointer(Machine.WP^) := Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^));
       AddRef(TStr(WP^));
       Inc(WP, SizeOf(Pointer));
@@ -3524,7 +3534,7 @@ procedure str_over(Machine: TForthMachine; Command: PForthCommand);
 var
   A,B: TStr;
 begin
-  with Machine do begin
+  with Machine^ do begin
     B := str_pop(Machine, Command);
     A := str_pop(Machine, Command);
     str_push(Machine, Command, A);
@@ -3540,7 +3550,7 @@ procedure str_len(Machine: TForthMachine; Command: PForthCommand);
 var
   B: TStr;
 begin
-  with Machine do begin
+  with Machine^ do begin
     B := Machine.WOP;
     Machine.WUI(PStrRec(B)^.Len);
     DelRef(B);
@@ -3553,8 +3563,8 @@ var
   Temp: array of Char;
   B: TStr;
 begin
- // with Machine do begin
-    //if Machine.FState = FS_COMPILE then begin
+ // with Machine^ do begin
+    //if Machine.State = FS_COMPILE then begin
     //  compile_str_dq(Machine, Command);
     //end else begin
       SetLength(Temp, 0); 
@@ -3580,7 +3590,7 @@ var
   E: Cardinal;
   L: Integer;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     Machine.EWO('(str)"');
     Machine.EWI(1);
     E := Machine.EL;
@@ -3601,7 +3611,7 @@ procedure run_str_dq(Machine: TForthMachine; Command: PForthCommand);
 var
   B: TStr;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     B := @Machine.E[Machine.EC];
     str_push(Machine, Command, B);
     Inc(Machine.EC, 2*SizeOf(TInt) + PStrRec(B)^.Len + 1);
@@ -3613,7 +3623,7 @@ var
   A, B: TStr;
   I: Integer;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     B := str_pop(Machine, Command);
     A := str_pop(Machine, Command);
     if PStrRec(A)^.Len <> PStrRec(B)^.Len then
@@ -3641,7 +3651,7 @@ procedure str_concat(Machine: TForthMachine; Command: PForthCommand);
 var
   A, B: TStr;
 begin
- // with Machine do begin
+ // with Machine^ do begin
     B := str_pop(Machine, Command);
     A := str_pop(Machine, Command);
     GetMem(B, 2*SizeOf(TInt) + PStrRec(A)^.Len + PStrRec(B)^.Len + 1);
@@ -3658,7 +3668,7 @@ end;
 
 procedure str_nil(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     str_push(Machine, Command, @FStrNil);
   end;
 end;
@@ -3668,7 +3678,7 @@ var
   I: Integer;
   B: TStr;
 begin
-  with Machine do begin
+  with Machine^ do begin
     B := str_pop(Machine, Command);
     I := 0;
     while I < PStrRec(B)^.Len do begin
@@ -3690,7 +3700,7 @@ var
   P: TStr;
   B: TString;
 begin
-  with Machine do begin
+  with Machine^ do begin
     Read(B); 
     GetMem(P, 2*SizeOf(Integer) + Length(B) + 1);
     PStrRec(P)^.Ref := 0;
@@ -3703,8 +3713,8 @@ end;
 
 procedure str_dog(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    with Machine do begin
+  with Machine^ do begin
+    with Machine^ do begin
       Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := Pointer(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^);
       AddRef(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)));
     end;
@@ -3713,8 +3723,8 @@ end;
 
 procedure str_exclamation(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
-    with Machine do begin
+  with Machine^ do begin
+    with Machine^ do begin
       DelRef(Pointer(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^));
       Pointer(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := Pointer((Pointer(TUInt(WP) + (-2*SizeOf(Pointer)))^));
       Dec(WP, 2*SizeOf(Pointer));
@@ -3725,7 +3735,7 @@ end;
 
 procedure pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     Dec(Machine.WP, SizeOf(Pointer));
     Machine.WUS(TString(PChar(Machine.WP^)));
   end;
@@ -3738,7 +3748,7 @@ var
   Sub: array of string;
   STemp: TStr;
 begin
-  with Machine do begin
+  with Machine^ do begin
     STemp := str_pop(Machine, Command);
     I := STemp^.Len;
     while I > 0 do begin
@@ -3765,7 +3775,7 @@ end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TForthMachine'}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'folded'}{$ENDIF}
-procedure TForthMachine.AddCommand(Name: PChar; Code: TCode; Immediate: Boolean = False; Builtin: Boolean = True);
+procedure OForthMachine.AddCommand(Name: PChar; Code: TCode; Immediate: Boolean = False; Builtin: Boolean = True);
 begin
   SetLength(C, Length(C) + 1);
   New(C[High(C)]);
@@ -3777,7 +3787,7 @@ begin
   OnUpdateCommand(High(C));
 end;
 
-procedure TForthMachine.OnUpdateCommand(Opcode: Integer);
+procedure OForthMachine.OnUpdateCommand(Opcode: Integer);
 begin
   VocAdd(Target[High(Target)], Opcode);
   // Writeln('Add command ', C[Opcode]^.Name);
@@ -3787,7 +3797,7 @@ begin
     Target[High(Target)].sNOTFOUND := Opcode
 end;
 
-procedure TForthMachine.OnUpdateCommand(Command: PForthCommand);
+procedure OForthMachine.OnUpdateCommand(Command: PForthCommand);
 var
   I: Integer;
 begin
@@ -3798,13 +3808,13 @@ begin
     end;
 end;
 
-procedure TForthMachine.CompileSource(Source: PChar);
+procedure OForthMachine.CompileSource(Source: PChar);
 var
   I: Integer;
 begin
   FSource := Source;
   FCompilation := True;
-  FState := FS_COMPILE;
+  State := FS_COMPILE;
   FCurrentChar := 0;
   while (not EOS) and FCompilation do begin
     FCurrentName := NextName;
@@ -3823,7 +3833,7 @@ procedure _vocabulary(Machine: TForthMachine; Command: PForthCommand);
 var
   V: PVoc;
 begin
-  with Machine do begin
+  with Machine^ do begin
     New(V);
     V^.Item := nil;
     V^.sFIND := -1;
@@ -3834,49 +3844,49 @@ end;
 
 procedure _vLOCAL(Machine: TForthMachine; Command: PForthCommand);
 begin 
-  with Machine do begin
+  with Machine^ do begin
     WUP(vLOCAL);
   end;
 end;
 
 procedure _vGLOBAL(Machine: TForthMachine; Command: PForthCommand);
 begin 
-  with Machine do begin
+  with Machine^ do begin
     WUP(vGLOBAL);
   end;
 end;
 
 procedure _TargetPush(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     TargetPush(WOP);
   end;
 end;
 
 procedure _TargetPop(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     WUP(TargetPop);
   end;
 end;
 
 procedure _ContextPush(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     ContextPush(WOP);
   end;
 end;
 
 procedure _ContextPop(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     WUP(ContextPop);
   end;
 end;
 
 procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     {( это для m4}
     while Machine.NextChar <> ')' do
       if Machine.EOS then begin
@@ -3888,20 +3898,20 @@ end;
 
 procedure CompileLineComment(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     while Machine.NextChar <> #13 do
       if Machine.EOS then
         Break;
   end;
 end;
 
-function TForthMachine.NextMnemonic: Cardinal;
+function OForthMachine.NextMnemonic: Cardinal;
 begin
   Result := Cardinal((@FEmbro[EC])^);
   Inc(EC, SizeOf(Cardinal));
 end;
 
-procedure TForthMachine.Run(Index: Integer);
+procedure OForthMachine.Run(Index: Integer);
 var
   M: Cardinal;
   SavedState: Integer;
@@ -3911,7 +3921,7 @@ begin
   // Halt(-1);
 end;
 
-procedure TForthMachine.RunMnemonic(M: Cardinal);
+procedure OForthMachine.RunMnemonic(M: Cardinal);
 begin
   //Writeln('RUN MNEMONIC "' + C[M].Name + '" ' + IntToStr(M) + ' EC:' + IntToStr(EC));
   // Writeln('RUN STEP "', C[M].Name, '"');
@@ -3919,26 +3929,27 @@ begin
     LogError('trying to run command with opcode -1');
     Exit;
   end;
-  C[M].Code(Self, C[M]);
+  C[M].Code(@Self, C[M]);
 end;
 
-procedure TForthMachine.RunCommand(Command: PForthCommand);
+procedure OForthMachine.RunCommand(Command: PForthCommand);
 begin
-  Command^.Code(Self, Command);
+  Command^.Code(@Self, Command);
 end;
 
-procedure TForthMachine.RunError(const S: TString);
+procedure OForthMachine.RunError(const S: TString);
 begin
-  Error(' Runtime: ' + S);
+  Error('Runtime(' + IntToStr(FCurrentLine) + ', ' +
+                     IntToStr(FCurrentPos) + '): ' + S);
   // FRunning := False;
 end;
 
-procedure TForthMachine.RunWarring(const S: TString);
+procedure OForthMachine.RunWarring(const S: TString);
 begin
   Warrning('Runtime warring: ' + S);
 end;
 
-procedure TForthMachine.IncHere(Count: Integer);
+procedure OForthMachine.IncHere(Count: Integer);
 begin
   //Inc(Here, Count);
   EA(Count);
@@ -3946,7 +3957,7 @@ begin
   //  SetLength(FData, Length(FData) + 1024);
 end;
 
-procedure TForthMachine.AddType(const Name: TString; Size: Integer);
+procedure OForthMachine.AddType(const Name: TString; Size: Integer);
 var
   Command: PForthCommand;
 begin
@@ -3960,25 +3971,25 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'E'}{$ENDIF}
-procedure TForthMachine.EA(Size: Integer); // Embro Alloc
+procedure OForthMachine.EA(Size: Integer); // Embro Alloc
 begin
   Inc(EL, Size);
 end;
 
-function TForthMachine.Here: Pointer;
+function OForthMachine.Here: Pointer;
 begin
   Result := @E[EL];
 end;
 
 procedure _here(Machine: TForthMachine; Command: PForthCommand);
 begin
-  with Machine do begin
+  with Machine^ do begin
     Pointer(WP^) := @E[EL];
     Inc(WP, SizeOf(Pointer));
   end;
 end;
 
-procedure TForthMachine.EWV(V: Pointer; Size: Integer); // Embro Write Data
+procedure OForthMachine.EWV(V: Pointer; Size: Integer); // Embro Write Data
 begin
   Move(V^, (@E[EL])^, Size);
   Inc(EL, Size);
@@ -3986,21 +3997,21 @@ begin
   Inc(Chunks[High(Chunks)].Len, Size);
 end;
 
-procedure TForthMachine.EWI(V: Integer);
+procedure OForthMachine.EWI(V: Integer);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' ' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWE(V: TEmbroPtr);
+procedure OForthMachine.EWE(V: TEmbroPtr);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' embro:' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWO(V: TOpcode);
+procedure OForthMachine.EWO(V: TOpcode);
 begin
   Move(V, (@E[EL])^, SizeOf(V));
   Inc(EL, SizeOf(V));
@@ -4018,7 +4029,7 @@ begin
   //Writeln('WRITE OPCODE: ' + IntToStr(V));
 end;
 
-procedure TForthMachine.EWO(V: TString);
+procedure OForthMachine.EWO(V: TString);
 var
   I: TOpcode;
 begin
@@ -4031,103 +4042,103 @@ begin
   LogError('command "' + V + '" not found');
 end;
 
-procedure TForthMachine.EWR(V: TOpcode);
+procedure OForthMachine.EWR(V: TOpcode);
 begin
   // TODO
 end;
 
-procedure TForthMachine.EWI8(V: TInt8);
+procedure OForthMachine.EWI8(V: TInt8);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' int8:' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWI16(V: TInt16);
+procedure OForthMachine.EWI16(V: TInt16);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' int16:' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWI32(V: TInt32);
+procedure OForthMachine.EWI32(V: TInt32);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' int32:' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWI64(V: TInt64);
+procedure OForthMachine.EWI64(V: TInt64);
 begin
   EWV(@V, SizeOf(V));
   
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' int64:' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWU(V: TUInt);
+procedure OForthMachine.EWU(V: TUInt);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' u' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWU8(V: TUInt8);
+procedure OForthMachine.EWU8(V: TUInt8);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' uint8:' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWU16(V: TUInt16);
+procedure OForthMachine.EWU16(V: TUInt16);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' uint16:' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWU32(V: TUInt32);
+procedure OForthMachine.EWU32(V: TUInt32);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' uint32:' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWU64(V: TUInt64);
+procedure OForthMachine.EWU64(V: TUInt64);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' uint64:' + IntToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWC(V: Char);
+procedure OForthMachine.EWC(V: Char);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + V;
 end;
 
-procedure TForthMachine.EWS(V: Single);
+procedure OForthMachine.EWS(V: Single);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' s' + FloatToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWD(const V: Double);
+procedure OForthMachine.EWD(const V: Double);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' d' + FloatToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWExtended(const V: Extended);
+procedure OForthMachine.EWExtended(const V: Extended);
 begin
   EWV(@V, SizeOf(V));
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' e' + FloatToStr(V) + ' ';
 end;
 
-procedure TForthMachine.EWPChar(V: PChar);
+procedure OForthMachine.EWPChar(V: PChar);
 begin
   // TODO
 end;
@@ -4141,160 +4152,166 @@ begin
   PStrRec(Result)^.Sym[LengtH(S)] := #0;
 end;
 
-procedure TForthMachine.EWStr(V: TString);
+procedure OForthMachine.EWStr(V: TString);
 var
-  S: TStr;
+  B: TStr;
 begin
-  S := CreateStr(V);
-  PStrRec(S)^.Ref := 1;
-  EWV(S, SizeOf(Integer)*2 + PStrRec(S)^.Len + 1);
+  B := CreateStr(V);
+  PStrRec(B)^.Ref := 1;
+  EWV(B, SizeOf(Integer)*2 + PStrRec(B)^.Len + 1);
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' "' + V + '" ';
 end;
 
-procedure TForthMachine.ERV(V: Pointer; Size: Integer);
+procedure OForthMachine.ERV(V: Pointer; Size: Integer);
 begin
   Move((@E[EC])^, V^, Size);
   Inc(EC, Size);
 end;
 
-function TForthMachine.ERI: Integer;
+function OForthMachine.ERI: Integer;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERE: TEmbroPtr;
+function OForthMachine.ERE: TEmbroPtr;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERO: TOpcode;
+function OForthMachine.ERO: TOpcode;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERI8: TInt8;
+function OForthMachine.ERI8: TInt8;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERI16: TInt16;
+function OForthMachine.ERI16: TInt16;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERI32: TInt32;
+function OForthMachine.ERI32: TInt32;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERI64: TInt64;
+function OForthMachine.ERI64: TInt64;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERU: TUInt;
+function OForthMachine.ERU: TUInt;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERU8: TUInt8;
+function OForthMachine.ERU8: TUInt8;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERU16: TUInt16;
+function OForthMachine.ERU16: TUInt16;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERU32: TUInt32;
+function OForthMachine.ERU32: TUInt32;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERU64: TUInt64;
+function OForthMachine.ERU64: TUInt64;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERC: Char;
+function OForthMachine.ERC: Char;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERS: Single;
+function OForthMachine.ERS: Single;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERD: Double;
+function OForthMachine.ERD: Double;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERExtended: Extended;
+function OForthMachine.ERExtended: Extended;
 begin
   ERV(@Result, SizeOf(Result));
 end;
 
-function TForthMachine.ERPChar: PChar;
+function OForthMachine.ERPChar: PChar;
 begin
   // TODO
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
-{procedure TForthMachine.DA(Size: Integer);
+{procedure OForthMachine.DA(Size: Integer);
 begin
   Inc(Here, Size);
 end;}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'S'}{$ENDIF}
-function TForthMachine.SE: Boolean;
+function OForthMachine.SE: Boolean;
 begin
   Result := S[SC] = #0;
 end;
 
-function TForthMachine.SNC: TChar;
+function OForthMachine.SNC: TChar;
 begin
   Result := S[SC];
-  if not SE then
+  if not SE then begin
     Inc(SC);
+    if Result = EOL then begin
+      Inc(FCurrentLine);
+      FCurrentPos := 1
+    end else
+      Inc(FCurrentPos);
+  end;
 end;
 
-function TForthMachine.SNN: TString;
+function OForthMachine.SNN: TString;
 var
-  C: TChar;
+  Ch: TChar;
 begin
   Result := '';
   repeat
-    C := SNC;
-  until (not (C in [#0..#32])) or SE;
+    Ch := SNC;
+  until (not (Ch in [#0..#32])) or SE;
   repeat
-    Result := Result + C;
+    Result := Result + Ch;
     if SE then
       Exit;
-    C := SNC;
-  until (C in [#0..#32]) or SE;
-  if not (C in [#0..#32]) then
-    Result := Result + C;
+    Ch := SNC;
+  until (Ch in [#0..#32]) or SE;
+  if not (Ch in [#0..#32]) then
+    Result := Result + Ch;
 end;
 
-procedure TForthMachine.SSS;
+procedure OForthMachine.SSS;
 begin
   while (not SE) and (S[SC] in [#1..#32]) do
     SNC;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'R'}{$ENDIF}
-procedure TForthMachine.RUV(const P: Pointer; Size: Integer);
+procedure OForthMachine.RUV(const P: Pointer; Size: Integer);
 begin
   if P <> nil then
     Move(P^, RP^, Size);
   Inc(RP, Size);
 end;
 
-procedure TForthMachine.ROV(const P: Pointer; Size: Integer);
+procedure OForthMachine.ROV(const P: Pointer; Size: Integer);
 begin
   if P <> nil then
     Move(RP^, P^, Size);
@@ -4302,13 +4319,13 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
-procedure TForthMachine.CWU(C: Pointer);
+procedure OForthMachine.CWU(C: Pointer);
 begin
   Pointer(CWP^) := C;
   Inc(CWP, SizeOf(Pointer));
 end;
 
-function TForthMachine.CWO: Pointer;
+function OForthMachine.CWO: Pointer;
 begin
   Dec(CWP, SizeOf(Pointer));
   Result := Pointer(CWP^);
@@ -4324,43 +4341,43 @@ begin
   Machine.CWU(Machine.WOP);
 end;
 
-procedure TForthMachine.WUV(const P: Pointer; Size: Integer);
+procedure OForthMachine.WUV(const P: Pointer; Size: Integer);
 begin
   if P <> nil then
     Move(P^, WP^, Size);
   Inc(WP, Size);
 end;
 
-procedure TForthMachine.WOV(const P: Pointer; Size: Integer);
+procedure OForthMachine.WOV(const P: Pointer; Size: Integer);
 begin
   if P <> nil then
     Move(WP^, P^, Size);
   Dec(WP, Size);
 end;
 
-procedure TForthMachine.WUS(const S: TString);
+procedure OForthMachine.WUS(const S: TString);
 begin
-  str_push(Self, nil, S);
+  str_push(@Self, nil, S);
 end;
 
-function TForthMachine.WOS: TString;
+function OForthMachine.WOS: TString;
 var
-  S: PStrRec;
+  S_: PStrRec;
 begin
-  S := str_pop(Self, nil);
-  Result := TString(PChar(@S^.Sym[0]));
-  DelRef(S);
+  S_ := str_pop(@Self, nil);
+  Result := TString(PChar(@S_^.Sym[0]));
+  DelRef(S_);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
-procedure TForthMachine.LUV(const P: Pointer; Size: Integer);
+procedure OForthMachine.LUV(const P: Pointer; Size: Integer);
 begin
   if P <> nil then
     Move(P^, LP^, Size);
   Inc(LP, Size);
 end;
 
-procedure TForthMachine.LOV(const P: Pointer; Size: Integer);
+procedure OForthMachine.LOV(const P: Pointer; Size: Integer);
 begin
   if P <> nil then
     Move(LP^, P^, Size);
@@ -4368,13 +4385,13 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
-procedure TForthMachine.ContextPush(V: PVoc);
+procedure OForthMachine.ContextPush(V: PVoc);
 begin
   SetLength(Context, Length(Context) + 1);
   Context[High(Context)] := V;
 end;
 
-function TForthMachine.ContextPop: PVoc;
+function OForthMachine.ContextPop: PVoc;
 begin
   if Length(Context) = 0 then
     Exit;
@@ -4386,13 +4403,13 @@ begin
   SetLength(Context, Length(Context) - 1);
 end;
 
-procedure TForthMachine.TargetPush(V: PVoc);
+procedure OForthMachine.TargetPush(V: PVoc);
 begin
   SetLength(Target, Length(Target) + 1);
   Target[High(Target)] := V;
 end;
 
-function TForthMachine.TargetPop: PVoc;
+function OForthMachine.TargetPop: PVoc;
 begin
   if Length(Target) = 0 then
     Exit;
@@ -4404,20 +4421,20 @@ begin
   SetLength(Target, Length(Target) - 1);
 end;
 
-procedure TForthMachine.UseVoc(V: PVoc);
+procedure OForthMachine.UseVoc(V: PVoc);
 begin
   TargetPush(V);
   ContextPush(V);
 end;
 
-procedure TForthMachine.UnuseVoc;
+procedure OForthMachine.UnuseVoc;
 begin
   TargetPop;
   ContextPop;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
-constructor TForthMachine.Create;
+constructor OForthMachine.Create;
 begin
   GetMem(FStrNil, 2*SizeOf(TInt) + 1);
   PStrRec(FStrNil)^.Ref := 1;
@@ -4456,8 +4473,8 @@ begin
   LS := Length(L);
   S  := nil;
   SC := 0;
-  FUserData := nil;
-  FState := FS_INTERPRET;
+  UserData := nil;
+  State := FS_INTERPRET;
   SetLength(FData, 2048);
   //FHere := 0;
   FMemoryDebug := TDebug.Create('memory.tmp');
@@ -5711,49 +5728,49 @@ begin
     ;
 end;
 
-destructor TForthMachine.Destroy; 
+destructor OForthMachine.Destroy; 
 begin
   ;
   FAlien.Free;
   FMemoryDebug.Free;
 end;
 
-procedure TForthMachine.InterpretName(W: PChar);
+procedure OForthMachine.InterpretName(W: PChar);
 var
   I: Integer;
   Command: PForthCommand;
-  S: TString;
+  S_: TString;
   //Time: Integer;
 begin
   // Writeln('INTERPRET ', W);
   (* for I := High(C) downto 0 do *)
   (*   if StrComp(C[I].Name, W) = 0 then begin *)
   (*     //Writeln('START ' + W); *)
-  (*     C[I].Code(Self, C[I]); *)
+  (*     C[I].Code(@Self, C[I]); *)
   (*     // Writeln('DONE ' + W); *)
   (*     Exit; *)
   (*   end; *)
-  S := W;
-  Command := FindCommand(S);
+  S_ := W;
+  Command := FindCommand(S_);
   // Writeln('FOUND COMMAND: ', Integer(Command));
   if Command <> nil then begin
     // Writeln('INTERPRET COMMAND ', Command^.Name);
-    Command.Code(Self, Command);
+    Command.Code(@Self, Command);
     Exit;
   end;
   //Time := GetTimer;
   for I := High(Context) downto 0 do begin
     if Context[I]^.sNOTFOUND = -1 then
       continue;
-    WUS(S);
+    WUS(S_);
     CallCommand(C[Context[I]^.sNOTFOUND]);
     if WOI = 0 then
       Exit;
   end;
-  LogError('unknown command "' + S + '"');
+  LogError('unknown command "' + S_ + '"');
 end;
 
-function TForthMachine.CompileName(W: PChar): Boolean;
+function OForthMachine.CompileName(W: PChar): Boolean;
 var
   I: Integer;
   Command: PForthCommand;
@@ -5761,7 +5778,7 @@ begin
   Command := FindCommand(W, @I);
   if Command <> nil then begin
     if IsImmediate(C[I]) then
-      C[I].Code(Self, C[I])
+      C[I].Code(@Self, C[I])
     else
       EWO(I);
     Exit;
@@ -5769,7 +5786,7 @@ begin
   (* for I := High(C) downto 0 do *)
   (*   if StrComp(C[I].Name, W) = 0 then begin *)
   (*     if IsImmediate(C[I]) then *)
-  (*       C[I].Code(Self, C[I]) *)
+  (*       C[I].Code(@Self, C[I]) *)
   (*     else *)
   (*       EWO(I); *)
   (*     Exit; *)
@@ -5782,26 +5799,27 @@ begin
   end;
 end;
 
-procedure TForthMachine.Interpret(const S: PChar);
+procedure OForthMachine.Interpret(const Line: PChar);
 begin
-  if S = nil then
+  //Writeln('Interpret ', Line);
+  if Line = nil then
     Exit;
   (* Writeln('RB=', Cardinal(RB), *)
   (*         ' RP=', Cardinal(RP),  *)
   (*         ' SC=', SC,  *)
   (*         ' EC=', EC, *)
-  (*         ' S=', S); *)
-  RUI(FState);
+  (*         ' Line=', Line); *)
+  RUI(State);
   RUI(Ord(FSession) * BOOL_TRUE);
   RUI(Ord(FRunning) * BOOL_TRUE);
   RUI(EC);
   RUP(Self.S);
   RUI(SC);
   RUP(RB);
-  Self.S := S;
-  //Self.SB := S;
+  Self.S := Line;
+  //Self.SB := Line;
   Self.SC := 0;
-  FState := FS_INTERPRET;
+  State := FS_INTERPRET;
   FSession := True;
   FRunning := False;
   MainLoop;
@@ -5811,24 +5829,24 @@ begin
   EC := ROI;
   FRunning := ROI <> BOOL_FALSE;
   FSession := ROI <> BOOL_FALSE;
-  // Writeln('RB=', Cardinal(RB), ' SC=', SC, ' S=', Integer(S), ' EC=', EC);
-  FState := ROI;
+  // Writeln('RB=', Cardinal(RB), ' SC=', SC, ' Line=', Integer(Line), ' EC=', EC);
+  State := ROI;
 end;
 
-procedure TForthMachine.InterpretFile(const FileName: TString);
+procedure OForthMachine.InterpretFile(const FileName: TString);
 var
   F: TextFile;
-  S: TString;
+  S_: TString;
   B: TString;
   T: TString;
 begin
-  S := FileName;
-  Assign(F, S);
+  S_ := FileName;
+  Assign(F, S_);
   {$I-}
   Reset(F);
   {$I+}
   if IOResult <> 0 then begin
-    LogError('cannot open file "' + S + '"');
+    LogError('cannot open file "' + S_ + '"');
     Exit;
   end;
   B := '';
@@ -5837,7 +5855,16 @@ begin
     B := B + T + EOL;
   end;
   Close(F);
+  //WUS(FCurrentFileName);
+  LUI(FCurrentLine);
+  LUI(FCurrentPos);
+  FCurrentFileName := FileName;
+  FCurrentLine := 1;
+  FCurrentPos := 1;
   Interpret(PChar(B));
+  FCurrentPos := LOI;
+  FCurrentLine := LOI;
+  //FCurrentFileName := WOS;
 end;
 
 procedure Evaluate(Machine: TForthMachine; Command: PForthCommand);
@@ -5885,7 +5912,7 @@ begin
   // Writeln('End of evaluate file "', PChar(@S^.Sym[0]), '"');
 end;
 
-procedure TForthMachine.CallCommand(Command: PForthCommand);
+procedure OForthMachine.CallCommand(Command: PForthCommand);
 begin
   if Command = nil then
     Exit;
@@ -5898,7 +5925,7 @@ begin
   RB := RP;
   FSession := True;
   FRunning := False;
-  Command^.Code(Self, Command);
+  Command^.Code(@Self, Command);
   if FRunning then
     MainLoop;
   RP := ROP;
@@ -5909,25 +5936,25 @@ begin
   // Writeln('Command done');
 end;
 
-procedure TForthMachine.MainLoop;
+procedure OForthMachine.MainLoop;
 begin
   while FSession do begin
     //Writeln('MainLoop');
     if FRunning then
       RunStep
     else
-      case FState of
+      case State of
         FS_INTERPRET: InterpretStep;
         FS_COMPILE:   CompileStep;
       else
-        LogError('Illegal FState');
+        LogError('Illegal State');
         FSession := False;
       end;
-    // Writeln('Main Loop FState="', FState, '" FRunning="', FRunning, '"');
+    // Writeln('Main Loop State="', State, '" FRunning="', FRunning, '"');
   end;
 end;
 
-procedure TForthMachine.InterpretStep;
+procedure OForthMachine.InterpretStep;
 begin
   // Writeln('INTERPRET STEP');
   SSS;
@@ -5937,7 +5964,7 @@ begin
     InterpretName(PChar(SNN));
 end;
 
-procedure TForthMachine.CompileStep;
+procedure OForthMachine.CompileStep;
 begin
   // Writeln('COMPILE STEP');
   SSS;
@@ -5947,31 +5974,31 @@ begin
     CompileName(PChar(SNN));
 end;
 
-procedure TForthMachine.RunStep;
+procedure OForthMachine.RunStep;
 begin
   RunMnemonic(ERO);
 end;
 
-procedure TForthMachine.CompileError(const S: TString);
+procedure OForthMachine.CompileError(const S: TString);
 begin
   Error(' Compilation: "' + S + '"');
   FCompilation := False;
 end;
 
-procedure TForthMachine.CompileWarring(const S: TString);
+procedure OForthMachine.CompileWarring(const S: TString);
 begin
   Warrning(' Compilation: "' + S + '"');
 end;
 
-procedure TForthMachine.LogError(const S: TString);
+procedure OForthMachine.LogError(const S: TString);
 begin
-  if FState = FS_COMPILE then
+  if State = FS_COMPILE then
     CompileError(S)
   else
     RunError(S);
 end;
 
-function TForthMachine.NextChar: TChar;
+function OForthMachine.NextChar: TChar;
 begin
   Result := SNC;
   {if EOS then
@@ -5982,9 +6009,7 @@ begin
   end;}
 end;
 
-function TForthMachine.NextName: TString;
-var
-  C: TChar;
+function OForthMachine.NextName: TString;
 begin
   Result := SNN;
   {Result := '';
@@ -6001,29 +6026,29 @@ begin
     Result := Result + C;}
 end;
 
-function TForthMachine.NextName(S: PChar; var I: Integer): TString;
+function OForthMachine.NextName(S: PChar; var I: Integer): TString;
 var
-  C: TChar;
+  Ch: TChar;
 begin
   Result := '';
   repeat
-    C := S[I];
-    if C <> #0 then
+    Ch := S[I];
+    if Ch <> #0 then
       Inc(I);
-  until (not (C in [#0..#32])) or (C = #0);
+  until (not (Ch in [#0..#32])) or (Ch = #0);
   repeat
-    Result := Result + C;
+    Result := Result + Ch;
     if S[I] = #0 then
       Exit;
-    C := S[I];
-    if C <> #0 then
+    Ch := S[I];
+    if Ch <> #0 then
       Inc(I);
-  until (C in [#0..#32]) or (C = #0);
-  if not (C in [#0..#32]) then
-    Result := Result + C;
+  until (Ch in [#0..#32]) or (Ch = #0);
+  if not (Ch in [#0..#32]) then
+    Result := Result + Ch;
 end;
 
-function TForthMachine.NextNamePassive: TString;
+function OForthMachine.NextNamePassive: TString;
 var
   Temp: Integer;
 begin
@@ -6031,56 +6056,56 @@ begin
   Result := NextName(S, Temp);
 end;
 
-function TForthMachine.EOS: Boolean; // end of source
+function OForthMachine.EOS: Boolean; // end of source
 begin
   Result := SE;
   //Result := FSource[FCurrentChar] = #0;
 end;
 
-procedure TForthMachine.WriteEmbro(P: Pointer; Size: Integer);
+procedure OForthMachine.WriteEmbro(P: Pointer; Size: Integer);
 begin
   SetLength(FEmbro, Length(FEmbro) + Size);
   Move(P^, FEmbro[Length(FEmbro) - Size], Size);
 end;
 
-procedure TForthMachine.WriteEmbroInt(I: Integer);
+procedure OForthMachine.WriteEmbroInt(I: Integer);
 begin
   WriteEmbro(@I, SizeOf(I));
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' ' + IntToStr(I) + ' ';
 end;
 
-procedure TForthMachine.WriteEmbroUInt(U: Cardinal);
+procedure OForthMachine.WriteEmbroUInt(U: Cardinal);
 begin
   WriteEmbro(@U, SizeOf(U));
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' u' + IntToStr(U) + ' ';
 end;
 
-procedure TForthMachine.WriteEmbroChar(C: Char);
+procedure OForthMachine.WriteEmbroChar(C: Char);
 begin
   WriteEmbro(@C, SizeOf(C));
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + '''' + IntToHex(Ord(C), 2);
 end;
 
-procedure TForthMachine.WriteEmbroByte(B: Byte);
+procedure OForthMachine.WriteEmbroByte(B: Byte);
 begin
   WriteEmbro(@B, SizeOf(B));
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + 'b' + IntToHex(Ord(B), 2);
 end;
 
-procedure TForthMachine.PopEmbro(P: Pointer; Size: Integer);
+procedure OForthMachine.PopEmbro(P: Pointer; Size: Integer);
 begin
   Move(FEmbro[Length(FEmbro) - Size], P^, Size);
   SetLength(FEmbro, Length(FEmbro) - Size);
 end;
 
-procedure TForthMachine.WriteMnemonic(M: Cardinal);
+procedure OForthMachine.WriteMnemonic(M: Cardinal);
 begin
   WriteEmbro(@M, SizeOf(M));
   SetLength(FEmbroDump, Length(FEmbroDump) + 1);
   FEmbroDump[High(FEmbroDump)] := C[M].Name + ' ';
 end;
 
-procedure TForthMachine.WriteMnemonicByName(const Name: TString);
+procedure OForthMachine.WriteMnemonicByName(const Name: TString);
 var
   I: Integer;
 begin
@@ -6105,7 +6130,7 @@ begin
   end;
 end;
 
-function TForthMachine.GetOpcodeByName(const Name: TString): TMnemonic;
+function OForthMachine.GetOpcodeByName(const Name: TString): TMnemonic;
 var
   I: Integer;
 begin
@@ -6118,18 +6143,18 @@ begin
   Result := 0;
 end;
 
-function TForthMachine.GetCommandByOpcode(Opcode: Integer): PForthCommand;
+function OForthMachine.GetCommandByOpcode(Opcode: Integer): PForthCommand;
 begin
   //Writeln(Opcode);
   Result := C[Opcode];
 end;
 
-procedure TForthMachine.CancelMnemonic;
+procedure OForthMachine.CancelMnemonic;
 begin
   SetLength(FEmbro, Length(FEmbro) - SizeOf(Cardinal));
 end;
 
-function TForthMachine.ReserveName(const Name: TString): PForthCommand;
+function OForthMachine.ReserveName(const Name: TString): PForthCommand;
 var
   I: Integer;
 begin
@@ -6154,23 +6179,23 @@ begin
     OnUpdateCommand(High(C));
 end;
 
-procedure TForthMachine.ReadEmbro(P: Pointer; Size: Integer);
+procedure OForthMachine.ReadEmbro(P: Pointer; Size: Integer);
 begin
   Move(FEmbro[EC], P^, Size);
   Inc(EC, Size);
 end;
 
-function TForthMachine.ReadMnemonic: TMnemonic;
+function OForthMachine.ReadMnemonic: TMnemonic;
 begin
   ReadEmbro(@Result, SizeOf(TMnemonic));
 end;
 
-function TForthMachine.GetEmbroDumpLines: Integer;
+function OForthMachine.GetEmbroDumpLines: Integer;
 begin
   Result := Length(FEmbroDump);
 end;
 
-function TForthMachine.GetEmbroDumpLine;
+function OForthMachine.GetEmbroDumpLine;
 begin
   Result := FEmbroDump[Index];
 end;
@@ -6181,9 +6206,9 @@ var
   I: Integer;
   Item: PVocItem;
 begin
-  with Machine do begin
+  with Machine^ do begin
     B := WOS;
-    with Machine do begin
+    with Machine^ do begin
       for I := High(Context) downto 0 do begin
         Item := Context[I].Item;
         while Item <> nil do begin
@@ -6215,7 +6240,7 @@ var
   B: TString;
   I: Integer;
 begin
-  with Machine do begin
+  with Machine^ do begin
     B := Machine.WOS;
     // Writeln('_NOTFOUND_(', B, ')');
     if ConvertStrToInt(B, I) = 0 then begin
@@ -6227,7 +6252,7 @@ begin
   end;
 end;
 
-function TForthMachine.FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
+function OForthMachine.FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
 var
   I: Integer;
 begin
@@ -6266,77 +6291,77 @@ end;
 // ( Вся соль :)
  
     
-      procedure TForthMachine.EW_; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_int; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_int; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_int; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_int; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_int8; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_int8; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_int8; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_int8; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_int16; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_int16; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_int16; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_int16; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_int32; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_int32; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_int32; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_int32; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_int64; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_int64; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_int64; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_int64; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_uint; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_uint; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_uint; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_uint; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_uint8; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_uint8; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_uint8; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_uint8; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_uint16; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_uint16; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_uint16; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_uint16; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_uint32; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_uint32; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_uint32; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_uint32; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_uint64; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_uint64; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_uint64; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_uint64; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_single; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_single; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_single; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_single; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_double; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_double; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_double; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_double; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-      procedure TForthMachine.EW_extended; begin EWV(@V, SizeOf(V)) end;
-      function TForthMachine.ER_extended; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_extended; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_extended; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
-       function TForthMachine.ConvertStrTo(const B: TString; var X: TInt): Integer;
+       function OForthMachine.ConvertStrTo(const B: TString; var X: TInt): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6374,7 +6399,7 @@ end;
     
    
     
-       function TForthMachine.ConvertStrToint(const B: TString; var X: TInt): Integer;
+       function OForthMachine.ConvertStrToint(const B: TString; var X: TInt): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6412,7 +6437,7 @@ end;
     
    
     
-       function TForthMachine.ConvertStrToint8(const B: TString; var X: TInt8): Integer;
+       function OForthMachine.ConvertStrToint8(const B: TString; var X: TInt8): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6450,7 +6475,7 @@ end;
     
    
     
-       function TForthMachine.ConvertStrToint16(const B: TString; var X: TInt16): Integer;
+       function OForthMachine.ConvertStrToint16(const B: TString; var X: TInt16): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6488,7 +6513,7 @@ end;
     
    
     
-       function TForthMachine.ConvertStrToint32(const B: TString; var X: TInt32): Integer;
+       function OForthMachine.ConvertStrToint32(const B: TString; var X: TInt32): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6526,7 +6551,7 @@ end;
     
    
     
-       function TForthMachine.ConvertStrToint64(const B: TString; var X: TInt64): Integer;
+       function OForthMachine.ConvertStrToint64(const B: TString; var X: TInt64): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6564,7 +6589,7 @@ end;
     
    
     
-       function TForthMachine.ConvertStrTouint(const B: TString; var X: TUInt): Integer;
+       function OForthMachine.ConvertStrTouint(const B: TString; var X: TUInt): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6602,7 +6627,7 @@ end;
     
    
     
-       function TForthMachine.ConvertStrTouint8(const B: TString; var X: TUInt8): Integer;
+       function OForthMachine.ConvertStrTouint8(const B: TString; var X: TUInt8): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6640,7 +6665,7 @@ end;
     
    
     
-       function TForthMachine.ConvertStrTouint16(const B: TString; var X: TUInt16): Integer;
+       function OForthMachine.ConvertStrTouint16(const B: TString; var X: TUInt16): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6678,7 +6703,7 @@ end;
     
    
     
-       function TForthMachine.ConvertStrTouint32(const B: TString; var X: TUInt32): Integer;
+       function OForthMachine.ConvertStrTouint32(const B: TString; var X: TUInt32): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6716,7 +6741,7 @@ end;
     
    
     
-       function TForthMachine.ConvertStrTouint64(const B: TString; var X: TUInt64): Integer;
+       function OForthMachine.ConvertStrTouint64(const B: TString; var X: TUInt64): Integer;
        const
          Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
                                           '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -6753,153 +6778,153 @@ end;
        end;
     
    
-    function TForthMachine.ROP: Pointer; begin Dec(RP, SizeOf(Result)); Result := Pointer(RP^); end;
+    function OForthMachine.ROP: Pointer; begin Dec(RP, SizeOf(Result)); Result := Pointer(RP^); end;
      
-     procedure TForthMachine.RUI(const V: TInt); begin TInt(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUI(const V: TInt); begin TInt(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-     procedure TForthMachine.RUI8(const V: TInt8); begin TInt8(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUI8(const V: TInt8); begin TInt8(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-     procedure TForthMachine.RUI16(const V: TInt16); begin TInt16(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUI16(const V: TInt16); begin TInt16(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-     procedure TForthMachine.RUI32(const V: TInt32); begin TInt32(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUI32(const V: TInt32); begin TInt32(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-     procedure TForthMachine.RUI64(const V: TInt64); begin TInt64(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUI64(const V: TInt64); begin TInt64(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-     procedure TForthMachine.RUU(const V: TUInt); begin TUInt(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUU(const V: TUInt); begin TUInt(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-     procedure TForthMachine.RUU8(const V: TUInt8); begin TUInt8(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUU8(const V: TUInt8); begin TUInt8(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-     procedure TForthMachine.RUU16(const V: TUInt16); begin TUInt16(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUU16(const V: TUInt16); begin TUInt16(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-     procedure TForthMachine.RUU32(const V: TUInt32); begin TUInt32(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUU32(const V: TUInt32); begin TUInt32(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-     procedure TForthMachine.RUU64(const V: TUInt64); begin TUInt64(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUU64(const V: TUInt64); begin TUInt64(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-     procedure TForthMachine.RUP(const V: Pointer); begin Pointer(RP^) := V; Inc(RP, SizeOf(V)) end;
+     procedure OForthMachine.RUP(const V: Pointer); begin Pointer(RP^) := V; Inc(RP, SizeOf(V)) end;
    
-    function TForthMachine.ROI: TInt; begin Dec(RP, SizeOf(Result)); Result := TInt(RP^); end;
+    function OForthMachine.ROI: TInt; begin Dec(RP, SizeOf(Result)); Result := TInt(RP^); end;
      
-    function TForthMachine.ROI8: TInt8; begin Dec(RP, SizeOf(Result)); Result := TInt8(RP^); end;
+    function OForthMachine.ROI8: TInt8; begin Dec(RP, SizeOf(Result)); Result := TInt8(RP^); end;
      
-    function TForthMachine.ROI16: TInt16; begin Dec(RP, SizeOf(Result)); Result := TInt16(RP^); end;
+    function OForthMachine.ROI16: TInt16; begin Dec(RP, SizeOf(Result)); Result := TInt16(RP^); end;
      
-    function TForthMachine.ROI32: TInt32; begin Dec(RP, SizeOf(Result)); Result := TInt32(RP^); end;
+    function OForthMachine.ROI32: TInt32; begin Dec(RP, SizeOf(Result)); Result := TInt32(RP^); end;
      
-    function TForthMachine.ROI64: TInt64; begin Dec(RP, SizeOf(Result)); Result := TInt64(RP^); end;
+    function OForthMachine.ROI64: TInt64; begin Dec(RP, SizeOf(Result)); Result := TInt64(RP^); end;
      
-    function TForthMachine.ROU: TUInt; begin Dec(RP, SizeOf(Result)); Result := TUInt(RP^); end;
+    function OForthMachine.ROU: TUInt; begin Dec(RP, SizeOf(Result)); Result := TUInt(RP^); end;
      
-    function TForthMachine.ROU8: TUInt8; begin Dec(RP, SizeOf(Result)); Result := TUInt8(RP^); end;
+    function OForthMachine.ROU8: TUInt8; begin Dec(RP, SizeOf(Result)); Result := TUInt8(RP^); end;
      
-    function TForthMachine.ROU16: TUInt16; begin Dec(RP, SizeOf(Result)); Result := TUInt16(RP^); end;
+    function OForthMachine.ROU16: TUInt16; begin Dec(RP, SizeOf(Result)); Result := TUInt16(RP^); end;
      
-    function TForthMachine.ROU32: TUInt32; begin Dec(RP, SizeOf(Result)); Result := TUInt32(RP^); end;
+    function OForthMachine.ROU32: TUInt32; begin Dec(RP, SizeOf(Result)); Result := TUInt32(RP^); end;
      
-    function TForthMachine.ROU64: TUInt64; begin Dec(RP, SizeOf(Result)); Result := TUInt64(RP^); end;
+    function OForthMachine.ROU64: TUInt64; begin Dec(RP, SizeOf(Result)); Result := TUInt64(RP^); end;
      
-     procedure TForthMachine.WUI(const V: TInt); begin TInt(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUI(const V: TInt); begin TInt(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-     procedure TForthMachine.WUP(const V: Pointer); begin Pointer(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUP(const V: Pointer); begin Pointer(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-    function TForthMachine.WOI: TInt; begin Dec(WP, SizeOf(Result)); Result := TInt(WP^); end;
+    function OForthMachine.WOI: TInt; begin Dec(WP, SizeOf(Result)); Result := TInt(WP^); end;
      
-    function TForthMachine.WOP: Pointer; begin Dec(WP, SizeOf(Result)); Result := Pointer(WP^); end;
+    function OForthMachine.WOP: Pointer; begin Dec(WP, SizeOf(Result)); Result := Pointer(WP^); end;
      
-     procedure TForthMachine.WUI8(const V: TInt8); begin TInt8(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUI8(const V: TInt8); begin TInt8(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-     procedure TForthMachine.WUI16(const V: TInt16); begin TInt16(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUI16(const V: TInt16); begin TInt16(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-     procedure TForthMachine.WUI32(const V: TInt32); begin TInt32(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUI32(const V: TInt32); begin TInt32(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-     procedure TForthMachine.WUI64(const V: TInt64); begin TInt64(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUI64(const V: TInt64); begin TInt64(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-     procedure TForthMachine.WUU(const V: TUInt); begin TUInt(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUU(const V: TUInt); begin TUInt(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-     procedure TForthMachine.WUU8(const V: TUInt8); begin TUInt8(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUU8(const V: TUInt8); begin TUInt8(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-     procedure TForthMachine.WUU16(const V: TUInt16); begin TUInt16(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUU16(const V: TUInt16); begin TUInt16(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-     procedure TForthMachine.WUU32(const V: TUInt32); begin TUInt32(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUU32(const V: TUInt32); begin TUInt32(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-     procedure TForthMachine.WUU64(const V: TUInt64); begin TUInt64(WP^) := V; Inc(WP, SizeOf(V)) end;
+     procedure OForthMachine.WUU64(const V: TUInt64); begin TUInt64(WP^) := V; Inc(WP, SizeOf(V)) end;
    
-    function TForthMachine.WOI8: TInt8; begin Dec(WP, SizeOf(Result)); Result := TInt8(WP^); end;
+    function OForthMachine.WOI8: TInt8; begin Dec(WP, SizeOf(Result)); Result := TInt8(WP^); end;
      
-    function TForthMachine.WOI16: TInt16; begin Dec(WP, SizeOf(Result)); Result := TInt16(WP^); end;
+    function OForthMachine.WOI16: TInt16; begin Dec(WP, SizeOf(Result)); Result := TInt16(WP^); end;
      
-    function TForthMachine.WOI32: TInt32; begin Dec(WP, SizeOf(Result)); Result := TInt32(WP^); end;
+    function OForthMachine.WOI32: TInt32; begin Dec(WP, SizeOf(Result)); Result := TInt32(WP^); end;
      
-    function TForthMachine.WOI64: TInt64; begin Dec(WP, SizeOf(Result)); Result := TInt64(WP^); end;
+    function OForthMachine.WOI64: TInt64; begin Dec(WP, SizeOf(Result)); Result := TInt64(WP^); end;
      
-    function TForthMachine.WOU: TUInt; begin Dec(WP, SizeOf(Result)); Result := TUInt(WP^); end;
+    function OForthMachine.WOU: TUInt; begin Dec(WP, SizeOf(Result)); Result := TUInt(WP^); end;
      
-    function TForthMachine.WOU8: TUInt8; begin Dec(WP, SizeOf(Result)); Result := TUInt8(WP^); end;
+    function OForthMachine.WOU8: TUInt8; begin Dec(WP, SizeOf(Result)); Result := TUInt8(WP^); end;
      
-    function TForthMachine.WOU16: TUInt16; begin Dec(WP, SizeOf(Result)); Result := TUInt16(WP^); end;
+    function OForthMachine.WOU16: TUInt16; begin Dec(WP, SizeOf(Result)); Result := TUInt16(WP^); end;
      
-    function TForthMachine.WOU32: TUInt32; begin Dec(WP, SizeOf(Result)); Result := TUInt32(WP^); end;
+    function OForthMachine.WOU32: TUInt32; begin Dec(WP, SizeOf(Result)); Result := TUInt32(WP^); end;
      
-    function TForthMachine.WOU64: TUInt64; begin Dec(WP, SizeOf(Result)); Result := TUInt64(WP^); end;
+    function OForthMachine.WOU64: TUInt64; begin Dec(WP, SizeOf(Result)); Result := TUInt64(WP^); end;
      
-     procedure TForthMachine.LUI(const V: TInt); begin TInt(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUI(const V: TInt); begin TInt(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-     procedure TForthMachine.LUP(const V: Pointer); begin Pointer(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUP(const V: Pointer); begin Pointer(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-    function TForthMachine.LOI: TInt; begin Dec(LP, SizeOf(Result)); Result := TInt(LP^); end;
+    function OForthMachine.LOI: TInt; begin Dec(LP, SizeOf(Result)); Result := TInt(LP^); end;
      
-    function TForthMachine.LOP: Pointer; begin Dec(LP, SizeOf(Result)); Result := Pointer(LP^); end;
+    function OForthMachine.LOP: Pointer; begin Dec(LP, SizeOf(Result)); Result := Pointer(LP^); end;
      
-     procedure TForthMachine.LUI8(const V: TInt8); begin TInt8(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUI8(const V: TInt8); begin TInt8(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-     procedure TForthMachine.LUI16(const V: TInt16); begin TInt16(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUI16(const V: TInt16); begin TInt16(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-     procedure TForthMachine.LUI32(const V: TInt32); begin TInt32(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUI32(const V: TInt32); begin TInt32(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-     procedure TForthMachine.LUI64(const V: TInt64); begin TInt64(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUI64(const V: TInt64); begin TInt64(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-     procedure TForthMachine.LUU(const V: TUInt); begin TUInt(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUU(const V: TUInt); begin TUInt(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-     procedure TForthMachine.LUU8(const V: TUInt8); begin TUInt8(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUU8(const V: TUInt8); begin TUInt8(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-     procedure TForthMachine.LUU16(const V: TUInt16); begin TUInt16(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUU16(const V: TUInt16); begin TUInt16(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-     procedure TForthMachine.LUU32(const V: TUInt32); begin TUInt32(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUU32(const V: TUInt32); begin TUInt32(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-     procedure TForthMachine.LUU64(const V: TUInt64); begin TUInt64(LP^) := V; Inc(LP, SizeOf(V)) end;
+     procedure OForthMachine.LUU64(const V: TUInt64); begin TUInt64(LP^) := V; Inc(LP, SizeOf(V)) end;
    
-    function TForthMachine.LOI8: TInt8; begin Dec(LP, SizeOf(Result)); Result := TInt8(LP^); end;
+    function OForthMachine.LOI8: TInt8; begin Dec(LP, SizeOf(Result)); Result := TInt8(LP^); end;
      
-    function TForthMachine.LOI16: TInt16; begin Dec(LP, SizeOf(Result)); Result := TInt16(LP^); end;
+    function OForthMachine.LOI16: TInt16; begin Dec(LP, SizeOf(Result)); Result := TInt16(LP^); end;
      
-    function TForthMachine.LOI32: TInt32; begin Dec(LP, SizeOf(Result)); Result := TInt32(LP^); end;
+    function OForthMachine.LOI32: TInt32; begin Dec(LP, SizeOf(Result)); Result := TInt32(LP^); end;
      
-    function TForthMachine.LOI64: TInt64; begin Dec(LP, SizeOf(Result)); Result := TInt64(LP^); end;
+    function OForthMachine.LOI64: TInt64; begin Dec(LP, SizeOf(Result)); Result := TInt64(LP^); end;
      
-    function TForthMachine.LOU: TUInt; begin Dec(LP, SizeOf(Result)); Result := TUInt(LP^); end;
+    function OForthMachine.LOU: TUInt; begin Dec(LP, SizeOf(Result)); Result := TUInt(LP^); end;
      
-    function TForthMachine.LOU8: TUInt8; begin Dec(LP, SizeOf(Result)); Result := TUInt8(LP^); end;
+    function OForthMachine.LOU8: TUInt8; begin Dec(LP, SizeOf(Result)); Result := TUInt8(LP^); end;
      
-    function TForthMachine.LOU16: TUInt16; begin Dec(LP, SizeOf(Result)); Result := TUInt16(LP^); end;
+    function OForthMachine.LOU16: TUInt16; begin Dec(LP, SizeOf(Result)); Result := TUInt16(LP^); end;
      
-    function TForthMachine.LOU32: TUInt32; begin Dec(LP, SizeOf(Result)); Result := TUInt32(LP^); end;
+    function OForthMachine.LOU32: TUInt32; begin Dec(LP, SizeOf(Result)); Result := TUInt32(LP^); end;
      
-    function TForthMachine.LOU64: TUInt64; begin Dec(LP, SizeOf(Result)); Result := TUInt64(LP^); end;
+    function OForthMachine.LOU64: TUInt64; begin Dec(LP, SizeOf(Result)); Result := TUInt64(LP^); end;
      
     
-     procedure drop_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4) end; end;
-     procedure dup_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine do begin  end; end; end; end;
+     procedure drop_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
+     procedure dup_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure nip_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
+     procedure swap_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
+     procedure over_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure tuck_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_ (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
       end; end;
      procedure rrot_ (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
@@ -6907,7 +6932,7 @@ end;
      procedure lrotn_ (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-4*N))^), (Pointer(TUInt(WP) + (0))^), 4);
        while N > 0 do begin
@@ -6920,7 +6945,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4);
        for I := 0 to N - 1 do
@@ -6928,44 +6953,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*4))^), 4);
       end; end;
      procedure pick_ (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
-     procedure _dog_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
-     procedure ptr_plus_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
-     procedure _to_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_(Machine, Command) else _interpret_to_(Machine, Command);  end; end;
-     procedure _compile_to_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@to'); EWO(NextName);  end; end;
-     procedure _run_to_ (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
-     procedure _interpret_to_ (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _dog_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
+     procedure ptr_plus_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
+     procedure _to_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_(Machine, Command) else _interpret_to_(Machine, Command);  end; end;
+     procedure _compile_to_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@to'); EWO(NextName);  end; end;
+     procedure _run_to_ (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
+     procedure _interpret_to_ (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), Comm.Data^, 4); Dec(WP, 4);
               end; end;
-     procedure _value_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
-     procedure RunValue_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
-    procedure run_literal_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 4); Inc(WP, 4);  end; end;
+     procedure _value_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
+     procedure RunValue_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
+    procedure literal_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure run_literal_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
     
-     procedure drop_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4) end; end;
-     procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine do begin  end; end; end; end;
+     procedure drop_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
+     procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure nip_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
+     procedure swap_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
+     procedure over_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure tuck_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_ptr (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
       end; end;
      procedure rrot_ptr (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
@@ -6973,7 +6998,7 @@ end;
      procedure lrotn_ptr (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-4*N))^), (Pointer(TUInt(WP) + (0))^), 4);
        while N > 0 do begin
@@ -6986,7 +7011,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4);
        for I := 0 to N - 1 do
@@ -6994,44 +7019,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*4))^), 4);
       end; end;
      procedure pick_ptr (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
-     procedure _dog_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
-     procedure ptr_plus_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
-     procedure _to_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_ptr(Machine, Command) else _interpret_to_ptr(Machine, Command);  end; end;
-     procedure _compile_to_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@ptr-to'); EWO(NextName);  end; end;
-     procedure _run_to_ptr (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
-     procedure _interpret_to_ptr (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _dog_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
+     procedure ptr_plus_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
+     procedure _to_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_ptr(Machine, Command) else _interpret_to_ptr(Machine, Command);  end; end;
+     procedure _compile_to_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@ptr-to'); EWO(NextName);  end; end;
+     procedure _run_to_ptr (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
+     procedure _interpret_to_ptr (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after ptr-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), Comm.Data^, 4); Dec(WP, 4);
               end; end;
-     procedure _value_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_ptr; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
-     procedure RunValue_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('ptr-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
-    procedure run_literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 4); Inc(WP, 4);  end; end;
+     procedure _value_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_ptr; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
+     procedure RunValue_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
+    procedure literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('ptr-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure run_literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
     
-     procedure drop_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4) end; end;
-     procedure dup_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine do begin  end; end; end; end;
+     procedure drop_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
+     procedure dup_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure nip_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
+     procedure swap_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
+     procedure over_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure tuck_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_int (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
       end; end;
      procedure rrot_int (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
@@ -7039,7 +7064,7 @@ end;
      procedure lrotn_int (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-4*N))^), (Pointer(TUInt(WP) + (0))^), 4);
        while N > 0 do begin
@@ -7052,7 +7077,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4);
        for I := 0 to N - 1 do
@@ -7060,44 +7085,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*4))^), 4);
       end; end;
      procedure pick_int (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
-     procedure _dog_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
-     procedure ptr_plus_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
-     procedure _to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_int(Machine, Command) else _interpret_to_int(Machine, Command);  end; end;
-     procedure _compile_to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@int-to'); EWO(NextName);  end; end;
-     procedure _run_to_int (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
-     procedure _interpret_to_int (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _dog_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
+     procedure ptr_plus_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
+     procedure _to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_int(Machine, Command) else _interpret_to_int(Machine, Command);  end; end;
+     procedure _compile_to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@int-to'); EWO(NextName);  end; end;
+     procedure _run_to_int (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
+     procedure _interpret_to_int (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after int-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), Comm.Data^, 4); Dec(WP, 4);
               end; end;
-     procedure _value_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
-     procedure RunValue_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('int-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
-    procedure run_literal_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 4); Inc(WP, 4);  end; end;
+     procedure _value_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
+     procedure RunValue_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
+    procedure literal_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure run_literal_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
     
-     procedure drop_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 1) end; end;
-     procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
-     procedure nip_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*1))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Dec(WP, 1) end; end;
-     procedure swap_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1))^), WP^, 1); Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1))^), 1); Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1); end; end;
-     procedure over_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
-     procedure tuck_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1*1))^), 2*1); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Inc(WP, 1);begin with Machine do begin  end; end; end; end;
+     procedure drop_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1) end; end;
+     procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
+     procedure nip_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*1))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Dec(WP, 1) end; end;
+     procedure swap_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1))^), WP^, 1); Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1))^), 1); Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1); end; end;
+     procedure over_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
+     procedure tuck_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1*1))^), 2*1); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Inc(WP, 1);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_int8 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
        Move((Pointer(TUInt(WP) + (-3*1))^), (Pointer(TUInt(WP) + (-1*1))^), 1);
        Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-3*1))^), 1);
        Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1);
       end; end;
      procedure rrot_int8 (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
        Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1*1))^), 1);
        Move((Pointer(TUInt(WP) + (-3*1))^), (Pointer(TUInt(WP) + (-2*1))^), 1);
        Move(WP^, (Pointer(TUInt(WP) + (-3*1))^), 1);
@@ -7105,7 +7130,7 @@ end;
      procedure lrotn_int8 (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-1*N))^), (Pointer(TUInt(WP) + (0))^), 1);
        while N > 0 do begin
@@ -7118,7 +7143,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-1))^), (Pointer(TUInt(WP) + (0))^), 1);
        for I := 0 to N - 1 do
@@ -7126,44 +7151,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*1))^), 1);
       end; end;
      procedure pick_int8 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -1*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -1*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             1);
        Inc(WP, 1 - SizeOf(TInt));
       end; end;
-     procedure _comma_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 1); Move(WP^, Here^, 1); EA(1);  end; end;
-     procedure _dog_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 1); Inc(WP, 1 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-1))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 1); Dec(WP, (SizeOf(Pointer)) + 1)  end; end;
-     procedure ptr_plus_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 1;  end; end;
-     procedure _to_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_int8(Machine, Command) else _interpret_to_int8(Machine, Command);  end; end;
-     procedure _compile_to_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@int8-to'); EWO(NextName);  end; end;
-     procedure _run_to_int8 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-1))^), C[O].Data^, 1); Dec(WP, 1);  end; end;
-     procedure _interpret_to_int8 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1); Move(WP^, Here^, 1); EA(1);  end; end;
+     procedure _dog_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 1); Inc(WP, 1 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-1))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 1); Dec(WP, (SizeOf(Pointer)) + 1)  end; end;
+     procedure ptr_plus_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 1;  end; end;
+     procedure _to_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_int8(Machine, Command) else _interpret_to_int8(Machine, Command);  end; end;
+     procedure _compile_to_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@int8-to'); EWO(NextName);  end; end;
+     procedure _run_to_int8 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-1))^), C[O].Data^, 1); Dec(WP, 1);  end; end;
+     procedure _interpret_to_int8 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after int8-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-1))^), Comm.Data^, 1); Dec(WP, 1);
               end; end;
-     procedure _value_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int8; Move((Pointer(TUInt(WP) + (-1))^), Here^, 1); Dec(WP, 1); EA(1); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 1); Move(WP^, Here^, 1);} EA(1); end;  end; end;
-     procedure RunValue_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 1); Inc(WP, 1);  end; end;
-    procedure literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('int8-(literal)'); Dec(WP, 1); EWV(WP, 1);  end; end;
-    procedure run_literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 1); Inc(WP, 1);  end; end;
+     procedure _value_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int8; Move((Pointer(TUInt(WP) + (-1))^), Here^, 1); Dec(WP, 1); EA(1); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 1); Move(WP^, Here^, 1);} EA(1); end;  end; end;
+     procedure RunValue_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 1); Inc(WP, 1);  end; end;
+    procedure literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int8-(literal)'); Dec(WP, 1); EWV(WP, 1);  end; end;
+    procedure run_literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 1); Inc(WP, 1);  end; end;
     
    
     
-     procedure drop_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 2) end; end;
-     procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
-     procedure nip_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*2))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Dec(WP, 2) end; end;
-     procedure swap_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2))^), WP^, 2); Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-2))^), 2); Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2); end; end;
-     procedure over_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
-     procedure tuck_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2*2); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Inc(WP, 2);begin with Machine do begin  end; end; end; end;
+     procedure drop_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 2) end; end;
+     procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
+     procedure nip_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*2))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Dec(WP, 2) end; end;
+     procedure swap_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2))^), WP^, 2); Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-2))^), 2); Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2); end; end;
+     procedure over_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
+     procedure tuck_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2*2); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Inc(WP, 2);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_int16 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
        Move((Pointer(TUInt(WP) + (-3*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2);
        Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-3*2))^), 2);
        Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2);
       end; end;
      procedure rrot_int16 (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
        Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2);
        Move((Pointer(TUInt(WP) + (-3*2))^), (Pointer(TUInt(WP) + (-2*2))^), 2);
        Move(WP^, (Pointer(TUInt(WP) + (-3*2))^), 2);
@@ -7171,7 +7196,7 @@ end;
      procedure lrotn_int16 (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-2*N))^), (Pointer(TUInt(WP) + (0))^), 2);
        while N > 0 do begin
@@ -7184,7 +7209,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-2))^), (Pointer(TUInt(WP) + (0))^), 2);
        for I := 0 to N - 1 do
@@ -7192,44 +7217,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*2))^), 2);
       end; end;
      procedure pick_int16 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -2*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -2*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             2);
        Inc(WP, 2 - SizeOf(TInt));
       end; end;
-     procedure _comma_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 2); Move(WP^, Here^, 2); EA(2);  end; end;
-     procedure _dog_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 2); Inc(WP, 2 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-2))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 2); Dec(WP, (SizeOf(Pointer)) + 2)  end; end;
-     procedure ptr_plus_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 2;  end; end;
-     procedure _to_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_int16(Machine, Command) else _interpret_to_int16(Machine, Command);  end; end;
-     procedure _compile_to_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@int16-to'); EWO(NextName);  end; end;
-     procedure _run_to_int16 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-2))^), C[O].Data^, 2); Dec(WP, 2);  end; end;
-     procedure _interpret_to_int16 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 2); Move(WP^, Here^, 2); EA(2);  end; end;
+     procedure _dog_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 2); Inc(WP, 2 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-2))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 2); Dec(WP, (SizeOf(Pointer)) + 2)  end; end;
+     procedure ptr_plus_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 2;  end; end;
+     procedure _to_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_int16(Machine, Command) else _interpret_to_int16(Machine, Command);  end; end;
+     procedure _compile_to_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@int16-to'); EWO(NextName);  end; end;
+     procedure _run_to_int16 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-2))^), C[O].Data^, 2); Dec(WP, 2);  end; end;
+     procedure _interpret_to_int16 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after int16-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-2))^), Comm.Data^, 2); Dec(WP, 2);
               end; end;
-     procedure _value_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int16; Move((Pointer(TUInt(WP) + (-2))^), Here^, 2); Dec(WP, 2); EA(2); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 2); Move(WP^, Here^, 2);} EA(2); end;  end; end;
-     procedure RunValue_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 2); Inc(WP, 2);  end; end;
-    procedure literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('int16-(literal)'); Dec(WP, 2); EWV(WP, 2);  end; end;
-    procedure run_literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 2); Inc(WP, 2);  end; end;
+     procedure _value_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int16; Move((Pointer(TUInt(WP) + (-2))^), Here^, 2); Dec(WP, 2); EA(2); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 2); Move(WP^, Here^, 2);} EA(2); end;  end; end;
+     procedure RunValue_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 2); Inc(WP, 2);  end; end;
+    procedure literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int16-(literal)'); Dec(WP, 2); EWV(WP, 2);  end; end;
+    procedure run_literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 2); Inc(WP, 2);  end; end;
     
    
     
-     procedure drop_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4) end; end;
-     procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine do begin  end; end; end; end;
+     procedure drop_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
+     procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure nip_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
+     procedure swap_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
+     procedure over_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure tuck_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_int32 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
       end; end;
      procedure rrot_int32 (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
@@ -7237,7 +7262,7 @@ end;
      procedure lrotn_int32 (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-4*N))^), (Pointer(TUInt(WP) + (0))^), 4);
        while N > 0 do begin
@@ -7250,7 +7275,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4);
        for I := 0 to N - 1 do
@@ -7258,44 +7283,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*4))^), 4);
       end; end;
      procedure pick_int32 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
-     procedure _dog_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
-     procedure ptr_plus_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
-     procedure _to_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_int32(Machine, Command) else _interpret_to_int32(Machine, Command);  end; end;
-     procedure _compile_to_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@int32-to'); EWO(NextName);  end; end;
-     procedure _run_to_int32 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
-     procedure _interpret_to_int32 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _dog_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
+     procedure ptr_plus_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
+     procedure _to_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_int32(Machine, Command) else _interpret_to_int32(Machine, Command);  end; end;
+     procedure _compile_to_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@int32-to'); EWO(NextName);  end; end;
+     procedure _run_to_int32 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
+     procedure _interpret_to_int32 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after int32-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), Comm.Data^, 4); Dec(WP, 4);
               end; end;
-     procedure _value_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int32; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
-     procedure RunValue_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('int32-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
-    procedure run_literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 4); Inc(WP, 4);  end; end;
+     procedure _value_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int32; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
+     procedure RunValue_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
+    procedure literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int32-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure run_literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
     
-     procedure drop_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 8) end; end;
-     procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
-     procedure nip_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*8))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Dec(WP, 8) end; end;
-     procedure swap_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-8))^), WP^, 8); Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-8))^), 8); Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8); end; end;
-     procedure over_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
-     procedure tuck_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-1*8))^), 2*8); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Inc(WP, 8);begin with Machine do begin  end; end; end; end;
+     procedure drop_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8) end; end;
+     procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
+     procedure nip_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*8))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Dec(WP, 8) end; end;
+     procedure swap_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-8))^), WP^, 8); Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-8))^), 8); Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8); end; end;
+     procedure over_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
+     procedure tuck_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-1*8))^), 2*8); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Inc(WP, 8);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_int64 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
        Move((Pointer(TUInt(WP) + (-3*8))^), (Pointer(TUInt(WP) + (-1*8))^), 8);
        Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-3*8))^), 8);
        Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8);
       end; end;
      procedure rrot_int64 (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
        Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-1*8))^), 8);
        Move((Pointer(TUInt(WP) + (-3*8))^), (Pointer(TUInt(WP) + (-2*8))^), 8);
        Move(WP^, (Pointer(TUInt(WP) + (-3*8))^), 8);
@@ -7303,7 +7328,7 @@ end;
      procedure lrotn_int64 (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-8*N))^), (Pointer(TUInt(WP) + (0))^), 8);
        while N > 0 do begin
@@ -7316,7 +7341,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-8))^), (Pointer(TUInt(WP) + (0))^), 8);
        for I := 0 to N - 1 do
@@ -7324,44 +7349,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*8))^), 8);
       end; end;
      procedure pick_int64 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -8*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -8*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             8);
        Inc(WP, 8 - SizeOf(TInt));
       end; end;
-     procedure _comma_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 8); Move(WP^, Here^, 8); EA(8);  end; end;
-     procedure _dog_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 8); Inc(WP, 8 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-8))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 8); Dec(WP, (SizeOf(Pointer)) + 8)  end; end;
-     procedure ptr_plus_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 8;  end; end;
-     procedure _to_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_int64(Machine, Command) else _interpret_to_int64(Machine, Command);  end; end;
-     procedure _compile_to_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@int64-to'); EWO(NextName);  end; end;
-     procedure _run_to_int64 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-8))^), C[O].Data^, 8); Dec(WP, 8);  end; end;
-     procedure _interpret_to_int64 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8); Move(WP^, Here^, 8); EA(8);  end; end;
+     procedure _dog_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 8); Inc(WP, 8 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-8))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 8); Dec(WP, (SizeOf(Pointer)) + 8)  end; end;
+     procedure ptr_plus_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 8;  end; end;
+     procedure _to_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_int64(Machine, Command) else _interpret_to_int64(Machine, Command);  end; end;
+     procedure _compile_to_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@int64-to'); EWO(NextName);  end; end;
+     procedure _run_to_int64 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-8))^), C[O].Data^, 8); Dec(WP, 8);  end; end;
+     procedure _interpret_to_int64 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after int64-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-8))^), Comm.Data^, 8); Dec(WP, 8);
               end; end;
-     procedure _value_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int64; Move((Pointer(TUInt(WP) + (-8))^), Here^, 8); Dec(WP, 8); EA(8); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 8); Move(WP^, Here^, 8);} EA(8); end;  end; end;
-     procedure RunValue_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 8); Inc(WP, 8);  end; end;
-    procedure literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('int64-(literal)'); Dec(WP, 8); EWV(WP, 8);  end; end;
-    procedure run_literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 8); Inc(WP, 8);  end; end;
+     procedure _value_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int64; Move((Pointer(TUInt(WP) + (-8))^), Here^, 8); Dec(WP, 8); EA(8); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 8); Move(WP^, Here^, 8);} EA(8); end;  end; end;
+     procedure RunValue_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 8); Inc(WP, 8);  end; end;
+    procedure literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int64-(literal)'); Dec(WP, 8); EWV(WP, 8);  end; end;
+    procedure run_literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 8); Inc(WP, 8);  end; end;
     
    
     
-     procedure drop_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4) end; end;
-     procedure dup_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine do begin  end; end; end; end;
+     procedure drop_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
+     procedure dup_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure nip_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
+     procedure swap_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
+     procedure over_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure tuck_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_uint (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
       end; end;
      procedure rrot_uint (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
@@ -7369,7 +7394,7 @@ end;
      procedure lrotn_uint (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-4*N))^), (Pointer(TUInt(WP) + (0))^), 4);
        while N > 0 do begin
@@ -7382,7 +7407,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4);
        for I := 0 to N - 1 do
@@ -7390,44 +7415,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*4))^), 4);
       end; end;
      procedure pick_uint (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
-     procedure _dog_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
-     procedure ptr_plus_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
-     procedure _to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_uint(Machine, Command) else _interpret_to_uint(Machine, Command);  end; end;
-     procedure _compile_to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@uint-to'); EWO(NextName);  end; end;
-     procedure _run_to_uint (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
-     procedure _interpret_to_uint (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _dog_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
+     procedure ptr_plus_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
+     procedure _to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_uint(Machine, Command) else _interpret_to_uint(Machine, Command);  end; end;
+     procedure _compile_to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@uint-to'); EWO(NextName);  end; end;
+     procedure _run_to_uint (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
+     procedure _interpret_to_uint (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after uint-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), Comm.Data^, 4); Dec(WP, 4);
               end; end;
-     procedure _value_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
-     procedure RunValue_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('uint-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
-    procedure run_literal_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 4); Inc(WP, 4);  end; end;
+     procedure _value_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
+     procedure RunValue_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
+    procedure literal_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure run_literal_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
     
-     procedure drop_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 1) end; end;
-     procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
-     procedure nip_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*1))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Dec(WP, 1) end; end;
-     procedure swap_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1))^), WP^, 1); Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1))^), 1); Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1); end; end;
-     procedure over_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
-     procedure tuck_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1*1))^), 2*1); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Inc(WP, 1);begin with Machine do begin  end; end; end; end;
+     procedure drop_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1) end; end;
+     procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
+     procedure nip_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*1))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Dec(WP, 1) end; end;
+     procedure swap_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1))^), WP^, 1); Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1))^), 1); Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1); end; end;
+     procedure over_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
+     procedure tuck_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1*1))^), 2*1); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Inc(WP, 1);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_uint8 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
        Move((Pointer(TUInt(WP) + (-3*1))^), (Pointer(TUInt(WP) + (-1*1))^), 1);
        Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-3*1))^), 1);
        Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1);
       end; end;
      procedure rrot_uint8 (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
        Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1*1))^), 1);
        Move((Pointer(TUInt(WP) + (-3*1))^), (Pointer(TUInt(WP) + (-2*1))^), 1);
        Move(WP^, (Pointer(TUInt(WP) + (-3*1))^), 1);
@@ -7435,7 +7460,7 @@ end;
      procedure lrotn_uint8 (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-1*N))^), (Pointer(TUInt(WP) + (0))^), 1);
        while N > 0 do begin
@@ -7448,7 +7473,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-1))^), (Pointer(TUInt(WP) + (0))^), 1);
        for I := 0 to N - 1 do
@@ -7456,44 +7481,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*1))^), 1);
       end; end;
      procedure pick_uint8 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -1*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -1*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             1);
        Inc(WP, 1 - SizeOf(TInt));
       end; end;
-     procedure _comma_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 1); Move(WP^, Here^, 1); EA(1);  end; end;
-     procedure _dog_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 1); Inc(WP, 1 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-1))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 1); Dec(WP, (SizeOf(Pointer)) + 1)  end; end;
-     procedure ptr_plus_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 1;  end; end;
-     procedure _to_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_uint8(Machine, Command) else _interpret_to_uint8(Machine, Command);  end; end;
-     procedure _compile_to_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@uint8-to'); EWO(NextName);  end; end;
-     procedure _run_to_uint8 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-1))^), C[O].Data^, 1); Dec(WP, 1);  end; end;
-     procedure _interpret_to_uint8 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1); Move(WP^, Here^, 1); EA(1);  end; end;
+     procedure _dog_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 1); Inc(WP, 1 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-1))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 1); Dec(WP, (SizeOf(Pointer)) + 1)  end; end;
+     procedure ptr_plus_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 1;  end; end;
+     procedure _to_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_uint8(Machine, Command) else _interpret_to_uint8(Machine, Command);  end; end;
+     procedure _compile_to_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@uint8-to'); EWO(NextName);  end; end;
+     procedure _run_to_uint8 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-1))^), C[O].Data^, 1); Dec(WP, 1);  end; end;
+     procedure _interpret_to_uint8 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after uint8-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-1))^), Comm.Data^, 1); Dec(WP, 1);
               end; end;
-     procedure _value_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint8; Move((Pointer(TUInt(WP) + (-1))^), Here^, 1); Dec(WP, 1); EA(1); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 1); Move(WP^, Here^, 1);} EA(1); end;  end; end;
-     procedure RunValue_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 1); Inc(WP, 1);  end; end;
-    procedure literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('uint8-(literal)'); Dec(WP, 1); EWV(WP, 1);  end; end;
-    procedure run_literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 1); Inc(WP, 1);  end; end;
+     procedure _value_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint8; Move((Pointer(TUInt(WP) + (-1))^), Here^, 1); Dec(WP, 1); EA(1); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 1); Move(WP^, Here^, 1);} EA(1); end;  end; end;
+     procedure RunValue_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 1); Inc(WP, 1);  end; end;
+    procedure literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint8-(literal)'); Dec(WP, 1); EWV(WP, 1);  end; end;
+    procedure run_literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 1); Inc(WP, 1);  end; end;
     
    
     
-     procedure drop_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 2) end; end;
-     procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
-     procedure nip_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*2))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Dec(WP, 2) end; end;
-     procedure swap_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2))^), WP^, 2); Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-2))^), 2); Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2); end; end;
-     procedure over_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
-     procedure tuck_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2*2); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Inc(WP, 2);begin with Machine do begin  end; end; end; end;
+     procedure drop_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 2) end; end;
+     procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
+     procedure nip_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*2))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Dec(WP, 2) end; end;
+     procedure swap_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2))^), WP^, 2); Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-2))^), 2); Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2); end; end;
+     procedure over_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
+     procedure tuck_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2*2); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Inc(WP, 2);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_uint16 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
        Move((Pointer(TUInt(WP) + (-3*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2);
        Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-3*2))^), 2);
        Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2);
       end; end;
      procedure rrot_uint16 (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
        Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2);
        Move((Pointer(TUInt(WP) + (-3*2))^), (Pointer(TUInt(WP) + (-2*2))^), 2);
        Move(WP^, (Pointer(TUInt(WP) + (-3*2))^), 2);
@@ -7501,7 +7526,7 @@ end;
      procedure lrotn_uint16 (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-2*N))^), (Pointer(TUInt(WP) + (0))^), 2);
        while N > 0 do begin
@@ -7514,7 +7539,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-2))^), (Pointer(TUInt(WP) + (0))^), 2);
        for I := 0 to N - 1 do
@@ -7522,44 +7547,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*2))^), 2);
       end; end;
      procedure pick_uint16 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -2*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -2*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             2);
        Inc(WP, 2 - SizeOf(TInt));
       end; end;
-     procedure _comma_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 2); Move(WP^, Here^, 2); EA(2);  end; end;
-     procedure _dog_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 2); Inc(WP, 2 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-2))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 2); Dec(WP, (SizeOf(Pointer)) + 2)  end; end;
-     procedure ptr_plus_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 2;  end; end;
-     procedure _to_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_uint16(Machine, Command) else _interpret_to_uint16(Machine, Command);  end; end;
-     procedure _compile_to_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@uint16-to'); EWO(NextName);  end; end;
-     procedure _run_to_uint16 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-2))^), C[O].Data^, 2); Dec(WP, 2);  end; end;
-     procedure _interpret_to_uint16 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 2); Move(WP^, Here^, 2); EA(2);  end; end;
+     procedure _dog_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 2); Inc(WP, 2 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-2))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 2); Dec(WP, (SizeOf(Pointer)) + 2)  end; end;
+     procedure ptr_plus_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 2;  end; end;
+     procedure _to_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_uint16(Machine, Command) else _interpret_to_uint16(Machine, Command);  end; end;
+     procedure _compile_to_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@uint16-to'); EWO(NextName);  end; end;
+     procedure _run_to_uint16 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-2))^), C[O].Data^, 2); Dec(WP, 2);  end; end;
+     procedure _interpret_to_uint16 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after uint16-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-2))^), Comm.Data^, 2); Dec(WP, 2);
               end; end;
-     procedure _value_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint16; Move((Pointer(TUInt(WP) + (-2))^), Here^, 2); Dec(WP, 2); EA(2); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 2); Move(WP^, Here^, 2);} EA(2); end;  end; end;
-     procedure RunValue_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 2); Inc(WP, 2);  end; end;
-    procedure literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('uint16-(literal)'); Dec(WP, 2); EWV(WP, 2);  end; end;
-    procedure run_literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 2); Inc(WP, 2);  end; end;
+     procedure _value_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint16; Move((Pointer(TUInt(WP) + (-2))^), Here^, 2); Dec(WP, 2); EA(2); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 2); Move(WP^, Here^, 2);} EA(2); end;  end; end;
+     procedure RunValue_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 2); Inc(WP, 2);  end; end;
+    procedure literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint16-(literal)'); Dec(WP, 2); EWV(WP, 2);  end; end;
+    procedure run_literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 2); Inc(WP, 2);  end; end;
     
    
     
-     procedure drop_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4) end; end;
-     procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine do begin  end; end; end; end;
+     procedure drop_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
+     procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure nip_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
+     procedure swap_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
+     procedure over_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure tuck_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_uint32 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
       end; end;
      procedure rrot_uint32 (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
@@ -7567,7 +7592,7 @@ end;
      procedure lrotn_uint32 (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-4*N))^), (Pointer(TUInt(WP) + (0))^), 4);
        while N > 0 do begin
@@ -7580,7 +7605,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4);
        for I := 0 to N - 1 do
@@ -7588,44 +7613,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*4))^), 4);
       end; end;
      procedure pick_uint32 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
-     procedure _dog_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
-     procedure ptr_plus_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
-     procedure _to_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_uint32(Machine, Command) else _interpret_to_uint32(Machine, Command);  end; end;
-     procedure _compile_to_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@uint32-to'); EWO(NextName);  end; end;
-     procedure _run_to_uint32 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
-     procedure _interpret_to_uint32 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _dog_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
+     procedure ptr_plus_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
+     procedure _to_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_uint32(Machine, Command) else _interpret_to_uint32(Machine, Command);  end; end;
+     procedure _compile_to_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@uint32-to'); EWO(NextName);  end; end;
+     procedure _run_to_uint32 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
+     procedure _interpret_to_uint32 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after uint32-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), Comm.Data^, 4); Dec(WP, 4);
               end; end;
-     procedure _value_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint32; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
-     procedure RunValue_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('uint32-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
-    procedure run_literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 4); Inc(WP, 4);  end; end;
+     procedure _value_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint32; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
+     procedure RunValue_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
+    procedure literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint32-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure run_literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
     
-     procedure drop_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 8) end; end;
-     procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
-     procedure nip_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*8))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Dec(WP, 8) end; end;
-     procedure swap_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-8))^), WP^, 8); Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-8))^), 8); Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8); end; end;
-     procedure over_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
-     procedure tuck_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-1*8))^), 2*8); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Inc(WP, 8);begin with Machine do begin  end; end; end; end;
+     procedure drop_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8) end; end;
+     procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
+     procedure nip_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*8))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Dec(WP, 8) end; end;
+     procedure swap_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-8))^), WP^, 8); Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-8))^), 8); Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8); end; end;
+     procedure over_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
+     procedure tuck_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-1*8))^), 2*8); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Inc(WP, 8);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_uint64 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
        Move((Pointer(TUInt(WP) + (-3*8))^), (Pointer(TUInt(WP) + (-1*8))^), 8);
        Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-3*8))^), 8);
        Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8);
       end; end;
      procedure rrot_uint64 (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
        Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-1*8))^), 8);
        Move((Pointer(TUInt(WP) + (-3*8))^), (Pointer(TUInt(WP) + (-2*8))^), 8);
        Move(WP^, (Pointer(TUInt(WP) + (-3*8))^), 8);
@@ -7633,7 +7658,7 @@ end;
      procedure lrotn_uint64 (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-8*N))^), (Pointer(TUInt(WP) + (0))^), 8);
        while N > 0 do begin
@@ -7646,7 +7671,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-8))^), (Pointer(TUInt(WP) + (0))^), 8);
        for I := 0 to N - 1 do
@@ -7654,44 +7679,44 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*8))^), 8);
       end; end;
      procedure pick_uint64 (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -8*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -8*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             8);
        Inc(WP, 8 - SizeOf(TInt));
       end; end;
-     procedure _comma_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 8); Move(WP^, Here^, 8); EA(8);  end; end;
-     procedure _dog_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 8); Inc(WP, 8 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-8))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 8); Dec(WP, (SizeOf(Pointer)) + 8)  end; end;
-     procedure ptr_plus_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 8;  end; end;
-     procedure _to_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_uint64(Machine, Command) else _interpret_to_uint64(Machine, Command);  end; end;
-     procedure _compile_to_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@uint64-to'); EWO(NextName);  end; end;
-     procedure _run_to_uint64 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-8))^), C[O].Data^, 8); Dec(WP, 8);  end; end;
-     procedure _interpret_to_uint64 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8); Move(WP^, Here^, 8); EA(8);  end; end;
+     procedure _dog_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 8); Inc(WP, 8 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-8))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 8); Dec(WP, (SizeOf(Pointer)) + 8)  end; end;
+     procedure ptr_plus_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 8;  end; end;
+     procedure _to_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_uint64(Machine, Command) else _interpret_to_uint64(Machine, Command);  end; end;
+     procedure _compile_to_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@uint64-to'); EWO(NextName);  end; end;
+     procedure _run_to_uint64 (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-8))^), C[O].Data^, 8); Dec(WP, 8);  end; end;
+     procedure _interpret_to_uint64 (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after uint64-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-8))^), Comm.Data^, 8); Dec(WP, 8);
               end; end;
-     procedure _value_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint64; Move((Pointer(TUInt(WP) + (-8))^), Here^, 8); Dec(WP, 8); EA(8); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 8); Move(WP^, Here^, 8);} EA(8); end;  end; end;
-     procedure RunValue_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 8); Inc(WP, 8);  end; end;
-    procedure literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('uint64-(literal)'); Dec(WP, 8); EWV(WP, 8);  end; end;
-    procedure run_literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 8); Inc(WP, 8);  end; end;
+     procedure _value_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint64; Move((Pointer(TUInt(WP) + (-8))^), Here^, 8); Dec(WP, 8); EA(8); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 8); Move(WP^, Here^, 8);} EA(8); end;  end; end;
+     procedure RunValue_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 8); Inc(WP, 8);  end; end;
+    procedure literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint64-(literal)'); Dec(WP, 8); EWV(WP, 8);  end; end;
+    procedure run_literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 8); Inc(WP, 8);  end; end;
     
    
     
-     procedure drop_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4) end; end;
-     procedure dup_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine do begin  end; end; end; end;
+     procedure drop_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
+     procedure dup_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure nip_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
+     procedure swap_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
+     procedure over_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
+     procedure tuck_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
      procedure lrot_embro (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-3*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4);
       end; end;
      procedure rrot_embro (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4);
        Move(WP^, (Pointer(TUInt(WP) + (-3*4))^), 4);
@@ -7699,7 +7724,7 @@ end;
      procedure lrotn_embro (Machine: TForthMachine; Command: PForthCommand); 
      var
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        Move((Pointer(TUInt(WP) + (-4*N))^), (Pointer(TUInt(WP) + (0))^), 4);
        while N > 0 do begin
@@ -7712,7 +7737,7 @@ end;
      var
        I: Integer;
        N: Integer;
-     begin with Machine do begin Dec(WP, SizeOf(TInt));
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
        N := TInt(WP^);
        //Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4);
        for I := 0 to N - 1 do
@@ -7720,80 +7745,80 @@ end;
        Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-N*4))^), 4);
       end; end;
      procedure pick_embro (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
+     begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))))^), 
             (Pointer(TUInt(WP) + (-SizeOf(TInt)))^),
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
-     procedure _dog_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
-     procedure _exclamation_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
-     procedure ptr_plus_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
-     procedure _to_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState <> FS_INTERPRET then _compile_to_embro(Machine, Command) else _interpret_to_embro(Machine, Command);  end; end;
-     procedure _compile_to_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@embro-to'); EWO(NextName);  end; end;
-     procedure _run_to_embro (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
-     procedure _interpret_to_embro (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine do begin N := NextName; Comm := FindCommand(N);
+     procedure _comma_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _dog_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
+     procedure ptr_plus_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
+     procedure _to_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_embro(Machine, Command) else _interpret_to_embro(Machine, Command);  end; end;
+     procedure _compile_to_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@embro-to'); EWO(NextName);  end; end;
+     procedure _run_to_embro (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
+     procedure _interpret_to_embro (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after embro-to: ' + N); FSession := False; Exit; end; 
                Move((Pointer(TUInt(WP) + (-4))^), Comm.Data^, 4); Dec(WP, 4);
               end; end;
-     procedure _value_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_embro; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
-     procedure _variable_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
-     procedure RunValue_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('embro-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
-    procedure run_literal_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin ERV(WP, 4); Inc(WP, 4);  end; end;
+     procedure _value_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_embro; Move((Pointer(TUInt(WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
+     procedure RunValue_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
+    procedure literal_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('embro-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure run_literal_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
     
-      procedure _plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) + TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+      procedure _plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) + TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                    Dec(WP, SizeOf(TInt));  end; end;
-      procedure _minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) - TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+      procedure _minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) - TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                    Dec(WP, SizeOf(TInt));  end; end;
-      procedure _star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) * TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+      procedure _star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) * TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                    Dec(WP, SizeOf(TInt));  end; end;
-      procedure _equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) = TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure _equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) = TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure _nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) <> TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure _nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) <> TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure _lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) < TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure _lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) < TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure _gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure _gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure _lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) <= TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure _lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) <= TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure _gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) >= TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure _gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) >= TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure _0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) = 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure _0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <> 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure _0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) < 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure _0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) > 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure _0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure _0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) >= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure _ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <> 0 then begin TInt(WP^) := TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)); Inc(WP, SizeOf(TInt)); end;  end; end;
-      procedure _0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) = 0 then begin Dec(WP, SizeOf(TInt)); _exit(Machine, Command); end  end; end;
+      procedure _0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) = 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure _0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <> 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure _0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) < 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure _0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) > 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure _0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure _0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) >= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure _ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <> 0 then begin TInt(WP^) := TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)); Inc(WP, SizeOf(TInt)); end;  end; end;
+      procedure _0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) = 0 then begin Dec(WP, SizeOf(TInt)); _exit(Machine, Command); end  end; end;
       procedure _max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) < TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then
+      begin with Machine^ do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) < TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^), SizeOf(TInt));
         Dec(WP, SizeOf(TInt));
        end; end;
       procedure _min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then
+      begin with Machine^ do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^), SizeOf(TInt));
         Dec(WP, SizeOf(TInt));
        end; end;
       procedure _minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then begin
+      begin with Machine^ do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TInt)))^), SizeOf(TInt));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^), SizeOf(TInt));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TInt)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^), SizeOf(TInt));
         end;
        end; end;
-      procedure _dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TInt)); Write(TInt(WP^), ' ');  end; end;
-      procedure _dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt)); Inc(WP, SizeOf(TInt));  end; end;
-      procedure _ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt));  end; end;
+      procedure _dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TInt)); Write(TInt(WP^), ' ');  end; end;
+      procedure _dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt)); Inc(WP, SizeOf(TInt));  end; end;
+      procedure _ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt));  end; end;
       procedure _conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)), B);
+      begin with Machine^ do begin Str(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)), B);
         Dec(WP, SizeOf(TInt));
         str_push(Machine, Command, B);
        end; end;
@@ -7801,7 +7826,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TInt(WP^), Res);
         Inc(WP, SizeOf(TInt));
         DelRef(B);
@@ -7809,56 +7834,56 @@ end;
     
    
     
-      procedure int_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) + TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+      procedure int_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) + TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                    Dec(WP, SizeOf(TInt));  end; end;
-      procedure int_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) - TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+      procedure int_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) - TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                    Dec(WP, SizeOf(TInt));  end; end;
-      procedure int_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) * TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+      procedure int_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) * TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                    Dec(WP, SizeOf(TInt));  end; end;
-      procedure int_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) = TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure int_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) = TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure int_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) <> TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure int_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) <> TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure int_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) < TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure int_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) < TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure int_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure int_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure int_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) <= TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure int_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) <= TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure int_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) >= TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
+      procedure int_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := BOOL_TRUE*Ord(TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) >= TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt) - SizeOf(TInt));  end; end;
-      procedure int_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) = 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure int_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <> 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure int_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) < 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure int_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) > 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure int_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure int_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) >= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
-      procedure int_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <> 0 then begin TInt(WP^) := TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)); Inc(WP, SizeOf(TInt)); end;  end; end;
-      procedure int_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) = 0 then begin Dec(WP, SizeOf(TInt)); _exit(Machine, Command); end  end; end;
+      procedure int_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) = 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure int_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <> 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure int_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) < 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure int_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) > 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure int_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure int_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) >= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
+      procedure int_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^))) <> 0 then begin TInt(WP^) := TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)); Inc(WP, SizeOf(TInt)); end;  end; end;
+      procedure int_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) = 0 then begin Dec(WP, SizeOf(TInt)); _exit(Machine, Command); end  end; end;
       procedure int_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) < TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then
+      begin with Machine^ do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) < TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^), SizeOf(TInt));
         Dec(WP, SizeOf(TInt));
        end; end;
       procedure int_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then
+      begin with Machine^ do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^), SizeOf(TInt));
         Dec(WP, SizeOf(TInt));
        end; end;
       procedure int_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then begin
+      begin with Machine^ do begin if TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) > TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TInt)))^), SizeOf(TInt));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^), SizeOf(TInt));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TInt)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TInt)))^), SizeOf(TInt));
         end;
        end; end;
-      procedure int_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TInt)); Write(TInt(WP^), ' ');  end; end;
-      procedure int_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt)); Inc(WP, SizeOf(TInt));  end; end;
-      procedure int_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt));  end; end;
+      procedure int_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TInt)); Write(TInt(WP^), ' ');  end; end;
+      procedure int_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt)); Inc(WP, SizeOf(TInt));  end; end;
+      procedure int_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt));  end; end;
       procedure int_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)), B);
+      begin with Machine^ do begin Str(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)), B);
         Dec(WP, SizeOf(TInt));
         str_push(Machine, Command, B);
        end; end;
@@ -7866,7 +7891,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TInt(WP^), Res);
         Inc(WP, SizeOf(TInt));
         DelRef(B);
@@ -7874,56 +7899,56 @@ end;
     
    
     
-      procedure int8_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) + TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
+      procedure int8_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) + TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
                                                    Dec(WP, SizeOf(TInt8));  end; end;
-      procedure int8_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) - TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
+      procedure int8_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) - TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
                                                    Dec(WP, SizeOf(TInt8));  end; end;
-      procedure int8_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) * TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
+      procedure int8_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) * TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
                                                    Dec(WP, SizeOf(TInt8));  end; end;
-      procedure int8_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) = TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
+      procedure int8_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) = TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt8) - SizeOf(TInt));  end; end;
-      procedure int8_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) <> TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
+      procedure int8_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) <> TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt8) - SizeOf(TInt));  end; end;
-      procedure int8_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) < TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
+      procedure int8_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) < TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt8) - SizeOf(TInt));  end; end;
-      procedure int8_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) > TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
+      procedure int8_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) > TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt8) - SizeOf(TInt));  end; end;
-      procedure int8_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) <= TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
+      procedure int8_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) <= TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt8) - SizeOf(TInt));  end; end;
-      procedure int8_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) >= TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
+      procedure int8_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord(TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) >= TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt8) - SizeOf(TInt));  end; end;
-      procedure int8_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) = 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
-      procedure int8_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) <> 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
-      procedure int8_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) < 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
-      procedure int8_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) > 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
-      procedure int8_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) <= 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
-      procedure int8_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) >= 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
-      procedure int8_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) <> 0 then begin TInt8(WP^) := TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)); Inc(WP, SizeOf(TInt8)); end;  end; end;
-      procedure int8_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)) = 0 then begin Dec(WP, SizeOf(TInt8)); _exit(Machine, Command); end  end; end;
+      procedure int8_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) = 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
+      procedure int8_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) <> 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
+      procedure int8_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) < 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
+      procedure int8_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) > 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
+      procedure int8_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) <= 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
+      procedure int8_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) >= 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
+      procedure int8_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^))) <> 0 then begin TInt8(WP^) := TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)); Inc(WP, SizeOf(TInt8)); end;  end; end;
+      procedure int8_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)) = 0 then begin Dec(WP, SizeOf(TInt8)); _exit(Machine, Command); end  end; end;
       procedure int8_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) < TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) then
+      begin with Machine^ do begin if TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) < TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^), SizeOf(TInt8));
         Dec(WP, SizeOf(TInt8));
        end; end;
       procedure int8_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) > TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) then
+      begin with Machine^ do begin if TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) > TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^), SizeOf(TInt8));
         Dec(WP, SizeOf(TInt8));
        end; end;
       procedure int8_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) > TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) then begin
+      begin with Machine^ do begin if TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) > TInt8((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TInt8)))^), SizeOf(TInt8));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^), SizeOf(TInt8));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TInt8)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TInt8)))^), SizeOf(TInt8));
         end;
        end; end;
-      procedure int8_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TInt8)); Write(TInt8(WP^), ' ');  end; end;
-      procedure int8_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt8; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt8)); Inc(WP, SizeOf(TInt8));  end; end;
-      procedure int8_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt8((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt8)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt8));  end; end;
+      procedure int8_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TInt8)); Write(TInt8(WP^), ' ');  end; end;
+      procedure int8_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt8; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt8)); Inc(WP, SizeOf(TInt8));  end; end;
+      procedure int8_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt8((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt8)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt8));  end; end;
       procedure int8_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)), B);
+      begin with Machine^ do begin Str(TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)), B);
         Dec(WP, SizeOf(TInt8));
         str_push(Machine, Command, B);
        end; end;
@@ -7931,7 +7956,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TInt8(WP^), Res);
         Inc(WP, SizeOf(TInt8));
         DelRef(B);
@@ -7939,56 +7964,56 @@ end;
     
    
     
-      procedure int16_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) + TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
+      procedure int16_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) + TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
                                                    Dec(WP, SizeOf(TInt16));  end; end;
-      procedure int16_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) - TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
+      procedure int16_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) - TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
                                                    Dec(WP, SizeOf(TInt16));  end; end;
-      procedure int16_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) * TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
+      procedure int16_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) * TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
                                                    Dec(WP, SizeOf(TInt16));  end; end;
-      procedure int16_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) = TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
+      procedure int16_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) = TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt16) - SizeOf(TInt));  end; end;
-      procedure int16_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) <> TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
+      procedure int16_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) <> TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt16) - SizeOf(TInt));  end; end;
-      procedure int16_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) < TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
+      procedure int16_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) < TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt16) - SizeOf(TInt));  end; end;
-      procedure int16_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) > TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
+      procedure int16_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) > TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt16) - SizeOf(TInt));  end; end;
-      procedure int16_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) <= TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
+      procedure int16_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) <= TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt16) - SizeOf(TInt));  end; end;
-      procedure int16_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) >= TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
+      procedure int16_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord(TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) >= TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt16) - SizeOf(TInt));  end; end;
-      procedure int16_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) = 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
-      procedure int16_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) <> 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
-      procedure int16_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) < 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
-      procedure int16_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) > 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
-      procedure int16_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) <= 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
-      procedure int16_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) >= 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
-      procedure int16_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) <> 0 then begin TInt16(WP^) := TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)); Inc(WP, SizeOf(TInt16)); end;  end; end;
-      procedure int16_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)) = 0 then begin Dec(WP, SizeOf(TInt16)); _exit(Machine, Command); end  end; end;
+      procedure int16_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) = 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
+      procedure int16_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) <> 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
+      procedure int16_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) < 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
+      procedure int16_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) > 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
+      procedure int16_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) <= 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
+      procedure int16_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) >= 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
+      procedure int16_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^))) <> 0 then begin TInt16(WP^) := TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)); Inc(WP, SizeOf(TInt16)); end;  end; end;
+      procedure int16_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)) = 0 then begin Dec(WP, SizeOf(TInt16)); _exit(Machine, Command); end  end; end;
       procedure int16_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) < TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) then
+      begin with Machine^ do begin if TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) < TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^), SizeOf(TInt16));
         Dec(WP, SizeOf(TInt16));
        end; end;
       procedure int16_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) > TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) then
+      begin with Machine^ do begin if TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) > TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^), SizeOf(TInt16));
         Dec(WP, SizeOf(TInt16));
        end; end;
       procedure int16_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) > TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) then begin
+      begin with Machine^ do begin if TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) > TInt16((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TInt16)))^), SizeOf(TInt16));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^), SizeOf(TInt16));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TInt16)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TInt16)))^), SizeOf(TInt16));
         end;
        end; end;
-      procedure int16_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TInt16)); Write(TInt16(WP^), ' ');  end; end;
-      procedure int16_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt16; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt16)); Inc(WP, SizeOf(TInt16));  end; end;
-      procedure int16_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt16((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt16)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt16));  end; end;
+      procedure int16_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TInt16)); Write(TInt16(WP^), ' ');  end; end;
+      procedure int16_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt16; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt16)); Inc(WP, SizeOf(TInt16));  end; end;
+      procedure int16_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt16((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt16)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt16));  end; end;
       procedure int16_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)), B);
+      begin with Machine^ do begin Str(TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)), B);
         Dec(WP, SizeOf(TInt16));
         str_push(Machine, Command, B);
        end; end;
@@ -7996,7 +8021,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TInt16(WP^), Res);
         Inc(WP, SizeOf(TInt16));
         DelRef(B);
@@ -8004,56 +8029,56 @@ end;
     
    
     
-      procedure int32_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) + TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
+      procedure int32_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) + TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
                                                    Dec(WP, SizeOf(TInt32));  end; end;
-      procedure int32_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) - TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
+      procedure int32_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) - TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
                                                    Dec(WP, SizeOf(TInt32));  end; end;
-      procedure int32_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) * TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
+      procedure int32_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) * TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
                                                    Dec(WP, SizeOf(TInt32));  end; end;
-      procedure int32_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) = TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
+      procedure int32_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) = TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt32) - SizeOf(TInt));  end; end;
-      procedure int32_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) <> TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
+      procedure int32_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) <> TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt32) - SizeOf(TInt));  end; end;
-      procedure int32_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) < TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
+      procedure int32_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) < TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt32) - SizeOf(TInt));  end; end;
-      procedure int32_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) > TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
+      procedure int32_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) > TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt32) - SizeOf(TInt));  end; end;
-      procedure int32_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) <= TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
+      procedure int32_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) <= TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt32) - SizeOf(TInt));  end; end;
-      procedure int32_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) >= TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
+      procedure int32_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord(TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) >= TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt32) - SizeOf(TInt));  end; end;
-      procedure int32_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) = 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
-      procedure int32_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) <> 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
-      procedure int32_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) < 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
-      procedure int32_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) > 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
-      procedure int32_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) <= 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
-      procedure int32_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) >= 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
-      procedure int32_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) <> 0 then begin TInt32(WP^) := TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)); Inc(WP, SizeOf(TInt32)); end;  end; end;
-      procedure int32_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)) = 0 then begin Dec(WP, SizeOf(TInt32)); _exit(Machine, Command); end  end; end;
+      procedure int32_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) = 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
+      procedure int32_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) <> 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
+      procedure int32_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) < 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
+      procedure int32_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) > 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
+      procedure int32_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) <= 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
+      procedure int32_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) >= 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
+      procedure int32_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^))) <> 0 then begin TInt32(WP^) := TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)); Inc(WP, SizeOf(TInt32)); end;  end; end;
+      procedure int32_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)) = 0 then begin Dec(WP, SizeOf(TInt32)); _exit(Machine, Command); end  end; end;
       procedure int32_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) < TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) then
+      begin with Machine^ do begin if TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) < TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^), SizeOf(TInt32));
         Dec(WP, SizeOf(TInt32));
        end; end;
       procedure int32_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) > TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) then
+      begin with Machine^ do begin if TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) > TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^), SizeOf(TInt32));
         Dec(WP, SizeOf(TInt32));
        end; end;
       procedure int32_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) > TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) then begin
+      begin with Machine^ do begin if TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) > TInt32((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TInt32)))^), SizeOf(TInt32));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^), SizeOf(TInt32));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TInt32)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TInt32)))^), SizeOf(TInt32));
         end;
        end; end;
-      procedure int32_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TInt32)); Write(TInt32(WP^), ' ');  end; end;
-      procedure int32_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt32; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt32)); Inc(WP, SizeOf(TInt32));  end; end;
-      procedure int32_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt32((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt32)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt32));  end; end;
+      procedure int32_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TInt32)); Write(TInt32(WP^), ' ');  end; end;
+      procedure int32_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt32; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt32)); Inc(WP, SizeOf(TInt32));  end; end;
+      procedure int32_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt32((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt32)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt32));  end; end;
       procedure int32_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)), B);
+      begin with Machine^ do begin Str(TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)), B);
         Dec(WP, SizeOf(TInt32));
         str_push(Machine, Command, B);
        end; end;
@@ -8061,7 +8086,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TInt32(WP^), Res);
         Inc(WP, SizeOf(TInt32));
         DelRef(B);
@@ -8069,56 +8094,56 @@ end;
     
    
     
-      procedure int64_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) + TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
+      procedure int64_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) + TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
                                                    Dec(WP, SizeOf(TInt64));  end; end;
-      procedure int64_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) - TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
+      procedure int64_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) - TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
                                                    Dec(WP, SizeOf(TInt64));  end; end;
-      procedure int64_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) * TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
+      procedure int64_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) * TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
                                                    Dec(WP, SizeOf(TInt64));  end; end;
-      procedure int64_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) = TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
+      procedure int64_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) = TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt64) - SizeOf(TInt));  end; end;
-      procedure int64_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) <> TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
+      procedure int64_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) <> TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt64) - SizeOf(TInt));  end; end;
-      procedure int64_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) < TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
+      procedure int64_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) < TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt64) - SizeOf(TInt));  end; end;
-      procedure int64_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) > TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
+      procedure int64_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) > TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt64) - SizeOf(TInt));  end; end;
-      procedure int64_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) <= TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
+      procedure int64_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) <= TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt64) - SizeOf(TInt));  end; end;
-      procedure int64_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) >= TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
+      procedure int64_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord(TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) >= TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TInt64) - SizeOf(TInt));  end; end;
-      procedure int64_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) = 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
-      procedure int64_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) <> 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
-      procedure int64_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) < 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
-      procedure int64_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) > 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
-      procedure int64_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) <= 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
-      procedure int64_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) >= 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
-      procedure int64_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) <> 0 then begin TInt64(WP^) := TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)); Inc(WP, SizeOf(TInt64)); end;  end; end;
-      procedure int64_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)) = 0 then begin Dec(WP, SizeOf(TInt64)); _exit(Machine, Command); end  end; end;
+      procedure int64_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) = 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
+      procedure int64_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) <> 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
+      procedure int64_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) < 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
+      procedure int64_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) > 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
+      procedure int64_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) <= 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
+      procedure int64_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) >= 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
+      procedure int64_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^))) <> 0 then begin TInt64(WP^) := TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)); Inc(WP, SizeOf(TInt64)); end;  end; end;
+      procedure int64_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)) = 0 then begin Dec(WP, SizeOf(TInt64)); _exit(Machine, Command); end  end; end;
       procedure int64_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) < TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) then
+      begin with Machine^ do begin if TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) < TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^), SizeOf(TInt64));
         Dec(WP, SizeOf(TInt64));
        end; end;
       procedure int64_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) > TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) then
+      begin with Machine^ do begin if TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) > TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^), SizeOf(TInt64));
         Dec(WP, SizeOf(TInt64));
        end; end;
       procedure int64_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) > TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) then begin
+      begin with Machine^ do begin if TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) > TInt64((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TInt64)))^), SizeOf(TInt64));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^), SizeOf(TInt64));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TInt64)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TInt64)))^), SizeOf(TInt64));
         end;
        end; end;
-      procedure int64_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TInt64)); Write(TInt64(WP^), ' ');  end; end;
-      procedure int64_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt64; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt64)); Inc(WP, SizeOf(TInt64));  end; end;
-      procedure int64_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt64((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt64)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt64));  end; end;
+      procedure int64_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TInt64)); Write(TInt64(WP^), ' ');  end; end;
+      procedure int64_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TInt64; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TInt64)); Inc(WP, SizeOf(TInt64));  end; end;
+      procedure int64_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TInt64((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TInt64)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TInt64));  end; end;
       procedure int64_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)), B);
+      begin with Machine^ do begin Str(TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)), B);
         Dec(WP, SizeOf(TInt64));
         str_push(Machine, Command, B);
        end; end;
@@ -8126,7 +8151,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TInt64(WP^), Res);
         Inc(WP, SizeOf(TInt64));
         DelRef(B);
@@ -8134,56 +8159,56 @@ end;
     
    
     
-      procedure uint_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) + TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
+      procedure uint_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) + TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
                                                    Dec(WP, SizeOf(TUInt));  end; end;
-      procedure uint_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) - TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
+      procedure uint_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) - TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
                                                    Dec(WP, SizeOf(TUInt));  end; end;
-      procedure uint_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) * TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
+      procedure uint_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) * TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
                                                    Dec(WP, SizeOf(TUInt));  end; end;
-      procedure uint_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) = TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
+      procedure uint_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) = TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt) - SizeOf(TInt));  end; end;
-      procedure uint_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) <> TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
+      procedure uint_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) <> TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt) - SizeOf(TInt));  end; end;
-      procedure uint_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) < TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
+      procedure uint_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) < TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt) - SizeOf(TInt));  end; end;
-      procedure uint_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) > TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
+      procedure uint_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) > TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt) - SizeOf(TInt));  end; end;
-      procedure uint_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) <= TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
+      procedure uint_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) <= TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt) - SizeOf(TInt));  end; end;
-      procedure uint_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) >= TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
+      procedure uint_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord(TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) >= TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt) - SizeOf(TInt));  end; end;
-      procedure uint_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) = 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
-      procedure uint_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) <> 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
-      procedure uint_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) < 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
-      procedure uint_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) > 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
-      procedure uint_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) <= 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
-      procedure uint_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) >= 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
-      procedure uint_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) <> 0 then begin TUInt(WP^) := TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)); Inc(WP, SizeOf(TUInt)); end;  end; end;
-      procedure uint_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)) = 0 then begin Dec(WP, SizeOf(TUInt)); _exit(Machine, Command); end  end; end;
+      procedure uint_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) = 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
+      procedure uint_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) <> 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
+      procedure uint_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) < 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
+      procedure uint_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) > 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
+      procedure uint_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) <= 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
+      procedure uint_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) >= 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
+      procedure uint_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^))) <> 0 then begin TUInt(WP^) := TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)); Inc(WP, SizeOf(TUInt)); end;  end; end;
+      procedure uint_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)) = 0 then begin Dec(WP, SizeOf(TUInt)); _exit(Machine, Command); end  end; end;
       procedure uint_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) < TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) then
+      begin with Machine^ do begin if TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) < TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^), SizeOf(TUInt));
         Dec(WP, SizeOf(TUInt));
        end; end;
       procedure uint_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) > TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) then
+      begin with Machine^ do begin if TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) > TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^), SizeOf(TUInt));
         Dec(WP, SizeOf(TUInt));
        end; end;
       procedure uint_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) > TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) then begin
+      begin with Machine^ do begin if TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) > TUInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TUInt)))^), SizeOf(TUInt));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^), SizeOf(TUInt));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TUInt)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TUInt)))^), SizeOf(TUInt));
         end;
        end; end;
-      procedure uint_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TUInt)); Write(TUInt(WP^), ' ');  end; end;
-      procedure uint_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt)); Inc(WP, SizeOf(TUInt));  end; end;
-      procedure uint_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt));  end; end;
+      procedure uint_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TUInt)); Write(TUInt(WP^), ' ');  end; end;
+      procedure uint_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt)); Inc(WP, SizeOf(TUInt));  end; end;
+      procedure uint_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt));  end; end;
       procedure uint_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)), B);
+      begin with Machine^ do begin Str(TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)), B);
         Dec(WP, SizeOf(TUInt));
         str_push(Machine, Command, B);
        end; end;
@@ -8191,7 +8216,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TUInt(WP^), Res);
         Inc(WP, SizeOf(TUInt));
         DelRef(B);
@@ -8199,56 +8224,56 @@ end;
     
    
     
-      procedure uint8_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) + TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
+      procedure uint8_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) + TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
                                                    Dec(WP, SizeOf(TUInt8));  end; end;
-      procedure uint8_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) - TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
+      procedure uint8_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) - TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
                                                    Dec(WP, SizeOf(TUInt8));  end; end;
-      procedure uint8_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) * TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
+      procedure uint8_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) * TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
                                                    Dec(WP, SizeOf(TUInt8));  end; end;
-      procedure uint8_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) = TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
+      procedure uint8_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) = TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt8) - SizeOf(TInt));  end; end;
-      procedure uint8_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) <> TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
+      procedure uint8_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) <> TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt8) - SizeOf(TInt));  end; end;
-      procedure uint8_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) < TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
+      procedure uint8_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) < TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt8) - SizeOf(TInt));  end; end;
-      procedure uint8_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) > TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
+      procedure uint8_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) > TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt8) - SizeOf(TInt));  end; end;
-      procedure uint8_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) <= TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
+      procedure uint8_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) <= TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt8) - SizeOf(TInt));  end; end;
-      procedure uint8_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) >= TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
+      procedure uint8_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord(TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) >= TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt8) - SizeOf(TInt));  end; end;
-      procedure uint8_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) = 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
-      procedure uint8_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) <> 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
-      procedure uint8_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) < 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
-      procedure uint8_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) > 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
-      procedure uint8_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) <= 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
-      procedure uint8_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) >= 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
-      procedure uint8_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) <> 0 then begin TUInt8(WP^) := TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)); Inc(WP, SizeOf(TUInt8)); end;  end; end;
-      procedure uint8_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)) = 0 then begin Dec(WP, SizeOf(TUInt8)); _exit(Machine, Command); end  end; end;
+      procedure uint8_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) = 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
+      procedure uint8_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) <> 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
+      procedure uint8_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) < 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
+      procedure uint8_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) > 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
+      procedure uint8_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) <= 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
+      procedure uint8_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) >= 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
+      procedure uint8_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^))) <> 0 then begin TUInt8(WP^) := TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)); Inc(WP, SizeOf(TUInt8)); end;  end; end;
+      procedure uint8_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)) = 0 then begin Dec(WP, SizeOf(TUInt8)); _exit(Machine, Command); end  end; end;
       procedure uint8_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) < TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) then
+      begin with Machine^ do begin if TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) < TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^), SizeOf(TUInt8));
         Dec(WP, SizeOf(TUInt8));
        end; end;
       procedure uint8_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) > TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) then
+      begin with Machine^ do begin if TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) > TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^), SizeOf(TUInt8));
         Dec(WP, SizeOf(TUInt8));
        end; end;
       procedure uint8_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) > TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) then begin
+      begin with Machine^ do begin if TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) > TUInt8((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TUInt8)))^), SizeOf(TUInt8));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^), SizeOf(TUInt8));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TUInt8)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TUInt8)))^), SizeOf(TUInt8));
         end;
        end; end;
-      procedure uint8_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TUInt8)); Write(TUInt8(WP^), ' ');  end; end;
-      procedure uint8_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt8; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt8)); Inc(WP, SizeOf(TUInt8));  end; end;
-      procedure uint8_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt8((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt8)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt8));  end; end;
+      procedure uint8_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TUInt8)); Write(TUInt8(WP^), ' ');  end; end;
+      procedure uint8_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt8; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt8)); Inc(WP, SizeOf(TUInt8));  end; end;
+      procedure uint8_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt8((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt8)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt8));  end; end;
       procedure uint8_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)), B);
+      begin with Machine^ do begin Str(TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)), B);
         Dec(WP, SizeOf(TUInt8));
         str_push(Machine, Command, B);
        end; end;
@@ -8256,7 +8281,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TUInt8(WP^), Res);
         Inc(WP, SizeOf(TUInt8));
         DelRef(B);
@@ -8264,56 +8289,56 @@ end;
     
    
     
-      procedure uint16_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) + TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
+      procedure uint16_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) + TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
                                                    Dec(WP, SizeOf(TUInt16));  end; end;
-      procedure uint16_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) - TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
+      procedure uint16_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) - TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
                                                    Dec(WP, SizeOf(TUInt16));  end; end;
-      procedure uint16_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) * TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
+      procedure uint16_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) * TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
                                                    Dec(WP, SizeOf(TUInt16));  end; end;
-      procedure uint16_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) = TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
+      procedure uint16_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) = TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt16) - SizeOf(TInt));  end; end;
-      procedure uint16_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) <> TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
+      procedure uint16_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) <> TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt16) - SizeOf(TInt));  end; end;
-      procedure uint16_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) < TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
+      procedure uint16_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) < TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt16) - SizeOf(TInt));  end; end;
-      procedure uint16_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) > TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
+      procedure uint16_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) > TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt16) - SizeOf(TInt));  end; end;
-      procedure uint16_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) <= TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
+      procedure uint16_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) <= TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt16) - SizeOf(TInt));  end; end;
-      procedure uint16_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) >= TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
+      procedure uint16_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord(TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) >= TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt16) - SizeOf(TInt));  end; end;
-      procedure uint16_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) = 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
-      procedure uint16_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) <> 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
-      procedure uint16_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) < 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
-      procedure uint16_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) > 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
-      procedure uint16_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) <= 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
-      procedure uint16_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) >= 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
-      procedure uint16_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) <> 0 then begin TUInt16(WP^) := TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)); Inc(WP, SizeOf(TUInt16)); end;  end; end;
-      procedure uint16_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)) = 0 then begin Dec(WP, SizeOf(TUInt16)); _exit(Machine, Command); end  end; end;
+      procedure uint16_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) = 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
+      procedure uint16_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) <> 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
+      procedure uint16_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) < 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
+      procedure uint16_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) > 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
+      procedure uint16_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) <= 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
+      procedure uint16_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) >= 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
+      procedure uint16_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^))) <> 0 then begin TUInt16(WP^) := TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)); Inc(WP, SizeOf(TUInt16)); end;  end; end;
+      procedure uint16_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)) = 0 then begin Dec(WP, SizeOf(TUInt16)); _exit(Machine, Command); end  end; end;
       procedure uint16_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) < TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) then
+      begin with Machine^ do begin if TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) < TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^), SizeOf(TUInt16));
         Dec(WP, SizeOf(TUInt16));
        end; end;
       procedure uint16_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) > TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) then
+      begin with Machine^ do begin if TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) > TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^), SizeOf(TUInt16));
         Dec(WP, SizeOf(TUInt16));
        end; end;
       procedure uint16_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) > TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) then begin
+      begin with Machine^ do begin if TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) > TUInt16((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TUInt16)))^), SizeOf(TUInt16));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^), SizeOf(TUInt16));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TUInt16)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TUInt16)))^), SizeOf(TUInt16));
         end;
        end; end;
-      procedure uint16_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TUInt16)); Write(TUInt16(WP^), ' ');  end; end;
-      procedure uint16_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt16; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt16)); Inc(WP, SizeOf(TUInt16));  end; end;
-      procedure uint16_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt16((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt16)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt16));  end; end;
+      procedure uint16_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TUInt16)); Write(TUInt16(WP^), ' ');  end; end;
+      procedure uint16_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt16; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt16)); Inc(WP, SizeOf(TUInt16));  end; end;
+      procedure uint16_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt16((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt16)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt16));  end; end;
       procedure uint16_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)), B);
+      begin with Machine^ do begin Str(TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)), B);
         Dec(WP, SizeOf(TUInt16));
         str_push(Machine, Command, B);
        end; end;
@@ -8321,7 +8346,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TUInt16(WP^), Res);
         Inc(WP, SizeOf(TUInt16));
         DelRef(B);
@@ -8329,56 +8354,56 @@ end;
     
    
     
-      procedure uint32_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) + TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
+      procedure uint32_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) + TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
                                                    Dec(WP, SizeOf(TUInt32));  end; end;
-      procedure uint32_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) - TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
+      procedure uint32_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) - TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
                                                    Dec(WP, SizeOf(TUInt32));  end; end;
-      procedure uint32_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) * TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
+      procedure uint32_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) * TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
                                                    Dec(WP, SizeOf(TUInt32));  end; end;
-      procedure uint32_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) = TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
+      procedure uint32_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) = TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt32) - SizeOf(TInt));  end; end;
-      procedure uint32_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) <> TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
+      procedure uint32_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) <> TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt32) - SizeOf(TInt));  end; end;
-      procedure uint32_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) < TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
+      procedure uint32_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) < TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt32) - SizeOf(TInt));  end; end;
-      procedure uint32_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) > TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
+      procedure uint32_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) > TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt32) - SizeOf(TInt));  end; end;
-      procedure uint32_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) <= TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
+      procedure uint32_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) <= TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt32) - SizeOf(TInt));  end; end;
-      procedure uint32_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) >= TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
+      procedure uint32_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord(TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) >= TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt32) - SizeOf(TInt));  end; end;
-      procedure uint32_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) = 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
-      procedure uint32_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) <> 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
-      procedure uint32_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) < 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
-      procedure uint32_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) > 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
-      procedure uint32_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) <= 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
-      procedure uint32_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) >= 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
-      procedure uint32_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) <> 0 then begin TUInt32(WP^) := TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)); Inc(WP, SizeOf(TUInt32)); end;  end; end;
-      procedure uint32_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)) = 0 then begin Dec(WP, SizeOf(TUInt32)); _exit(Machine, Command); end  end; end;
+      procedure uint32_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) = 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
+      procedure uint32_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) <> 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
+      procedure uint32_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) < 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
+      procedure uint32_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) > 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
+      procedure uint32_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) <= 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
+      procedure uint32_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) >= 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
+      procedure uint32_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^))) <> 0 then begin TUInt32(WP^) := TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)); Inc(WP, SizeOf(TUInt32)); end;  end; end;
+      procedure uint32_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)) = 0 then begin Dec(WP, SizeOf(TUInt32)); _exit(Machine, Command); end  end; end;
       procedure uint32_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) < TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) then
+      begin with Machine^ do begin if TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) < TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^), SizeOf(TUInt32));
         Dec(WP, SizeOf(TUInt32));
        end; end;
       procedure uint32_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) > TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) then
+      begin with Machine^ do begin if TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) > TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^), SizeOf(TUInt32));
         Dec(WP, SizeOf(TUInt32));
        end; end;
       procedure uint32_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) > TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) then begin
+      begin with Machine^ do begin if TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) > TUInt32((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TUInt32)))^), SizeOf(TUInt32));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^), SizeOf(TUInt32));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TUInt32)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TUInt32)))^), SizeOf(TUInt32));
         end;
        end; end;
-      procedure uint32_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TUInt32)); Write(TUInt32(WP^), ' ');  end; end;
-      procedure uint32_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt32; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt32)); Inc(WP, SizeOf(TUInt32));  end; end;
-      procedure uint32_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt32((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt32)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt32));  end; end;
+      procedure uint32_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TUInt32)); Write(TUInt32(WP^), ' ');  end; end;
+      procedure uint32_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt32; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt32)); Inc(WP, SizeOf(TUInt32));  end; end;
+      procedure uint32_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt32((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt32)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt32));  end; end;
       procedure uint32_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)), B);
+      begin with Machine^ do begin Str(TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)), B);
         Dec(WP, SizeOf(TUInt32));
         str_push(Machine, Command, B);
        end; end;
@@ -8386,7 +8411,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TUInt32(WP^), Res);
         Inc(WP, SizeOf(TUInt32));
         DelRef(B);
@@ -8394,56 +8419,56 @@ end;
     
    
     
-      procedure uint64_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) + TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
+      procedure uint64_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) + TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
                                                    Dec(WP, SizeOf(TUInt64));  end; end;
-      procedure uint64_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) - TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
+      procedure uint64_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) - TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
                                                    Dec(WP, SizeOf(TUInt64));  end; end;
-      procedure uint64_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) * TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
+      procedure uint64_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) * TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
                                                    Dec(WP, SizeOf(TUInt64));  end; end;
-      procedure uint64_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) = TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
+      procedure uint64_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) = TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt64) - SizeOf(TInt));  end; end;
-      procedure uint64_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) <> TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
+      procedure uint64_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) <> TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt64) - SizeOf(TInt));  end; end;
-      procedure uint64_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) < TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
+      procedure uint64_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) < TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt64) - SizeOf(TInt));  end; end;
-      procedure uint64_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) > TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
+      procedure uint64_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) > TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt64) - SizeOf(TInt));  end; end;
-      procedure uint64_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) <= TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
+      procedure uint64_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) <= TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt64) - SizeOf(TInt));  end; end;
-      procedure uint64_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) >= TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
+      procedure uint64_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord(TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) >= TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^))); 
                                                    Dec(WP, 2*SizeOf(TUInt64) - SizeOf(TInt));  end; end;
-      procedure uint64_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) = 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
-      procedure uint64_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) <> 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
-      procedure uint64_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) < 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
-      procedure uint64_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) > 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
-      procedure uint64_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) <= 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
-      procedure uint64_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) >= 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
-      procedure uint64_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) <> 0 then begin TUInt64(WP^) := TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)); Inc(WP, SizeOf(TUInt64)); end;  end; end;
-      procedure uint64_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)) = 0 then begin Dec(WP, SizeOf(TUInt64)); _exit(Machine, Command); end  end; end;
+      procedure uint64_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) = 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
+      procedure uint64_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) <> 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
+      procedure uint64_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) < 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
+      procedure uint64_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) > 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
+      procedure uint64_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) <= 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
+      procedure uint64_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) >= 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
+      procedure uint64_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^))) <> 0 then begin TUInt64(WP^) := TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)); Inc(WP, SizeOf(TUInt64)); end;  end; end;
+      procedure uint64_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)) = 0 then begin Dec(WP, SizeOf(TUInt64)); _exit(Machine, Command); end  end; end;
       procedure uint64_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) < TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) then
+      begin with Machine^ do begin if TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) < TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^), SizeOf(TUInt64));
         Dec(WP, SizeOf(TUInt64));
        end; end;
       procedure uint64_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) > TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) then
+      begin with Machine^ do begin if TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) > TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^), SizeOf(TUInt64));
         Dec(WP, SizeOf(TUInt64));
        end; end;
       procedure uint64_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) > TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) then begin
+      begin with Machine^ do begin if TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) > TUInt64((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^), (Pointer(TUInt(WP) + (-0*SizeOf(TUInt64)))^), SizeOf(TUInt64));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^), (Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^), SizeOf(TUInt64));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(TUInt64)))^), (Pointer(TUInt(WP) + (-1*SizeOf(TUInt64)))^), SizeOf(TUInt64));
         end;
        end; end;
-      procedure uint64_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(TUInt64)); Write(TUInt64(WP^), ' ');  end; end;
-      procedure uint64_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt64; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt64)); Inc(WP, SizeOf(TUInt64));  end; end;
-      procedure uint64_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt64((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt64)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt64));  end; end;
+      procedure uint64_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(TUInt64)); Write(TUInt64(WP^), ' ');  end; end;
+      procedure uint64_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: TUInt64; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(TUInt64)); Inc(WP, SizeOf(TUInt64));  end; end;
+      procedure uint64_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + TUInt64((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(TUInt64)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(TUInt64));  end; end;
       procedure uint64_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)), B);
+      begin with Machine^ do begin Str(TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)), B);
         Dec(WP, SizeOf(TUInt64));
         str_push(Machine, Command, B);
        end; end;
@@ -8451,7 +8476,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), TUInt64(WP^), Res);
         Inc(WP, SizeOf(TUInt64));
         DelRef(B);
@@ -8459,56 +8484,56 @@ end;
     
    
     
-      procedure single_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) + Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
+      procedure single_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) + Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
                                                    Dec(WP, SizeOf(Single));  end; end;
-      procedure single_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) - Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
+      procedure single_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) - Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
                                                    Dec(WP, SizeOf(Single));  end; end;
-      procedure single_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) * Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
+      procedure single_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) * Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
                                                    Dec(WP, SizeOf(Single));  end; end;
-      procedure single_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) = Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
+      procedure single_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) = Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) <> Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
+      procedure single_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) <> Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) < Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
+      procedure single_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) < Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) > Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
+      procedure single_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) > Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) <= Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
+      procedure single_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) <= Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) >= Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
+      procedure single_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) >= Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) = 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) <> 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) < 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) > 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) <= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) >= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) <> 0 then begin Single(WP^) := Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)); Inc(WP, SizeOf(Single)); end;  end; end;
-      procedure single_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) = 0 then begin Dec(WP, SizeOf(Single)); _exit(Machine, Command); end  end; end;
+      procedure single_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) = 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure single_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) <> 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure single_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) < 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure single_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) > 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure single_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) <= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure single_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) >= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure single_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^))) <> 0 then begin Single(WP^) := Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)); Inc(WP, SizeOf(Single)); end;  end; end;
+      procedure single_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) = 0 then begin Dec(WP, SizeOf(Single)); _exit(Machine, Command); end  end; end;
       procedure single_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) < Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) then
+      begin with Machine^ do begin if Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) < Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^), (Pointer(TUInt(WP) + (-2*SizeOf(Single)))^), SizeOf(Single));
         Dec(WP, SizeOf(Single));
        end; end;
       procedure single_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) > Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) then
+      begin with Machine^ do begin if Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) > Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^), (Pointer(TUInt(WP) + (-2*SizeOf(Single)))^), SizeOf(Single));
         Dec(WP, SizeOf(Single));
        end; end;
       procedure single_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) > Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) then begin
+      begin with Machine^ do begin if Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) > Single((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^), (Pointer(TUInt(WP) + (-0*SizeOf(Single)))^), SizeOf(Single));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(Single)))^), (Pointer(TUInt(WP) + (-2*SizeOf(Single)))^), SizeOf(Single));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(Single)))^), (Pointer(TUInt(WP) + (-1*SizeOf(Single)))^), SizeOf(Single));
         end;
        end; end;
-      procedure single_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(Single)); Write(Single(WP^), ' ');  end; end;
-      procedure single_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Single; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(Single)); Inc(WP, SizeOf(Single));  end; end;
-      procedure single_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := Single(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + Single((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(Single)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Single));  end; end;
+      procedure single_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(Single)); Write(Single(WP^), ' ');  end; end;
+      procedure single_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Single; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(Single)); Inc(WP, SizeOf(Single));  end; end;
+      procedure single_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := Single(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + Single((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(Single)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Single));  end; end;
       procedure single_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)), B);
+      begin with Machine^ do begin Str(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)), B);
         Dec(WP, SizeOf(Single));
         str_push(Machine, Command, B);
        end; end;
@@ -8516,7 +8541,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), Single(WP^), Res);
         Inc(WP, SizeOf(Single));
         DelRef(B);
@@ -8524,56 +8549,56 @@ end;
     
    
     
-      procedure double_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) + Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
+      procedure double_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) + Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
                                                    Dec(WP, SizeOf(Double));  end; end;
-      procedure double_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) - Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
+      procedure double_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) - Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
                                                    Dec(WP, SizeOf(Double));  end; end;
-      procedure double_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) * Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
+      procedure double_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) * Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
                                                    Dec(WP, SizeOf(Double));  end; end;
-      procedure double_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) = Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
+      procedure double_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) = Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
                                                    Dec(WP, 2*SizeOf(Double) - SizeOf(TInt));  end; end;
-      procedure double_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) <> Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
+      procedure double_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) <> Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
                                                    Dec(WP, 2*SizeOf(Double) - SizeOf(TInt));  end; end;
-      procedure double_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) < Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
+      procedure double_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) < Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
                                                    Dec(WP, 2*SizeOf(Double) - SizeOf(TInt));  end; end;
-      procedure double_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) > Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
+      procedure double_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) > Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
                                                    Dec(WP, 2*SizeOf(Double) - SizeOf(TInt));  end; end;
-      procedure double_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) <= Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
+      procedure double_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) <= Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
                                                    Dec(WP, 2*SizeOf(Double) - SizeOf(TInt));  end; end;
-      procedure double_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) >= Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
+      procedure double_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := BOOL_TRUE*Ord(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) >= Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); 
                                                    Dec(WP, 2*SizeOf(Double) - SizeOf(TInt));  end; end;
-      procedure double_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) = 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
-      procedure double_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) <> 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
-      procedure double_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) < 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
-      procedure double_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) > 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
-      procedure double_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) <= 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
-      procedure double_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) >= 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
-      procedure double_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) <> 0 then begin Double(WP^) := Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)); Inc(WP, SizeOf(Double)); end;  end; end;
-      procedure double_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) = 0 then begin Dec(WP, SizeOf(Double)); _exit(Machine, Command); end  end; end;
+      procedure double_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) = 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
+      procedure double_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) <> 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
+      procedure double_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) < 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
+      procedure double_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) > 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
+      procedure double_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) <= 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
+      procedure double_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) >= 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
+      procedure double_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^))) <> 0 then begin Double(WP^) := Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)); Inc(WP, SizeOf(Double)); end;  end; end;
+      procedure double_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) = 0 then begin Dec(WP, SizeOf(Double)); _exit(Machine, Command); end  end; end;
       procedure double_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) < Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) then
+      begin with Machine^ do begin if Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) < Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^), (Pointer(TUInt(WP) + (-2*SizeOf(Double)))^), SizeOf(Double));
         Dec(WP, SizeOf(Double));
        end; end;
       procedure double_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) > Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) then
+      begin with Machine^ do begin if Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) > Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^), (Pointer(TUInt(WP) + (-2*SizeOf(Double)))^), SizeOf(Double));
         Dec(WP, SizeOf(Double));
        end; end;
       procedure double_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) > Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) then begin
+      begin with Machine^ do begin if Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) > Double((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^), (Pointer(TUInt(WP) + (-0*SizeOf(Double)))^), SizeOf(Double));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(Double)))^), (Pointer(TUInt(WP) + (-2*SizeOf(Double)))^), SizeOf(Double));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(Double)))^), (Pointer(TUInt(WP) + (-1*SizeOf(Double)))^), SizeOf(Double));
         end;
        end; end;
-      procedure double_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(Double)); Write(Double(WP^), ' ');  end; end;
-      procedure double_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Double; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(Double)); Inc(WP, SizeOf(Double));  end; end;
-      procedure double_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := Double(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + Double((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(Double)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Double));  end; end;
+      procedure double_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(Double)); Write(Double(WP^), ' ');  end; end;
+      procedure double_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Double; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(Double)); Inc(WP, SizeOf(Double));  end; end;
+      procedure double_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := Double(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + Double((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(Double)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Double));  end; end;
       procedure double_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)), B);
+      begin with Machine^ do begin Str(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)), B);
         Dec(WP, SizeOf(Double));
         str_push(Machine, Command, B);
        end; end;
@@ -8581,7 +8606,7 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), Double(WP^), Res);
         Inc(WP, SizeOf(Double));
         DelRef(B);
@@ -8589,56 +8614,56 @@ end;
     
    
     
-      procedure extended_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) + Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
+      procedure extended_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) + Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
                                                    Dec(WP, SizeOf(Extended));  end; end;
-      procedure extended_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) - Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
+      procedure extended_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) - Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
                                                    Dec(WP, SizeOf(Extended));  end; end;
-      procedure extended_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) * Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
+      procedure extended_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) * Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
                                                    Dec(WP, SizeOf(Extended));  end; end;
-      procedure extended_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) = Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
+      procedure extended_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) = Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
                                                    Dec(WP, 2*SizeOf(Extended) - SizeOf(TInt));  end; end;
-      procedure extended_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) <> Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
+      procedure extended_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) <> Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
                                                    Dec(WP, 2*SizeOf(Extended) - SizeOf(TInt));  end; end;
-      procedure extended_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) < Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
+      procedure extended_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) < Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
                                                    Dec(WP, 2*SizeOf(Extended) - SizeOf(TInt));  end; end;
-      procedure extended_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) > Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
+      procedure extended_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) > Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
                                                    Dec(WP, 2*SizeOf(Extended) - SizeOf(TInt));  end; end;
-      procedure extended_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) <= Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
+      procedure extended_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) <= Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
                                                    Dec(WP, 2*SizeOf(Extended) - SizeOf(TInt));  end; end;
-      procedure extended_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) >= Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
+      procedure extended_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := BOOL_TRUE*Ord(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) >= Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); 
                                                    Dec(WP, 2*SizeOf(Extended) - SizeOf(TInt));  end; end;
-      procedure extended_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) = 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
-      procedure extended_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) <> 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
-      procedure extended_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) < 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
-      procedure extended_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) > 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
-      procedure extended_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) <= 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
-      procedure extended_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) >= 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
-      procedure extended_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if (Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) <> 0 then begin Extended(WP^) := Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)); Inc(WP, SizeOf(Extended)); end;  end; end;
-      procedure extended_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) = 0 then begin Dec(WP, SizeOf(Extended)); _exit(Machine, Command); end  end; end;
+      procedure extended_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) = 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
+      procedure extended_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) <> 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
+      procedure extended_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) < 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
+      procedure extended_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) > 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
+      procedure extended_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) <= 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
+      procedure extended_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) >= 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
+      procedure extended_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^))) <> 0 then begin Extended(WP^) := Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)); Inc(WP, SizeOf(Extended)); end;  end; end;
+      procedure extended_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) = 0 then begin Dec(WP, SizeOf(Extended)); _exit(Machine, Command); end  end; end;
       procedure extended_max (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) < Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) then
+      begin with Machine^ do begin if Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) < Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^), (Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^), SizeOf(Extended));
         Dec(WP, SizeOf(Extended));
        end; end;
       procedure extended_min (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) > Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) then
+      begin with Machine^ do begin if Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) > Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) then
           Move((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^), (Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^), SizeOf(Extended));
         Dec(WP, SizeOf(Extended));
        end; end;
       procedure extended_minmax (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin if Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) > Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) then begin
+      begin with Machine^ do begin if Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) > Extended((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^)) then begin
           Move((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^), (Pointer(TUInt(WP) + (-0*SizeOf(Extended)))^), SizeOf(Extended));
           Move((Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^), (Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^), SizeOf(Extended));
           Move((Pointer(TUInt(WP) + (-0*SizeOf(Extended)))^), (Pointer(TUInt(WP) + (-1*SizeOf(Extended)))^), SizeOf(Extended));
         end;
        end; end;
-      procedure extended_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine do begin Dec(WP, SizeOf(Extended)); Write(Extended(WP^), ' ');  end; end;
-      procedure extended_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Extended; begin with Machine do begin Read(Temp); Move(Temp, WP^, SizeOf(Extended)); Inc(WP, SizeOf(Extended));  end; end;
-      procedure extended_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := Extended(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + Extended((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(Extended)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Extended));  end; end;
+      procedure extended_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(Extended)); Write(Extended(WP^), ' ');  end; end;
+      procedure extended_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Extended; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(Extended)); Inc(WP, SizeOf(Extended));  end; end;
+      procedure extended_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := Extended(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + Extended((Pointer(TUInt(WP) + (-SizeOf(Pointer)-SizeOf(Extended)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Extended));  end; end;
       procedure extended_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
-      begin with Machine do begin Str(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)), B);
+      begin with Machine^ do begin Str(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)), B);
         Dec(WP, SizeOf(Extended));
         str_push(Machine, Command, B);
        end; end;
@@ -8646,551 +8671,551 @@ end;
       var
         B: TStr;
         Res: Word;
-      begin with Machine do begin B := str_pop(Machine, Command);
+      begin with Machine^ do begin B := str_pop(Machine, Command);
         Val(PChar(@(TStrRec(B^).Sym[0])), Extended(WP^), Res);
         Inc(WP, SizeOf(Extended));
         DelRef(B);
        end; end;
     
    
-    procedure _abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := Abs(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)));  end; end;
-     procedure _neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := - TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^));  end; end;
+    procedure _abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := Abs(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)));  end; end;
+     procedure _neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := - TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^));  end; end;
     
    
-    procedure int_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := Abs(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)));  end; end;
-     procedure int_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := - TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^));  end; end;
+    procedure int_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := Abs(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)));  end; end;
+     procedure int_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := - TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^));  end; end;
     
    
-    procedure int8_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)) := Abs(TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)));  end; end;
-     procedure int8_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)) := - TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^));  end; end;
+    procedure int8_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)) := Abs(TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)));  end; end;
+     procedure int8_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)) := - TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^));  end; end;
     
    
-    procedure int16_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)) := Abs(TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)));  end; end;
-     procedure int16_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)) := - TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^));  end; end;
+    procedure int16_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)) := Abs(TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)));  end; end;
+     procedure int16_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)) := - TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^));  end; end;
     
    
-    procedure int32_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)) := Abs(TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)));  end; end;
-     procedure int32_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)) := - TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^));  end; end;
+    procedure int32_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)) := Abs(TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)));  end; end;
+     procedure int32_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)) := - TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^));  end; end;
     
    
-    procedure int64_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)) := Abs(TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)));  end; end;
-     procedure int64_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)) := - TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^));  end; end;
+    procedure int64_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)) := Abs(TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)));  end; end;
+     procedure int64_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)) := - TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^));  end; end;
     
    
-    procedure single_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Abs(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)));  end; end;
-     procedure single_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := - Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^));  end; end;
+    procedure single_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Abs(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)));  end; end;
+     procedure single_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := - Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^));  end; end;
     
    
-    procedure double_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Abs(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)));  end; end;
-     procedure double_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := - Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^));  end; end;
+    procedure double_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Abs(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)));  end; end;
+     procedure double_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := - Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^));  end; end;
     
    
     
-     procedure _push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then _compile_push(Machine, Command) else _interpret_push(Machine, Command)  end; end;
-     procedure _interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt(WP^) := TInt(StrToInt(NextName)); Inc(WP, SizeOf(TInt));  end; end;
-     procedure _compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@-push'); EW_(StrToInt(NextName));  end; end;
-     procedure _run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt(WP^) := ER_; Inc(WP, SizeOf(TInt));  end; end;
-     procedure _1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)))  end; end;
-     procedure _1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)))  end; end;
-     procedure _div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) div TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+     procedure _push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then _compile_push(Machine, Command) else _interpret_push(Machine, Command)  end; end;
+     procedure _interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt(WP^) := TInt(StrToInt(NextName)); Inc(WP, SizeOf(TInt));  end; end;
+     procedure _compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@-push'); EW_(StrToInt(NextName));  end; end;
+     procedure _run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt(WP^) := ER_; Inc(WP, SizeOf(TInt));  end; end;
+     procedure _1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)))  end; end;
+     procedure _1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)))  end; end;
+     procedure _div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) div TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                    Dec(WP, SizeOf(TInt));  end; end;
-     procedure _mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) mod TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+     procedure _mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) mod TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                    Dec(WP, SizeOf(TInt));  end; end;
-     procedure _divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (0))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) mod TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+     procedure _divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (0))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) mod TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                      TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) div TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^));
                                                      TInt((Pointer(TUInt(WP) + (-  SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure _ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure _ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure int_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then int_compile_push(Machine, Command) else int_interpret_push(Machine, Command)  end; end;
-     procedure int_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt(WP^) := TInt(StrToInt(NextName)); Inc(WP, SizeOf(TInt));  end; end;
-     procedure int_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@int-push'); EW_int(StrToInt(NextName));  end; end;
-     procedure int_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt(WP^) := ER_int; Inc(WP, SizeOf(TInt));  end; end;
-     procedure int_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)))  end; end;
-     procedure int_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)))  end; end;
-     procedure int_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) div TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+     procedure int_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then int_compile_push(Machine, Command) else int_interpret_push(Machine, Command)  end; end;
+     procedure int_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt(WP^) := TInt(StrToInt(NextName)); Inc(WP, SizeOf(TInt));  end; end;
+     procedure int_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@int-push'); EW_int(StrToInt(NextName));  end; end;
+     procedure int_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt(WP^) := ER_int; Inc(WP, SizeOf(TInt));  end; end;
+     procedure int_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)))  end; end;
+     procedure int_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)))  end; end;
+     procedure int_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) div TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                    Dec(WP, SizeOf(TInt));  end; end;
-     procedure int_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) mod TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+     procedure int_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) mod TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                    Dec(WP, SizeOf(TInt));  end; end;
-     procedure int_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (0))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) mod TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+     procedure int_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (0))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) mod TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                      TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-2*SizeOf(TInt)))^)) div TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^));
                                                      TInt((Pointer(TUInt(WP) + (-  SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure int_ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure int_ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure int8_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then int8_compile_push(Machine, Command) else int8_interpret_push(Machine, Command)  end; end;
-     procedure int8_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8(WP^) := TInt8(StrToInt(NextName)); Inc(WP, SizeOf(TInt8));  end; end;
-     procedure int8_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@int8-push'); EW_int8(StrToInt(NextName));  end; end;
-     procedure int8_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8(WP^) := ER_int8; Inc(WP, SizeOf(TInt8));  end; end;
-     procedure int8_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)))  end; end;
-     procedure int8_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)))  end; end;
-     procedure int8_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) div TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
+     procedure int8_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then int8_compile_push(Machine, Command) else int8_interpret_push(Machine, Command)  end; end;
+     procedure int8_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8(WP^) := TInt8(StrToInt(NextName)); Inc(WP, SizeOf(TInt8));  end; end;
+     procedure int8_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@int8-push'); EW_int8(StrToInt(NextName));  end; end;
+     procedure int8_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8(WP^) := ER_int8; Inc(WP, SizeOf(TInt8));  end; end;
+     procedure int8_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)))  end; end;
+     procedure int8_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)))  end; end;
+     procedure int8_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) div TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
                                                    Dec(WP, SizeOf(TInt8));  end; end;
-     procedure int8_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) mod TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
+     procedure int8_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) mod TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
                                                    Dec(WP, SizeOf(TInt8));  end; end;
-     procedure int8_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8((Pointer(TUInt(WP) + (0))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) mod TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
+     procedure int8_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8((Pointer(TUInt(WP) + (0))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) mod TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
                                                      TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-2*SizeOf(TInt8)))^)) div TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^));
                                                      TInt8((Pointer(TUInt(WP) + (-  SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure int8_ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure int8_ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure int16_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then int16_compile_push(Machine, Command) else int16_interpret_push(Machine, Command)  end; end;
-     procedure int16_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16(WP^) := TInt16(StrToInt(NextName)); Inc(WP, SizeOf(TInt16));  end; end;
-     procedure int16_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@int16-push'); EW_int16(StrToInt(NextName));  end; end;
-     procedure int16_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16(WP^) := ER_int16; Inc(WP, SizeOf(TInt16));  end; end;
-     procedure int16_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)))  end; end;
-     procedure int16_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)))  end; end;
-     procedure int16_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) div TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
+     procedure int16_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then int16_compile_push(Machine, Command) else int16_interpret_push(Machine, Command)  end; end;
+     procedure int16_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16(WP^) := TInt16(StrToInt(NextName)); Inc(WP, SizeOf(TInt16));  end; end;
+     procedure int16_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@int16-push'); EW_int16(StrToInt(NextName));  end; end;
+     procedure int16_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16(WP^) := ER_int16; Inc(WP, SizeOf(TInt16));  end; end;
+     procedure int16_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)))  end; end;
+     procedure int16_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)))  end; end;
+     procedure int16_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) div TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
                                                    Dec(WP, SizeOf(TInt16));  end; end;
-     procedure int16_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) mod TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
+     procedure int16_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) mod TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
                                                    Dec(WP, SizeOf(TInt16));  end; end;
-     procedure int16_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16((Pointer(TUInt(WP) + (0))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) mod TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
+     procedure int16_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16((Pointer(TUInt(WP) + (0))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) mod TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
                                                      TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-2*SizeOf(TInt16)))^)) div TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^));
                                                      TInt16((Pointer(TUInt(WP) + (-  SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure int16_ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure int16_ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure int32_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then int32_compile_push(Machine, Command) else int32_interpret_push(Machine, Command)  end; end;
-     procedure int32_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32(WP^) := TInt32(StrToInt(NextName)); Inc(WP, SizeOf(TInt32));  end; end;
-     procedure int32_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@int32-push'); EW_int32(StrToInt(NextName));  end; end;
-     procedure int32_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32(WP^) := ER_int32; Inc(WP, SizeOf(TInt32));  end; end;
-     procedure int32_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)))  end; end;
-     procedure int32_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)))  end; end;
-     procedure int32_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) div TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
+     procedure int32_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then int32_compile_push(Machine, Command) else int32_interpret_push(Machine, Command)  end; end;
+     procedure int32_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32(WP^) := TInt32(StrToInt(NextName)); Inc(WP, SizeOf(TInt32));  end; end;
+     procedure int32_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@int32-push'); EW_int32(StrToInt(NextName));  end; end;
+     procedure int32_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32(WP^) := ER_int32; Inc(WP, SizeOf(TInt32));  end; end;
+     procedure int32_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)))  end; end;
+     procedure int32_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)))  end; end;
+     procedure int32_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) div TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
                                                    Dec(WP, SizeOf(TInt32));  end; end;
-     procedure int32_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) mod TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
+     procedure int32_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) mod TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
                                                    Dec(WP, SizeOf(TInt32));  end; end;
-     procedure int32_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32((Pointer(TUInt(WP) + (0))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) mod TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
+     procedure int32_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32((Pointer(TUInt(WP) + (0))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) mod TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
                                                      TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-2*SizeOf(TInt32)))^)) div TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^));
                                                      TInt32((Pointer(TUInt(WP) + (-  SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure int32_ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure int32_ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure int64_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then int64_compile_push(Machine, Command) else int64_interpret_push(Machine, Command)  end; end;
-     procedure int64_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64(WP^) := TInt64(StrToInt(NextName)); Inc(WP, SizeOf(TInt64));  end; end;
-     procedure int64_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@int64-push'); EW_int64(StrToInt(NextName));  end; end;
-     procedure int64_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64(WP^) := ER_int64; Inc(WP, SizeOf(TInt64));  end; end;
-     procedure int64_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)))  end; end;
-     procedure int64_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)))  end; end;
-     procedure int64_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) div TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
+     procedure int64_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then int64_compile_push(Machine, Command) else int64_interpret_push(Machine, Command)  end; end;
+     procedure int64_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64(WP^) := TInt64(StrToInt(NextName)); Inc(WP, SizeOf(TInt64));  end; end;
+     procedure int64_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@int64-push'); EW_int64(StrToInt(NextName));  end; end;
+     procedure int64_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64(WP^) := ER_int64; Inc(WP, SizeOf(TInt64));  end; end;
+     procedure int64_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)))  end; end;
+     procedure int64_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)))  end; end;
+     procedure int64_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) div TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
                                                    Dec(WP, SizeOf(TInt64));  end; end;
-     procedure int64_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) mod TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
+     procedure int64_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) mod TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
                                                    Dec(WP, SizeOf(TInt64));  end; end;
-     procedure int64_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64((Pointer(TUInt(WP) + (0))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) mod TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
+     procedure int64_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64((Pointer(TUInt(WP) + (0))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) mod TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
                                                      TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-2*SizeOf(TInt64)))^)) div TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^));
                                                      TInt64((Pointer(TUInt(WP) + (-  SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure int64_ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure int64_ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure uint_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then uint_compile_push(Machine, Command) else uint_interpret_push(Machine, Command)  end; end;
-     procedure uint_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt(WP^) := TUInt(StrToInt(NextName)); Inc(WP, SizeOf(TUInt));  end; end;
-     procedure uint_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@uint-push'); EW_uint(StrToInt(NextName));  end; end;
-     procedure uint_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt(WP^) := ER_uint; Inc(WP, SizeOf(TUInt));  end; end;
-     procedure uint_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)))  end; end;
-     procedure uint_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)))  end; end;
-     procedure uint_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) div TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
+     procedure uint_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then uint_compile_push(Machine, Command) else uint_interpret_push(Machine, Command)  end; end;
+     procedure uint_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt(WP^) := TUInt(StrToInt(NextName)); Inc(WP, SizeOf(TUInt));  end; end;
+     procedure uint_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@uint-push'); EW_uint(StrToInt(NextName));  end; end;
+     procedure uint_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt(WP^) := ER_uint; Inc(WP, SizeOf(TUInt));  end; end;
+     procedure uint_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)))  end; end;
+     procedure uint_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)))  end; end;
+     procedure uint_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) div TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
                                                    Dec(WP, SizeOf(TUInt));  end; end;
-     procedure uint_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) mod TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
+     procedure uint_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) mod TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
                                                    Dec(WP, SizeOf(TUInt));  end; end;
-     procedure uint_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt((Pointer(TUInt(WP) + (0))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) mod TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
+     procedure uint_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt((Pointer(TUInt(WP) + (0))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) mod TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
                                                      TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-2*SizeOf(TUInt)))^)) div TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^));
                                                      TUInt((Pointer(TUInt(WP) + (-  SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure uint_ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure uint_ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure uint8_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then uint8_compile_push(Machine, Command) else uint8_interpret_push(Machine, Command)  end; end;
-     procedure uint8_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt8(WP^) := TUInt8(StrToInt(NextName)); Inc(WP, SizeOf(TUInt8));  end; end;
-     procedure uint8_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@uint8-push'); EW_uint8(StrToInt(NextName));  end; end;
-     procedure uint8_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt8(WP^) := ER_uint8; Inc(WP, SizeOf(TUInt8));  end; end;
-     procedure uint8_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)))  end; end;
-     procedure uint8_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)))  end; end;
-     procedure uint8_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) div TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
+     procedure uint8_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then uint8_compile_push(Machine, Command) else uint8_interpret_push(Machine, Command)  end; end;
+     procedure uint8_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt8(WP^) := TUInt8(StrToInt(NextName)); Inc(WP, SizeOf(TUInt8));  end; end;
+     procedure uint8_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@uint8-push'); EW_uint8(StrToInt(NextName));  end; end;
+     procedure uint8_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt8(WP^) := ER_uint8; Inc(WP, SizeOf(TUInt8));  end; end;
+     procedure uint8_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)))  end; end;
+     procedure uint8_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)))  end; end;
+     procedure uint8_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) div TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
                                                    Dec(WP, SizeOf(TUInt8));  end; end;
-     procedure uint8_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) mod TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
+     procedure uint8_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) mod TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
                                                    Dec(WP, SizeOf(TUInt8));  end; end;
-     procedure uint8_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt8((Pointer(TUInt(WP) + (0))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) mod TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
+     procedure uint8_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt8((Pointer(TUInt(WP) + (0))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) mod TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
                                                      TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-2*SizeOf(TUInt8)))^)) div TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^));
                                                      TUInt8((Pointer(TUInt(WP) + (-  SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure uint8_ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure uint8_ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt8(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure uint16_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then uint16_compile_push(Machine, Command) else uint16_interpret_push(Machine, Command)  end; end;
-     procedure uint16_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt16(WP^) := TUInt16(StrToInt(NextName)); Inc(WP, SizeOf(TUInt16));  end; end;
-     procedure uint16_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@uint16-push'); EW_uint16(StrToInt(NextName));  end; end;
-     procedure uint16_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt16(WP^) := ER_uint16; Inc(WP, SizeOf(TUInt16));  end; end;
-     procedure uint16_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)))  end; end;
-     procedure uint16_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)))  end; end;
-     procedure uint16_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) div TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
+     procedure uint16_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then uint16_compile_push(Machine, Command) else uint16_interpret_push(Machine, Command)  end; end;
+     procedure uint16_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt16(WP^) := TUInt16(StrToInt(NextName)); Inc(WP, SizeOf(TUInt16));  end; end;
+     procedure uint16_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@uint16-push'); EW_uint16(StrToInt(NextName));  end; end;
+     procedure uint16_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt16(WP^) := ER_uint16; Inc(WP, SizeOf(TUInt16));  end; end;
+     procedure uint16_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)))  end; end;
+     procedure uint16_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)))  end; end;
+     procedure uint16_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) div TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
                                                    Dec(WP, SizeOf(TUInt16));  end; end;
-     procedure uint16_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) mod TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
+     procedure uint16_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) mod TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
                                                    Dec(WP, SizeOf(TUInt16));  end; end;
-     procedure uint16_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt16((Pointer(TUInt(WP) + (0))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) mod TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
+     procedure uint16_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt16((Pointer(TUInt(WP) + (0))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) mod TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
                                                      TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-2*SizeOf(TUInt16)))^)) div TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^));
                                                      TUInt16((Pointer(TUInt(WP) + (-  SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure uint16_ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure uint16_ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt16(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure uint32_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then uint32_compile_push(Machine, Command) else uint32_interpret_push(Machine, Command)  end; end;
-     procedure uint32_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt32(WP^) := TUInt32(StrToInt(NextName)); Inc(WP, SizeOf(TUInt32));  end; end;
-     procedure uint32_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@uint32-push'); EW_uint32(StrToInt(NextName));  end; end;
-     procedure uint32_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt32(WP^) := ER_uint32; Inc(WP, SizeOf(TUInt32));  end; end;
-     procedure uint32_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)))  end; end;
-     procedure uint32_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)))  end; end;
-     procedure uint32_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) div TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
+     procedure uint32_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then uint32_compile_push(Machine, Command) else uint32_interpret_push(Machine, Command)  end; end;
+     procedure uint32_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt32(WP^) := TUInt32(StrToInt(NextName)); Inc(WP, SizeOf(TUInt32));  end; end;
+     procedure uint32_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@uint32-push'); EW_uint32(StrToInt(NextName));  end; end;
+     procedure uint32_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt32(WP^) := ER_uint32; Inc(WP, SizeOf(TUInt32));  end; end;
+     procedure uint32_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)))  end; end;
+     procedure uint32_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)))  end; end;
+     procedure uint32_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) div TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
                                                    Dec(WP, SizeOf(TUInt32));  end; end;
-     procedure uint32_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) mod TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
+     procedure uint32_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) mod TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
                                                    Dec(WP, SizeOf(TUInt32));  end; end;
-     procedure uint32_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt32((Pointer(TUInt(WP) + (0))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) mod TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
+     procedure uint32_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt32((Pointer(TUInt(WP) + (0))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) mod TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
                                                      TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-2*SizeOf(TUInt32)))^)) div TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^));
                                                      TUInt32((Pointer(TUInt(WP) + (-  SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure uint32_ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure uint32_ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt32(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure uint64_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then uint64_compile_push(Machine, Command) else uint64_interpret_push(Machine, Command)  end; end;
-     procedure uint64_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt64(WP^) := TUInt64(StrToInt(NextName)); Inc(WP, SizeOf(TUInt64));  end; end;
-     procedure uint64_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@uint64-push'); EW_uint64(StrToInt(NextName));  end; end;
-     procedure uint64_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt64(WP^) := ER_uint64; Inc(WP, SizeOf(TUInt64));  end; end;
-     procedure uint64_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine do begin Inc(TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)))  end; end;
-     procedure uint64_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)))  end; end;
-     procedure uint64_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) div TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
+     procedure uint64_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then uint64_compile_push(Machine, Command) else uint64_interpret_push(Machine, Command)  end; end;
+     procedure uint64_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt64(WP^) := TUInt64(StrToInt(NextName)); Inc(WP, SizeOf(TUInt64));  end; end;
+     procedure uint64_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@uint64-push'); EW_uint64(StrToInt(NextName));  end; end;
+     procedure uint64_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt64(WP^) := ER_uint64; Inc(WP, SizeOf(TUInt64));  end; end;
+     procedure uint64_1_plus (Machine: TForthMachine; Command: PForthCommand);  begin with Machine^ do begin Inc(TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)))  end; end;
+     procedure uint64_1_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)))  end; end;
+     procedure uint64_div (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) div TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
                                                    Dec(WP, SizeOf(TUInt64));  end; end;
-     procedure uint64_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) mod TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
+     procedure uint64_mod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) mod TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
                                                    Dec(WP, SizeOf(TUInt64));  end; end;
-     procedure uint64_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt64((Pointer(TUInt(WP) + (0))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) mod TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
+     procedure uint64_divmod (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt64((Pointer(TUInt(WP) + (0))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) mod TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
                                                      TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-2*SizeOf(TUInt64)))^)) div TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^));
                                                      TUInt64((Pointer(TUInt(WP) + (-  SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (0))^)); 
                                                 end; end;
      procedure uint64_ptr_inc (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) + 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
      procedure uint64_ptr_dec (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
+     begin with Machine^ do begin TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt64(Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
     
    
     
-     procedure int_convert_to_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+     procedure int_convert_to_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                             Dec(WP, SizeOf(TInt) - SizeOf(TInt8));  end; end;
     
    
     
-     procedure int_convert_to_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+     procedure int_convert_to_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                             Dec(WP, SizeOf(TInt) - SizeOf(TInt16));  end; end;
     
    
     
-     procedure int_convert_to_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+     procedure int_convert_to_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                             Dec(WP, SizeOf(TInt) - SizeOf(TInt32));  end; end;
     
    
     
-     procedure int_convert_to_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
+     procedure int_convert_to_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)); 
                                                             Dec(WP, SizeOf(TInt) - SizeOf(TInt64));  end; end;
     
    
     
-     procedure int8_convert_to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
+     procedure int8_convert_to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)) := TInt8((Pointer(TUInt(WP) + (-SizeOf(TInt8)))^)); 
                                                             Dec(WP, SizeOf(TInt8) - SizeOf(TInt));  end; end;
     
    
     
-     procedure int16_convert_to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
+     procedure int16_convert_to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)) := TInt16((Pointer(TUInt(WP) + (-SizeOf(TInt16)))^)); 
                                                             Dec(WP, SizeOf(TInt16) - SizeOf(TInt));  end; end;
     
    
     
-     procedure int32_convert_to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
+     procedure int32_convert_to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)) := TInt32((Pointer(TUInt(WP) + (-SizeOf(TInt32)))^)); 
                                                             Dec(WP, SizeOf(TInt32) - SizeOf(TInt));  end; end;
     
    
     
-     procedure int64_convert_to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
+     procedure int64_convert_to_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)) := TInt64((Pointer(TUInt(WP) + (-SizeOf(TInt64)))^)); 
                                                             Dec(WP, SizeOf(TInt64) - SizeOf(TInt));  end; end;
     
    
     
-     procedure uint_convert_to_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
+     procedure uint_convert_to_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
                                                             Dec(WP, SizeOf(TUInt) - SizeOf(TUInt8));  end; end;
     
    
     
-     procedure uint_convert_to_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
+     procedure uint_convert_to_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
                                                             Dec(WP, SizeOf(TUInt) - SizeOf(TUInt16));  end; end;
     
    
     
-     procedure uint_convert_to_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
+     procedure uint_convert_to_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
                                                             Dec(WP, SizeOf(TUInt) - SizeOf(TUInt32));  end; end;
     
    
     
-     procedure uint_convert_to_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
+     procedure uint_convert_to_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)) := TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt)))^)); 
                                                             Dec(WP, SizeOf(TUInt) - SizeOf(TUInt64));  end; end;
     
    
     
-     procedure uint8_convert_to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
+     procedure uint8_convert_to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)) := TUInt8((Pointer(TUInt(WP) + (-SizeOf(TUInt8)))^)); 
                                                             Dec(WP, SizeOf(TUInt8) - SizeOf(TUInt));  end; end;
     
    
     
-     procedure uint16_convert_to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
+     procedure uint16_convert_to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)) := TUInt16((Pointer(TUInt(WP) + (-SizeOf(TUInt16)))^)); 
                                                             Dec(WP, SizeOf(TUInt16) - SizeOf(TUInt));  end; end;
     
    
     
-     procedure uint32_convert_to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
+     procedure uint32_convert_to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)) := TUInt32((Pointer(TUInt(WP) + (-SizeOf(TUInt32)))^)); 
                                                             Dec(WP, SizeOf(TUInt32) - SizeOf(TUInt));  end; end;
     
    
     
-     procedure uint64_convert_to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
+     procedure uint64_convert_to_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TUInt((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)) := TUInt64((Pointer(TUInt(WP) + (-SizeOf(TUInt64)))^)); 
                                                             Dec(WP, SizeOf(TUInt64) - SizeOf(TUInt));  end; end;
     
    
     
-     procedure single_convert_to_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
+     procedure single_convert_to_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
                                                             Dec(WP, SizeOf(Single) - SizeOf(Double));  end; end;
     
    
     
-     procedure double_convert_to_single (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
+     procedure double_convert_to_single (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
                                                             Dec(WP, SizeOf(Double) - SizeOf(Single));  end; end;
     
    
     
-     procedure single_convert_to_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
+     procedure single_convert_to_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
                                                             Dec(WP, SizeOf(Single) - SizeOf(Extended));  end; end;
     
    
     
-     procedure double_convert_to_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
+     procedure double_convert_to_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
                                                             Dec(WP, SizeOf(Double) - SizeOf(Extended));  end; end;
     
    
     
-     procedure extended_convert_to_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
+     procedure extended_convert_to_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
                                                             Dec(WP, SizeOf(Extended) - SizeOf(Double));  end; end;
     
    
     
-     procedure extended_convert_to_single (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
+     procedure extended_convert_to_single (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
                                                             Dec(WP, SizeOf(Extended) - SizeOf(Single));  end; end;
     
    
     
-     procedure single_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then single_compile_push(Machine, Command) else single_interpret_push(Machine, Command)  end; end;
-     procedure single_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single(WP^) := (StrToFloat(NextName)); Inc(WP, SizeOf(Single));  end; end;
-     procedure single_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@single-push'); EW_single(StrToFloat(NextName));  end; end;
-     procedure single_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single(WP^) := ER_single; Inc(WP, SizeOf(Single));  end; end;
-     procedure single_slash (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) / Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
+     procedure single_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then single_compile_push(Machine, Command) else single_interpret_push(Machine, Command)  end; end;
+     procedure single_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single(WP^) := (StrToFloat(NextName)); Inc(WP, SizeOf(Single));  end; end;
+     procedure single_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@single-push'); EW_single(StrToFloat(NextName));  end; end;
+     procedure single_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single(WP^) := ER_single; Inc(WP, SizeOf(Single));  end; end;
+     procedure single_slash (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) / Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)); 
                                                    Dec(WP, SizeOf(Single));  end; end;
-     procedure single_cos (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Cos(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)));  end; end;
-     procedure single_sin (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Sin(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)));  end; end;
-     procedure single_tan (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Tan(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)));  end; end;
-     procedure single_atan (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := ArcTan(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)));  end; end;
-     procedure single_atan2 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := ArcTan2(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)), Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); Dec(WP, SizeOf(Single))  end; end;
+     procedure single_cos (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Cos(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)));  end; end;
+     procedure single_sin (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Sin(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)));  end; end;
+     procedure single_tan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := Tan(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)));  end; end;
+     procedure single_atan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)) := ArcTan(Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^)));  end; end;
+     procedure single_atan2 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)) := ArcTan2(Single((Pointer(TUInt(WP) + (-2*SizeOf(Single)))^)), Single((Pointer(TUInt(WP) + (-SizeOf(Single)))^))); Dec(WP, SizeOf(Single))  end; end;
     
    
     
-     procedure double_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then double_compile_push(Machine, Command) else double_interpret_push(Machine, Command)  end; end;
-     procedure double_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double(WP^) := (StrToFloat(NextName)); Inc(WP, SizeOf(Double));  end; end;
-     procedure double_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@double-push'); EW_double(StrToFloat(NextName));  end; end;
-     procedure double_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double(WP^) := ER_double; Inc(WP, SizeOf(Double));  end; end;
-     procedure double_slash (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) / Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
+     procedure double_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then double_compile_push(Machine, Command) else double_interpret_push(Machine, Command)  end; end;
+     procedure double_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double(WP^) := (StrToFloat(NextName)); Inc(WP, SizeOf(Double));  end; end;
+     procedure double_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@double-push'); EW_double(StrToFloat(NextName));  end; end;
+     procedure double_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double(WP^) := ER_double; Inc(WP, SizeOf(Double));  end; end;
+     procedure double_slash (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) / Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)); 
                                                    Dec(WP, SizeOf(Double));  end; end;
-     procedure double_cos (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Cos(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)));  end; end;
-     procedure double_sin (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Sin(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)));  end; end;
-     procedure double_tan (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Tan(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)));  end; end;
-     procedure double_atan (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := ArcTan(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)));  end; end;
-     procedure double_atan2 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := ArcTan2(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)), Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); Dec(WP, SizeOf(Double))  end; end;
+     procedure double_cos (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Cos(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)));  end; end;
+     procedure double_sin (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Sin(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)));  end; end;
+     procedure double_tan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := Tan(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)));  end; end;
+     procedure double_atan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)) := ArcTan(Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^)));  end; end;
+     procedure double_atan2 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)) := ArcTan2(Double((Pointer(TUInt(WP) + (-2*SizeOf(Double)))^)), Double((Pointer(TUInt(WP) + (-SizeOf(Double)))^))); Dec(WP, SizeOf(Double))  end; end;
     
    
     
-     procedure extended_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin if FState = FS_COMPILE then extended_compile_push(Machine, Command) else extended_interpret_push(Machine, Command)  end; end;
-     procedure extended_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended(WP^) := (StrToFloat(NextName)); Inc(WP, SizeOf(Extended));  end; end;
-     procedure extended_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@extended-push'); EW_extended(StrToFloat(NextName));  end; end;
-     procedure extended_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended(WP^) := ER_extended; Inc(WP, SizeOf(Extended));  end; end;
-     procedure extended_slash (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) / Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
+     procedure extended_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then extended_compile_push(Machine, Command) else extended_interpret_push(Machine, Command)  end; end;
+     procedure extended_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended(WP^) := (StrToFloat(NextName)); Inc(WP, SizeOf(Extended));  end; end;
+     procedure extended_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@extended-push'); EW_extended(StrToFloat(NextName));  end; end;
+     procedure extended_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended(WP^) := ER_extended; Inc(WP, SizeOf(Extended));  end; end;
+     procedure extended_slash (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) / Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)); 
                                                    Dec(WP, SizeOf(Extended));  end; end;
-     procedure extended_cos (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Cos(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)));  end; end;
-     procedure extended_sin (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Sin(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)));  end; end;
-     procedure extended_tan (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Tan(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)));  end; end;
-     procedure extended_atan (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := ArcTan(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)));  end; end;
-     procedure extended_atan2 (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := ArcTan2(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)), Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); Dec(WP, SizeOf(Extended))  end; end;
+     procedure extended_cos (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Cos(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)));  end; end;
+     procedure extended_sin (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Sin(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)));  end; end;
+     procedure extended_tan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Tan(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)));  end; end;
+     procedure extended_atan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := ArcTan(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)));  end; end;
+     procedure extended_atan2 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := ArcTan2(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)), Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); Dec(WP, SizeOf(Extended))  end; end;
     
    
     
-      procedure _timer (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin WUI(GetTimer);  end; end;
-      procedure _DogwpTemp (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer(WP^) := @WP; Inc(WP, SizeOf(Pointer));  end; end;
-      procedure _wp (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer));  end; end;
-      procedure _rp (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer));  end; end;
-      procedure _lp (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer));  end; end;
-      procedure _lb (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer(WP^) := LB; Inc(WP, SizeOf(Pointer));  end; end;
-      procedure _r_dog (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer(WP^) := Pointer(Pointer(Cardinal(RP) - SizeOf(Pointer))^); Inc(WP, SizeOf(Pointer));  end; end;
-      procedure _r_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(RP, SizeOf(Pointer)); Pointer(WP^) := Pointer(RP^); Inc(WP, SizeOf(Pointer));  end; end;
-      procedure _lt_r (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, SizeOf(Pointer)); Pointer(RP^) := Pointer(WP^); Inc(RP, SizeOf(Pointer));  end; end;
-      procedure _l_dog (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := Pointer((Pointer(TUInt(LB) + (Integer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))))^));  end; end;
-      procedure _l_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer((Pointer(TUInt(LB) + (Integer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))))^)) := Pointer((Pointer(TUInt(WP) + (-2*SizeOf(Pointer)))^)); Dec(WP, 2*SizeOf(Pointer));  end; end;
-      procedure _l_plus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, SizeOf(TInt)); Inc(LP, TInt(WP^))  end; end;
-      procedure version (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt));  end; end;
-      procedure _state (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer(WP^) := @FState; Inc(WP, SizeOf(Pointer));  end; end;
-      procedure _time (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt));  end; end;
-      procedure _local (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin RunCommand(PForthCommand((@E[Integer(Command^.Data)])^));  end; end;
-      procedure source_next_char (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin WUU8(Byte(NextChar))  end; end;
-      procedure source_next_name (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin str_push(Machine, Command, NextName)  end; end;
-      procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin // if FState <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
+      procedure _timer (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUI(GetTimer);  end; end;
+      procedure _DogwpTemp (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := @WP; Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _wp (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _rp (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _lp (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _lb (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := LB; Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _r_dog (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := Pointer(Pointer(Cardinal(RP) - SizeOf(Pointer))^); Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _r_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(RP, SizeOf(Pointer)); Pointer(WP^) := Pointer(RP^); Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _lt_r (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, SizeOf(Pointer)); Pointer(RP^) := Pointer(WP^); Inc(RP, SizeOf(Pointer));  end; end;
+      procedure _l_dog (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := Pointer((Pointer(TUInt(LB) + (Integer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))))^));  end; end;
+      procedure _l_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(LB) + (Integer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^))))^)) := Pointer((Pointer(TUInt(WP) + (-2*SizeOf(Pointer)))^)); Dec(WP, 2*SizeOf(Pointer));  end; end;
+      procedure _l_plus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, SizeOf(TInt)); Inc(LP, TInt(WP^))  end; end;
+      procedure version (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt));  end; end;
+      procedure _state (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := @State; Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _time (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt));  end; end;
+      procedure _local (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin RunCommand(PForthCommand((@E[Integer(Command^.Data)])^));  end; end;
+      procedure source_next_char (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUU8(Byte(NextChar))  end; end;
+      procedure source_next_name (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, Command, NextName)  end; end;
+      procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
                                                                                                    interpret_source_next_name_passive(Machine, Command)  end; end;
-      procedure interpret_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin str_push(Machine, Command, NextNamePassive)  end; end;
-      procedure compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('(str)"'); EWStr(NextNamePassive);  end; end;
-      procedure run_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin str_push(Machine, Command, @E[EC]);  end; end;
-      procedure source_read_to_char (Machine: TForthMachine; Command: PForthCommand); var I: Integer; begin with Machine do begin I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); str_push(Machine, Command, TString(Copy(S, SC + 1, I - SC))); SC := I;  end; end;
-      procedure ptr_nil (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin WUP(nil);  end; end;
-      procedure compile_start (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin FState := FS_COMPILE  end; end;
-      procedure interpret_start (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin FState := FS_INTERPRET  end; end;
-      procedure run_start (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin FState := FS_INTERPRET  end; end;
-      procedure opcode_to_command (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)) := GetCommandByOpcode(Integer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)))  end; end;
-      procedure literal (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('(literal)'); EWI(WOI);  end; end;
-      procedure sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin {if FState <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
+      procedure interpret_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, Command, NextNamePassive)  end; end;
+      procedure compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('(str)"'); EWStr(NextNamePassive);  end; end;
+      procedure run_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, Command, @E[EC]);  end; end;
+      procedure source_read_to_char (Machine: TForthMachine; Command: PForthCommand); var I: Integer; begin with Machine^ do begin I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); str_push(Machine, Command, TString(Copy(S, SC + 1, I - SC))); SC := I;  end; end;
+      procedure ptr_nil (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(nil);  end; end;
+      procedure compile_start (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin State := FS_COMPILE  end; end;
+      procedure interpret_start (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin State := FS_INTERPRET  end; end;
+      procedure run_start (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin State := FS_INTERPRET  end; end;
+      procedure opcode_to_command (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)) := GetCommandByOpcode(Integer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)))  end; end;
+      procedure literal (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('(literal)'); EWI(WOI);  end; end;
+      procedure sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin {if State <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
                 WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
                 EWO('opcode->command');  end; end;
-      procedure interpret_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin WUP(FindCommand(NextName))  end; end;
-      procedure compile_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('run@['']'); EWO(NextName);  end; end;
-      procedure run_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin WUP(C[ERO]);  end; end;
-      procedure _tick (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer(WP^) := FindCommand(NextName); Inc(WP, SizeOf(Pointer));  end; end;
-      procedure execute (Machine: TForthMachine; Command: PForthCommand); var P: PForthCommand; begin with Machine do begin P := WOP; P.Code(Machine, P)  end; end;
-      procedure _does_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin EWO('(does>)'); EWO('exit');  end; end;
-      procedure _sq_does_gt_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt;  end; end;
-      procedure CallDoesGt (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer));  end; end;
-      procedure Cells (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))*SizeOf(Integer);  end; end;
-      procedure Cell_plus (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) + SizeOf(TInt);  end; end;
-      procedure _malloc (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine do begin P := Pointer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)); GetMem(P, Integer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^))); Pointer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)) := P;  end; end;
-      procedure _free (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine do begin Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P);  end; end;
-      procedure _last (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine do begin Pointer(WP^) := C[High(C)]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer));  end; end;
-      procedure _xt_dot_n (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := @(PForthCommand((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)).Name[0]);  end; end;
-      procedure _xt_dot_d (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PForthCommand((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)).Data  end; end;
-      procedure _move (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin Dec(WP, SizeOf(Pointer)*3); Move(Pointer((Pointer(TUInt(WP) + (0))^))^, Pointer((Pointer(TUInt(WP) + (SizeOf(Pointer)))^))^, TUint((Pointer(TUInt(WP) + (2*SizeOf(Pointer)))^))); {Writeln(TUInt((Pointer(TUInt(WP) + (0))^)), TUInt((Pointer(TUInt(WP) + (SizeOf(Pointer)))^)), TUint((Pointer(TUInt(WP) + (2*SizeOf(Pointer)))^)));}  end; end;
+      procedure interpret_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(FindCommand(NextName))  end; end;
+      procedure compile_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@['']'); EWO(NextName);  end; end;
+      procedure run_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(C[ERO]);  end; end;
+      procedure _tick (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := FindCommand(NextName); Inc(WP, SizeOf(Pointer));  end; end;
+      procedure execute (Machine: TForthMachine; Command: PForthCommand); var P: PForthCommand; begin with Machine^ do begin P := WOP; P.Code(Machine, P)  end; end;
+      procedure _does_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('(does>)'); EWO('exit');  end; end;
+      procedure _sq_does_gt_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt;  end; end;
+      procedure CallDoesGt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer));  end; end;
+      procedure Cells (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^))*SizeOf(Integer);  end; end;
+      procedure Cell_plus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(WP) + (-SizeOf(TInt)))^)) + SizeOf(TInt);  end; end;
+      procedure _malloc (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin P := Pointer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)); GetMem(P, Integer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^))); Pointer((Pointer(TUInt(WP) + (-SizeOf(Integer)))^)) := P;  end; end;
+      procedure _free (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P);  end; end;
+      procedure _last (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin Pointer(WP^) := C[High(C)]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _xt_dot_n (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := @(PForthCommand((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)).Name[0]);  end; end;
+      procedure _xt_dot_d (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)) := PForthCommand((Pointer(TUInt(WP) + (-SizeOf(Pointer)))^)).Data  end; end;
+      procedure _move (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, SizeOf(Pointer)*3); Move(Pointer((Pointer(TUInt(WP) + (0))^))^, Pointer((Pointer(TUInt(WP) + (SizeOf(Pointer)))^))^, TUint((Pointer(TUInt(WP) + (2*SizeOf(Pointer)))^))); {Writeln(TUInt((Pointer(TUInt(WP) + (0))^)), TUInt((Pointer(TUInt(WP) + (SizeOf(Pointer)))^)), TUint((Pointer(TUInt(WP) + (2*SizeOf(Pointer)))^)));}  end; end;
     
    
     
      procedure _sys_exceptions_execute (Machine: TForthMachine; Command: PForthCommand);
      var
        Res: Integer;
-     begin with Machine do begin Integer(ExceptionsP^) := 0;
+     begin with Machine^ do begin Integer(ExceptionsP^) := 0;
        Inc(ExceptionsP, SizeOf(Integer));
        Integer(ExceptionsP^) := EC;
        Inc(ExceptionsP, SizeOf(Integer));
@@ -9201,11 +9226,11 @@ end;
        execute(Machine, Command);
       end; end;
      procedure _sys_exceptions_pop (Machine: TForthMachine; Command: PForthCommand);
-     begin with Machine do begin Dec(ExceptionsP, 2*SizeOf(Integer) + 2*SizeOf(Pointer));
+     begin with Machine^ do begin Dec(ExceptionsP, 2*SizeOf(Integer) + 2*SizeOf(Pointer));
        WUI(Integer(ExceptionsP^));
       end; end;
      procedure _throw (Machine: TForthMachine; Command: PForthCommand); 
-     begin with Machine do begin Integer((@PArrayOfByte(ExceptionsP)^[-2*SizeOf(Pointer)-2*SizeOf(Integer)])^) := WOI;
+     begin with Machine^ do begin Integer((@PArrayOfByte(ExceptionsP)^[-2*SizeOf(Pointer)-2*SizeOf(Integer)])^) := WOI;
        EC := Integer((@PArrayOfByte(ExceptionsP)^[-2*SizeOf(Pointer)-SizeOf(Integer)])^);
        RP := Pointer((@PArrayOfByte(ExceptionsP)^[-1*SizeOf(Pointer)])^);
        WP := Pointer((@PArrayOfByte(ExceptionsP)^[-2*SizeOf(Pointer)])^);
@@ -9224,7 +9249,7 @@ end;
       var 
         F: PdfFile;
         B: TStr;
-      begin with Machine do begin New(F);
+      begin with Machine^ do begin New(F);
          F^.Mode := WOI; 
          B := str_pop(Machine, Command); 
          F^.Name := PChar(@(PStrRec(B)^.Sym[0]));
@@ -9238,20 +9263,20 @@ end;
       procedure file_close (Machine: TForthMachine; Command: PForthCommand); 
       var
         F: PdfFile;
-      begin with Machine do begin F := WOP;
+      begin with Machine^ do begin F := WOP;
         if F^.Mode = DF_FILE_W then
           F^.Data.WriteToFile(F^.Name);
         F^.Data.Free;
         Dispose(F); 
        end; end;
-      procedure file_w (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin WUI(DF_FILE_W)  end; end;
-      procedure file_r (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin WUI(DF_FILE_R)  end; end;
+      procedure file_w (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUI(DF_FILE_W)  end; end;
+      procedure file_r (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUI(DF_FILE_R)  end; end;
       procedure file_write (Machine: TForthMachine; Command: PForthCommand); 
       var
         Src: Pointer;
         I: TInt;
         F: PdfFile;
-      begin with Machine do begin F := WOP;
+      begin with Machine^ do begin F := WOP;
         I := WOI;
         Src := WOP;
         F^.Data.WriteVar(WOP, I);
@@ -9261,7 +9286,7 @@ end;
         Src: Pointer;
         I: TInt;
         F: PdfFile;
-      begin with Machine do begin //I := WOI; 
+      begin with Machine^ do begin //I := WOI; 
         //Src := WOP; 
         //F := WOP; 
         //F^.Data.ReadVar(Src, I);
@@ -9272,10 +9297,10 @@ end;
         F^.Data.WriteVar(WOP, I);
        end; end;
       procedure file_write_from_w (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin  end; end;
+      begin with Machine^ do begin  end; end;
       procedure file_read_to_w (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine do begin  end; end;
-      procedure file_size (Machine: TForthMachine; Command: PForthCommand); begin with Machine do begin WUI(PdfFile(WOP)^.Data.Size);  end; end;
+      begin with Machine^ do begin  end; end;
+      procedure file_size (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUI(PdfFile(WOP)^.Data.Size);  end; end;
     
   
 

@@ -10,9 +10,6 @@
 : repeat compile branch <resolve >resolve ; immediate
 : until compile ?branch <resolve ; immediate
 
-// : " ( xxx"-) state @ if ['] [str]" execute else ['] [str]" execute then ; immediate
-// : ." ( xxx"-) ['] " execute str. ; immediate
-
 : off ( p-) 0 swap ! ;
 : on ( p-) true swap ! ;
 
@@ -22,6 +19,7 @@ str" units\core\source.de" str-dup evaluate-file
 str" units\core\includes.de" str-dup evaluate-file
 // т.к. только теперь подключён модуль для эксклюзивного подключения модулей
 // нужно в него добавить всё, что было подключено до него
+." Loading system"
 once+ once+ once+ once+
 
 include" units\core\statements.de"
