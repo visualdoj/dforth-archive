@@ -1,9 +1,12 @@
+
 unit DForthMachine;
 
 interface
 
 {$DEFINE FLAG_X86}
 {$DEFINE FLAG_IA32}
+
+
 
 uses
   {$I units.inc},Math,strings,DAlien,DVocabulary,DForthStack;
@@ -6911,12 +6914,51 @@ end;
     function OForthMachine.LOU64: TUInt64; begin Dec(LP, SizeOf(Result)); Result := TUInt64(LP^); end;
      
     
-     procedure drop_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
-     procedure dup_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_ (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_ (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_ (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_ (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_ (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_ (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_ (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
@@ -6977,12 +7019,51 @@ end;
     
    
     
-     procedure drop_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
-     procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_ptr (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_ptr (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_ptr (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_ptr (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_ptr (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_ptr (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
@@ -7043,12 +7124,51 @@ end;
     
    
     
-     procedure drop_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
-     procedure dup_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_int (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_int (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_int (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_int (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_int (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_int (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_int (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
@@ -7109,12 +7229,51 @@ end;
     
    
     
-     procedure drop_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1) end; end;
-     procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
-     procedure nip_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*1))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Dec(WP, 1) end; end;
-     procedure swap_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1))^), WP^, 1); Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1))^), 1); Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1); end; end;
-     procedure over_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
-     procedure tuck_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1*1))^), 2*1); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Inc(WP, 1);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_int8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_int8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_int8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_int8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_int8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_int8 (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
        Move((Pointer(TUInt(WP) + (-3*1))^), (Pointer(TUInt(WP) + (-1*1))^), 1);
@@ -7175,12 +7334,51 @@ end;
     
    
     
-     procedure drop_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 2) end; end;
-     procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
-     procedure nip_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*2))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Dec(WP, 2) end; end;
-     procedure swap_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2))^), WP^, 2); Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-2))^), 2); Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2); end; end;
-     procedure over_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
-     procedure tuck_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2*2); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Inc(WP, 2);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_int16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_int16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_int16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_int16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_int16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_int16 (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
        Move((Pointer(TUInt(WP) + (-3*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2);
@@ -7241,12 +7439,51 @@ end;
     
    
     
-     procedure drop_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
-     procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_int32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_int32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_int32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_int32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_int32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_int32 (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
@@ -7307,12 +7544,51 @@ end;
     
    
     
-     procedure drop_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8) end; end;
-     procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
-     procedure nip_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*8))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Dec(WP, 8) end; end;
-     procedure swap_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-8))^), WP^, 8); Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-8))^), 8); Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8); end; end;
-     procedure over_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
-     procedure tuck_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-1*8))^), 2*8); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Inc(WP, 8);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_int64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_int64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_int64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_int64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_int64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_int64 (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
        Move((Pointer(TUInt(WP) + (-3*8))^), (Pointer(TUInt(WP) + (-1*8))^), 8);
@@ -7373,12 +7649,51 @@ end;
     
    
     
-     procedure drop_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
-     procedure dup_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_uint (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_uint (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_uint (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_uint (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_uint (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_uint (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_uint (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
@@ -7439,12 +7754,51 @@ end;
     
    
     
-     procedure drop_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1) end; end;
-     procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
-     procedure nip_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*1))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Dec(WP, 1) end; end;
-     procedure swap_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1))^), WP^, 1); Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1))^), 1); Move(WP^, (Pointer(TUInt(WP) + (-2*1))^), 1); end; end;
-     procedure over_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (0))^), 1); Inc(WP, 1) end; end;
-     procedure tuck_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*1))^), (Pointer(TUInt(WP) + (-1*1))^), 2*1); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*1))^), 1); Inc(WP, 1);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_uint8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_uint8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_uint8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_uint8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_uint8 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_uint8 (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*1))^), WP^, 1);
        Move((Pointer(TUInt(WP) + (-3*1))^), (Pointer(TUInt(WP) + (-1*1))^), 1);
@@ -7505,12 +7859,51 @@ end;
     
    
     
-     procedure drop_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 2) end; end;
-     procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
-     procedure nip_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*2))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Dec(WP, 2) end; end;
-     procedure swap_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2))^), WP^, 2); Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-2))^), 2); Move(WP^, (Pointer(TUInt(WP) + (-2*2))^), 2); end; end;
-     procedure over_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (0))^), 2); Inc(WP, 2) end; end;
-     procedure tuck_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2*2); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*2))^), 2); Inc(WP, 2);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_uint16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_uint16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_uint16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_uint16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_uint16 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_uint16 (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*2))^), WP^, 2);
        Move((Pointer(TUInt(WP) + (-3*2))^), (Pointer(TUInt(WP) + (-1*2))^), 2);
@@ -7571,12 +7964,51 @@ end;
     
    
     
-     procedure drop_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
-     procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_uint32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_uint32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_uint32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_uint32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_uint32 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_uint32 (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);
@@ -7637,12 +8069,51 @@ end;
     
    
     
-     procedure drop_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8) end; end;
-     procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
-     procedure nip_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*8))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Dec(WP, 8) end; end;
-     procedure swap_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-8))^), WP^, 8); Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-8))^), 8); Move(WP^, (Pointer(TUInt(WP) + (-2*8))^), 8); end; end;
-     procedure over_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (0))^), 8); Inc(WP, 8) end; end;
-     procedure tuck_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*8))^), (Pointer(TUInt(WP) + (-1*8))^), 2*8); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*8))^), 8); Inc(WP, 8);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_uint64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_uint64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_uint64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_uint64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_uint64 (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_uint64 (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*8))^), WP^, 8);
        Move((Pointer(TUInt(WP) + (-3*8))^), (Pointer(TUInt(WP) + (-1*8))^), 8);
@@ -7703,12 +8174,51 @@ end;
     
    
     
-     procedure drop_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4) end; end;
-     procedure dup_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure nip_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Dec(WP, 4) end; end;
-     procedure swap_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-4))^), WP^, 4); Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-4))^), 4); Move(WP^, (Pointer(TUInt(WP) + (-2*4))^), 4); end; end;
-     procedure over_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (0))^), 4); Inc(WP, 4) end; end;
-     procedure tuck_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-2*4))^), (Pointer(TUInt(WP) + (-1*4))^), 2*4); Move((Pointer(TUInt(WP) + (0))^), (Pointer(TUInt(WP) + (-2*4))^), 4); Inc(WP, 4);begin with Machine^ do begin  end; end; end; end;
+     
+         procedure drop_embro (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         procedure dup_embro (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure nip_embro (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_embro (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_embro (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_embro (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           add [eax],4
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           mov edx,[ecx-8]
+           mov [ecx-4],edx
+           mov [ecx],edx
+         end;
+       
      procedure lrot_embro (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin Move((Pointer(TUInt(WP) + (-1*4))^), WP^, 4);
        Move((Pointer(TUInt(WP) + (-3*4))^), (Pointer(TUInt(WP) + (-1*4))^), 4);

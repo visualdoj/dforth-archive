@@ -5,6 +5,8 @@ interface
 
 {$DEFINE FLAG_X86}
 {$DEFINE FLAG_IA32}
+define(~_X86|)
+define(~_IA32|)
 
 uses
   {$I units.inc},
@@ -62,12 +64,59 @@ define(~typed_commands|,
     procedure run_literal_$1 cmdhdr
   define(~all_implement|, all_implement 
     ~
-     procedure drop_$1 cmdhdr; body(Dec(WP, $2))
-     procedure dup_$1 cmdhdr; body(Move(WVar(-$2), WVar(0), $2); WInc($2))
-     procedure nip_$1 cmdhdr; body(Move(WVar(-1*$2), WVar(-2*$2), $2); Dec(WP, $2))
-     procedure swap_$1 cmdhdr; body(Move(WVar(-$2), WP^, $2); Move(WVar(-2*$2), WVar(-$2), $2); Move(WP^, WVar(-2*$2), $2);)
-     procedure over_$1 cmdhdr; body(Move(WVar(-2*$2), WVar(0), $2); Inc(WP, $2))
-     procedure tuck_$1 cmdhdr; body(Move(WVar(-2*$2), WVar(-1*$2), 2*$2); Move(WVar(0), WVar(-2*$2), $2); WInc($2);body)
+     ifdef(~_IA32|,
+       ~
+         procedure drop_$1 cmdhdr;
+         idle(asm
+           sub [eax], 4
+         end;)
+         procedure dup_$1 cmdhdr;
+         idle(asm
+           mov ecx, [eax]
+           mov edx, [ecx-4]
+           mov [ecx], edx
+           add [eax], 4
+         end;)
+         procedure nip_$1 cmdhdr;
+         idle(asm
+           mov ecx, [eax]
+           lea ecx, [ecx-4]
+           mov edx, [ecx]
+           mov [ecx-4], edx
+           mov [eax], ecx
+         end;)
+         procedure swap_$1 cmdhdr;
+         idle(asm
+           mov ecx, [eax]
+           mov edx, [ecx-4]
+           xchg [ecx-8], edx
+           mov [ecx-4], edx
+         end;)
+         procedure over_$1 cmdhdr;
+         idle(asm
+           mov ecx, [eax]
+           mov edx, [ecx-8]
+           mov [ecx], edx
+           add [eax], 4
+         end;)
+         procedure tuck_$1 cmdhdr;
+         idle(asm
+           mov ecx, [eax]
+           add [eax], 4
+           mov edx, [ecx-4]
+           mov [ecx], edx
+           mov edx, [ecx-8]
+           mov [ecx-4], edx
+           mov [ecx], edx
+         end;)
+       |,
+       procedure drop_$1 cmdhdr; body(Dec(WP, $2))
+       procedure dup_$1 cmdhdr; body(Move(WVar(-$2), WVar(0), $2); WInc($2))
+       procedure nip_$1 cmdhdr; body(Move(WVar(-1*$2), WVar(-2*$2), $2); Dec(WP, $2))
+       procedure swap_$0 cmdhdr; body(Move(WVar(-$2), WP^, $2); Move(WVar(-2*$2), WVar(-$2), $2); Move(WP^, WVar(-2*$2), $2);)
+       procedure over_$1 cmdhdr; body(Move(WVar(-2*$2), WVar(0), $2); Inc(WP, $2))
+       procedure tuck_$1 cmdhdr; body(Move(WVar(-2*$2), WVar(-1*$2), 2*$2); Move(WVar(0), WVar(-2*$2), $2); WInc($2);body)
+     )
      procedure lrot_$1 cmdhdr; 
      body(
        Move(WVar(-1*$2), WP^, $2);
