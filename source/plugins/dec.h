@@ -1,5 +1,8 @@
 #ifndef _H_DEC_
 #define _H_DEC_
+
+#include<stdint.h>
+
 //{{{ consts
 // params' type
 const int TYPE_INT              = 1;
@@ -130,6 +133,45 @@ int GetChunkPosFlat(const code_t& code, int index)
     return (uint)code.chunks[index].data - (uint)code.chunks[0].data;
 }
 //}}}
+
+// Неоднородные данные
+// Если embro[i].type == ET_DATA, то участок памяти начиная
+// с &embro[i+1] размером embro[i].size байт хранит данные, 
+// которые нужно сохранить в первозданном виде
+// Следующий значимый embroitem находится в 
+//   embro[i + embro[i].size/sizeof(embroitem_t) + 1 + 
+//                      embro[i].size%sizeof(embroitem_t)==0?0:1]
+const uint8_t ET_DATA               = 0;
+// Опкод команды на выполнение
+// В val хранится опкод команды
+// При преобразованиях таблицы команд следует обновлять все опкоды
+const uint8_t ET_OPCODE             = 1;
+// Опкод команды в качестве параметра другой команды
+// В val хранится опкод
+// При преобразованиях таблицы команд следует обновлять все опкоды
+const uint8_t ET_PARAM_OPCODE       = 2;
+// Указатель на место в коде
+// Если embro[i].type == ET_EMBRO_PTR, то 
+// указатель ссылается на &embro[embro[i].val]
+// При преобразованиях кода следует обновлять ембро-указатели
+const uint8_t ET_EMBRO_PTR          = 3;
+// Указатель на XT-команду, хранится в val
+const uint8_t ET_XT                 = 4;
+// Указатель на какую-то область данных
+const uint8_t ET_PTR                = 5;
+// Параметр команды -- умещается в 1 ячейку и не требует своего изменения
+// при всяких преобразованиях. Например, (literal) использует параметр такого
+// типа
+const uint8_t ET_PARAM              = 6;
+
+typedef struct embroitem_s {
+  // 1 cell (32 bits) -- header
+  uint8_t       type; // ET_* constants 
+  uint16_t      size; // for ET_DATA
+  uint8_t       res;  // reserved
+  // 1 cell (32 bits) -- value
+  int           val;
+} embroitem_t;
 
 #define EXPORT extern "C" __declspec(dllexport) __attribute__((cdecl))
 //{{{ exports
