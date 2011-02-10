@@ -1,0 +1,49 @@
+// 2010.02.10 # Doj
+// Заголовок к плагинам DEmbro
+
+include" core\createwords.de"
+
+enum embrotype:
+// Неоднородные данные
+// Если embro[i].type == ET_DATA, то участок памяти начиная
+// с &embro[i+1] размером embro[i].size байт хранит данные, 
+// которые нужно сохранить в первозданном виде
+// Следующий значимый embroitem находится в 
+//   embro[i + embro[i].size/sizeof(embroitem_t) + 1 + 
+//                      embro[i].size%sizeof(embroitem_t)==0?0:1]
+// Если последовательно идут два ET_DATA блока, то после преобразования
+// шитого кода они должны остаться последовательными
+embrotype: ET_DATA
+// Опкод команды на выполнение
+// В val хранится опкод команды
+// При преобразованиях таблицы команд следует обновлять все опкоды
+embrotype: ET_OPCODE
+// Опкод команды в качестве параметра другой команды
+// В val хранится опкод
+// При преобразованиях таблицы команд следует обновлять все опкоды
+embrotype: ET_PARAM_OPCODE
+// Указатель на место в коде
+// Если embro[i].type == ET_EMBRO_PTR, то 
+// указатель ссылается на embro[embro[i].val]
+// При преобразованиях кода следует обновлять ембро-указатели
+embrotype: ET_EMBRO_PTR
+// Указатель на XT-команду, хранится в val
+embrotype: ET_XT
+// Указатель на какую-то область данных
+embrotype: ET_PTR
+// Параметр команды -- умещается в 1 ячейку и не требует своего изменения
+// при всяких преобразованиях. Например, (literal) использует параметр такого
+// типа
+embrotype: ET_PARAM
+
+declare-header dePlugin
+:a decInfo ( out name) t_ptr ( out type) t_ptr ( out version) t_ptr t_void header;
+:a decSetParam ( id) t_int ( type) t_int ( val) t_ptr (size) t_int t_void header;
+:a decCompile t_void header;
+:a decError ( out id) t_ptr ( out pos) t_ptr ( out id) t_int header;
+:a decErrorString ( id) t_int ( out pchar) t_pchar header;
+
+namespace DE_PLUGIN
+  : de-load-plugin ( filename -- p false | i) ;
+  : p! ( ii-) swap DE_INT swap 0 decSetParam ;
+^^^

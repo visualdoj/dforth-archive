@@ -8,7 +8,7 @@ int apptype; // DEC_ID_OUTPUT
 char output[1024*16]; // DEC_ID_OUTPUT
 commands_t commands; // DEC_ID_CODE
 int commandscount;
-code_t* code; // DEC_ID_CODE
+embroitem_t* code; // DEC_ID_CODE
 
 typedef struct error_s {
   int id;
@@ -73,15 +73,6 @@ void DumpCode()
   FILE* f;
   f = fopen("code~", "wt");
   for (int i = 0; i < code->count; ++i) {
-    DumpUint(f, 2, (unsigned char*)&pos);
-    if (IsChunkData(code->chunks[i]))
-      fprintf(f, ": %d", code->chunks[i].len);
-    else
-      fprintf(f, ": %s ", commands[code->chunks[i].opcode].name);
-    DumpBytes(f, code->chunks[i].len, code->chunks[i].data);
-    DumpCommand(f, pos);
-    fprintf(f, "\n");
-    pos += GetChunkSize(code->chunks[i]);
   }
   fclose(f);
 }

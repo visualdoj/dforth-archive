@@ -141,6 +141,8 @@ int GetChunkPosFlat(const code_t& code, int index)
 // Следующий значимый embroitem находится в 
 //   embro[i + embro[i].size/sizeof(embroitem_t) + 1 + 
 //                      embro[i].size%sizeof(embroitem_t)==0?0:1]
+// Если последовательно идут два ET_DATA блока, то после преобразования
+// шитого кода они должны остаться последовательными
 const uint8_t ET_DATA               = 0;
 // Опкод команды на выполнение
 // В val хранится опкод команды
@@ -152,7 +154,7 @@ const uint8_t ET_OPCODE             = 1;
 const uint8_t ET_PARAM_OPCODE       = 2;
 // Указатель на место в коде
 // Если embro[i].type == ET_EMBRO_PTR, то 
-// указатель ссылается на &embro[embro[i].val]
+// указатель ссылается на embro[embro[i].val]
 // При преобразованиях кода следует обновлять ембро-указатели
 const uint8_t ET_EMBRO_PTR          = 3;
 // Указатель на XT-команду, хранится в val
@@ -172,6 +174,11 @@ typedef struct embroitem_s {
   // 1 cell (32 bits) -- value
   int           val;
 } embroitem_t;
+
+typedef struct code_s {
+  int count;
+  embroitem_t* items;
+} code_t;
 
 #define EXPORT extern "C" __declspec(dllexport) __attribute__((cdecl))
 //{{{ exports

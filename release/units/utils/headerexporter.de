@@ -1,0 +1,14 @@
+// 2011.02.10 # Doj
+// 
+
+namespace C++HEADER
+0 value *file*
+: init-header ( "filename") file-w file-open to *file* ;
+: done-header *file* file-close ;
+: constant ( i "name") 
+     " const unsigned int " source-next-name str+ "  = " str+ swap int->str str+ 
+     " ;" str+ *file* file-str-write ;
+: // ( "comment\n") " // " " \n" source-trim str+ *file* file-str-write ; 
+: (  ( "comment") " /* " " )" source-trim str+ "  */" source-trim 
+                  *file* file-str-write ; 
+^^^
