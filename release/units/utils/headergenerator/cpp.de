@@ -12,8 +12,24 @@ namespace DEmbro->C++
 : // ( "comment\n") " // " " \n" source-trim str+ *file* file-str-write ; 
 : (  ( "comment") " /* " " )" source-trim str+ "  */" source-trim 
                   *file* file-str-write ; 
-: a; ;
+: conv->str ( i-s) dup stdcall = if " __attribute__((stdcall)) " exit then 
+                       cdecl   = if " __attribute__((cdecl)) " exit then " " ;
+: a: source-next-name ;
+0 cvalue *pre*
+0 cvalue *params*
+: a; conv->str " extern "C" __declspec(dllexport) " swap str+ 
+     swap type->str str+ "  " str+ cto *pre* 
+     " (" swap dup if type->str begin swap dup while type->str repeat then ;
+   // l>r_format" extern "C" __declspec(dllexport)) {conv->str} {type->str} (" to *s*
+   // dup if type->str begin swap dup while type->str str+ repeat then
+   // " );" str+ str+
 ^^^
+: swap W ab>ba ;
+: dup W a>aa ;
+: over W ab>aba ;
+: tuck W ab>bab ;
+: nip W ab>b ;
+: drop W a> ;
 
 // Случай, когда код С++ вызывает код на DEmbro
 namespace C++->DEmbro

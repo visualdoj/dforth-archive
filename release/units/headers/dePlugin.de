@@ -103,6 +103,9 @@ struct embro_s
 // }}}
 // {{{ prototypes
 declare-header dePlugin
+// в type должно быть возвращено 1
+// в version два младших разр€да Ч minor часть, остальное Ч major-часть
+// Ќапример version==1234 означает версию 12.34
 :a depInfo ( out name) t_ptr ( out type) t_ptr ( out version) t_ptr t_void header;
 :a depSetParam ( id) t_int ( type) t_int ( val) t_ptr (size) t_int t_void header;
 :a depCompile t_void header;

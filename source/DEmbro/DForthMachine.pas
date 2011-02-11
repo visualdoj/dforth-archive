@@ -32,19 +32,48 @@ const
 
 
 
+{$IFNDEF FLAG_FPC}{$REGION 'typed_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'counter_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'data_commands'}{$ENDIF}
 
 
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'long_commands'}{$ENDIF}
 
 
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'signed_arithmetic_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'number_arithmetic_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'convert_number_arithmetic_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'float_arithmetic_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'sysar_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'system_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'stack utils'}{$ENDIF}
 
 
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'misc_commands'}{$ENDIF}
 
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'file_commands'}{$ENDIF}
 
-
-
-
-
-
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 const
   BOOL_FALSE: Integer   = 0;
@@ -94,6 +123,11 @@ type
   TPtr = Pointer;
   TEmbroPtr = TInt;
 
+  TRecBlock = packed record
+    Ref: TInt;
+  end;
+  TBlock = ^TRecBlock;
+
   TStrRec = packed record
     Ref: TInt;
     Len: TInt;
@@ -130,10 +164,10 @@ OForthMachine = object
   W: array of Byte; // Work stack
   WB: Pointer; // Work stack Base (@W[0])
   WS: Integer; // Work stack Size
-  CW: array of Pointer; // Counter Work stack
-  CWB: Pointer;
-  CWP: Pointer;
-  CWS: Integer;
+  BW: array of Pointer; // Counter Work stack
+  BWB: Pointer;
+  BWP: Pointer;
+  BWS: Integer;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'E'}{$ENDIF}
   E: array of Byte; // Embro
@@ -474,8 +508,6 @@ OForthMachine = object
   ;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
-  procedure CWU(C: Pointer); // Counter Work pUsh
-  function CWO: Pointer; // Counter Work pOp
   procedure WUI(const V: TInt); overload 
   ; // Work stack pUsh Integer
   procedure WUP(const V: Pointer); overload 
@@ -524,6 +556,10 @@ OForthMachine = object
   procedure WOV(const P: Pointer; Size: Integer);
   procedure WUS(const S: TString);
   function WOS: TString;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'B'}{$ENDIF}
+  procedure BWU(C: Pointer); // Block Work pUsh
+  function BWO: Pointer; // Block Work pOp
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'C'}{$ENDIF}
   // Command REserve
@@ -1780,6 +1816,18 @@ end;
   
 ;
   
+    procedure bdrop (Machine: TForthMachine; Command: PForthCommand);
+    procedure bdup (Machine: TForthMachine; Command: PForthCommand);
+    procedure bnip (Machine: TForthMachine; Command: PForthCommand);
+    procedure bswap (Machine: TForthMachine; Command: PForthCommand);
+    procedure bover (Machine: TForthMachine; Command: PForthCommand);
+    procedure btuck (Machine: TForthMachine; Command: PForthCommand);
+    procedure blrot (Machine: TForthMachine; Command: PForthCommand);
+    procedure brrot (Machine: TForthMachine; Command: PForthCommand);
+  
+  
+
+  
   procedure _timer (Machine: TForthMachine; Command: PForthCommand);
   procedure _DogwpTemp (Machine: TForthMachine; Command: PForthCommand);
   procedure _wp (Machine: TForthMachine; Command: PForthCommand);
@@ -1863,8 +1911,8 @@ end;
   procedure _ContextPush(Machine: TForthMachine; Command: PForthCommand);
   procedure _ContextPop(Machine: TForthMachine; Command: PForthCommand);
   procedure _here(Machine: TForthMachine; Command: PForthCommand); overload;
-  procedure _CtoW(Machine: TForthMachine; Command: PForthCommand);
-  procedure _WtoC(Machine: TForthMachine; Command: PForthCommand);
+  procedure _BtoW(Machine: TForthMachine; Command: PForthCommand);
+  procedure _WtoB(Machine: TForthMachine; Command: PForthCommand);
   procedure Evaluate(Machine: TForthMachine; Command: PForthCommand);
   procedure EvaluateFile(Machine: TForthMachine; Command: PForthCommand);
   procedure _FIND_(Machine: TForthMachine; Command: PForthCommand);
@@ -4322,26 +4370,26 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
-procedure OForthMachine.CWU(C: Pointer);
+procedure OForthMachine.BWU;
 begin
-  Pointer(CWP^) := C;
-  Inc(CWP, SizeOf(Pointer));
+  Pointer(BWP^) := C;
+  Inc(BWP, SizeOf(Pointer));
 end;
 
-function OForthMachine.CWO: Pointer;
+function OForthMachine.BWO;
 begin
-  Dec(CWP, SizeOf(Pointer));
-  Result := Pointer(CWP^);
+  Dec(BWP, SizeOf(Pointer));
+  Result := Pointer(BWP^);
 end;
 
-procedure _CtoW(Machine: TForthMachine; Command: PForthCommand);
+procedure _BtoW(Machine: TForthMachine; Command: PForthCommand);
 begin
-  Machine.WUP(Machine.CWO);
+  Machine.WUP(Machine.BWO);
 end;
 
-procedure _WtoC(Machine: TForthMachine; Command: PForthCommand);
+procedure _WtoB(Machine: TForthMachine; Command: PForthCommand);
 begin
-  Machine.CWU(Machine.WOP);
+  Machine.BWU(Machine.WOP);
 end;
 
 procedure OForthMachine.WUV(const P: Pointer; Size: Integer);
@@ -4457,10 +4505,10 @@ begin
   WB := @W[0];
   WP := WB;
   WS := Length(W);
-  SetLength(CW,  4 * 1024);
-  CWB := @CW[0];
-  CWP := CWB;
-  CWS := Length(CW);
+  SetLength(BW,  4 * 1024);
+  BWB := @BW[0];
+  BWP := BWB;
+  BWS := Length(BW);
   SetLength(C,   0);
   CB := @C[0];
   CC := 0;
@@ -4506,6 +4554,9 @@ begin
   AddCommand('target>', _TargetPop);
   AddCommand('context<', _ContextPush);
   AddCommand('context>', _ContextPop);
+  
+  AddCommand('w>b', _WtoB);
+  AddCommand('b>w', _BtoW);
 
   SetLength(FTypes, 0);
   
@@ -5666,6 +5717,16 @@ begin
      AddCommand('extended-tan', extended_tan);
      AddCommand('extended-atan', extended_atan);
      AddCommand('extended-atan2', extended_atan2);
+    
+    
+     AddCommand('bdrop',        bdrop);
+     AddCommand('bdup',         bdup);
+     AddCommand('bnip',         bnip);
+     AddCommand('bswap',        bswap);
+     AddCommand('bover',        bover);
+     AddCommand('btuck',        btuck);
+     AddCommand('blrot',        blrot);
+     AddCommand('brrot',        brrot);
     
     
      AddCommand('timer', _timer);
@@ -9667,6 +9728,34 @@ end;
      procedure extended_tan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := Tan(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)));  end; end;
      procedure extended_atan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)) := ArcTan(Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^)));  end; end;
      procedure extended_atan2 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)) := ArcTan2(Extended((Pointer(TUInt(WP) + (-2*SizeOf(Extended)))^)), Extended((Pointer(TUInt(WP) + (-SizeOf(Extended)))^))); Dec(WP, SizeOf(Extended))  end; end;
+    
+   
+    
+     procedure bdrop (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TUInt(BWP), (SizeOf(Pointer)));  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then begin
+                   if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ > 1 then Dec(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^)
+                   else if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ = 1 then FreeMem(Pointer(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))); 
+                 end;;  end; end;
+     procedure bdup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^);  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then 
+                   if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ <> -1 then Inc(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^); ; Inc(BWP, (SizeOf(Pointer)));  end; end;
+     procedure bnip (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TUInt(BWP), (SizeOf(Pointer)));  if TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) <> nil then begin
+                   if PInteger(TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^))^ > 1 then Dec(PInteger(TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^))^)
+                   else if PInteger(TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^))^ = 1 then FreeMem(Pointer(TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^))); 
+                 end;; TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^);  end; end;
+     procedure bswap (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^); TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^);
+                                   TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^);  end; end;
+     procedure bover (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^);  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then 
+                   if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ <> -1 then Inc(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^); ; Inc(BWP, (SizeOf(Pointer)));  end; end;
+     procedure btuck (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^); TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^);
+                                   TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^); Inc(BWP, (SizeOf(Pointer)));  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then 
+                   if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ <> -1 then Inc(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^);  end; end;
+     procedure blrot (Machine: TForthMachine; Command: PForthCommand); 
+     begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-3)*(SizeOf(Pointer)))^);  TBlock(Pointer(TUInt(BWP) + (-3)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^); 
+       TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^); TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^);
+      end; end;
+     procedure brrot (Machine: TForthMachine; Command: PForthCommand);
+     begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^);  TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^); 
+       TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-3)*(SizeOf(Pointer)))^); TBlock(Pointer(TUInt(BWP) + (-3)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^);
+      end; end;
     
    
     

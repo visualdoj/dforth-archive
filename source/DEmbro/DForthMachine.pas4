@@ -32,10 +32,19 @@ define(~WInc|, ~Inc(WP, $1)|)
 define(~WDec|, ~Dec(TUInt(WP), $1)|)
 define(~PSize|, ~(SizeOf(Pointer))|)
 define(~CELL|, ~(SizeOf(Pointer))|)
-define(~cinc|, ~ if PInteger($1)^ <> -1 then Inc(PInteger($1)^); |)
-define(~cdec|, ~ if PInteger($1)^ > 0 then Dec(PInteger($1)^); |)
+define(~BInc|, ~Inc(BWP, CELL)|)
+define(~BDec|, ~Dec(TUInt(BWP), CELL)|)
+define(~BVar|, ~TBlock(Pointer(TUInt(BWP) + ($1)*CELL)^)|)
+define(~binc|, ~ if $1 <> nil then begin
+                   if PInteger($1)^ <> -1 then Inc(PInteger($1)^); 
+                 end|)
+define(~bdec|, ~ if $1 <> nil then begin
+                   if PInteger($1)^ > 1 then Dec(PInteger($1)^)
+                   else if PInteger($1)^ = 1 then FreeMem(Pointer($1)); 
+                 end|)
 define(~genname|, ~ifelse($1, ~|, $2, len($1), ~1|, $2, $1-$2)|)
 define(~body|, ~begin with Machine^ do begin $1 end; end;|)
+{$IFNDEF FLAG_FPC}{$REGION 'typed_commands'}{$ENDIF}
 define(~typed_commands|, 
   ~
     procedure drop_$1 cmdhdr;
@@ -209,132 +218,54 @@ define(~typed_commands|,
      AddCommand('genname($1, (literal))', run_literal_$1);
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'counter_commands'}{$ENDIF}
 define(~counter_commands|, 
   ~
-    procedure cdrop cmdhdr;
-    procedure cdup cmdhdr;
-    procedure cnip cmdhdr;
-    procedure cswap cmdhdr;
-    procedure cover cmdhdr;
-    procedure ctuck cmdhdr;
-    procedure clrot cmdhdr;
-    procedure crrot cmdhdr;
-    procedure clrotn cmdhdr;
-    procedure crrotn cmdhdr;
-    procedure cpick cmdhdr;
-    procedure _ccomma cmdhdr;
-    procedure _cdog cmdhdr;
-    procedure _cexclamation cmdhdr;
-    procedure ptr_plus_c$1 cmdhdr;
-    procedure _cto cmdhdr;
-    procedure _compile_cto cmdhdr;
-    procedure _run_cto cmdhdr;
-    procedure _interpret_cto cmdhdr;
-    procedure _cvalue cmdhdr;
-    procedure _cvariable cmdhdr;
-    procedure RuncValue cmdhdr;
-    procedure cliteral cmdhdr;
-    procedure run_cliteral cmdhdr
+    procedure bdrop cmdhdr;
+    procedure bdup cmdhdr;
+    procedure bnip cmdhdr;
+    procedure bswap cmdhdr;
+    procedure bover cmdhdr;
+    procedure btuck cmdhdr;
+    procedure blrot cmdhdr;
+    procedure brrot cmdhdr;
   define(~all_implement|, all_implement 
     ~
-      procedure cdrop cmdhdr; body( Dec(WP, CELL); cdec(Pointer(WP^)); )
-     procedure cdup cmdhdr; body( Pointer(WP^) := WVar(-$2); cinc(Pointer(WP^)); WInc(CELL); )
-     procedure cnip cmdhdr; body( Dec(WP, CELL); cdec(WVar(-CELL)); WVar(-CELL) := Pointer(WP^); )
-     procedure swap cmdhdr; body( Move(WVar(-$2), WP^, $2); Move(WVar(-2*$2), WVar(-$2), $2); Move(WP^, WVar(-2*$2), $2); )
-     procedure over cmdhdr; body( Move(WVar(-2*$2), WVar(0), $2); Inc(WP, $2) )
-     procedure tuck cmdhdr; body( Move(WVar(-2*$2), WVar(-1*$2), 2*$2); Move(WVar(0), WVar(-2*$2), $2); WInc($2); )
-     procedure lrot cmdhdr; 
+     procedure bdrop cmdhdr; body( BDec; bdec(BVar(0)); )
+     procedure bdup cmdhdr; body( BVar(0) := BVar(-1); binc(BVar(0)); BInc; )
+     procedure bnip cmdhdr; body( BDec; bdec(BVar(-1)); BVar(-1) := BVar(0); )
+     procedure bswap cmdhdr; body( BVar(0) := BVar(-1); BVar(-1) := BVar(-2);
+                                   BVar(-2) := BVar(0); )
+     procedure bover cmdhdr; body( BVar(0) := BVar(-2); binc(BVar(0)); BInc; )
+     procedure btuck cmdhdr; body( BVar(0) := BVar(-1); BVar(-1) := BVar(-2);
+                                   BVar(-2) := BVar(0); BInc; binc(BVar(0)))
+     procedure blrot cmdhdr; 
      body( 
-       Move(WVar(-1*$2), WP^, $2);
-       Move(WVar(-3*$2), WVar(-1*$2), $2);
-       Move(WVar(-2*$2), WVar(-3*$2), $2);
-       Move(WP^, WVar(-2*$2), $2);
+       BVar(0) := BVar(-3);  BVar(-3) := BVar(-2); 
+       BVar(-2) := BVar(-1); BVar(-1) := BVar(0);
      )
-     procedure rrot cmdhdr;
+     procedure brrot cmdhdr;
      body( 
-       Move(WVar(-1*$2), WP^, $2);
-       Move(WVar(-2*$2), WVar(-1*$2), $2);
-       Move(WVar(-3*$2), WVar(-2*$2), $2);
-       Move(WP^, WVar(-3*$2), $2);
+       BVar(0) := BVar(-1);  BVar(-1) := BVar(-2); 
+       BVar(-2) := BVar(-3); BVar(-3) := BVar(0);
      )
-     procedure lrotn cmdhdr; 
-     var
-       N: Integer;
-     body( 
-       Dec(WP, SizeOf(TInt));
-       N := TInt(WP^);
-       Move(WVar(-$2*N), WVar(0), $2);
-       while N > 0 do begin
-         Move(WVar(-$2*(N-1)), WVar(-$2*N), $2);
-         Dec(N);
-       end;
-       //Move(WVar(0), WVar(-$2), $2);
-     )
-     procedure rrotn cmdhdr;
-     var
-       I: Integer;
-       N: Integer;
-     body(
-       Dec(WP, SizeOf(TInt));
-       N := TInt(WP^);
-       //Move(WVar(-$2), WVar(0), $2);
-       for I := 0 to N - 1 do
-         Move(WVar(-$2*(I+1)), WVar(-$2*I), $2);
-       Move(WVar(0), WVar(-N*$2), $2);
-     )
-     procedure pick cmdhdr; 
-     body( 
-       Move(WVar(-SizeOf(TInt) -$2*TInt(WVar(-SizeOf(TInt)))), 
-            WVar(-SizeOf(TInt)),
-            $2);
-       WInc($2 - SizeOf(TInt));
-     )
-     procedure _comma cmdhdr; body( Dec(WP, $2); Move(WP^, Here^, $2); EA($2); )
-     procedure _dog cmdhdr; body( Move(Pointer(WVar(-PSize))^, WVar(-PSize), $2); Inc(WP, $2 - PSize) )
-     procedure _exclamation cmdhdr; body( Move(WVar(-PSize-$2), Pointer(WVar(-PSize))^, $2); Dec(WP, PSize + $2) )
-     procedure ptr_plus cmdhdr; body( PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; )
-     procedure _to cmdhdr; body( if State <> FS_INTERPRET then _compile_to(Machine, Command) else _interpret_to(Machine, Command); )
-     procedure _compile_to cmdhdr; body( EWO('run@genname($1, ~to|)'); EWO(NextName); )
-     procedure _run_to cmdhdr; var O: TOpcode; body( O := ERO; Move(WVar(-$2), C[O].Data^, $2); Dec(WP, $2); )
-     procedure _interpret_to cmdhdr; var N: TString; C: PForthCommand; body( N := NextName; C := FindCommand(N);
-               if C = nil then begin LogError('unkown name after genname($1, ~to|): ' + N); FSession := False; Exit; end; 
-               Move(WVar(-$2), C.Data^, $2); Dec(WP, $2);
-             )
-     procedure _value cmdhdr; body( with ReserveName(SNN)^ do begin Data := Here; Code := RunValue; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); Flags := Flags and not 1; end; )
-     procedure _variable cmdhdr; body( with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, $2); Move(WP^, Here^, $2);} EA($2); end; )
-     procedure RunValue cmdhdr; body( Move(Command.Data^, WP^, $2); Inc(WP, $2); end;
-    procedure literal cmdhdr; body( EWO('genname($1, (literal))'); Dec(WP, $2); EWV(WP, $2); )
-    procedure run_literal cmdhdr; body( ERV(WP, $2); Inc(WP, $2); )
     |
   )
   define(~regist_all_commands|, regist_all_commands
     ~
-     (* AddCommand('cdrop',        drop); *)
-     (* AddCommand('cdup',         dup); *)
-     (* AddCommand('cnip',         nip); *)
-     (* AddCommand('cswap',        swap); *)
-     (* AddCommand('cover',        over); *)
-     (* AddCommand('ctuck',        tuck); *)
-     (* AddCommand('clrot',        lrot); *)
-     (* AddCommand('crrot',        rrot); *)
-     (* AddCommand('clrotn',       lrotn); *)
-     (* AddCommand('crrotn',       rrotn); *)
-     (* AddCommand('cpick',        pick); *)
-     (* AddCommand('c,',           _comma); *)
-     (* AddCommand('c@',           _dog); *)
-     (* AddCommand('c!',           _exclamation); *)
-     (* AddCommand('ptr+c',        ptr_plus); *)
-     (* AddCommand('cto',          _cto, True); *)
-     (* AddCommand('[cto]',        _compile_cto); *)
-     (* AddCommand('(cto)',        _run_cto); *)
-     (* AddCommand('_cto_',        _interpret_cto); *)
-     (* AddCommand('cvalue',       _cvalue); *)
-     (* AddCommand('cconstant',    _cvalue); *)
-     (* AddCommand('cvariable',    _cvariable); *)
-     (* AddCommand('cliteral',     cliteral, True); *)
-     (* AddCommand('(cliteral)',  run_cliteral); *)
+     AddCommand('bdrop',        bdrop);
+     AddCommand('bdup',         bdup);
+     AddCommand('bnip',         bnip);
+     AddCommand('bswap',        bswap);
+     AddCommand('bover',        bover);
+     AddCommand('btuck',        btuck);
+     AddCommand('blrot',        blrot);
+     AddCommand('brrot',        brrot);
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'data_commands'}{$ENDIF}
 define(~data_commands|, 
   ~
   procedure $1_to cmdhdr;
@@ -401,6 +332,8 @@ define(~exception_commands|,
       AddCommand('throw', _throw);
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'long_commands'}{$ENDIF}
 define(~long_commands|, 
   ~
      procedure LongAlloc(var L: PLong; Len: Integer);
@@ -638,6 +571,8 @@ define(~arithmetic_commands|,
      AddCommand('str->$1', $1_conv_from_str);
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'signed_arithmetic_commands'}{$ENDIF}
 define(~signed_arithmetic_commands|, 
   ~
   procedure $1_abs cmdhdr;
@@ -652,6 +587,8 @@ define(~signed_arithmetic_commands|,
      AddCommand('genname($1, neg)', $1_neg);
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'number_arithmetic_commands'}{$ENDIF}
 define(~number_arithmetic_commands|, 
   ~
   procedure $1_push  cmdhdr;
@@ -712,6 +649,8 @@ define(~number_arithmetic_commands|,
      AddCommand('genname($1, divmod)', $1_divmod);
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'convert_number_arithmetic_commands'}{$ENDIF}
 define(~convert_number_arithmetic_commands|, 
   ~
   procedure $1_convert_to_$3 cmdhdr
@@ -725,6 +664,8 @@ define(~convert_number_arithmetic_commands|,
     ~AddCommand('$1->$3', $1_convert_to_$3);
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'float_arithmetic_commands'}{$ENDIF}
 define(~float_arithmetic_commands|, 
   ~
    procedure $1_push  cmdhdr;
@@ -764,6 +705,8 @@ define(~float_arithmetic_commands|,
      AddCommand('genname($1,atan2)', $1_atan2);
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'sysar_commands'}{$ENDIF}
 define(~sysar_commands|, 
   ~
   function ConvertStrTo$1(const B: TString; var X: $2): Integer
@@ -807,6 +750,8 @@ define(~sysar_commands|,
     |
   )
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'system_commands'}{$ENDIF}
 define(~system_commands|, 
   ~
   procedure EW_$1 (V: $2);
@@ -821,6 +766,8 @@ define(~system_commands|,
     ~
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'stack utils'}{$ENDIF}
 define(~push_interface|, ~procedure $1(const V: $2); overload 
   define(~all_implement|, all_implement 
      procedure OForthMachine.$1(const V: $2); begin $2($3^) := V; Inc($3, SizeOf(V)) end;
@@ -829,6 +776,8 @@ define(~pop_interface|, ~function $1: $2
   define(~all_implement|, all_implement 
     ~function OForthMachine.$1: $2; begin Dec($3, SizeOf(Result)); Result := $2($3^); end;
     |)|)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'misc_commands'}{$ENDIF}
 define(~misc_commands|, 
   ~
   procedure _timer cmdhdr;
@@ -982,6 +931,8 @@ define(~misc_commands|,
      AddCommand('move', _move);
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'file_commands'}{$ENDIF}
 define(~file_commands|, 
   ~
   procedure file_open cmdhdr;
@@ -1077,6 +1028,7 @@ define(~file_commands|,
      AddCommand('file-size', file_size);
     |)
 |)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 const
   BOOL_FALSE: Integer   = 0;
@@ -1126,6 +1078,11 @@ type
   TPtr = Pointer;
   TEmbroPtr = TInt;
 
+  TRecBlock = packed record
+    Ref: TInt;
+  end;
+  TBlock = ^TRecBlock;
+
   TStrRec = packed record
     Ref: TInt;
     Len: TInt;
@@ -1162,10 +1119,10 @@ OForthMachine = object
   W: array of Byte; // Work stack
   WB: Pointer; // Work stack Base (@W[0])
   WS: Integer; // Work stack Size
-  CW: array of Pointer; // Counter Work stack
-  CWB: Pointer;
-  CWP: Pointer;
-  CWS: Integer;
+  BW: array of Pointer; // Counter Work stack
+  BWB: Pointer;
+  BWP: Pointer;
+  BWS: Integer;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'E'}{$ENDIF}
   E: array of Byte; // Embro
@@ -1381,8 +1338,6 @@ OForthMachine = object
   pop_interface(ROU64, TUInt64, RP);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
-  procedure CWU(C: Pointer); // Counter Work pUsh
-  function CWO: Pointer; // Counter Work pOp
   push_interface(WUI, TInt, WP); // Work stack pUsh Integer
   push_interface(WUP, Pointer, WP); // Work stack pUsh Pointer
   pop_interface(WOI, TInt, WP); // Work stack pOp Integer
@@ -1409,6 +1364,10 @@ OForthMachine = object
   procedure WOV(const P: Pointer; Size: Integer);
   procedure WUS(const S: TString);
   function WOS: TString;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'B'}{$ENDIF}
+  procedure BWU(C: Pointer); // Block Work pUsh
+  function BWO: Pointer; // Block Work pOp
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'C'}{$ENDIF}
   // Command REserve
@@ -1582,6 +1541,7 @@ end;
   float_arithmetic_commands(single, Single);
   float_arithmetic_commands(double, Double);
   float_arithmetic_commands(extended, Extended);
+  counter_commands
   misc_commands
   exception_commands
   file_commands
@@ -1597,8 +1557,8 @@ end;
   procedure _ContextPush(Machine: TForthMachine; Command: PForthCommand);
   procedure _ContextPop(Machine: TForthMachine; Command: PForthCommand);
   procedure _here(Machine: TForthMachine; Command: PForthCommand); overload;
-  procedure _CtoW(Machine: TForthMachine; Command: PForthCommand);
-  procedure _WtoC(Machine: TForthMachine; Command: PForthCommand);
+  procedure _BtoW(Machine: TForthMachine; Command: PForthCommand);
+  procedure _WtoB(Machine: TForthMachine; Command: PForthCommand);
   procedure Evaluate(Machine: TForthMachine; Command: PForthCommand);
   procedure EvaluateFile(Machine: TForthMachine; Command: PForthCommand);
   procedure _FIND_(Machine: TForthMachine; Command: PForthCommand);
@@ -4056,26 +4016,26 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
-procedure OForthMachine.CWU(C: Pointer);
+procedure OForthMachine.BWU;
 begin
-  Pointer(CWP^) := C;
-  Inc(CWP, SizeOf(Pointer));
+  Pointer(BWP^) := C;
+  Inc(BWP, SizeOf(Pointer));
 end;
 
-function OForthMachine.CWO: Pointer;
+function OForthMachine.BWO;
 begin
-  Dec(CWP, SizeOf(Pointer));
-  Result := Pointer(CWP^);
+  Dec(BWP, SizeOf(Pointer));
+  Result := Pointer(BWP^);
 end;
 
-procedure _CtoW(Machine: TForthMachine; Command: PForthCommand);
+procedure _BtoW(Machine: TForthMachine; Command: PForthCommand);
 begin
-  Machine.WUP(Machine.CWO);
+  Machine.WUP(Machine.BWO);
 end;
 
-procedure _WtoC(Machine: TForthMachine; Command: PForthCommand);
+procedure _WtoB(Machine: TForthMachine; Command: PForthCommand);
 begin
-  Machine.CWU(Machine.WOP);
+  Machine.BWU(Machine.WOP);
 end;
 
 procedure OForthMachine.WUV(const P: Pointer; Size: Integer);
@@ -4191,10 +4151,10 @@ begin
   WB := @W[0];
   WP := WB;
   WS := Length(W);
-  SetLength(CW,  4 * 1024);
-  CWB := @CW[0];
-  CWP := CWB;
-  CWS := Length(CW);
+  SetLength(BW,  4 * 1024);
+  BWB := @BW[0];
+  BWP := BWB;
+  BWS := Length(BW);
   SetLength(C,   0);
   CB := @C[0];
   CC := 0;
@@ -4240,6 +4200,9 @@ begin
   AddCommand('target>', _TargetPop);
   AddCommand('context<', _ContextPush);
   AddCommand('context>', _ContextPop);
+  
+  AddCommand('w>b', _WtoB);
+  AddCommand('b>w', _BtoW);
 
   SetLength(FTypes, 0);
   all_create;
