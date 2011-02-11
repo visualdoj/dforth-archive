@@ -1,7 +1,8 @@
-// 2011.02.10 # Doj
-// Модуль для генерации заголовки на других языках из заголовков DEmbro.
+// 2011.02.11 # Doj
+// Модуль для генерации заголовки на С++
 
-namespace C++HEADER
+// Случай, когда код DEmbro вызывает код на C++
+namespace DEmbro->C++
 0 value *file*
 : init-header ( "filename") file-w file-open to *file* ;
 : done-header *file* file-close ;
@@ -12,4 +13,9 @@ namespace C++HEADER
 : (  ( "comment") " /* " " )" source-trim str+ "  */" source-trim 
                   *file* file-str-write ; 
 : a; ;
+^^^
+
+// Случай, когда код С++ вызывает код на DEmbro
+namespace C++->DEmbro
+  // TODO
 ^^^

@@ -3,6 +3,27 @@
 
 include" core\createwords.de"
 
+namespace DE_PLUGIN
+
+// {{{ constants
+// params' type
+enum paramtype:
+paramtype: TYPE_INT
+paramtype: TYPE_STR
+paramtype: TYPE_DATA
+
+// params' id
+enum paramid:
+paramid: ID_APPTYPE
+paramid: ID_OUTPUT
+paramid: ID_COMMANDS
+paramid: ID_CODE
+
+// ID_APPTYPE
+enum apptype:
+apptype: APPTYPE_CONSOLE
+apptype: APPTYPE_GUI
+
 enum embrotype:
 // Ќеоднородные данные
 // ≈сли embro[i].type == ET_DATA, то участок пам€ти начина€
@@ -35,15 +56,62 @@ embrotype: ET_PTR
 // при вс€ких преобразовани€х. Ќапример, (literal) использует параметр такого
 // типа
 embrotype: ET_PARAM
+// }}}
+// {{{ types
+  
+// name -- »м€ команды
+// flags -- флаги; 
+//   bit0 €вл€етс€ ли команда immediate (immediate флаг)
+//   bit1 €вл€етс€ ли команда встроенной, или она €вл€етс€ функцией (builtin флаг)
+//        в первом случае код дл€ команды подразумеваетс€ стандартное, во втором
+//        он указан в поле code
+//   bit2 €вл€етс€ ли команда noname (noname флаг)
+// code -- номер элемента в embro, начина€ с которого идЄт описание (embro указатель)
+// data -- номер байта в embro, начина€ с которого наход€тс€ данные дл€ команды
+// parent --  определ€ющее слово, которым создана данна€ команда
+// builtin -- если команда встроенна€ (см. флаги), то это поле определ€ет еЄ
+//            название, под которым она известна в документации
+0
+  t_pchar -- .name
+  t_int   -- .flags
+  t_uint  -- .code
+  t_uint  -- .data
+  t_uint  -- .parent
+  t_pchar -- .builin
+struct command_s
 
+// “аблица команд
+//   count -- число команд в таблице
+//   items -- указатель на массив, состо€щий из структур command_s
+0
+  t_int   -- .count
+  t_ptr   -- .items
+struct table_s 
+
+0
+  t_uint8  -- .type
+  t_uint16 -- .size
+  t_uint8  -- .reserved
+  // TODO align
+  t_uint   -- .value
+struct embroitem_s
+
+0
+  t_uint   -- .count
+  t_ptr    -- .items
+struct embro_s 
+// }}}
+// {{{ prototypes
 declare-header dePlugin
-:a decInfo ( out name) t_ptr ( out type) t_ptr ( out version) t_ptr t_void header;
-:a decSetParam ( id) t_int ( type) t_int ( val) t_ptr (size) t_int t_void header;
-:a decCompile t_void header;
-:a decError ( out id) t_ptr ( out pos) t_ptr ( out id) t_int header;
-:a decErrorString ( id) t_int ( out pchar) t_pchar header;
-
-namespace DE_PLUGIN
-  : de-load-plugin ( filename -- p false | i) ;
-  : p! ( ii-) swap DE_INT swap 0 decSetParam ;
+:a depInfo ( out name) t_ptr ( out type) t_ptr ( out version) t_ptr t_void header;
+:a depSetParam ( id) t_int ( type) t_int ( val) t_ptr (size) t_int t_void header;
+:a depCompile t_void header;
+:a depError ( out id) t_ptr ( out pos) t_ptr ( out id) t_int header;
+:a depErrorString ( id) t_int ( out pchar) t_pchar header;
+// }}}
+// {{{ DEmbro utils
+// Nothing for non-DEmbro code
+: dep-load-plugin ( filename -- p false | i) ;
+: p! ( ii-) swap DE_INT swap 0 depSetParam ;
+// }}}
 ^^^
