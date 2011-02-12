@@ -9734,20 +9734,23 @@ end;
      procedure bdrop (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TUInt(BWP), (SizeOf(Pointer)));  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then begin
                    if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ > 1 then Dec(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^)
                    else if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ = 1 then FreeMem(Pointer(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))); 
-                 end;;  end; end;
-     procedure bdup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^);  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then 
-                   if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ <> -1 then Inc(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^); ; Inc(BWP, (SizeOf(Pointer)));  end; end;
+                 end;  end; end;
+     procedure bdup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^);  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then begin
+                   if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ <> -1 then Inc(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^); 
+                 end; Inc(BWP, (SizeOf(Pointer)));  end; end;
      procedure bnip (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(TUInt(BWP), (SizeOf(Pointer)));  if TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) <> nil then begin
                    if PInteger(TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^))^ > 1 then Dec(PInteger(TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^))^)
                    else if PInteger(TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^))^ = 1 then FreeMem(Pointer(TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^))); 
-                 end;; TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^);  end; end;
+                 end; TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^);  end; end;
      procedure bswap (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^); TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^);
                                    TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^);  end; end;
-     procedure bover (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^);  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then 
-                   if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ <> -1 then Inc(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^); ; Inc(BWP, (SizeOf(Pointer)));  end; end;
+     procedure bover (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^);  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then begin
+                   if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ <> -1 then Inc(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^); 
+                 end; Inc(BWP, (SizeOf(Pointer)));  end; end;
      procedure btuck (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^); TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^);
-                                   TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^); Inc(BWP, (SizeOf(Pointer)));  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then 
-                   if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ <> -1 then Inc(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^);  end; end;
+                                   TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^); Inc(BWP, (SizeOf(Pointer)));  if TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) <> nil then begin
+                   if PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^ <> -1 then Inc(PInteger(TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^))^); 
+                 end end; end;
      procedure blrot (Machine: TForthMachine; Command: PForthCommand); 
      begin with Machine^ do begin TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-3)*(SizeOf(Pointer)))^);  TBlock(Pointer(TUInt(BWP) + (-3)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^); 
        TBlock(Pointer(TUInt(BWP) + (-2)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^); TBlock(Pointer(TUInt(BWP) + (-1)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(BWP) + (0)*(SizeOf(Pointer)))^);
