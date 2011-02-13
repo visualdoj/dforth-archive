@@ -1,21 +1,15 @@
 // 2011.02.02 # Doj
 // Команды для обработки строк.
 
-// Возвращает строку, содержащую первые i символов строки
-: str-left ( si-s) 0 swap str-copy ;
-// Возвращает строку, содержащую последние i символов строки
-: str-right ( si-s) cover str# over - swap str-copy ;
-// : parse-right ( si-s) | p| cdup str# dup p@ - p@ str-copy ;
-// : parse-right s:str,p:int return str-copy(s,str#(s)-p,p) ;
+// оставляет фрагмент s[p..s#-1]
+: str-right ( p B: s -- B: r) ( -s ^r) str# over - str-cut ;
+// оставляет фрагмент s[0..p-1]
+: str-left ( p B: s -- B: l) ( -s ^l) 0 swap str-cut ;
+// разбивает строку на части l=x[0..p-1] r=x[p+s..x#-1]
+: str-leftright ( ps B: x -- B: lr) ( -x ^l ^r) swap str-split str-right ;
 
-// Удаляет из строки фрагмент (p,p+l-1), она распадается на две подстроки - l и r
-: parse-break ( spl-lr) rrot cover rrot parse-left rrot swap parse-right ;
+: parse-binary? ( B: sb -- f B: lr) str^? if str# bdrop str-leftright 
+                                          else drop 0 then ; 
 
-// Разбивает строку на две при помощи строки b, т.е. s = l b r
-// Если s не содержит b, то l=s, r=str0
-: parse-binary? ( sb-lri) cover cover str-pos dup -1 = 
-                        if drop cdrop str0 true exit then 
-                        swap str# parse-break false ;
-
-: parse-list ( sbd-d) | d| b| b| begin b parse-binary if bdrop d bdyn+ d exit then
-                      swap d bdyn+ false until ;
+: parse-list ( d B: sb -- d B: sb) | d| bover bover 
+  begin parse-binary? while bswap dup bdyn+ bover repeat bdrop bdrop ;

@@ -10,3 +10,6 @@
 : [.str]" ( C:"xxx") ( R:-) ['] [str]" execute compile str. ; immediate
 : ." ( "xxx"-) ( C:"xxx") ( R:-) 
         state @ if ['] [.str]" execute else .str" then ; immediate
+
+// n — число байт, занимаемое utf8-символом, i - первый байт символа
+// : utf8-size ( i-in) dup 128 > if b00 ;
