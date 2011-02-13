@@ -11,5 +11,5 @@
 : parse-binary? ( B: sb -- f B: lr) str^? if str# bdrop str-leftright 
                                           else drop 0 then ; 
 
-: parse-list ( d B: sb -- d B: sb) | d| bover bover 
+: parse-list ( d B: sb -- d B: sb) bover bover 
   begin parse-binary? while bswap dup bdyn+ bover repeat bdrop bdrop ;
