@@ -1,0 +1,13 @@
+// 2011.02.13 # Doj
+// ќптимизатор кода Ч подключает плагины и оптимизирует дембро-машину
+
+dembro-create value *optimizer*
+  
+  str0 *optimizer* dembro-bpush 
+  *optimizer* dembro-load-system
+
+  " optimize.de" *optimizer* dembro-bpush 
+  dembro-self *optimizer* dembro-push
+  *optimizer* dup dembro-evaluate-file
+
+dembro-free
