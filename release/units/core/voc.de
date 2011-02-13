@@ -1,32 +1,42 @@
 // 2010.12.03 # Doj
 // Модуль для удобной работы со словарями
 
-// str" units\\structures\\stack.de" evaluate-file
-// 
-// 32 stack targets
-// 32 stack vocs
-// vocabulary vLOCALS
-// 
-// : voc.targets< ( v-) targets s< ;
-// : voc.targets> ( v-) targets s> ;
-// : voc.targets@ ( v-) targets s@ ;
-// 
-// : voc.vocs< ( v-) vocs s< ;
-// : voc.vocs> ( v-) vocs s> ;
-// : voc.vocs@ ( v-) vocs s@ ;
-// 
-// : voc.use ( v-) dup voc.targets< voc.vocs< ;
-// : ^^^ ( -) voc.targets> drop voc.vocs> drop ; immediate
-// 
-// : LOCALS vLOCALS voc.use ; immediate
-// : GLOBALS vGLOBALS voc.use ; immediate
-// 
-// GLOBALS vLOCALS voc.vocs<
-
 : vocabulary ( "name") vocabulary-new value ;
 : voc.use ( v) dup target< context< ;
-: declare-namespace ( "name") vocabulary immediate does> @ voc.use ; 
-: namespace ( "name") declare-namespace last execute ; 
 : GLOBAL vGLOBAL voc.use ; immediate
 : LOCAL vLOCAL voc.use ; immediate
-: ^^^ target> drop context> drop ; immediate
+
+// Работа с пространствами имён
+//    Пример
+//       : test 5 . ;
+// 
+//       namespace MY        // создаём своё пространство имён
+//         : test 666 . ;    // определяем в нём команду test
+//         test              // печатаем 666
+//       /namespace          // завершаем определение пространства имён
+// 
+//       : test 7 . ;
+//       test                // печатает 7
+//       MY test ^^^         // печатает 666
+//       : test2 MY test ^ ; // создали глобальный синоним для test
+// 
+//       namespace HER       // создаём ещё одно пространство имён
+//         : func 555 . ;
+//       /namespace
+// 
+//       func                // упс! такой команды нет
+//       uses MY HER         // подключаем сразу два пространства имён
+//         func test func test
+//         // Важно, что тут нельзя снимать словари добавленные до uses словари
+//         // и пространства, можно снимать только добавленные в этом же блоке
+//       /uses               // отключаем подключённые в uses пространства
+//       
+//       ex
+: declare-namespace ( "name") vocabulary immediate does> @ context< ; 
+: extend-namespace context> voc.use ;
+: namespace ( "name") declare-namespace last execute extend-namespace ; 
+: /namespace target> drop context> drop ; immediate
+: ^^^ context> drop ;
+: ^ ^^^ ; immediate
+: uses 0 context< 0 target< ;
+: /uses begin context> 0= until   begin target> 0= until ;

@@ -13,13 +13,24 @@
 : off ( p-) 0 swap ! ;
 : on ( p-) true swap ! ;
 
+: ptr! ! ;
+: op! ! ;
+: xt! ! ;
+: embroptr! ! ;
+: cell-allot here 1 cells allot ;
+
+: ,             cell-allot ! ;
+: ptr,          cell-allot ptr! ;
+: op,           cell-allot op! ;
+: xt,           cell-allot xt! ;
+: embroptr,     cell-allot embroptr! ;
+
 str" units\core\counter.de" str-dup evaluate-file
 str" units\structures\dyn.de" str-dup evaluate-file
 str" units\core\source.de" str-dup evaluate-file
 str" units\core\includes.de" str-dup evaluate-file
 // т.к. только теперь подключён модуль для эксклюзивного подключения модулей
 // нужно в него добавить всё, что было подключено до него
-." Loading system"
 once+ once+ once+ once+
 
 include" units\core\statements.de"
@@ -31,4 +42,4 @@ include" units\core\createwords.de"
 include" docs\russian.de"
 include" units\core\voc.de"
 
-str" Loaded system file" str. cr
+." Loaded system file"cr

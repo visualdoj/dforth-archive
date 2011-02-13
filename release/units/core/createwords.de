@@ -9,12 +9,12 @@
 
 // Создание перечислимых типов
 // Пример:
-//     enum STUDENT
-//     STUDENT IVANOV // создаёт константу 0 с названием IVANOV
-//     STUDENT SIDOROV // создаёт константу 1 с названием SIDOROV
-//     STUDENT BELOSHAPKIN // создаёт константу 2 с названием BELOSHAPKIN
-//     STUDENT PETROV // создаёт константу 3 с названием PETROV
-: enum ( "name"-) create 0 , does> ( "name"-) dup @ constant 1+! ;
+//     5 enum STUDENT
+//     STUDENT IVANOV // создаёт константу 5 с названием IVANOV
+//     STUDENT SIDOROV // создаёт константу 6 с названием SIDOROV
+//     STUDENT BELOSHAPKIN // создаёт константу 7 с названием BELOSHAPKIN
+//     STUDENT PETROV // создаёт константу 8 с названием PETROV
+: enum ( i "name"-) create , does> ( "name"-) dup @ constant 1+! ;
 
 // Примитивный механизм для создания структур
 // Пример
@@ -58,16 +58,3 @@
 : ;solve ['] ; execute swap 1+ ; immediate
 : solve-table ( x1..xn n "xxx"--) create dup 1- , begin ?dup while swap , 1- repeat
   does> ( i-) dup @ lrot - swap cells + @ execute ;
-
-// Устаревший код
-// variable sLOCAL 
-// sLOCAL off
-// 
-// : let ( "name"-) sLOCAL @ dup cell+ sLOCAL ! create immediate ,
-//     does> ( W:) ( R:-p) @ ['] literal execute compile lb compile + ; immediate
-// : locals sLOCAL @ ['] literal execute compile l+ ;
-// : unlocals sLOCAL off ;
-// : : : [ sLOCAL @ ] compile literal compile l+ ;
-
-// : local ( "name"-) sLOCAL @ dup cell+ sLOCAL ! create immediate ,
-//    does>  ; 

@@ -8,6 +8,9 @@ interface
 define(~_X86|)
 define(~_IA32|)
 
+ifdef(_IA32,,define(~N_IA32|))
+ifdef(_X86,,define(~N_X86|))
+
 uses
   {$I units.inc},
 
@@ -354,90 +357,72 @@ define(~long_commands|,
   define(~all_implement|, all_implement 
     ~
        function AddWithCarryAndUpdate(
-         A, B: Integer; 
+         A, B: Cardinal; 
          var Carry: Integer): Integer; register; inline;
-       asm
-         mov Result, 0
-         add Result, A
-         add Result, B
-         add Result, Carry
-         jc @@setcarry
-         mov Carry, 0
-         jmp @@end
-       @@setcarry:
-         mov Carry, 1
-       @@end:
+       body(
+         Result := A + B + Carry;
+         if (A > (Cardinal(1) shl Cardinal(CELL_BITS - 2))) and
+            (B > (Cardinal(1) shl Cardinal(CELL_BITS - 2))) then
+           Carry := 1
+         else
+           Carry := 0;
        )
        procedure LongAlloc(var L: PLong; Len: Integer);
-       body(
-         GetMem(L, SizeOf(Integer) * (4 + Len));
-         L^.Ref := 0;
-         L^.Flags := 0;
-         L^.Len := 0;
-         L^.Max := Len;
-       )
+       body()
        procedure LongIncRef(L: PLong);
-       body(
-         if L^.Ref > 0 then 
-           Inc(L^.Ref);
-       )
+       body()
        procedure LongDecRef(L: PLong);
-       body(
-         if L^.Ref > 0 then 
-           Dec(L^.Ref);
-         if L^.Ref = 0 then
-           FreeMem(L);
-       )
+       body()
        procedure WULong(L: PLong);
-       body(
-         LongIncRef(L);
-       )
+       body()
        function OForthMachine.WOLong: PLong;
-       body(
-         Result := PLong(WP^);
-         Dec(WP, SizeOf(PLong));
-       )
+       body()
        procedure long_add cmdhdr;
        var
          A, B, C: PLong;
-         I, Carry: Integer;
+         I, Carry, M, N: Integer;
        body(
-         B := WOLong;
-         A := WOLong;
-         LongAlloc(C, Max(A^.Len, B^.Len) + 1);
          Carry := 0;
-         for I := 0 to Min(A^.Len, B^.Len) - 1 do begin
-           C^.V[I] := A^.V[I] + B^.V[I] + Carry;
-           Carry := 0;
+         A := BWO;
+         B := BWO;
+         M := Max(A^.Len, B.Len^);
+         N := Min(A^.Len, B.Len^);
+         LongAlloc(C, M + 1);
+         C^.Ref := 0;
+         C^.Flags := 0;
+         C^.Len := M;
+         C^.Max := M + 1;
+         for I := 0 to N - 1 do
+           C^.V[I] := AddWithCarryAndUpdate(A^.V[I], B^.V[I], Carry);
+         if A^.Len > B^.Len then
+           for I := N to M - 1 do
+             C^.V[I] := AddWithCarryAndUpdate(A^.V[I], 0, Carry)
+         else
+           for I := N to M - 1 do
+             C^.V[I] := AddWithCarryAndUpdate(B^.V[I], 0, Carry);
+         if Carry <> 0 then begin
+           C^.V[M] := Carry;
+           C^.Len := M + 1;
          end;
        )
        procedure long_sub cmdhdr;
-       body(
-       )
+       body()
        procedure long_inc cmdhdr;
-       body(
-       )
+       body()
        procedure long_dec cmdhdr;
-       body(
-       )
+       body()
        procedure long_mul cmdhdr; 
-       body(
-       )
+       body()
        procedure long_div cmdhdr;
-       body(
-       )
+       body()
        procedure long_mod cmdhdr;
-       body(
-       )
+       body()
        procedure long_divmod cmdhdr;
-       body(
-       )
+       body()
        procedure int_to_long cmdhdr;
-       body(
-       )
+       body()
        procedure long_to_int cmdhdr;
-       body(
-       )
+       body()
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -1106,12 +1091,12 @@ type
   end;
   PType = ^TType;
 
-  TWordSpace = record
-    C: array of PForthCommand;
-    L: Integer;
-    S: Integer;
+  TEmbroItemInfo = packed record
+    Typ: TUInt8;
+    Size: TUInt16;
+    Reserver: TUInt8;
   end;
-{$IFNDEF FLAG_FPC}{$REGION 'TForthMachine'}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'OForthMachine'}{$ENDIF}
 OForthMachine = object
 {$IFNDEF FLAG_FPC}{$REGION 'machine datas'}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
@@ -1130,6 +1115,12 @@ OForthMachine = object
   EC: Integer; // Embro Counter (E[EC])
   EL: Integer; // Embro Last compiled
   ES: Integer; // Embro Size (Length(E))
+  Embro: array of Cardinal;
+  EmbroB: Pointer;
+  EmbroP: Integer;
+  EmbroL: Integer;
+  EmbroS: Integer;
+  EmbroI: array of TEmbroItemInfo;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'R'}{$ENDIF}
   R: array of Byte; // Return stack
@@ -1148,7 +1139,6 @@ OForthMachine = object
   // Command COmpile
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'LOCALS'}{$ENDIF}
-   Local: TWordSpace;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
  {D: array of Byte; // Data
@@ -1411,6 +1401,7 @@ OForthMachine = object
   pop_interface(LOU64, TUInt64, LP);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'V'}{$ENDIF}
+  function HighTarget: PVoc;
   procedure ContextPush(V: PVoc);
   function ContextPop: PVoc;
   procedure TargetPush(V: PVoc);
@@ -1563,6 +1554,8 @@ end;
   procedure EvaluateFile(Machine: TForthMachine; Command: PForthCommand);
   procedure _FIND_(Machine: TForthMachine; Command: PForthCommand);
   procedure _NOTFOUND_(Machine: TForthMachine; Command: PForthCommand);
+  procedure _align(Machine: TForthMachine; Command: PForthCommand);
+  procedure _palign(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TBoolCommands'}{$ENDIF}
 procedure _bool_push(Machine: TForthMachine; Command: PForthCommand);
@@ -1714,10 +1707,6 @@ function IsBuiltin(Command: PForthCommand): Boolean;
 procedure SetBuiltin(Command: PForthCommand; I: Boolean);
 function CopyStrToPChar(const B: TString): PChar;
 
-procedure WordListClear(var WL: TWordSpace);
-function WordListInsert(var WL: TWordSpace; Command: PForthCommand): Integer;
-function WordListFind(var WL: TWordSpace; B: TString; var Opcode: TOpcode): Boolean;
-
 implementation
 
 function IsImmediate(Command: PForthCommand): Boolean;
@@ -1753,34 +1742,6 @@ function CopyStrToPChar(const B: TString): PChar;
 begin
   Result := StrAlloc(Length(B) + 1);
   StrCopy(Result, PChar(B));
-end;
-
-procedure WordListClear(var WL: TWordSpace);
-begin
-  SetLength(WL.C, 0);
-  WL.L := 0;
-  WL.S := 0;
-end;
-
-function WordListInsert(var WL: TWordSpace; Command: PForthCommand): Integer;
-begin
-  SetLength(WL.C, Length(WL.C) + 1);
-  WL.C[High(WL.C)] := Command;
-  WL.L := Length(WL.C);
-  Result := High(WL.C);
-end;
-
-function WordListFind(var WL: TWordSpace; B: TString; var Opcode: TOpcode): Boolean;
-var
-  I: Integer;
-begin
-  for I := WL.L - 1 downto 0 do
-    if TString(WL.C[I]) = B then begin
-      Result := True;
-      Opcode := I;
-      Exit;
-    end;
-  Result := False;
 end;
 
 {$IFNDEF FLAG_FPC}{$REGION 'TBoolCommands'}{$ENDIF}
@@ -3486,12 +3447,12 @@ end;
 
 procedure OForthMachine.OnUpdateCommand(Opcode: Integer);
 begin
-  VocAdd(Target[High(Target)], Opcode);
+  VocAdd(HighTarget, Opcode);
   // Writeln('Add command ', C[Opcode]^.Name);
   if C[Opcode]^.Name = '_FIND_' then
-    Target[High(Target)].sFIND := Opcode
+    HighTarget.sFIND := Opcode
   else if C[Opcode]^.Name = '_NOTFOUND_' then
-    Target[High(Target)].sNOTFOUND := Opcode
+    HighTarget.sNOTFOUND := Opcode
 end;
 
 procedure OForthMachine.OnUpdateCommand(Command: PForthCommand);
@@ -4082,6 +4043,16 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
+function OForthMachine.HighTarget: PVoc;
+var
+  I: Integer;
+begin
+  I := High(Target);
+  while (I > 0) and (Target[I] = nil) do
+    Dec(I);
+  Result := Target[I];
+end;
+
 procedure OForthMachine.ContextPush(V: PVoc);
 begin
   SetLength(Context, Length(Context) + 1);
@@ -4159,7 +4130,6 @@ begin
   CB := @C[0];
   CC := 0;
   CS := Length(C);
-  WordListClear(Local);
   {SetLength(D, 1024 * 1024);
   DB := @D[0];
   Here := DB;
@@ -4386,6 +4356,8 @@ begin
   end;
   //Time := GetTimer;
   for I := High(Context) downto 0 do begin
+    if Context[I] = nil then
+      continue;
     if Context[I]^.sNOTFOUND = -1 then
       continue;
     WUS(S_);
@@ -4836,6 +4808,8 @@ begin
     B := WOS;
     with Machine^ do begin
       for I := High(Context) downto 0 do begin
+        if Context[I] = nil then
+          continue;
         Item := Context[I].Item;
         while Item <> nil do begin
           if TString(C[Item^.Index]^.Name) = B then begin
@@ -4884,10 +4858,13 @@ var
 begin
   I := High(Context);
   while I >= 0 do
-    if Context[I].sFIND = -1 then
-      Dec(I)
-    else
-      Break;
+    if Context[I] <> nil then begin
+      if Context[I].sFIND = -1 then
+        Dec(I)
+      else
+        Break;
+    end else
+      Dec(I);
   // Writeln('I = ', I);
   if I <> -1 then begin
     WUS(Name);

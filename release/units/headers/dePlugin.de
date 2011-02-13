@@ -1,5 +1,6 @@
 // 2010.02.10 # Doj
 // Заголовок к плагинам DEmbro
+// НЕ ТРОГАТЬ НИЧЕГО! ОПИСАНИЯ ДОЛЖНЫ СОВПАДАТЬ С ЯДРОМ DEMBRO!
 
 include" core\createwords.de"
 
@@ -7,24 +8,24 @@ namespace DE_PLUGIN
 
 // {{{ constants
 // params' type
-enum paramtype:
+0 enum paramtype:
 paramtype: TYPE_INT
 paramtype: TYPE_STR
 paramtype: TYPE_DATA
 
 // params' id
-enum paramid:
+0 enum paramid:
 paramid: ID_APPTYPE
 paramid: ID_OUTPUT
 paramid: ID_COMMANDS
 paramid: ID_CODE
 
 // ID_APPTYPE
-enum apptype:
+0 enum apptype:
 apptype: APPTYPE_CONSOLE
 apptype: APPTYPE_GUI
 
-enum embrotype:
+0 enum embrotype:
 // Неоднородные данные
 // Если embro[i].type == ET_DATA, то участок памяти начиная
 // с &embro[i+1] размером embro[i].size байт хранит данные, 
@@ -59,6 +60,7 @@ embrotype: ET_PARAM
 // }}}
 // {{{ types
   
+// 
 // name -- Имя команды
 // flags -- флаги; 
 //   bit0 является ли команда immediate (immediate флаг)
@@ -101,6 +103,14 @@ struct embroitem_s
   t_ptr    -- .items
 struct embro_s 
 // }}}
+// {{{ functions
+: util-- c; ptr, t_ptr -- ;
+0
+  // Переводит число байт в число ячеек, которые они занимают
+  :noname ( i-i) 1 cells 1- + 1 cells div 1 max ; 
+  :c-noname t_int t_int stdcall util-- datasize->offset
+struct s_utils
+// }}}
 // {{{ prototypes
 declare-header dePlugin
 // в type должно быть возвращено 1
@@ -117,4 +127,5 @@ declare-header dePlugin
 : dep-load-plugin ( filename -- p false | i) ;
 : p! ( ii-) swap DE_INT swap 0 depSetParam ;
 // }}}
-^^^
+
+/namespace

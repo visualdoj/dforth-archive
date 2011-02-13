@@ -15,7 +15,7 @@ struct s_header
 // Создаёт переменную типа s_header и инициализирует стандартными значениями
 : declare-header ( conv "name" --) source-next-name-passive create
    here s_header allot ( conv name ptr) 
-   dup .funcs 128 dyn-new swap ! ( conv name ptr) 
+   dup .funcs 128 dyn-new swap ptr! ( conv name ptr) 
    tuck .name c! ( conv ptr) .conv ! ;
 // Завершить объявление alien-функции с добалением в переданную структуру s_header
 : header; ( .h-) dup 0 l! .conv @ ['] a; execute 0 l@ last swap .funcs @ dyn+ ; immediate

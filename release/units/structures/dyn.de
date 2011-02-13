@@ -16,7 +16,7 @@ wp
                        dup dyn.len 0 swap ! 
                        dup dyn.max lrot swap !
                        dup dyn.max @
-                       cells malloc swap dyn.ptr ! ;
+                       cells malloc swap dyn.ptr ptr! ;
 : dyn-new ( i-p) dyn-struct malloc dup rrot dyn.init ;
 : dyn.free ( p-) dup dyn.ptr @ free free ;
 : dyn[] ( id-i) dyn.ptr @ swap cells + ;

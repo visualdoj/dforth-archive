@@ -8,6 +8,9 @@ interface
 
 
 
+
+
+
 uses
   {$I units.inc},Math,strings,DAlien,DVocabulary,DForthStack;
 
@@ -151,12 +154,7 @@ type
   end;
   PType = ^TType;
 
-  TWordSpace = record
-    C: array of PForthCommand;
-    L: Integer;
-    S: Integer;
-  end;
-{$IFNDEF FLAG_FPC}{$REGION 'TForthMachine'}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'OForthMachine'}{$ENDIF}
 OForthMachine = object
 {$IFNDEF FLAG_FPC}{$REGION 'machine datas'}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'W'}{$ENDIF}
@@ -193,7 +191,6 @@ OForthMachine = object
   // Command COmpile
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'LOCALS'}{$ENDIF}
-   Local: TWordSpace;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'D'}{$ENDIF}
  {D: array of Byte; // Data
@@ -625,6 +622,7 @@ OForthMachine = object
   ;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'V'}{$ENDIF}
+  function HighTarget: PVoc;
   procedure ContextPush(V: PVoc);
   function ContextPop: PVoc;
   procedure TargetPush(V: PVoc);
@@ -2068,10 +2066,6 @@ function IsBuiltin(Command: PForthCommand): Boolean;
 procedure SetBuiltin(Command: PForthCommand; I: Boolean);
 function CopyStrToPChar(const B: TString): PChar;
 
-procedure WordListClear(var WL: TWordSpace);
-function WordListInsert(var WL: TWordSpace; Command: PForthCommand): Integer;
-function WordListFind(var WL: TWordSpace; B: TString; var Opcode: TOpcode): Boolean;
-
 implementation
 
 function IsImmediate(Command: PForthCommand): Boolean;
@@ -2107,34 +2101,6 @@ function CopyStrToPChar(const B: TString): PChar;
 begin
   Result := StrAlloc(Length(B) + 1);
   StrCopy(Result, PChar(B));
-end;
-
-procedure WordListClear(var WL: TWordSpace);
-begin
-  SetLength(WL.C, 0);
-  WL.L := 0;
-  WL.S := 0;
-end;
-
-function WordListInsert(var WL: TWordSpace; Command: PForthCommand): Integer;
-begin
-  SetLength(WL.C, Length(WL.C) + 1);
-  WL.C[High(WL.C)] := Command;
-  WL.L := Length(WL.C);
-  Result := High(WL.C);
-end;
-
-function WordListFind(var WL: TWordSpace; B: TString; var Opcode: TOpcode): Boolean;
-var
-  I: Integer;
-begin
-  for I := WL.L - 1 downto 0 do
-    if TString(WL.C[I]) = B then begin
-      Result := True;
-      Opcode := I;
-      Exit;
-    end;
-  Result := False;
 end;
 
 {$IFNDEF FLAG_FPC}{$REGION 'TBoolCommands'}{$ENDIF}
@@ -3840,12 +3806,12 @@ end;
 
 procedure OForthMachine.OnUpdateCommand(Opcode: Integer);
 begin
-  VocAdd(Target[High(Target)], Opcode);
+  VocAdd(HighTarget, Opcode);
   // Writeln('Add command ', C[Opcode]^.Name);
   if C[Opcode]^.Name = '_FIND_' then
-    Target[High(Target)].sFIND := Opcode
+    HighTarget.sFIND := Opcode
   else if C[Opcode]^.Name = '_NOTFOUND_' then
-    Target[High(Target)].sNOTFOUND := Opcode
+    HighTarget.sNOTFOUND := Opcode
 end;
 
 procedure OForthMachine.OnUpdateCommand(Command: PForthCommand);
@@ -4436,6 +4402,16 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
+function OForthMachine.HighTarget: PVoc;
+var
+  I: Integer;
+begin
+  I := High(Target);
+  while (I > 0) and (Target[I] = nil) do
+    Dec(I);
+  Result := Target[I];
+end;
+
 procedure OForthMachine.ContextPush(V: PVoc);
 begin
   SetLength(Context, Length(Context) + 1);
@@ -4513,7 +4489,6 @@ begin
   CB := @C[0];
   CC := 0;
   CS := Length(C);
-  WordListClear(Local);
   {SetLength(D, 1024 * 1024);
   DB := @D[0];
   Here := DB;
@@ -5824,6 +5799,8 @@ begin
   end;
   //Time := GetTimer;
   for I := High(Context) downto 0 do begin
+    if Context[I] = nil then
+      continue;
     if Context[I]^.sNOTFOUND = -1 then
       continue;
     WUS(S_);
@@ -6274,6 +6251,8 @@ begin
     B := WOS;
     with Machine^ do begin
       for I := High(Context) downto 0 do begin
+        if Context[I] = nil then
+          continue;
         Item := Context[I].Item;
         while Item <> nil do begin
           if TString(C[Item^.Index]^.Name) = B then begin
@@ -6322,10 +6301,13 @@ var
 begin
   I := High(Context);
   while I >= 0 do
-    if Context[I].sFIND = -1 then
-      Dec(I)
-    else
-      Break;
+    if Context[I] <> nil then begin
+      if Context[I].sFIND = -1 then
+        Dec(I)
+      else
+        Break;
+    end else
+      Dec(I);
   // Writeln('I = ', I);
   if I <> -1 then begin
     WUS(Name);
