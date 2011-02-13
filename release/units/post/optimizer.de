@@ -1,12 +1,12 @@
 // 2011.02.13 # Doj
-// Оптимизатор кода — подключает плагины и оптимизирует дембро-машину
+// РћРїС‚РёРјРёР·Р°С‚РѕСЂ РєРѕРґР° вЂ” РїРѕРґРєР»СЋС‡Р°РµС‚ РїР»Р°РіРёРЅС‹ Рё РѕРїС‚РёРјРёР·РёСЂСѓРµС‚ РґРµРјР±СЂРѕ-РјР°С€РёРЅСѓ
 
 dembro-create value *optimizer*
   
   str0 *optimizer* dembro-bpush 
   *optimizer* dembro-load-system
 
-  " optimize.de" *optimizer* dembro-bpush 
+  " units\post\optimize.de" *optimizer* dembro-bpush 
   dembro-self *optimizer* dembro-push
   *optimizer* dup dembro-evaluate-file
 
