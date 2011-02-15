@@ -134,6 +134,7 @@ type
   TStrRec = packed record
     Ref: TInt;
     Len: TInt;
+    Width: TInt;
     Sym: array[0..1] of TChar;
   end;
   PStrRec = ^TStrRec;
@@ -1934,6 +1935,13 @@ end;
   procedure _NOTFOUND_(Machine: TForthMachine; Command: PForthCommand);
   procedure _align(Machine: TForthMachine; Command: PForthCommand);
   procedure _palign(Machine: TForthMachine; Command: PForthCommand);
+  procedure _poststr (Machine: TForthMachine; Command: PForthCommand);
+  procedure _postname (Machine: TForthMachine; Command: PForthCommand);
+  procedure _raw_2_unicode (Machine: TForthMachine; Command: PForthCommand);
+  procedure _utf8_2_unicode (Machine: TForthMachine; Command: PForthCommand);
+  procedure _utf8_2_raw (Machine: TForthMachine; Command: PForthCommand);
+  procedure _unicode_2_utf8 (Machine: TForthMachine; Command: PForthCommand);
+  procedure _unicode_2_raw (Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TBoolCommands'}{$ENDIF}
 procedure _bool_push(Machine: TForthMachine; Command: PForthCommand);
@@ -3523,9 +3531,10 @@ procedure str_push(Machine: TForthMachine; Command: PForthCommand; B: TString);
 var
   FS: TStr;
 begin
-  GetMem(FS, SizeOf(Integer)*2 + Length(B) + 1);
+  GetMem(FS, SizeOf(Integer)*3 + Length(B) + 1);
   PStrRec(FS)^.Len := Length(B);
   PStrRec(FS)^.Ref := 0;
+  PStrRec(FS)^.Width := 0;
   Move(B[1], PStrRec(FS)^.Sym[0], Length(B));
   PStrRec(FS)^.Sym[Length(B)] := #0;
   str_push(Machine, Command, FS);
@@ -3610,9 +3619,10 @@ begin
         Temp[High(Temp)] := C; 
         C := Machine.NextChar;
       end; 
-      GetMem(B, 2*SizeOf(TInt) + Length(Temp) + 1);
+      GetMem(B, 3*SizeOf(TInt) + Length(Temp) + 1);
       PStrRec(B)^.Len := Length(Temp);
       PStrRec(B)^.Ref := 0;
+      PStrRec(B)^.Width := 1;
       Move(Temp[0], PStrRec(B)^.Sym[0], Length(Temp));
       PStrRec(B)^.Sym[Length(Temp)] := #0;
       str_push(Machine, Command, B);
@@ -3634,6 +3644,7 @@ begin
       Machine.EWI(1);
       E := Machine.EL;
       Machine.EWI(0);
+      Machine.EWI(1);
       C := Machine.NextChar;
       L := 0;
       while C <> '"' do begin
@@ -3646,8 +3657,9 @@ begin
     end else begin
       str_dq(Machine, Command);
       S := PStrRec(TBlock(Pointer(TUInt(Machine.BWP) + (-(SizeOf(Pointer)))*(SizeOf(Pointer)))^));
+      Machine.EWO('(str)"');
       E := Machine.EL;
-      Machine.EWV(S, SizeOf(Integer)*2 + S^.Len + 1);
+      Machine.EWV(S, SizeOf(Integer)*3 + S^.Len + 1);
       Integer(Pointer(@Machine.E[E])^) := 1;
     end;
  // end;
@@ -3660,7 +3672,7 @@ begin
  // with Machine^ do begin
     B := @Machine.E[Machine.EC];
     str_push(Machine, Command, B);
-    Inc(Machine.EC, 2*SizeOf(TInt) + PStrRec(B)^.Len + 1);
+    Inc(Machine.EC, 3*SizeOf(TInt) + PStrRec(B)^.Len + 1);
  // end;
 end;
 
@@ -3700,9 +3712,10 @@ begin
  // with Machine^ do begin
     B := str_pop(Machine, Command);
     A := str_pop(Machine, Command);
-    GetMem(B, 2*SizeOf(TInt) + PStrRec(A)^.Len + PStrRec(B)^.Len + 1);
+    GetMem(B, 3*SizeOf(TInt) + PStrRec(A)^.Len + PStrRec(B)^.Len + 1);
     PStrRec(B)^.Ref := 0;
     PStrRec(B)^.Len := PStrRec(A)^.Len + PStrRec(B)^.Len;
+    PStrRec(B)^.Width := Max(PStrRec(A)^.Width, PStrRec(B)^.Width);
     Move(PStrRec(A)^.Sym[0], PStrRec(B)^.Sym[0], PStrRec(A)^.Len);
     Move(PStrRec(B)^.Sym[0], PStrRec(B)^.Sym[PStrRec(A)^.Len], PStrRec(B)^.Len);
     PStrRec(B)^.Sym[PStrRec(B)^.Len] := #0;
@@ -3748,9 +3761,10 @@ var
 begin
   with Machine^ do begin
     Read(B); 
-    GetMem(P, 2*SizeOf(Integer) + Length(B) + 1);
+    GetMem(P, 3*SizeOf(Integer) + Length(B) + 1);
     PStrRec(P)^.Ref := 0;
     PStrRec(P)^.Len := Length(B);
+    PStrRec(P)^.Width := 1;
     Move(B[1], PStrRec(P)^.Sym[0], Length(B));
     PStrRec(P)^.Sym[Length(B)] := #0;
     str_push(Machine, Command, P);
@@ -4195,9 +4209,10 @@ end;
 
 function CreateStr(const S: TString): TStr;
 begin
-  GetMem(Result, SizeOf(Integer)*2 + Length(S) + 1);
+  GetMem(Result, SizeOf(Integer)*3 + Length(S) + 1);
   PStrRec(Result)^.Ref := 0;
   PStrRec(Result)^.Len := Length(S);
+  PStrRec(Result)^.Width := 1;
   Move(S[1], PStrRec(Result)^.Sym[0], Length(S));
   PStrRec(Result)^.Sym[LengtH(S)] := #0;
 end;
@@ -4208,7 +4223,7 @@ var
 begin
   B := CreateStr(V);
   PStrRec(B)^.Ref := 1;
-  EWV(B, SizeOf(Integer)*2 + PStrRec(B)^.Len + 1);
+  EWV(B, SizeOf(Integer)*3 + PStrRec(B)^.Len + 1);
 
   FEmbroDump[High(FEmbroDump)] := FEmbroDump[High(FEmbroDump)] + ' "' + V + '" ';
 end;
@@ -4499,6 +4514,7 @@ begin
   GetMem(FStrNil, 2*SizeOf(TInt) + 1);
   PStrRec(FStrNil)^.Ref := 1;
   PStrRec(FStrNil)^.Len := 0;
+  PStrRec(FStrNil)^.Width := 0;
   PStrRec(FStrNil)^.Sym := #0;
 
   SetLength(E, 1024 * 1024);
@@ -4571,6 +4587,8 @@ begin
   AddCommand('context>', _ContextPop);
   AddCommand('align', _align);
   AddCommand('palign', _palign);
+  AddCommand('*poststr*', _poststr);
+  AddCommand('*postname*', _poststr);
   
   AddCommand('w>b', _WtoB);
   AddCommand('b>w', _BtoW);
@@ -6351,6 +6369,24 @@ procedure _palign(Machine: TForthMachine; Command: PForthCommand);
 begin
   _align(Machine, Command);
 end;
+
+procedure _poststr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(@ConvStr) end; end;
+procedure _postname (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(@ConvName) end; end;
+
+procedure _raw_2_unicode (Machine: TForthMachine; Command: PForthCommand);
+begin with Machine^ do begin  end; end;
+
+procedure _utf8_2_unicode (Machine: TForthMachine; Command: PForthCommand);
+begin with Machine^ do begin  end; end;
+
+procedure _utf8_2_raw (Machine: TForthMachine; Command: PForthCommand);
+begin with Machine^ do begin  end; end;
+
+procedure _unicode_2_utf8 (Machine: TForthMachine; Command: PForthCommand);
+begin with Machine^ do begin  end; end;
+
+procedure _unicode_2_raw (Machine: TForthMachine; Command: PForthCommand);
+begin with Machine^ do begin  end; end;
 
 function OForthMachine.FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
 var
