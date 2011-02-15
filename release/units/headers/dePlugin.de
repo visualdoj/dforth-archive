@@ -94,7 +94,7 @@ struct table_s
   t_uint8  -- .type
   t_uint16 -- .size
   t_uint8  -- .reserved
-  // TODO align
+  align
   t_uint   -- .value
 struct embroitem_s
 
