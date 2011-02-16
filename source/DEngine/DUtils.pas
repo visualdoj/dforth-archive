@@ -34,6 +34,10 @@ PArrayOfByte = ^TArrayOfByte;
 TArrayOfByte = array[-High(Word)..+High(Word)] of Byte;
 PArrayOfSingle = ^TArrayOfSingle;
 TArrayOfSingle = array[0..1] of Single;
+PArrayOfWord = ^TArrayOfWord;
+TArrayOfWord = array[0..1] of Word;
+PArrayOfCardinal = ^TArrayOfCardinal;
+TArrayOfCardinal = array[0..1] of Cardinal;
 
 PCrossChar = {$IFDEF FLAG_FPC}PAnsiChar{$ELSE}PWideChar{$ENDIF};
 

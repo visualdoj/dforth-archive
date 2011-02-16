@@ -135,7 +135,7 @@ type
     Ref: TInt;
     Len: TInt;
     Width: TInt;
-    Sym: array[0..1] of TChar;
+    Sym: array[0..1] of Byte;
   end;
   PStrRec = ^TStrRec;
   TStr = PStrRec;
@@ -3506,6 +3506,115 @@ begin
   Write(B);
 end;
 
+function CreateStr(Width, Len: Integer): TStr; overload;
+begin
+  GetMem(Result, SizeOf(Integer)*3 + Len*Width + 1);
+  PStrRec(Result)^.Ref := 0;
+  PStrRec(Result)^.Len := Len;
+  PStrRec(Result)^.Width := Width;
+  PStrRec(Result)^.Sym[Len*Width] := 0;
+end;
+
+function CreateStr(const S: TString): TStr; overload;
+begin
+  Result := CreateStr(1, Length(S));
+  Move(S[1], PStrRec(Result)^.Sym[0], Length(S));
+end;
+
+function StrSymbol(S: TStr; Index: Integer): Cardinal;
+begin
+  case S^.Width of
+    0: Result := 0;
+    1: Result := S^.Sym[Index];
+    2: Result := Word(Pointer(@S^.Sym[2*Index])^);
+    4: Result := Cardinal(Pointer(@S^.Sym[4*Index])^);
+  else
+    Result := 0;
+  end;
+end;
+
+function char4to1(C: Cardinal): Byte;
+begin
+  if C > 255 then
+    Result := Ord('?')
+  else
+    Result := C;
+end;
+
+function char4to2(C: Cardinal): Byte;
+begin
+  if C > 256*256 - 1 then
+    Result := Ord('?')
+  else
+    Result := C;
+end;
+
+function char2to1(C: Word): Byte;
+begin
+  if C > 256 - 1 then
+    Result := Ord('?')
+  else
+    Result := C;
+end;
+
+procedure MoveChars(Dst, Src: Pointer; Len, DSize, SSize: Integer);
+var
+  I: Integer;
+begin
+  if SSize = DSize then
+    Move(Src^, Dst^, Len*SSize)
+  else if DSize = 4 then begin
+    //FillChar(Dst^, Len*4, 0);
+    if SSize = 1 then begin
+      for I := 0 to Len - 1 do
+        PArrayOfCardinal(Dst)^[I] := PArrayOfByte(Src)^[I];
+    end else begin
+      for I := 0 to Len - 1 do
+        PArrayOfCardinal(Dst)^[I] := PArrayOfWord(Src)^[I];
+    end;
+  end else if DSize = 1 then begin
+    if SSize = 4 then begin
+      for I := 0 to Len - 1 do
+        PArrayOfByte(Dst)^[I] := char4to1(PArrayOfCardinal(Src)^[I]);
+    end else begin
+      for I := 0 to Len - 1 do
+        PArrayOfByte(Dst)^[I] := char2to1(PArrayOfWord(Src)^[I]);
+    end;
+  end else begin {DSize = 2}
+    if SSize = 4 then begin
+      for I := 0 to Len - 1 do
+        PArrayOfWord(Dst)^[I] := char4to2(PArrayOfCardinal(Src)^[I]);
+    end else begin
+      //FillChar(Dst^, Len*2, 0);
+      for I := 0 to Len - 1 do
+        PArrayOfWord(Dst)^[I] := PArrayOfByte(Src)^[I];
+    end;
+  end;
+end;
+
+procedure SetStrSymbol(S: TStr; Index: Integer; C: Cardinal);
+begin
+  case S^.Width of
+    1: S^.Sym[Index] := char4to1(C);
+    2: Word(Pointer(@S^.Sym[2*Index])^) := char4to2(C);
+    4: Cardinal(Pointer(@S^.Sym[4*Index])^) := C;
+  end;
+end;
+
+function StrToString(S: TStr): TString;
+var
+  I: Integer;
+begin
+  SetLength(Result, S^.Len);
+  case S^.Width of
+    1: Move(S^.Sym[0], Result[1], S^.Len);
+    2: for I := 0 to S^.Len do 
+         Result[I] := Char(char2to1(Word(Pointer(@S^.Sym[I*2])^)));
+    4: for I := 0 to S^.Len do 
+         Result[I] := Char(char4to1(Word(Pointer(@S^.Sym[I*4])^)));
+  end;
+end;
+
 procedure AddRef(B: TStr);
 begin
   if B = nil then 
@@ -3534,9 +3643,9 @@ begin
   GetMem(FS, SizeOf(Integer)*3 + Length(B) + 1);
   PStrRec(FS)^.Len := Length(B);
   PStrRec(FS)^.Ref := 0;
-  PStrRec(FS)^.Width := 0;
+  PStrRec(FS)^.Width := 1;
   Move(B[1], PStrRec(FS)^.Sym[0], Length(B));
-  PStrRec(FS)^.Sym[Length(B)] := #0;
+  PStrRec(FS)^.Sym[Length(B)] := 0;
   str_push(Machine, Command, FS);
 end;
 
@@ -3624,7 +3733,7 @@ begin
       PStrRec(B)^.Ref := 0;
       PStrRec(B)^.Width := 1;
       Move(Temp[0], PStrRec(B)^.Sym[0], Length(Temp));
-      PStrRec(B)^.Sym[Length(Temp)] := #0;
+      PStrRec(B)^.Sym[Length(Temp)*PStrRec(B)^.Width] := 0;
       str_push(Machine, Command, B);
       Machine.ConvStr^.Code(Machine, Machine.ConvStr);
     //end;
@@ -3707,21 +3816,19 @@ end;
 
 procedure str_concat(Machine: TForthMachine; Command: PForthCommand);
 var
-  A, B: TStr;
+  Width, I: Integer;
+  A, B, C: TStr;
 begin
  // with Machine^ do begin
     B := str_pop(Machine, Command);
     A := str_pop(Machine, Command);
-    GetMem(B, 3*SizeOf(TInt) + PStrRec(A)^.Len + PStrRec(B)^.Len + 1);
-    PStrRec(B)^.Ref := 0;
-    PStrRec(B)^.Len := PStrRec(A)^.Len + PStrRec(B)^.Len;
-    PStrRec(B)^.Width := Max(PStrRec(A)^.Width, PStrRec(B)^.Width);
-    Move(PStrRec(A)^.Sym[0], PStrRec(B)^.Sym[0], PStrRec(A)^.Len);
-    Move(PStrRec(B)^.Sym[0], PStrRec(B)^.Sym[PStrRec(A)^.Len], PStrRec(B)^.Len);
-    PStrRec(B)^.Sym[PStrRec(B)^.Len] := #0;
+    Width := Max(A^.Width, B^.Width);
+    C := CreateStr(Width, A^.Len + B^.Len);
+    MoveChars(@C^.Sym[0],            @A^.Sym[0], A^.Len, Width, A^.Width);
+    MoveChars(@C^.Sym[A^.Len*Width], @B^.Sym[0], B^.Len, Width, B^.Width);
     DelRef(A);
     DelRef(B);
-    str_push(Machine, Command, B);
+    str_push(Machine, Command, C);
  // end;
 end;
 
@@ -3741,13 +3848,13 @@ begin
     B := str_pop(Machine, Command);
     I := 0;
     while I < PStrRec(B)^.Len do begin
-      if PStrRec(B)^.Sym[I] = #13{'\'} then begin
+      if PStrRec(B)^.Sym[I] = 13{'\'} then begin
         //if PStrRec(B)^.Sym[I+1] = 'n' then begin
           Writeln;
         //  Inc(I);
         //end;
       end else
-        Write(PStrRec(B)^.Sym[I]);
+        Write(Char(char4to1(StrSymbol(B, I))));
       Inc(I);
     end;
     DelRef(B);
@@ -3766,7 +3873,7 @@ begin
     PStrRec(P)^.Len := Length(B);
     PStrRec(P)^.Width := 1;
     Move(B[1], PStrRec(P)^.Sym[0], Length(B));
-    PStrRec(P)^.Sym[Length(B)] := #0;
+    PStrRec(P)^.Sym[Length(B)] := 0;
     str_push(Machine, Command, P);
   end;
 end;
@@ -4207,16 +4314,6 @@ begin
   // TODO
 end;
 
-function CreateStr(const S: TString): TStr;
-begin
-  GetMem(Result, SizeOf(Integer)*3 + Length(S) + 1);
-  PStrRec(Result)^.Ref := 0;
-  PStrRec(Result)^.Len := Length(S);
-  PStrRec(Result)^.Width := 1;
-  Move(S[1], PStrRec(Result)^.Sym[0], Length(S));
-  PStrRec(Result)^.Sym[LengtH(S)] := #0;
-end;
-
 procedure OForthMachine.EWStr(V: TString);
 var
   B: TStr;
@@ -4430,7 +4527,7 @@ var
   S_: PStrRec;
 begin
   S_ := str_pop(@Self, nil);
-  Result := TString(PChar(@S_^.Sym[0]));
+  Result := StrToString(S_);
   DelRef(S_);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -4515,7 +4612,7 @@ begin
   PStrRec(FStrNil)^.Ref := 1;
   PStrRec(FStrNil)^.Len := 0;
   PStrRec(FStrNil)^.Width := 0;
-  PStrRec(FStrNil)^.Sym := #0;
+  PStrRec(FStrNil)^.Sym[0] := 0;
 
   SetLength(E, 1024 * 1024);
   EB := @E[0];
@@ -4588,7 +4685,12 @@ begin
   AddCommand('align', _align);
   AddCommand('palign', _palign);
   AddCommand('*poststr*', _poststr);
-  AddCommand('*postname*', _poststr);
+  AddCommand('*postname*', _postname);
+  AddCommand('utf8->unicode', _utf8_2_unicode);
+  AddCommand('utf8->raw', _utf8_2_raw);
+  AddCommand('raw->unicode', _raw_2_unicode);
+  AddCommand('unicode->utf8', _unicode_2_utf8);
+  AddCommand('unicode->raw', _unicode_2_raw);
   
   AddCommand('w>b', _WtoB);
   AddCommand('b>w', _BtoW);
@@ -6374,7 +6476,15 @@ procedure _poststr (Machine: TForthMachine; Command: PForthCommand); begin with 
 procedure _postname (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(@ConvName) end; end;
 
 procedure _raw_2_unicode (Machine: TForthMachine; Command: PForthCommand);
-begin with Machine^ do begin  end; end;
+var
+  B, C: TStr;
+begin
+  B := str_pop(Machine, Command);
+  C := CreateStr(4, B^.Len);
+  MoveChars(@C^.Sym[0], @B^.Sym[0], B^.Len, 4, B^.Width);
+  DelRef(B);
+  str_push(Machine, Command, C);
+end;
 
 procedure _utf8_2_unicode (Machine: TForthMachine; Command: PForthCommand);
 begin with Machine^ do begin  end; end;
@@ -6386,7 +6496,15 @@ procedure _unicode_2_utf8 (Machine: TForthMachine; Command: PForthCommand);
 begin with Machine^ do begin  end; end;
 
 procedure _unicode_2_raw (Machine: TForthMachine; Command: PForthCommand);
-begin with Machine^ do begin  end; end;
+var
+  B, C: TStr;
+begin
+  B := str_pop(Machine, Command);
+  C := CreateStr(1, B^.Len);
+  MoveChars(@C^.Sym[0], @B^.Sym[0], B^.Len, 1, B^.Width);
+  DelRef(B);
+  str_push(Machine, Command, C);
+end;
 
 function OForthMachine.FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
 var
