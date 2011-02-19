@@ -3527,7 +3527,7 @@ begin
     0: Result := 0;
     1: Result := S^.Sym[Index];
     2: Result := Word(Pointer(@S^.Sym[2*Index])^);
-    4: Result := Cardinal(Pointer(@S^.Sym[4*Index])^);
+    4: Result := PArrayOfCardinal(@S^.Sym[0])^[Index];
   else
     Result := 0;
   end;
@@ -3566,8 +3566,11 @@ begin
   else if DSize = 4 then begin
     //FillChar(Dst^, Len*4, 0);
     if SSize = 1 then begin
-      for I := 0 to Len - 1 do
+      for I := 0 to Len - 1 do begin
+        Write(Char(PArrayOfByte(Src)^[I]));
         PArrayOfCardinal(Dst)^[I] := PArrayOfByte(Src)^[I];
+      end;
+      Writeln;
     end else begin
       for I := 0 to Len - 1 do
         PArrayOfCardinal(Dst)^[I] := PArrayOfWord(Src)^[I];
@@ -3848,13 +3851,13 @@ begin
     B := str_pop(Machine, Command);
     I := 0;
     while I < PStrRec(B)^.Len do begin
-      if PStrRec(B)^.Sym[I] = 13{'\'} then begin
+      if StrSymbol(B, I) = 13{'\'} then begin
         //if PStrRec(B)^.Sym[I+1] = 'n' then begin
           Writeln;
         //  Inc(I);
         //end;
       end else
-        Write(Char(char4to1(StrSymbol(B, I))));
+        Write(Chr(char4to1(StrSymbol(B, I))));
       Inc(I);
     end;
     DelRef(B);
