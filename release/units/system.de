@@ -43,3 +43,6 @@ include" docs\russian.de"
 include" units\core\voc.de"
 
 ." Loaded system file"cr
+include" units\encodings\cp866.de"
+// :noname  utf8->unicode unicode->cp866 ; *poststr* !
+." Привет, мир!"cr

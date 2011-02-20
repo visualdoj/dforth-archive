@@ -6,10 +6,10 @@ uses
   {$ENDIF}
 
   DEncoding in '..\DLocal\DEncoding.pas',
-  DTranslater in '..\DLocal\DTranslater.pas',
+  //DTranslater in '..\DLocal\DTranslater.pas',
 
-  DXML in '..\DParser\DXML.pas',
-  DXMLExecutor in '..\DParser\DXMLExecutor.pas',
+  //DXML in '..\DParser\DXML.pas',
+  //DXMLExecutor in '..\DParser\DXMLExecutor.pas',
   DIni in '..\DParser\DIni.pas',
   DTreeExpr in '..\DParser\DTreeExpr.pas',
 
@@ -31,7 +31,7 @@ uses
   Dx86 in '..\DMachineCode\Dx86.pas',
 
   DAlien,
-  DForthStack,
+  //DForthStack,
   DForthMachine,
   DVocabulary,
   DExecutable,

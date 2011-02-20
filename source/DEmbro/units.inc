@@ -4,12 +4,12 @@
     DMath,
   {$ENDIF}
 
-  DXML,
-  DXMLExecutor,
+  //DXML,
+  //DXMLExecutor,
   DIni,
 
   DEncoding,
-  DTranslater,
+  //DTranslater,
 
   DWinApi,
   DNet,

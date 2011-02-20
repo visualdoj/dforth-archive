@@ -2074,6 +2074,9 @@ procedure _execute(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dollar(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dog(Machine: TForthMachine; Command: PForthCommand);
   procedure str_exclamation(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_new(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_index_dog(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_index_exclamation(Machine: TForthMachine; Command: PForthCommand);
   procedure pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
   procedure Format(Machine: TForthMachine; Command: PForthCommand);
 
@@ -3561,16 +3564,19 @@ procedure MoveChars(Dst, Src: Pointer; Len, DSize, SSize: Integer);
 var
   I: Integer;
 begin
+  // Writeln(Char(Byte(Src^)));
+  // Writeln(Char(TArrayOfByte(Src^)[0]));
+  // Writeln(Char(PArrayOfByte(Src)^[0]));
   if SSize = DSize then
     Move(Src^, Dst^, Len*SSize)
   else if DSize = 4 then begin
     //FillChar(Dst^, Len*4, 0);
     if SSize = 1 then begin
       for I := 0 to Len - 1 do begin
-        Write(Char(PArrayOfByte(Src)^[I]));
+        // Write(Char(PArrayOfByte(Src)^[I]));
         PArrayOfCardinal(Dst)^[I] := PArrayOfByte(Src)^[I];
       end;
-      Writeln;
+      // Writeln;
     end else begin
       for I := 0 to Len - 1 do
         PArrayOfCardinal(Dst)^[I] := PArrayOfWord(Src)^[I];
@@ -3857,7 +3863,7 @@ begin
         //  Inc(I);
         //end;
       end else
-        Write(Chr(char4to1(StrSymbol(B, I))));
+        Write(Char(char4to1(StrSymbol(B, I))));
       Inc(I);
     end;
     DelRef(B);
@@ -3901,6 +3907,33 @@ begin
       AddRef(Pointer(WP^));
     end;
   end;
+end;
+
+procedure str_new(Machine: TForthMachine; Command: PForthCommand);
+var
+  B: TStr;
+  Len, C, Width, I: Integer;
+begin
+  Width := Machine.WOI;
+  C := Machine.WOI;
+  Len := Machine.WOI;
+  B := CreateStr(Width, Len);
+  for I := 0 to Len - 1 do
+    B^.Sym[I*Width] := C;
+  str_push(Machine, Command, B);
+end;
+
+procedure str_index_dog(Machine: TForthMachine; Command: PForthCommand);
+var
+  B, C: TStr;
+  Index: Integer;
+begin
+ // B := str_pop(Machine);
+ // WUI(StrSymbol(B, Machine.WOI));
+end;
+
+procedure str_index_exclamation(Machine: TForthMachine; Command: PForthCommand);
+begin
 end;
 
 procedure pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
@@ -6490,7 +6523,28 @@ begin
 end;
 
 procedure _utf8_2_unicode (Machine: TForthMachine; Command: PForthCommand);
-begin with Machine^ do begin  end; end;
+var
+  B, C: TStr;
+  Len, U: Integer;
+  P: Pointer;
+begin
+  B := str_pop(Machine, Command);
+  C := CreateStr(4, B^.Len);
+  Len := 0;
+  P := @B^.Sym[0];
+  while TUInt(P) < TUInt(@B^.Sym[B^.Len]) do
+    if not ReadUTF8Char(P, U) then
+      Break
+    else begin
+      C^.Sym[Len*4] := U;
+      Inc(Len);
+      Write(Char(U));
+    end;
+  Writeln;
+  C^.Len := Len;
+  DelRef(B);
+  str_push(Machine, Command, C);
+end;
 
 procedure _utf8_2_raw (Machine: TForthMachine; Command: PForthCommand);
 begin with Machine^ do begin  end; end;
