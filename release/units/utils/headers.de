@@ -14,26 +14,27 @@ struct s_header
 
 // Создаёт переменную типа s_header и инициализирует стандартными значениями
 : declare-header ( conv "name" --) source-next-name-passive create
-   here s_header allot ( conv name ptr) 
-   dup .funcs 128 dyn-new swap ptr! ( conv name ptr) 
-   tuck .name c! ( conv ptr) .conv ! ;
-// Завершить объявление alien-функции с добалением в переданную структуру s_header
-: header; ( .h-) dup 0 l! .conv @ ['] a; execute 0 l@ last swap .funcs @ dyn+ ; immediate
+   here s_header allot ( conv ptr) 
+   dup .funcs 128 dyn-new swap ptr! ( conv ptr) 
+   dup .name dup 0 swap ! b! ( conv ptr) .conv ! ;
+// Завершить объявление alien-функции с добавлением в переданную структуру s_header
+: header; ( .h-) [.str]" header; start"cr dup 0 l! .conv @ ['] a; execute last dup . 0 l@ .funcs @ dyn+ [.str]" header done"cr ; immediate
 
 // Обработка ошибки в случае, если функцию не удалось запустить
 : header-load-fun-error ( s-) [str]" [windows] Cannot load fun: " str. str. cr ;
 // Загружает функцию
-: header-load-xt-fun ( lx-) tuck xt.n@ pchar->str ctuck lib-fun
-                 dup 0= if cover header-load-fun-error then cnip swap xt.d@ ! ;
+: header-load-xt-fun ( lx-) tuck dup . xt.n@ pchar->str ." inside" bdup lib-fun
+                 dup 0= if bdup header-load-fun-error then bdrop swap xt.d@ ! ;
 // Загружает i-ую функцию из заголовка h
 : header-load-indexed-fun ( hi) swap dup .lib @ rrot .funcs @ dyn@ header-load-xt-fun ;
 // Загружает функции для заданного заголовка
 // 0 -- удалось, иначе нет
-: header-load ( h-i) dup .name c@ lib-load 0= if lib-unload drop -1 exit then
+: header-load ( h-i) [.str]" header-load start" dup .name b@ lib-load 0= if lib-unload drop -1 exit then
    ( hl) over .lib ! 
    0 begin ( hi) over .funcs @ dyn# over > while 
      over over header-load-indexed-fun 
    1+ repeat drop drop 0 
+   [.str]" header-load done"
 ;
 // Выгружает загаловок
 : header-unload ( h-) .lib @ lib-unload ;

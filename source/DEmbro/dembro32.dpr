@@ -77,6 +77,8 @@ end;
 
 procedure RunSystem;
 begin
+  if CommandLine.System = '' then
+    Exit;
   // 1. command line
   // 2. current dir
   if FileExist(GetCurrentDirectory + '\' + CommandLine.System) then begin
@@ -169,8 +171,8 @@ begin
     end else begin
     end;
   end;
-  Compiler.Free;
-  Machine.Destroy;
+  Machine^.Destroy;
+  //Compiler.Free;
   Dispose(Machine);
   // Writeln('dembro32 out');
 end.

@@ -43,11 +43,13 @@ begin
   Writeln('  <option> -e <filename>           see --evaluate');
   Writeln('           -r                      see --norepl');
   Writeln('           +r                      see --repl');
-  Writeln('           -s <filename>           see --system');
+  Writeln('           -s                      see --nosystem');
+  Writeln('           +s <filename>           see --system');
   Writeln('           -h                      see --help');
   Writeln('           --evaluate <filename>   evaluate file');
   Writeln('           --repl                  run REPL after evaluated all files (default)');
   Writeln('           --norepl                do not run REPL after evaluated all files');
+  Writeln('           --nosystem              run dembro without system file');
   Writeln('           --system <filename>     change system file location');
   Writeln('                                   (default "system.de")');  
   Writeln('           --help                  print this help');
@@ -117,11 +119,7 @@ begin
         end else if C[J] = 'r' then begin
           CommandLine.Repl := False;
         end else if C[J] = 's' then begin
-          if I > ParamCount then begin
-            Error('there is no filename parameter passed to option -s');
-            Exit;
-          end;
-          CommandLine.System := ParamStr(I);
+          CommandLine.System := '';
           Inc(I);
         end else if C[J] = 'h' then begin
           PrintHelp;
@@ -135,6 +133,13 @@ begin
       for J := 2 to Length(C) do
         if C[J] = 'r' then begin
           CommandLine.Repl := True;
+        end else if C[J] = 's' then begin
+          if I > ParamCount then begin
+            Error('there is no filename parameter passed to option +s');
+            Exit;
+          end;
+          CommandLine.System := ParamStr(I);
+          Inc(I);
         end else begin
           Unknown('flag ' + C);
           Exit;

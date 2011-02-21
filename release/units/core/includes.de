@@ -11,23 +11,23 @@
 // Пробегает массив *once-names*, выдаёт индекс+1, под которым в нём s, иначе 0 
 // Выглядит не очень презентабельно, т.к. поддержки циклов со счётчиками и
 // локальных переменных ещё нет.
-: once-find ( s-i) *once-names* str-dyn# 0 l! 
-    begin 0 l@ 1- dup 0>= while
-      0 l! str-dup 0 l@ *once-names* str-dyn@ str= if 1+ exit then 
-    repeat 1+ ;
+: once-find ( s-i) *once-names* str-dyn#
+    begin 1- dup 0>= while
+      bdup dup *once-names* str-dyn@ str= if 1+ bdrop exit then 
+    repeat bdrop 1+ ;
 
 // Переводит путь до include-файла из относительного в абсолютный
 // Кладёт true на вершину, если это удалось
 : include-absolute ( s-sb) true ;
 // Добавляет строку в массив загруженных
-: once+ ( s-) cdup *once-names* str-dyn+ [str]" Loaded " str. str. cr ;
+: once+ ( s-) bdup *once-names* str-dyn+ [str]" Loaded " str. str. cr ;
 // Исполняет файл, если он не был исполнен раньше.
 // Конкретней -- проверяет наличие входной строки в массиве *once-names*
 // и если она не найдена, то во-первых добавляет, а во-вторых исполняет
 // файл, абсолютный путь до которого указан в строке. В противном случае
 // (когда строка в массиве *once-names* найдена) ничего не делается
-: included ( s-) include-absolute not if str-drop exit then str-dup once-find 
-             if str-drop else str-dup evaluate-file once+ then ;
+: included ( s-) include-absolute not if bdrop exit then bdup once-find 
+             if bdrop else bdup evaluate-file once+ then ;
 // Синтаксический сахар к предыдущей команде
 // Можно использовать в виде include" units\core\voc.de"
 // что равносильно str" units\core\voc.de" included
