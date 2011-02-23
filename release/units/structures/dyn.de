@@ -55,5 +55,12 @@ wp
 : str-dyn@ ( id-s) dyn[] b@ ;
 : str-dyn! ( sid-) dyn[] b! ;
 
+: bdyn str-dyn ;
+: bdyn# str-dyn# ;
+: bdyn+ str-dyn+ ;
+: bdyn[]@ str-dyn@ ;
+: bdyn.clear ( d) dup bdyn# 1- begin dup 0 >= while 
+             over over swap dyn@ bdec 1- repeat drop dyn.len 0 swap ! ;
+
 : check-stack wp 1 cells - <> if [str]" WARRING: stack error" str. cr then ;
 check-stack

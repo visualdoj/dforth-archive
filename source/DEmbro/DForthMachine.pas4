@@ -796,6 +796,7 @@ define(~misc_commands|,
   procedure _state cmdhdr;
   procedure _time cmdhdr;
   procedure _local cmdhdr;
+  procedure source_cut cmdhdr;
   procedure source_next_char cmdhdr;
   procedure source_next_name cmdhdr;
   procedure source_next_name_passive cmdhdr;
@@ -845,6 +846,26 @@ define(~misc_commands|,
       procedure _state cmdhdr; body( Pointer(WP^) := @State; Inc(WP, SizeOf(Pointer)); )
       procedure _time cmdhdr; body( Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt)); )
       procedure _local cmdhdr; body( RunCommand(PForthCommand((@E[Integer(Command^.Data)])^)); )
+      procedure source_cut cmdhdr; label _Exit;
+        var _S: TStr; _C: TChar; _L: TString; J: Integer;
+        body( _S := str_pop(Machine); _L := ''; 
+          while not SE do begin 
+            J := SC;
+            _C := SNC;  
+            while J < Length(S) do begin
+              if J - SC + 1 >= _S.Len then begin
+                SC := J;
+                goto _Exit;
+              end else if StrSymbol(_S, J - SC + 1) = Ord(S[J]) then begin
+                Inc(J);
+              end else
+                Break;
+            end;
+            _L := _L + _C; 
+          end; 
+        _Exit:
+          DelRef(_S);
+          WUS(_L); )
       procedure source_next_char cmdhdr; body( WUU8(Byte(NextChar)) )
       procedure source_next_name cmdhdr; body( str_push(Machine, NextName) )
       procedure source_next_name_passive cmdhdr; body( // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
@@ -899,6 +920,7 @@ define(~misc_commands|,
      AddCommand('state', _state);
      AddCommand('time', _time);
      AddCommand('local', _local);
+     AddCommand('source-cut', source_cut);
      AddCommand('source-next-char', source_next_char);
      AddCommand('source-next-name', source_next_name);
      AddCommand('source-next-name-passive', source_next_name_passive);
@@ -3410,7 +3432,7 @@ begin
   if Integer(WVar(-SizeOf(Integer))) = -1 then
     Machine.WUI(BOOL_FALSE)
   else
-    Machine.WUI(BOOL_FALSE);
+    Machine.WUI(BOOL_TRUE);
 end;
 
 procedure str_ins(Machine: TForthMachine; Command: PForthCommand);

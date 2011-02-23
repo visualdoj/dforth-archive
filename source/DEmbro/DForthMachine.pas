@@ -1863,6 +1863,7 @@ end;
   procedure _state (Machine: TForthMachine; Command: PForthCommand);
   procedure _time (Machine: TForthMachine; Command: PForthCommand);
   procedure _local (Machine: TForthMachine; Command: PForthCommand);
+  procedure source_cut (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_char (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand);
@@ -3771,7 +3772,7 @@ begin
   if Integer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^)) = -1 then
     Machine.WUI(BOOL_FALSE)
   else
-    Machine.WUI(BOOL_FALSE);
+    Machine.WUI(BOOL_TRUE);
 end;
 
 procedure str_ins(Machine: TForthMachine; Command: PForthCommand);
@@ -6070,6 +6071,7 @@ begin
      AddCommand('state', _state);
      AddCommand('time', _time);
      AddCommand('local', _local);
+     AddCommand('source-cut', source_cut);
      AddCommand('source-next-char', source_next_char);
      AddCommand('source-next-name', source_next_name);
      AddCommand('source-next-name-passive', source_next_name_passive);
@@ -10197,6 +10199,26 @@ end;
       procedure _state (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := @State; Inc(WP, SizeOf(Pointer));  end; end;
       procedure _time (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt));  end; end;
       procedure _local (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin RunCommand(PForthCommand((@E[Integer(Command^.Data)])^));  end; end;
+      procedure source_cut (Machine: TForthMachine; Command: PForthCommand); label _Exit;
+        var _S: TStr; _C: TChar; _L: TString; J: Integer;
+        begin with Machine^ do begin _S := str_pop(Machine); _L := ''; 
+          while not SE do begin 
+            J := SC;
+            _C := SNC;  
+            while J < Length(S) do begin
+              if J - SC + 1 >= _S.Len then begin
+                SC := J;
+                goto _Exit;
+              end else if StrSymbol(_S, J - SC + 1) = Ord(S[J]) then begin
+                Inc(J);
+              end else
+                Break;
+            end;
+            _L := _L + _C; 
+          end; 
+        _Exit:
+          DelRef(_S);
+          WUS(_L);  end; end;
       procedure source_next_char (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUU8(Byte(NextChar))  end; end;
       procedure source_next_name (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, NextName)  end; end;
       procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 

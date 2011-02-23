@@ -8,8 +8,19 @@
 // разбивает строку на части l=x[0..p-1] r=x[p+s..x#-1]
 : str-leftright ( ps B: x -- B: lr) ( -x ^l ^r) swap str-split str-right ;
 
-: parse-binary? ( B: sb -- f B: lr) str^? if str# bdrop str-leftright 
-                                          else drop 0 then ; 
+: parse-binary? ( B: sb -- f B: lr) str^? if str# bdrop str-leftright true
+                                          else drop false then ; 
 
-: parse-list ( d B: sb -- d B: sb) bover bover 
-  begin parse-binary? while bswap dup bdyn+ bover repeat bdrop bdrop ;
+: parse-list ( d B: sb -- d B: sb) bswap bover ( bsb)
+  begin parse-binary? while bswap dup bdyn+ bover repeat bdrop bdrop bdyn+ ;
+
+// Если x[0..s#-1]=s, то удаляет первые s# символов в x до тех пор, 
+// пока это условие верно 
+// То же с концом x
+: parse-trim ( B: xs -- B: y) 
+  begin str^? swap 0 = and while str# bswap str-left bswap repeat 
+  begin str# bover str-right str= bdrop while 
+    str# bswap str# swap - str-left bswap
+  repeat
+  bdrop
+;

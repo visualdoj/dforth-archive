@@ -1,13 +1,37 @@
 // 2011.02.02 # Doj
 //  оманды дл€ работы с локальными переменными
 
-0 value *local-offset*
+include" units\utils\parser.de"
 
-: variable-local@ ( p) @ l@ ;
-: variable-local! ( p) @ l! ;
-: local-created ( s) ['] LOCAL execute created ['] ^^^ execute ;
-: make-local-created ( ss) str+ created *local-offset* @ , ;
-: make-local@ ( s) " @" make-local-created does> variable-local@ ;
-: make-local! ( s) " !" make-local-created does> variable-local! ;
-: localed ( s) str-dup make-local@ make-local! 
-               *local-offset* @ cell+ *local-offset* ! ;
+0 variable *local-offset
+8 bdyn *local-names
+
+: local-offset>> *local-offset @ cell+ *local-offset !  ;
+
+: local-created ( sp) str+ created *local-offset @ , ;
+: put-local-offset ( p-i) @ ['] literal execute ;
+: local-generated! ( s-) " !" local-created does> put-local-offset compile l! ;
+: local-generated@ ( s-) " @" local-created does> put-local-offset compile l@ ;
+
+: local-generated-int ( s-)
+  bdup local-generated!
+  bdup local-generated@
+  bdrop
+;
+
+: prepare-local-name? ( B: x -- f B: y) ( "  " parse-trim bdup str0 str=) false ;
+
+: local-generated-cell ( varname -- flag)
+  prepare-local-name? 0;
+  bdup local-generated!
+  bdup local-generated@
+  bdrop
+;
+
+: | ( "x1 x2 .. xn|"-) " |" source-cut *local-names "  " parse-list
+  *local-names dup bdyn.clear bdyn# begin dup 0 >= while 
+    dup *local-names bdyn[]@ local-generated-cell 
+    if local-offset>> *local-offset @ ['] literal execute compile l@ then
+  1- repeat drop 
+  *local-offset @ 0; ['] literal execute compile l+
+; immediate
