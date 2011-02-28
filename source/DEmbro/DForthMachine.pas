@@ -112,7 +112,7 @@ type
           Code: TCode;
           Data: Pointer;
           Flags: Byte;
-          Name: PChar; 
+          Name: PAnsiChar; 
           Param: Pointer;
         end;
 
@@ -4013,7 +4013,7 @@ var
   B: TString;
 begin
   with Machine^ do begin
-    Read(B); 
+    Readln(B); 
     GetMem(P, 3*SizeOf(Integer) + Length(B) + 1);
     PStrRec(P)^.Ref := 0;
     PStrRec(P)^.Len := Length(B);
@@ -4074,12 +4074,16 @@ begin
 end;
 
 procedure pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
+var
+  P: PAnsiChar;
 begin
   with Machine^ do begin
     Writeln('IN pchar->str');
     Dec(Machine.WP, SizeOf(Pointer));
     Writeln('DONE Dec ', Cardinal(Machine.WP^));
-    Machine.WUS(TString(PChar(Machine.WP^)));
+    P := PAnsiChar(Machine.WP^);
+    Writeln(P[0], P[1], P[2]);
+    Machine.WUS(TString(PAnsiChar(Machine.WP^)));
     Writeln('OUT pchar->str');
   end;
 end;
@@ -7415,14 +7419,14 @@ end;
            add [eax],4
          end;
          procedure tuck_ (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_ (Machine: TForthMachine; Command: PForthCommand); 
@@ -7520,14 +7524,14 @@ end;
            add [eax],4
          end;
          procedure tuck_ptr (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_ptr (Machine: TForthMachine; Command: PForthCommand); 
@@ -7625,14 +7629,14 @@ end;
            add [eax],4
          end;
          procedure tuck_int (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_int (Machine: TForthMachine; Command: PForthCommand); 
@@ -7730,14 +7734,14 @@ end;
            add [eax],4
          end;
          procedure tuck_int8 (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_int8 (Machine: TForthMachine; Command: PForthCommand); 
@@ -7835,14 +7839,14 @@ end;
            add [eax],4
          end;
          procedure tuck_int16 (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_int16 (Machine: TForthMachine; Command: PForthCommand); 
@@ -7940,14 +7944,14 @@ end;
            add [eax],4
          end;
          procedure tuck_int32 (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_int32 (Machine: TForthMachine; Command: PForthCommand); 
@@ -8045,14 +8049,14 @@ end;
            add [eax],4
          end;
          procedure tuck_int64 (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_int64 (Machine: TForthMachine; Command: PForthCommand); 
@@ -8150,14 +8154,14 @@ end;
            add [eax],4
          end;
          procedure tuck_uint (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_uint (Machine: TForthMachine; Command: PForthCommand); 
@@ -8255,14 +8259,14 @@ end;
            add [eax],4
          end;
          procedure tuck_uint8 (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_uint8 (Machine: TForthMachine; Command: PForthCommand); 
@@ -8360,14 +8364,14 @@ end;
            add [eax],4
          end;
          procedure tuck_uint16 (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_uint16 (Machine: TForthMachine; Command: PForthCommand); 
@@ -8465,14 +8469,14 @@ end;
            add [eax],4
          end;
          procedure tuck_uint32 (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_uint32 (Machine: TForthMachine; Command: PForthCommand); 
@@ -8570,14 +8574,14 @@ end;
            add [eax],4
          end;
          procedure tuck_uint64 (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_uint64 (Machine: TForthMachine; Command: PForthCommand); 
@@ -8675,14 +8679,14 @@ end;
            add [eax],4
          end;
          procedure tuck_embro (Machine: TForthMachine; Command: PForthCommand);
-         asm
-           mov ecx,[eax]
-           add [eax],4
-           mov edx,[ecx-4]
-           mov [ecx],edx
-           mov edx,[ecx-8]
-           mov [ecx-4],edx
-           mov [ecx],edx
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
          end;
        
      procedure lrot_embro (Machine: TForthMachine; Command: PForthCommand); 

@@ -1,6 +1,7 @@
 // 2011.01.31 # Doj
 // Пример использования MMSystem
 
-include" units\headers\mmsystem.de" mmsystem-load
+include" units\headers\mmsystem.de" 
+mmsystem-load
 pchar" rail.wav" SND_ASYNC sndPlaySoundA drop
 str$

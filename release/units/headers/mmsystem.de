@@ -4,7 +4,6 @@
 include" units\windows.de"
 include" units\utils\headers.de"
 
-stdcall declare-header winmm.dll
 // {{{ constants
 0       constant MMSYSERR_BASE
 32      constant WAVERR_BASE
@@ -181,6 +180,8 @@ h80000000       constant MEVT_F_LONG
 h40000000       constant MEVT_F_CALLBACK 
 // }}}
 // {{{ prototypes
+stdcall declare-header winmm.dll
 :a sndPlaySoundA LPCSTR UINT BOOL winmm.dll header;
+last . cr
 // }}}
 : mmsystem-load winmm.dll header-load ;

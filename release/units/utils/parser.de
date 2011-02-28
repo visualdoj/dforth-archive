@@ -1,26 +1,34 @@
 // 2011.02.02 # Doj
-// ╩юьрэф√ фы  юсЁрсюЄъш ёЄЁюъ.
+// Команды для обработки строк.
 
-// юёЄрты хЄ ЇЁруьхэЄ s[p..s#-1]
-: str-right ( p B: s -- B: r) ( -s ^r) str# over - str-cut ;
-// юёЄрты хЄ ЇЁруьхэЄ s[0..p-1]
-: str-left ( p B: s -- B: l) ( -s ^l) 0 swap str-cut ;
-// ЁрчсштрхЄ ёЄЁюъє эр ўрёЄш l=x[0..p-1] r=x[p+s..x#-1]
-: str-leftright ( ps B: x -- B: lr) ( -x ^l ^r) swap str-split str-right ;
+: str-right str# over - str-cut ;
+RUS summary ( p B: s -- B: r) ( -s ^r) оставляет фрагмент s[p..s#-1]
+: str-left 0 swap str-cut ;
+RUS summary ( p B: s -- B: l) ( -s ^l) оставляет фрагмент s[0..p-1]
+: str-leftright swap str-split str-right ;
+RUS summary ( ps B: x -- B: lr) ( -x ^l ^r) разбивает строку на части l=x[0..p-1] r=x[p+s..x#-1]
 
-: parse-binary? ( B: sb -- f B: lr) str^? if str# bdrop str-leftright true
-                                          else drop false then ; 
+: parse-binary? str^? if str# bdrop str-leftright true else drop false then ; 
+RUS summary ( B: sb -- f B: lr) парсит строку вида s=lbr, f -- флаг успеха
 
-: parse-list ( d B: sb -- d B: sb) bswap bover ( bsb)
+: parse-list bswap bover ( bsb)
   begin parse-binary? while bswap dup bdyn+ bover repeat bdrop bdrop bdyn+ ;
+RUS summary ( d B: sb -- d B: sb)
 
-// ┼ёыш x[0..s#-1]=s, Єю єфры хЄ яхЁт√х s# ёшьтюыют т x фю Єхї яюЁ, 
-// яюър ¤Єю єёыютшх тхЁэю 
-// ╥ю цх ё ъюэЎюь x
-: parse-trim ( B: xs -- B: y) 
+: parse-trim 
   begin str^? swap 0 = and while str# bswap str-left bswap repeat 
   begin str# bover str-right str= bdrop while 
     str# bswap str# swap - str-left bswap
   repeat
   bdrop
 ;
+RUS summary ( B: xs -- B: y) удаляет все вхождения s в x слева и справа
+detail ( B: str1 sub -- B: str2) 
+  1) Проверяет начинается ли строка str1 со строки sub.
+     Если это так, то удаляет это вхождение из str1, и повторяет пункт 1.
+  2) Проверяет заканчивается ли строка str2 строкой sub.
+     Если это так, то удаляет это вхождение из str1, и повторяет пункт 2.
+  
+  Примеры. 
+    Удаление пробелов по краям строки: str"  " str-trim
+\detail

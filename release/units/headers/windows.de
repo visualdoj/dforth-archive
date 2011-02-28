@@ -1,0 +1,317 @@
+// 2010.12.03 # Doj
+// Заголовок к стандартному WinApi -- переопределение типов, констант и функций
+// далеко не полный, но легкорасширяемый. Чтобы добавить новую функцию,
+// достаточно описать её заголовок в разделе prototypes.
+
+include" units\structures\dyn.de"
+include" units\utils\headers.de"
+
+// {{{ vars
+ptr-nil ptr-value lib-user32 // переменная для хранения загруженной либы user32
+1000 dyn user32-funcs // массив для хранения функций, которые необходимо загрузить
+ptr-nil ptr-value *lib-kernel32* // то же для kernel32
+1000 dyn *kernel32-funcs* 
+// }}}
+// завершает объявление прототипа функции, которая должна браться из user32 библиотеки
+stdcall declare-header User32.dll
+stdcall declare-header Kernel32.dll
+
+// {{{ types
+: BOOLEAN   t_int8 ;
+: BYTE      t_uint8 ;
+: CHAR      t_uint8 ;
+: DWORD     t_uint32 ;
+: FLOAT     t_single ;
+: UINT      t_uint ;
+: LONG      t_int32 ;
+: LONGLONG  t_int64 ;
+: HANDLE    t_ptr ;
+: HWND      HANDLE ;
+: HBITMAP   HANDLE ;
+: HBRUSH    HANDLE ;
+: HCURSOR   HANDLE ;
+: HDC       HANDLE ;
+: HFILE     HANDLE ;
+: HFONT     HANDLE ;
+: HICON     HANDLE ;
+: HINSTANCE HANDLE ;
+: HKEY      HANDLE ;
+: HMENU     HANDLE ;
+: HMODULE   HANDLE ;
+: HINST     HANDLE ;
+: HRESULT   LONG ;
+: LPCSTR    t_pchar ;
+
+: LPSTR t_pchar ;  
+: TBYTE t_int8 ;
+: TCHAR t_uint8 ;
+: ATOM  t_uint16 ;
+: BCHAR t_uint8 ;
+: DWORD t_uint ;
+: SHORT t_int16 ; ( TODO)
+: LARGE_INTEGER t_ptr ( record) ;
+: PLARGE_INTEGER t_ptr ( ^LARGE_INTEGER) ;       
+: POINTL t_ptr ( record) ;
+: LPPOINT t_ptr ( ^POINT) ;       
+: LONG_PTR t_int ;
+: WPARAM LONG_PTR ;
+: LPARAM LONG_PTR ;     
+: LRESULT LONG_PTR ;    
+: WINBOOL t_uint32 ( longbool) ;
+: BOOL WINBOOL ;     
+: LPCTSTR t_pchar ;
+: LPVOID  t_ptr ;
+: PVOID t_ptr ;     
+: DEVMODE t_ptr ( record) ;
+: LPDEVMODE t_ptr ( ^DEVMODE) ;
+: HGLOBAL HANDLE ;
+: HGLRC HANDLE ;     
+: PIXELFORMATDESCRIPTOR t_ptr ( record) ;
+: PPIXELFORMATDESCRIPTOR t_ptr ( ^PIXELFORMATDESCRIPTOR) ;       
+: POINT t_ptr ( record) ;
+: TPOINT POINT ;
+: RECT t_ptr ( record) ;
+: TRECT RECT ;
+: LPRECT t_ptr ( ^RECT) ;     
+: WNDPROC t_ptr ( function {_para1:HWND; _para2:UINT; _para3:WPARAM; _para4:LPARAM}:LRESULT;stdcall ) ;     
+: WNDCLASSEX t_ptr ( record) ;
+: LPWNDCLASSEX t_ptr ( ^WNDCLASSEX) ;       
+: PWNDCLASSEX t_ptr ( ^WNDCLASSEX) ;       
+: MSG t_ptr ( record) ;
+: TMSG MSG ;
+: LPMSG t_ptr ( ^MSG) ;       
+: FARPROC t_ptr ;
+: VOID t_void ;
+
+: FILETIME t_ptr ( record) ;
+: LPFILETIME t_ptr ( ^FILETIME) ;
+: _FILETIME FILETIME ;
+: TFILETIME FILETIME ;
+: PFILETIME t_ptr ( ^FILETIME) ;
+
+: WIN32_FIND_DATA t_ptr ( record) ;
+: LPWIN32_FIND_DATA t_ptr ( ^WIN32_FIND_DATA) ;
+: PWIN32_FIND_DATA t_ptr ( ^WIN32_FIND_DATA) ;
+: _WIN32_FIND_DATA t_ptr ( WIN32_FIND_DATA) ;
+: TWIN32FINDDATA t_ptr ( WIN32_FIND_DATA) ;
+: TWIN32FINDDATAA t_ptr ( WIN32_FIND_DATA) ;
+: WIN32FINDDATAA t_ptr ( WIN32_FIND_DATA) ;
+: PWIN32FINDDATA t_ptr ( ^WIN32_FIND_DATA) ;
+
+: t_WindowProc HWND UINT WPARAM LPARAM LRESULT stdcall ;
+// }}}
+// {{{ constants
+1               constant CF_TEXT
+
+2               constant CS_HREDRAW
+32              constant CS_OWNDC
+1               constant CS_VREDRAW
+  
+-1              constant INVALID_HANDLE_VALUE 
+
+32              constant FILE_ATTRIBUTE_ARCHIVE 
+128             constant FILE_ATTRIBUTE_NORMAL 
+16              constant FILE_ATTRIBUTE_DIRECTORY 
+2               constant FILE_ATTRIBUTE_HIDDEN 
+1               constant FILE_ATTRIBUTE_READONLY 
+4               constant FILE_ATTRIBUTE_SYSTEM 
+256             constant FILE_ATTRIBUTE_TEMPORARY 
+h0200           constant FILE_ATTRIBUTE_SPARSE_FILE 
+h0400           constant FILE_ATTRIBUTE_REPARSE_POINT 
+h0800           constant FILE_ATTRIBUTE_COMPRESSED 
+h1000           constant FILE_ATTRIBUTE_OFFLINE 
+h2000           constant FILE_ATTRIBUTE_NOT_CONTENT_INDEXED 
+h4000           constant FILE_ATTRIBUTE_ENCRYPTED 
+h20000          constant FILE_ATTRIBUTE_VIRTUAL 
+
+h80000000       constant FILE_FLAG_WRITE_THROUGH 
+1073741824      constant FILE_FLAG_OVERLAPPED 
+536870912       constant FILE_FLAG_NO_BUFFERING 
+268435456       constant FILE_FLAG_RANDOM_ACCESS 
+134217728       constant FILE_FLAG_SEQUENTIAL_SCAN 
+67108864        constant FILE_FLAG_DELETE_ON_CLOSE 
+33554432        constant FILE_FLAG_BACKUP_SEMANTICS 
+16777216        constant FILE_FLAG_POSIX_SEMANTICS 
+0               constant SECURITY_ANONYMOUS 
+65536           constant SECURITY_IDENTIFICATION 
+131072          constant SECURITY_IMPERSONATION 
+196608          constant SECURITY_DELEGATION 
+262144          constant SECURITY_CONTEXT_TRACKING 
+524288          constant SECURITY_EFFECTIVE_ONLY 
+1048576         constant SECURITY_SQOS_PRESENT 
+  ( CreateFileMapping, VirtualAlloc, VirtualFree, VirtualProtect)
+134217728       constant SEC_COMMIT 
+16777216        constant SEC_IMAGE 
+268435456       constant SEC_NOCACHE 
+67108864        constant SEC_RESERVE 
+2               constant PAGE_READONLY 
+4               constant PAGE_READWRITE 
+8               constant PAGE_WRITECOPY 
+16              constant PAGE_EXECUTE 
+32              constant PAGE_EXECUTE_READ 
+64              constant PAGE_EXECUTE_READWRITE 
+128             constant PAGE_EXECUTE_WRITECOPY 
+256             constant PAGE_GUARD 
+1               constant PAGE_NOACCESS 
+512             constant PAGE_NOCACHE 
+4096            constant MEM_COMMIT 
+65536           constant MEM_FREE 
+8192            constant MEM_RESERVE 
+16777216        constant MEM_IMAGE 
+262144          constant MEM_MAPPED 
+131072          constant MEM_PRIVATE 
+16384           constant MEM_DECOMMIT 
+32768           constant MEM_RELEASE 
+1048576         constant MEM_TOP_DOWN 
+h80000          constant MEM_RESET        
+h200000         constant MEM_WRITE_WATCH  
+h400000         constant MEM_PHYSICAL     
+h20000000       constant MEM_LARGE_PAGES  
+h80000000       constant MEM_4MB_PAGES    
+
+-1              constant ENUM_CURRENT_SETTINGS  
+2               constant GMEM_MOVEABLE 
+-16             constant GWL_STYLE 
+-21             constant GWL_USERDATA 
+32512           constant IDC_ARROW 
+ 
+     // OpenGL! O_o
+h1              constant PFD_DOUBLEBUFFER 
+h4              constant PFD_DRAW_TO_WINDOW 
+h20             constant PFD_SUPPORT_OPENGL 
+0               constant PFD_MAIN_PLANE 
+0               constant PFD_TYPE_RGBA 
+
+1               constant PM_REMOVE 
+32              constant SWP_FRAMECHANGED 
+512             constant SWP_NOOWNERZORDER 
+5               constant SW_SHOW 
+// Window Styles
+h00800000       constant WS_BORDER 
+h00C00000       constant WS_CAPTION 
+h40000000       constant WS_CHILD
+h40000000       constant WS_CHILDWINDOW
+h02000000       constant WS_CLIPCHILDREN
+h04000000       constant WS_CLIPSIBLINGS
+h08000000       constant WS_DISABLED
+h00400000       constant WS_DLGFRAME
+h00020000       constant WS_GROUP
+h00100000       constant WS_HSCROLL
+h20000000       constant WS_ICONIC
+h01000000       constant WS_MAXIMIZE
+h00010000       constant WS_MAXIMIZEBOX
+h20000000       constant WS_MINIMIZE
+h00020000       constant WS_MINIMIZEBOX
+h00000000       constant WS_OVERLAPPED
+h80000000       constant WS_POPUP 
+h00040000       constant WS_SIZEBOX
+h00080000       constant WS_SYSMENU
+h00010000       constant WS_TABSTOP
+h00040000       constant WS_THICKFRAME
+h00000000       constant WS_TILED
+h10000000       constant WS_VISIBLE
+h00200000       constant WS_VSCROLL
+h40000          constant WS_EX_APPWINDOW 
+h100            constant WS_EX_WINDOWEDGE 
+
+WS_OVERLAPPED WS_CAPTION or WS_SYSMENU or WS_THICKFRAME or WS_MINIMIZEBOX or 
+        WS_MAXIMIZEBOX or               constant WS_OVERLAPPEDWINDOW
+WS_POPUP WS_BORDER or WS_SYSMENU or     constant WS_POPUPWINDOW 
+WS_OVERLAPPED WS_CAPTION or WS_SYSMENU or WS_THICKFRAME or WS_MINIMIZEBOX or
+        WS_MAXIMIZEBOX or               constant WS_TILEDWINDOW
+
+32              constant CCHDEVICENAME 
+32              constant CCHFORMNAME 
+37              constant VK_LEFT 
+38              constant VK_UP 
+39              constant VK_RIGHT 
+40              constant VK_DOWN 
+h70             constant VK_F1  
+h71             constant VK_F2  
+h72             constant VK_F3  
+h73             constant VK_F4  
+h74             constant VK_F5  
+h75             constant VK_F6  
+h76             constant VK_F7  
+h77             constant VK_F8  
+h78             constant VK_F9  
+h79             constant VK_F10 
+h7A             constant VK_F11 
+h7B             constant VK_F12 
+
+260             constant MAX_PATH 
+
+h0001           constant SEM_FAILCRITICALERRORS             
+h0004           constant SEM_NOALIGNMENTFAULTEXCEPT         
+h0002           constant SEM_NOGPFAULTERRORBOX              
+h8000           constant SEM_NOOPENFILEERRORBOX             
+
+h0002           constant MB_ABORTRETRYIGNORE
+h0006           constant MB_CANCELTRYCONTINUE
+h4000           constant MB_HELP
+h0000           constant MB_OK
+h0001           constant MB_OKCANCEL
+h0005           constant MB_RETRYCANCEL
+h0004           constant MB_YESNO
+h0003           constant MB_YESNOCANCEL
+
+// {{{ messages
+h0002           constant WM_DESTROY
+// }}}
+// }}}
+// {{{ prototypes
+:a MessageBoxA HWND LPCSTR LPCSTR UINT                  LONG User32.dll header;
+:a AdjustWindowRect LPRECT DWORD WINBOOL                WINBOOL User32.dll header;
+// :a ChoosePixelFormat HDC PPIXELFORMATDESCRIPTOR         LONG gdi32;
+:a CloseClipboard                                       WINBOOL User32.dll header;
+:a CreateWindowExA DWORD LPCTSTR LPCTSTR DWORD LONG LONG 
+                   LONG LONG HWND HMENU HINST LPVOID    HWND User32.dll header;
+:a DefWindowProcA HWND UINT WPARAM LPARAM               LRESULT User32.dll header;
+:a DestroyWindow HWND                                   BOOL User32.dll header;
+:a DispatchMessageA LPMSG                               LONG User32.dll header;
+:a EmptyClipboard                                       WINBOOL User32.dll header;
+:a EnumDisplaySettingsA LPCSTR DWORD LPDEVMODE          WINBOOL User32.dll header;
+:a GetClipboardData UINT                                HANDLE User32.dll header;
+:a GetCursorPos LPPOINT                                 WINBOOL User32.dll header;
+:a GetDC HWND                                           HDC User32.dll header;
+:a GetKeyState LONG                                     SHORT User32.dll header;
+:a GetLastError                                         DWORD Kernel32.dll header;
+:a GetMessageA LPMSG HWND UINT UINT                     BOOL User32.dll header;
+:a GetWindowLongA HWND LONG                             LONG User32.dll header;
+:a GetWindowRect HWND LPRECT                            WINBOOL User32.dll header;
+:a GlobalAlloc UINT DWORD                               HGLOBAL Kernel32.dll header;
+:a GlobalLock HGLOBAL                                   LPVOID Kernel32.dll header;
+:a GlobalUnlock HGLOBAL                                 WINBOOL Kernel32.dll header;
+:a IsClipboardFormatAvailable UINT                      WINBOOL User32.dll header;
+:a LoadCursorA HINST LPCSTR                             HCURSOR User32.dll header;
+:a LoadIconA HINST LPCTSTR                              HICON User32.dll header;
+:a MoveWindow HWND LONG LONG LONG LONG WINBOOL          WINBOOL User32.dll header;
+:a OpenClipboard HWND                                   WINBOOL User32.dll header;
+:a PeekMessageA LPMSG HWND UINT UINT UINT               WINBOOL User32.dll header;
+:a PostQuitMessage LONG                                 VOID User32.dll header;
+:a RegisterClassExA PWNDCLASSEX                         ATOM User32.dll header;
+:a SetClipboardData UINT HANDLE                         HANDLE User32.dll header;
+:a SetFocus HWND                                        HWND User32.dll header;
+:a SetForegroundWindow HWND                             WINBOOL User32.dll header;
+// :a SetPixelFormat HDC LONG PPIXELFORMATDESCRIPTOR       WINBOOL gdi32;
+:a SetWindowLongA HWND LONG LONG                        LONG User32.dll header;
+:a SetWindowTextA HWND LPCSTR                           WINBOOL User32.dll header;
+:a SetWindowPos HWND HWND LONG LONG LONG LONG UINT      WINBOOL User32.dll header;
+:a ShowCursor WINBOOL                                   t_int User32.dll header;
+:a ShowWindow HWND t_int                                WINBOOL User32.dll header;
+// :a SwapBuffers HDC                                      WINBOOL gdi32;
+:a TranslateMessage LPMSG                               WINBOOL User32.dll header;
+:a UpdateWindow HWND                                    WINBOOL User32.dll header;
+// :a wglCreateContext HDC                                 HGLRC gdi32;
+// :a wglMakeCurrent HDC HGLRC                             WINBOOL gdi32;
+:a QueryPerformanceCounter PLARGE_INTEGER               WINBOOL Kernel32.dll header;
+:a QueryPerformanceFrequency PLARGE_INTEGER             WINBOOL Kernel32.dll header;
+// :a SetCurrentDirectory LPCSTR                           WINBOOL Kernel32.dll header;
+// :a GetCurrentDirectory DWORD LPSTR                      DWORD Kernel32.dll header;
+// :a FindFirstFile LPCSTR LPWIN32_FIND_DATA               HANDLE Kernel32.dll header;
+// :a FindNextFile HANDLE LPWIN32_FIND_DATA                WINBOOL Kernel32.dll header;
+:a FindClose HANDLE                                     WINBOOL Kernel32.dll header;
+:a SetErrorMode UINT                                    UINT Kernel32.dll header;
+// }}}
+
+: windows-load Kernel32.dll header-load User32.dll header-load ;

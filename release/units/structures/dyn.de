@@ -59,6 +59,7 @@ wp
 : bdyn# str-dyn# ;
 : bdyn+ str-dyn+ ;
 : bdyn[]@ str-dyn@ ;
+: bdyn[]! str-dyn! ;
 : bdyn.clear ( d) dup bdyn# 1- begin dup 0 >= while 
              over over swap dyn@ bdec 1- repeat drop dyn.len 0 swap ! ;
 

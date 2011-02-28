@@ -182,11 +182,13 @@ syn match dembroFloat '\<-\=\d*[.]\=\d\+[DdEe][-+]\d\+\>'
 syn region dembroString matchgroup=dembroQuote start=+\k*\" + end=+"\k*+ end=+$+
 
 " Comments
+syn match dembroComment 'summary\s.*$' contains=dembroTodo,dembroSpaceError
 syn match dembroComment '\\\s.*$' contains=dembroTodo,dembroSpaceError
 syn region dembroComment start='\\S\s' end='.*' contains=dembroTodo,dembroSpaceError
 syn match dembroComment '//\s.*$' contains=dembroTodo,dembroSpaceError
 syn region dembroComment start='//S\s' end='.*' contains=dembroTodo,dembroSpaceError
 syn match dembroComment '\.(\s[^)]*)' contains=dembroTodo,dembroSpaceError
+syn region dembroComment start='detail' end='\\detail' contains=dembroTodo,dembroSpaceError
 syn region dembroComment start='\(^\|\s\)\zs(\s' skip='\\)' end=')' contains=dembroTodo,dembroSpaceError
 syn region dembroComment start='/\*' end='\*/' contains=dembroTodo,dembroSpaceError
 

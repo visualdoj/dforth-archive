@@ -4,47 +4,40 @@
 include" units\core\w.de"
 include" units\structures\dyn.de"
 
-1000 str-dyn *help-names*
-0 str-dyn *help-articles*
+1000 dup str-dyn *help-names
+     dup str-dyn *help-articles
+         str-dyn *help-summary
 
-// : ppi-i ( p p -1 -- p p | i) if rrot drop drop then ;
-
-: prepare ( pp-ii) uint8@ uint8->uint swap uint8@ uint8->uint ;
-// Проверяет является ли pchar на вершине пустой строкой (указателем на 
-// нулевой символ). Если это так, то кладёт на стек кол-во символов
-// второго pchar. 
-: try-compare-top-end ( pp-i) 2dup prepare =
-        if   drop pchar-len
-        else drop drop -1 then ;
-// Проверяет 
-: try-compare-end ( pp-i) 2dup try-compare-top-end dup 
-                          -1 = if   swap try-compare-top-end 
-                               else rrot drop drop then ;
-// оценивает похожесть двух символов, на которые указывают входные параметры
-//   возвращает 0, если они равны
-//   возвращает 1, если не равны
-: compare-chars ( pp-i) uint8@ uint8->uint swap uint8@ uint8->uint <> 1 and ;
-// оценивает степень похожести двух pchar-строк
-: compare-words ( pp-i) 2dup try-compare-end dup -1 = if rrot drop drop exit then
-  2dup compare-chars 0 l!
-  2dup 1+ swap 1+ recurse if exit then
-  3 rrotn 2dup ;
-  // TODO
 // Ищет описание
 // Если найти не удалось, то на вершине будет false.
 // Иначе, на вершине будет true, а вторым элементом -- индекс найденной
 // статьи.
-: help-find ( s-F|iT) *help-names* str-dyn# begin ?dup while 1- dup 0 l! 
-                            *help-names* str-dyn@ 
-                            ( str-swap ctuck) cover str= if str-drop 0 l@ true exit then
-                            0 l@
-                      repeat str-drop false ;
+: help-find ( s-F|iT) *help-names bdyn# begin ?dup while 1- dup 
+                            *help-names bdyn[]@ 
+                            bover str= if bdrop true exit then
+                      repeat bdrop false ;
 
-: helped ( s-) str-dup str. space help-find if *help-articles* str-dyn@ str. cr 
-                                      else [.str]" not found"cr then ;
-: described ( ss-) *help-articles* str-dyn+ *help-names* str-dyn+  ;
+: helped ( s-) bdup str. space help-find 
+  if dup *help-articles bdyn[]@ bdup str0 str= 
+    if *help-summary bdyn[]@ str. cr
+    else drop str. cr then 
+  else [.str]" not found"cr then ;
+: described ( ss-) *help-articles str-dyn+ *help-names str-dyn+  ;
 
 : help ( "name"-) source-next-name helped ;
-// : describe ( ") source-next-name *help-names* str-dyn+ 
+// : describe ( ") source-next-name *help-names str-dyn+ 
                 // begin source-next-char uint8->uint [ 34 ] literal = until  
-                // source-quote *help-articles* str-dyn+ ;
+                // source-quote *help-articles str-dyn+ ;
+
+: new-article ( B: s-) *help-names    bdyn+ 
+                  str0 *help-articles bdyn+ 
+                  str0 *help-summary  bdyn+ ;
+
+: find-article ( B: s -- i) bdup help-find 
+        if bdrop else *help-names bdyn# new-article then ;
+: summary ( " xxx\n") last xt.n@ pchar->str bdup str. find-article 
+                      source-line bdup str. *help-summary bdyn[]! ;
+: detail ( " xxx\n\\") last xt.n@ pchar->str find-article 
+                       " \detail" source-cut *help-articles bdyn[]! ;
+: RUS ;
+: ENG ;

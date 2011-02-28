@@ -2,3 +2,5 @@
 // : source-quote ( " xxx""-s) source-char "source-read-to-char 
 //                             source-next-char uint8-drop ;
 : source-quote ( " xxx""-s) str" ;
+: source-line ( " xxx\n"-s) [str]" 
+" source-cut ;

@@ -1,8 +1,8 @@
 include" units\headers\windows.de"
 
-str" Reading functions' addresses" str. cr
+." Reading functions' addresses"cr
 windows-load
 
-str" Calling MessageBox... " str.
+." Calling MessageBox... "
 0 pchar" Hello world!" pchar" test" MB_OKCANCEL MessageBoxA
-str" Result: " str. . str$
+." Result: " . str$
