@@ -11,9 +11,22 @@ RUS summary ( ps B: x -- B: lr) ( -x ^l ^r) разбивает строку на
 : parse-binary? str^? if str# bdrop str-leftright true else drop false then ; 
 RUS summary ( B: sb -- f B: lr) парсит строку вида s=lbr, f -- флаг успеха
 
-: parse-list bswap bover ( bsb)
-  begin parse-binary? while bswap dup bdyn+ bover repeat bdrop bdrop bdyn+ ;
-RUS summary ( d B: sb -- d B: sb)
+: parse-list bswap ( bs) 
+  begin bover parse-binary? while bswap dup bdyn+ repeat bdrop bdyn+ bdrop ;
+RUS summary ( d B: sb - d ) разбивает строку s на части разделителем b
+detail ( bdyn B: str sep -- bdyn)
+  Разбивает строку str на части при помощи разделителя sep. Добавляет полученные
+  строки в bdyn.
+
+  Пример
+    5 bdyn x // создали массив, в который мы сохраним строки
+    x " a,b,,c,d" " ," parse-list // записали в массив пять строк
+    0 x bdyn[]@ str. // a
+    1 x bdyn[]@ str. // b
+    2 x bdyn[]@ str. // пустая строка
+    3 x bdyn[]@ str. // c
+    4 x bdyn[]@ str. // d
+\detail
 
 : parse-trim 
   begin str^? swap 0 = and while str# bswap str-left bswap repeat 

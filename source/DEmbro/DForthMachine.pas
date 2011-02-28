@@ -4078,13 +4078,13 @@ var
   P: PAnsiChar;
 begin
   with Machine^ do begin
-    Writeln('IN pchar->str');
+    // Writeln('IN pchar->str');
     Dec(Machine.WP, SizeOf(Pointer));
-    Writeln('DONE Dec ', Cardinal(Machine.WP^));
+    // Writeln('DONE Dec ', Cardinal(Machine.WP^));
     P := PAnsiChar(Machine.WP^);
-    Writeln(P[0], P[1], P[2]);
+    // Writeln(P[0], P[1], P[2]);
     Machine.WUS(TString(PAnsiChar(Machine.WP^)));
-    Writeln('OUT pchar->str');
+    // Writeln('OUT pchar->str');
   end;
 end;
 
@@ -10196,9 +10196,9 @@ end;
       procedure _r_dog (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := Pointer(Pointer(Cardinal(RP) - SizeOf(Pointer))^); Inc(WP, SizeOf(Pointer));  end; end;
       procedure _r_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(RP, SizeOf(Pointer)); Pointer(WP^) := Pointer(RP^); Inc(WP, SizeOf(Pointer));  end; end;
       procedure _lt_r (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, SizeOf(Pointer)); Pointer(RP^) := Pointer(WP^); Inc(RP, SizeOf(Pointer));  end; end;
-      procedure _l_dog (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := Pointer((Pointer(TUInt(LB) + (Integer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))))^));  end; end;
+      procedure _l_dog (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Writeln('l@'); Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := Pointer((Pointer(TUInt(LB) + (Integer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))))^));  end; end;
       procedure _l_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(LB) + (Integer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))))^)) := Pointer((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Pointer)))^)); Dec(WP, 2*SizeOf(Pointer));  end; end;
-      procedure _l_plus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, SizeOf(TInt)); Inc(LP, TInt(WP^))  end; end;
+      procedure _l_plus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Writeln('l+'); Dec(WP, SizeOf(TInt)); Inc(LP, TInt(WP^))  end; end;
       procedure version (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt));  end; end;
       procedure _state (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := @State; Inc(WP, SizeOf(Pointer));  end; end;
       procedure _time (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt));  end; end;

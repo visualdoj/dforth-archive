@@ -35,8 +35,8 @@ include" units\structures\dyn.de"
 
 : find-article ( B: s -- i) bdup help-find 
         if bdrop else *help-names bdyn# new-article then ;
-: summary ( " xxx\n") last xt.n@ pchar->str bdup str. find-article 
-                      source-line bdup str. *help-summary bdyn[]! ;
+: summary ( " xxx\n") last xt.n@ pchar->str find-article 
+                      source-line *help-summary bdyn[]! ;
 : detail ( " xxx\n\\") last xt.n@ pchar->str find-article 
                        " \detail" source-cut *help-articles bdyn[]! ;
 : RUS ;
