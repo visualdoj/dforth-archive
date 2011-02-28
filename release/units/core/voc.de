@@ -32,8 +32,6 @@
 //         // Кроме того, все положенные внутри нулевые словари должны быть сняты,
 //         // иначе /uses сработает неправильно
 //       /uses               // отключаем подключённые в uses пространства
-//       
-//       ex
 : declare-namespace ( "name") vocabulary immediate does> @ context< ; 
 : extend-namespace context> voc.use ;
 : namespace ( "name") declare-namespace last execute extend-namespace ; 

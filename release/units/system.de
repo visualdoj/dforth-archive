@@ -25,13 +25,12 @@
 : xt,           cell-allot xt! ;
 : embroptr,     cell-allot embroptr! ;
 
-str" units\core\counter.de" str-dup evaluate-file
 str" units\structures\dyn.de" str-dup evaluate-file
 str" units\core\source.de" str-dup evaluate-file
 str" units\core\includes.de" str-dup evaluate-file
 // т.к. только теперь подключён модуль для эксклюзивного подключения модулей
 // нужно в него добавить всё, что было подключено до него
-once+ once+ once+ once+
+once+ once+ once+
 
 include" units\core\statements.de"
 include" units\utils\debug.de"
