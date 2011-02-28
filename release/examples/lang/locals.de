@@ -1,0 +1,7 @@
+// 2011.02.28 # Doj
+// ѕример работы с локальными переменными.
+
+include" units\core\locals.de"
+
+: test | a b c| 666 c! a@ . b@ . ++c . c@ . ;
+25 75 15 1 2 test
