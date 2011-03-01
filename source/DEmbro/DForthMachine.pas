@@ -1077,6 +1077,7 @@ end;
   procedure _0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure _ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure _0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure _if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure _max (Machine: TForthMachine; Command: PForthCommand);
   procedure _min (Machine: TForthMachine; Command: PForthCommand);
   procedure _minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1106,6 +1107,7 @@ end;
   procedure int_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure int_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure int_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure int_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure int_max (Machine: TForthMachine; Command: PForthCommand);
   procedure int_min (Machine: TForthMachine; Command: PForthCommand);
   procedure int_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1135,6 +1137,7 @@ end;
   procedure int8_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure int8_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_max (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_min (Machine: TForthMachine; Command: PForthCommand);
   procedure int8_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1164,6 +1167,7 @@ end;
   procedure int16_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure int16_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_max (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_min (Machine: TForthMachine; Command: PForthCommand);
   procedure int16_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1193,6 +1197,7 @@ end;
   procedure int32_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure int32_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_max (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_min (Machine: TForthMachine; Command: PForthCommand);
   procedure int32_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1222,6 +1227,7 @@ end;
   procedure int64_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure int64_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_max (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_min (Machine: TForthMachine; Command: PForthCommand);
   procedure int64_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1251,6 +1257,7 @@ end;
   procedure uint_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_max (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_min (Machine: TForthMachine; Command: PForthCommand);
   procedure uint_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1280,6 +1287,7 @@ end;
   procedure uint8_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint8_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_max (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_min (Machine: TForthMachine; Command: PForthCommand);
   procedure uint8_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1309,6 +1317,7 @@ end;
   procedure uint16_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint16_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_max (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_min (Machine: TForthMachine; Command: PForthCommand);
   procedure uint16_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1338,6 +1347,7 @@ end;
   procedure uint32_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint32_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_max (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_min (Machine: TForthMachine; Command: PForthCommand);
   procedure uint32_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1367,6 +1377,7 @@ end;
   procedure uint64_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure uint64_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_max (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_min (Machine: TForthMachine; Command: PForthCommand);
   procedure uint64_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1396,6 +1407,7 @@ end;
   procedure single_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure single_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure single_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure single_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure single_max (Machine: TForthMachine; Command: PForthCommand);
   procedure single_min (Machine: TForthMachine; Command: PForthCommand);
   procedure single_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1425,6 +1437,7 @@ end;
   procedure double_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure double_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure double_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure double_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure double_max (Machine: TForthMachine; Command: PForthCommand);
   procedure double_min (Machine: TForthMachine; Command: PForthCommand);
   procedure double_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -1454,6 +1467,7 @@ end;
   procedure extended_0_gte (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_ask_dup (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure extended_if_exit (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_max (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_min (Machine: TForthMachine; Command: PForthCommand);
   procedure extended_minmax (Machine: TForthMachine; Command: PForthCommand);
@@ -3932,6 +3946,8 @@ begin
 end;
 
 procedure str_equel(Machine: TForthMachine; Command: PForthCommand);
+label
+  _Exit;
 var
   A, B: TStr;
   I: Integer;
@@ -3950,11 +3966,18 @@ begin
       (*     Exit; *)
       (*   end; *)
       (* Machine.WUI(BOOL_TRUE); *)
-      if StrComp(@PStrRec(A)^.Sym[0], @PStrRec(B)^.Sym[0]) = 0 then
-        Machine.WUI(BOOL_TRUE)
-      else
-        Machine.WUI(BOOL_FALSE);
+      for I := 0 to A^.Len - 1 do
+        if StrSymbol(A, I) <> StrSymbol(B, I) then begin
+          Machine.WUI(BOOL_FALSE);
+          goto _Exit;
+        end;
+      Machine.WUI(BOOL_TRUE);
+      (* if StrComp(@PStrRec(A)^.Sym[0], @PStrRec(B)^.Sym[0]) = 0 then *)
+      (*   Machine.WUI(BOOL_TRUE) *)
+      (* else *)
+      (*   Machine.WUI(BOOL_FALSE); *)
     end;
+  _Exit:
     DelRef(A);
     DelRef(B);
  // end;
@@ -5419,7 +5442,8 @@ begin
      AddCommand('0<=', _0_lte);
      AddCommand('0>=', _0_gte);
      AddCommand('?dup', _ask_dup);
-     AddCommand('0;', _0_exit);
+     addcommand('0;', _0_exit);
+     addcommand('if;', _if_exit);
      AddCommand('min', _min);
      AddCommand('max', _max);
      AddCommand('minmax', _minmax);
@@ -5446,7 +5470,8 @@ begin
      AddCommand('int-0<=', int_0_lte);
      AddCommand('int-0>=', int_0_gte);
      AddCommand('int-?dup', int_ask_dup);
-     AddCommand('int-0;', int_0_exit);
+     addcommand('int-0;', int_0_exit);
+     addcommand('int-if;', int_if_exit);
      AddCommand('int-min', int_min);
      AddCommand('int-max', int_max);
      AddCommand('int-minmax', int_minmax);
@@ -5473,7 +5498,8 @@ begin
      AddCommand('int8-0<=', int8_0_lte);
      AddCommand('int8-0>=', int8_0_gte);
      AddCommand('int8-?dup', int8_ask_dup);
-     AddCommand('int8-0;', int8_0_exit);
+     addcommand('int8-0;', int8_0_exit);
+     addcommand('int8-if;', int8_if_exit);
      AddCommand('int8-min', int8_min);
      AddCommand('int8-max', int8_max);
      AddCommand('int8-minmax', int8_minmax);
@@ -5500,7 +5526,8 @@ begin
      AddCommand('int16-0<=', int16_0_lte);
      AddCommand('int16-0>=', int16_0_gte);
      AddCommand('int16-?dup', int16_ask_dup);
-     AddCommand('int16-0;', int16_0_exit);
+     addcommand('int16-0;', int16_0_exit);
+     addcommand('int16-if;', int16_if_exit);
      AddCommand('int16-min', int16_min);
      AddCommand('int16-max', int16_max);
      AddCommand('int16-minmax', int16_minmax);
@@ -5527,7 +5554,8 @@ begin
      AddCommand('int32-0<=', int32_0_lte);
      AddCommand('int32-0>=', int32_0_gte);
      AddCommand('int32-?dup', int32_ask_dup);
-     AddCommand('int32-0;', int32_0_exit);
+     addcommand('int32-0;', int32_0_exit);
+     addcommand('int32-if;', int32_if_exit);
      AddCommand('int32-min', int32_min);
      AddCommand('int32-max', int32_max);
      AddCommand('int32-minmax', int32_minmax);
@@ -5554,7 +5582,8 @@ begin
      AddCommand('int64-0<=', int64_0_lte);
      AddCommand('int64-0>=', int64_0_gte);
      AddCommand('int64-?dup', int64_ask_dup);
-     AddCommand('int64-0;', int64_0_exit);
+     addcommand('int64-0;', int64_0_exit);
+     addcommand('int64-if;', int64_if_exit);
      AddCommand('int64-min', int64_min);
      AddCommand('int64-max', int64_max);
      AddCommand('int64-minmax', int64_minmax);
@@ -5581,7 +5610,8 @@ begin
      AddCommand('uint-0<=', uint_0_lte);
      AddCommand('uint-0>=', uint_0_gte);
      AddCommand('uint-?dup', uint_ask_dup);
-     AddCommand('uint-0;', uint_0_exit);
+     addcommand('uint-0;', uint_0_exit);
+     addcommand('uint-if;', uint_if_exit);
      AddCommand('uint-min', uint_min);
      AddCommand('uint-max', uint_max);
      AddCommand('uint-minmax', uint_minmax);
@@ -5608,7 +5638,8 @@ begin
      AddCommand('uint8-0<=', uint8_0_lte);
      AddCommand('uint8-0>=', uint8_0_gte);
      AddCommand('uint8-?dup', uint8_ask_dup);
-     AddCommand('uint8-0;', uint8_0_exit);
+     addcommand('uint8-0;', uint8_0_exit);
+     addcommand('uint8-if;', uint8_if_exit);
      AddCommand('uint8-min', uint8_min);
      AddCommand('uint8-max', uint8_max);
      AddCommand('uint8-minmax', uint8_minmax);
@@ -5635,7 +5666,8 @@ begin
      AddCommand('uint16-0<=', uint16_0_lte);
      AddCommand('uint16-0>=', uint16_0_gte);
      AddCommand('uint16-?dup', uint16_ask_dup);
-     AddCommand('uint16-0;', uint16_0_exit);
+     addcommand('uint16-0;', uint16_0_exit);
+     addcommand('uint16-if;', uint16_if_exit);
      AddCommand('uint16-min', uint16_min);
      AddCommand('uint16-max', uint16_max);
      AddCommand('uint16-minmax', uint16_minmax);
@@ -5662,7 +5694,8 @@ begin
      AddCommand('uint32-0<=', uint32_0_lte);
      AddCommand('uint32-0>=', uint32_0_gte);
      AddCommand('uint32-?dup', uint32_ask_dup);
-     AddCommand('uint32-0;', uint32_0_exit);
+     addcommand('uint32-0;', uint32_0_exit);
+     addcommand('uint32-if;', uint32_if_exit);
      AddCommand('uint32-min', uint32_min);
      AddCommand('uint32-max', uint32_max);
      AddCommand('uint32-minmax', uint32_minmax);
@@ -5689,7 +5722,8 @@ begin
      AddCommand('uint64-0<=', uint64_0_lte);
      AddCommand('uint64-0>=', uint64_0_gte);
      AddCommand('uint64-?dup', uint64_ask_dup);
-     AddCommand('uint64-0;', uint64_0_exit);
+     addcommand('uint64-0;', uint64_0_exit);
+     addcommand('uint64-if;', uint64_if_exit);
      AddCommand('uint64-min', uint64_min);
      AddCommand('uint64-max', uint64_max);
      AddCommand('uint64-minmax', uint64_minmax);
@@ -5716,7 +5750,8 @@ begin
      AddCommand('single-0<=', single_0_lte);
      AddCommand('single-0>=', single_0_gte);
      AddCommand('single-?dup', single_ask_dup);
-     AddCommand('single-0;', single_0_exit);
+     addcommand('single-0;', single_0_exit);
+     addcommand('single-if;', single_if_exit);
      AddCommand('single-min', single_min);
      AddCommand('single-max', single_max);
      AddCommand('single-minmax', single_minmax);
@@ -5743,7 +5778,8 @@ begin
      AddCommand('double-0<=', double_0_lte);
      AddCommand('double-0>=', double_0_gte);
      AddCommand('double-?dup', double_ask_dup);
-     AddCommand('double-0;', double_0_exit);
+     addcommand('double-0;', double_0_exit);
+     addcommand('double-if;', double_if_exit);
      AddCommand('double-min', double_min);
      AddCommand('double-max', double_max);
      AddCommand('double-minmax', double_minmax);
@@ -5770,7 +5806,8 @@ begin
      AddCommand('extended-0<=', extended_0_lte);
      AddCommand('extended-0>=', extended_0_gte);
      AddCommand('extended-?dup', extended_ask_dup);
-     AddCommand('extended-0;', extended_0_exit);
+     addcommand('extended-0;', extended_0_exit);
+     addcommand('extended-if;', extended_if_exit);
      AddCommand('extended-min', extended_min);
      AddCommand('extended-max', extended_max);
      AddCommand('extended-minmax', extended_minmax);
@@ -6161,7 +6198,7 @@ begin
       continue;
     WUS(S_);
     CallCommand(C[Context[I]^.sNOTFOUND]);
-    if WOI = 0 then
+    if WOI <> 0 then
       Exit;
   end;
   LogError('unknown command "' + S_ + '"');
@@ -6171,8 +6208,10 @@ function OForthMachine.CompileName(W: PChar): Boolean;
 var
   I: Integer;
   Command: PForthCommand;
+  S_: TString;
 begin
-  Command := FindCommand(W, @I);
+  S_ := W;
+  Command := FindCommand(S_, @I);
   if Command <> nil then begin
     if IsImmediate(C[I]) then
       C[I].Code(@Self, C[I])
@@ -6180,20 +6219,22 @@ begin
       EWO(I);
     Exit;
   end;
-  (* for I := High(C) downto 0 do *)
-  (*   if StrComp(C[I].Name, W) = 0 then begin *)
-  (*     if IsImmediate(C[I]) then *)
-  (*       C[I].Code(@Self, C[I]) *)
-  (*     else *)
-  (*       EWO(I); *)
-  (*     Exit; *)
-  (*   end; *)
-  if ConvertStrToInt(W, I) <> 0 then
-    LogError('Unknown command: ' + W)
-  else begin
-    EWO('(literal)');
-    EWI(I);
+  for I := High(Context) downto 0 do begin
+    if Context[I] = nil then
+      continue;
+    if Context[I]^.sNOTFOUND = -1 then
+      continue;
+    WUS(S_);
+    CallCommand(C[Context[I]^.sNOTFOUND]);
+    if WOI <> 0 then
+      Exit;
   end;
+  (* if ConvertStrToInt(W, I) <> 0 then *)
+  (*   LogError('Unknown command: ' + W) *)
+  (* else begin *)
+  (*   EWO('(literal)'); *)
+  (*   EWI(I); *)
+  (* end; *)
 end;
 
 procedure OForthMachine.Interpret(const Line: PChar);
@@ -6644,11 +6685,16 @@ begin
     B := Machine.WOS;
     // Writeln('_NOTFOUND_(', B, ')');
     if ConvertStrToInt(B, I) = 0 then begin
-      WUI(I);
-      WUI(BOOL_FALSE);
+      if Machine^.State = FS_INTERPRET then
+        Machine^.WUI(I)
+      else begin
+        Machine^.EWO('(literal)');
+        MAchine^.EWI(I);
+      end;
+      WUI(BOOL_TRUE);
       Exit;
     end;
-    WUI(BOOL_TRUE);
+    WUI(BOOL_FALSE);
   end;
 end;
 
@@ -6761,6 +6807,7 @@ begin
   Result := nil;}
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+
 // ( Вся соль :)
  
     
@@ -8775,6 +8822,7 @@ end;
       procedure _0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^))) >= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
       procedure _ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^))) <> 0 then begin TInt(WP^) := TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^)); Inc(WP, SizeOf(TInt)); end;  end; end;
       procedure _0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) = 0 then begin Dec(WP, SizeOf(TInt)); _exit(Machine, Command); end  end; end;
+      procedure _if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) <> 0 then begin Dec(WP, SizeOf(TInt)); _exit(Machine, Command); end  end; end;
       procedure _max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt)))^)) < TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt)))^), SizeOf(TInt));
@@ -8840,6 +8888,7 @@ end;
       procedure int_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^)) := BOOL_TRUE*Ord((TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^))) >= 0); Dec(WP, SizeOf(TInt) - SizeOf(TInt))  end; end;
       procedure int_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^))) <> 0 then begin TInt(WP^) := TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^)); Inc(WP, SizeOf(TInt)); end;  end; end;
       procedure int_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) = 0 then begin Dec(WP, SizeOf(TInt)); _exit(Machine, Command); end  end; end;
+      procedure int_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) <> 0 then begin Dec(WP, SizeOf(TInt)); _exit(Machine, Command); end  end; end;
       procedure int_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt)))^)) < TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt)))^), SizeOf(TInt));
@@ -8905,6 +8954,7 @@ end;
       procedure int8_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt8)))^)) := BOOL_TRUE*Ord((TInt8((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt8)))^))) >= 0); Dec(WP, SizeOf(TInt8) - SizeOf(TInt))  end; end;
       procedure int8_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt8((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt8)))^))) <> 0 then begin TInt8(WP^) := TInt8((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt8)))^)); Inc(WP, SizeOf(TInt8)); end;  end; end;
       procedure int8_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt8((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt8)))^)) = 0 then begin Dec(WP, SizeOf(TInt8)); _exit(Machine, Command); end  end; end;
+      procedure int8_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt8((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt8)))^)) <> 0 then begin Dec(WP, SizeOf(TInt8)); _exit(Machine, Command); end  end; end;
       procedure int8_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TInt8((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt8)))^)) < TInt8((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt8)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt8)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt8)))^), SizeOf(TInt8));
@@ -8970,6 +9020,7 @@ end;
       procedure int16_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt16)))^)) := BOOL_TRUE*Ord((TInt16((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt16)))^))) >= 0); Dec(WP, SizeOf(TInt16) - SizeOf(TInt))  end; end;
       procedure int16_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt16((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt16)))^))) <> 0 then begin TInt16(WP^) := TInt16((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt16)))^)); Inc(WP, SizeOf(TInt16)); end;  end; end;
       procedure int16_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt16((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt16)))^)) = 0 then begin Dec(WP, SizeOf(TInt16)); _exit(Machine, Command); end  end; end;
+      procedure int16_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt16((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt16)))^)) <> 0 then begin Dec(WP, SizeOf(TInt16)); _exit(Machine, Command); end  end; end;
       procedure int16_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TInt16((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt16)))^)) < TInt16((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt16)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt16)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt16)))^), SizeOf(TInt16));
@@ -9035,6 +9086,7 @@ end;
       procedure int32_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt32)))^)) := BOOL_TRUE*Ord((TInt32((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt32)))^))) >= 0); Dec(WP, SizeOf(TInt32) - SizeOf(TInt))  end; end;
       procedure int32_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt32((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt32)))^))) <> 0 then begin TInt32(WP^) := TInt32((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt32)))^)); Inc(WP, SizeOf(TInt32)); end;  end; end;
       procedure int32_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt32((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt32)))^)) = 0 then begin Dec(WP, SizeOf(TInt32)); _exit(Machine, Command); end  end; end;
+      procedure int32_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt32((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt32)))^)) <> 0 then begin Dec(WP, SizeOf(TInt32)); _exit(Machine, Command); end  end; end;
       procedure int32_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TInt32((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt32)))^)) < TInt32((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt32)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt32)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt32)))^), SizeOf(TInt32));
@@ -9100,6 +9152,7 @@ end;
       procedure int64_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt64)))^)) := BOOL_TRUE*Ord((TInt64((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt64)))^))) >= 0); Dec(WP, SizeOf(TInt64) - SizeOf(TInt))  end; end;
       procedure int64_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TInt64((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt64)))^))) <> 0 then begin TInt64(WP^) := TInt64((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt64)))^)); Inc(WP, SizeOf(TInt64)); end;  end; end;
       procedure int64_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt64((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt64)))^)) = 0 then begin Dec(WP, SizeOf(TInt64)); _exit(Machine, Command); end  end; end;
+      procedure int64_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TInt64((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt64)))^)) <> 0 then begin Dec(WP, SizeOf(TInt64)); _exit(Machine, Command); end  end; end;
       procedure int64_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TInt64((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt64)))^)) < TInt64((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt64)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TInt64)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TInt64)))^), SizeOf(TInt64));
@@ -9165,6 +9218,7 @@ end;
       procedure uint_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt)))^)) := BOOL_TRUE*Ord((TUInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt)))^))) >= 0); Dec(WP, SizeOf(TUInt) - SizeOf(TInt))  end; end;
       procedure uint_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TUInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt)))^))) <> 0 then begin TUInt(WP^) := TUInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt)))^)); Inc(WP, SizeOf(TUInt)); end;  end; end;
       procedure uint_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TUInt)))^)) = 0 then begin Dec(WP, SizeOf(TUInt)); _exit(Machine, Command); end  end; end;
+      procedure uint_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TUInt)))^)) <> 0 then begin Dec(WP, SizeOf(TUInt)); _exit(Machine, Command); end  end; end;
       procedure uint_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TUInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TUInt)))^)) < TUInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TUInt)))^), SizeOf(TUInt));
@@ -9230,6 +9284,7 @@ end;
       procedure uint8_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt8)))^)) := BOOL_TRUE*Ord((TUInt8((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt8)))^))) >= 0); Dec(WP, SizeOf(TUInt8) - SizeOf(TInt))  end; end;
       procedure uint8_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TUInt8((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt8)))^))) <> 0 then begin TUInt8(WP^) := TUInt8((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt8)))^)); Inc(WP, SizeOf(TUInt8)); end;  end; end;
       procedure uint8_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt8((Pointer(TUInt(Machine.WP) + (-SizeOf(TUInt8)))^)) = 0 then begin Dec(WP, SizeOf(TUInt8)); _exit(Machine, Command); end  end; end;
+      procedure uint8_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt8((Pointer(TUInt(Machine.WP) + (-SizeOf(TUInt8)))^)) <> 0 then begin Dec(WP, SizeOf(TUInt8)); _exit(Machine, Command); end  end; end;
       procedure uint8_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TUInt8((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TUInt8)))^)) < TUInt8((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt8)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt8)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TUInt8)))^), SizeOf(TUInt8));
@@ -9295,6 +9350,7 @@ end;
       procedure uint16_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt16)))^)) := BOOL_TRUE*Ord((TUInt16((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt16)))^))) >= 0); Dec(WP, SizeOf(TUInt16) - SizeOf(TInt))  end; end;
       procedure uint16_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TUInt16((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt16)))^))) <> 0 then begin TUInt16(WP^) := TUInt16((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt16)))^)); Inc(WP, SizeOf(TUInt16)); end;  end; end;
       procedure uint16_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt16((Pointer(TUInt(Machine.WP) + (-SizeOf(TUInt16)))^)) = 0 then begin Dec(WP, SizeOf(TUInt16)); _exit(Machine, Command); end  end; end;
+      procedure uint16_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt16((Pointer(TUInt(Machine.WP) + (-SizeOf(TUInt16)))^)) <> 0 then begin Dec(WP, SizeOf(TUInt16)); _exit(Machine, Command); end  end; end;
       procedure uint16_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TUInt16((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TUInt16)))^)) < TUInt16((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt16)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt16)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TUInt16)))^), SizeOf(TUInt16));
@@ -9360,6 +9416,7 @@ end;
       procedure uint32_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt32)))^)) := BOOL_TRUE*Ord((TUInt32((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt32)))^))) >= 0); Dec(WP, SizeOf(TUInt32) - SizeOf(TInt))  end; end;
       procedure uint32_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TUInt32((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt32)))^))) <> 0 then begin TUInt32(WP^) := TUInt32((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt32)))^)); Inc(WP, SizeOf(TUInt32)); end;  end; end;
       procedure uint32_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt32((Pointer(TUInt(Machine.WP) + (-SizeOf(TUInt32)))^)) = 0 then begin Dec(WP, SizeOf(TUInt32)); _exit(Machine, Command); end  end; end;
+      procedure uint32_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt32((Pointer(TUInt(Machine.WP) + (-SizeOf(TUInt32)))^)) <> 0 then begin Dec(WP, SizeOf(TUInt32)); _exit(Machine, Command); end  end; end;
       procedure uint32_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TUInt32((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TUInt32)))^)) < TUInt32((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt32)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt32)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TUInt32)))^), SizeOf(TUInt32));
@@ -9425,6 +9482,7 @@ end;
       procedure uint64_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt64)))^)) := BOOL_TRUE*Ord((TUInt64((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt64)))^))) >= 0); Dec(WP, SizeOf(TUInt64) - SizeOf(TInt))  end; end;
       procedure uint64_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (TUInt64((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt64)))^))) <> 0 then begin TUInt64(WP^) := TUInt64((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt64)))^)); Inc(WP, SizeOf(TUInt64)); end;  end; end;
       procedure uint64_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt64((Pointer(TUInt(Machine.WP) + (-SizeOf(TUInt64)))^)) = 0 then begin Dec(WP, SizeOf(TUInt64)); _exit(Machine, Command); end  end; end;
+      procedure uint64_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if TUInt64((Pointer(TUInt(Machine.WP) + (-SizeOf(TUInt64)))^)) <> 0 then begin Dec(WP, SizeOf(TUInt64)); _exit(Machine, Command); end  end; end;
       procedure uint64_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if TUInt64((Pointer(TUInt(Machine.WP) + (-2*SizeOf(TUInt64)))^)) < TUInt64((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt64)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(TUInt64)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(TUInt64)))^), SizeOf(TUInt64));
@@ -9490,6 +9548,7 @@ end;
       procedure single_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) >= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
       procedure single_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) <> 0 then begin Single(WP^) := Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)); Inc(WP, SizeOf(Single)); end;  end; end;
       procedure single_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) = 0 then begin Dec(WP, SizeOf(Single)); _exit(Machine, Command); end  end; end;
+      procedure single_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) <> 0 then begin Dec(WP, SizeOf(Single)); _exit(Machine, Command); end  end; end;
       procedure single_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) < Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^), SizeOf(Single));
@@ -9555,6 +9614,7 @@ end;
       procedure double_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Double)))^)) := BOOL_TRUE*Ord((Double((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Double)))^))) >= 0); Dec(WP, SizeOf(Double) - SizeOf(TInt))  end; end;
       procedure double_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (Double((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Double)))^))) <> 0 then begin Double(WP^) := Double((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Double)))^)); Inc(WP, SizeOf(Double)); end;  end; end;
       procedure double_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Double((Pointer(TUInt(Machine.WP) + (-SizeOf(Double)))^)) = 0 then begin Dec(WP, SizeOf(Double)); _exit(Machine, Command); end  end; end;
+      procedure double_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Double((Pointer(TUInt(Machine.WP) + (-SizeOf(Double)))^)) <> 0 then begin Dec(WP, SizeOf(Double)); _exit(Machine, Command); end  end; end;
       procedure double_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if Double((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Double)))^)) < Double((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Double)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Double)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(Double)))^), SizeOf(Double));
@@ -9620,6 +9680,7 @@ end;
       procedure extended_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Extended)))^)) := BOOL_TRUE*Ord((Extended((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Extended)))^))) >= 0); Dec(WP, SizeOf(Extended) - SizeOf(TInt))  end; end;
       procedure extended_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (Extended((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Extended)))^))) <> 0 then begin Extended(WP^) := Extended((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Extended)))^)); Inc(WP, SizeOf(Extended)); end;  end; end;
       procedure extended_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Extended((Pointer(TUInt(Machine.WP) + (-SizeOf(Extended)))^)) = 0 then begin Dec(WP, SizeOf(Extended)); _exit(Machine, Command); end  end; end;
+      procedure extended_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Extended((Pointer(TUInt(Machine.WP) + (-SizeOf(Extended)))^)) <> 0 then begin Dec(WP, SizeOf(Extended)); _exit(Machine, Command); end  end; end;
       procedure extended_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if Extended((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Extended)))^)) < Extended((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Extended)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Extended)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(Extended)))^), SizeOf(Extended));

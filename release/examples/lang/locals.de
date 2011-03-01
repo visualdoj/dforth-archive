@@ -3,5 +3,12 @@
 
 include" units\core\locals.de"
 
-: test | a b c| 666 c! a@ . b@ . ++c . c@ . ;
-25 75 15 1 2 test
+: test | a b c| a@ . b@ . c++ . c@ . cr ;
+1 20 300 test
+
+include" units\utils\nospaces.de"
+
+: test |x y z| x@ . y@ . z++ . z@ . cr ;
+666
+666
+1 20 300 test

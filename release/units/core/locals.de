@@ -44,16 +44,18 @@ include" units\utils\parser.de"
   bdrop
 ;
 
-: | ( "x1 x2 .. xn|"-) compile branch >mark *local-offset off
-  " |" source-cut *local-names "  " parse-list
+: |ed ( B: s --) compile branch >mark *local-offset off
+  *local-names "  " parse-list
   *local-names bdyn# begin dup 0 > while 1-
     dup *local-names bdyn[]@ local-generated-cell if local-offset>> then
   repeat drop 
   >resolve 
   *local-offset off *local-names bdyn# begin dup 0 > while 1-
     dup *local-names bdyn[]@ prepare-local-name?
-    if local-offset>> *local-offset @ ['] literal execute compile l!
+    if *local-offset @ ['] literal execute compile l! local-offset>>
     else bdrop then
   repeat drop 
   *local-offset @ 0; ['] literal execute compile l+
-; immediate
+;
+
+: | ( "x1 x2 .. xn|"-) " |" source-cut |ed ; immediate

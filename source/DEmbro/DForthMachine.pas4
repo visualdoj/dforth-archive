@@ -463,6 +463,7 @@ define(~arithmetic_commands|,
   procedure $1_0_gte cmdhdr;
   procedure $1_ask_dup cmdhdr;
   procedure $1_0_exit cmdhdr;
+  procedure $1_if_exit cmdhdr;
   procedure $1_max cmdhdr;
   procedure $1_min cmdhdr;
   procedure $1_minmax cmdhdr;
@@ -499,6 +500,7 @@ define(~arithmetic_commands|,
       procedure $1_0_gte cmdhdr; body( TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) >= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) )
       procedure $1_ask_dup cmdhdr; body( if ($2(WVar(-1*SizeOf($2)))) <> 0 then begin $2(WP^) := $2(WVar(-1*SizeOf($2))); Inc(WP, SizeOf($2)); end; )
       procedure $1_0_exit cmdhdr; body( if $2(WVar(-SizeOf($2))) = 0 then begin Dec(WP, SizeOf($2)); _exit(Machine, Command); end )
+      procedure $1_if_exit cmdhdr; body( if $2(WVar(-SizeOf($2))) <> 0 then begin Dec(WP, SizeOf($2)); _exit(Machine, Command); end )
       procedure $1_max cmdhdr;
       body(
         if $2(WVar(-2*SizeOf($2))) < $2(WVar(-1*SizeOf($2))) then
@@ -560,7 +562,8 @@ define(~arithmetic_commands|,
      AddCommand('genname($1, 0<=)', $1_0_lte);
      AddCommand('genname($1, 0>=)', $1_0_gte);
      AddCommand('genname($1, ?dup)', $1_ask_dup);
-     AddCommand('genname($1, 0;)', $1_0_exit);
+     addcommand('genname($1, 0;)', $1_0_exit);
+     addcommand('genname($1, if;)', $1_if_exit);
      AddCommand('genname($1, min)', $1_min);
      AddCommand('genname($1, max)', $1_max);
      AddCommand('genname($1, minmax)', $1_minmax);
@@ -3592,6 +3595,8 @@ begin
 end;
 
 procedure str_equel(Machine: TForthMachine; Command: PForthCommand);
+label
+  _Exit;
 var
   A, B: TStr;
   I: Integer;
@@ -3610,11 +3615,18 @@ begin
       (*     Exit; *)
       (*   end; *)
       (* Machine.WUI(BOOL_TRUE); *)
-      if StrComp(@PStrRec(A)^.Sym[0], @PStrRec(B)^.Sym[0]) = 0 then
-        Machine.WUI(BOOL_TRUE)
-      else
-        Machine.WUI(BOOL_FALSE);
+      for I := 0 to A^.Len - 1 do
+        if StrSymbol(A, I) <> StrSymbol(B, I) then begin
+          Machine.WUI(BOOL_FALSE);
+          goto _Exit;
+        end;
+      Machine.WUI(BOOL_TRUE);
+      (* if StrComp(@PStrRec(A)^.Sym[0], @PStrRec(B)^.Sym[0]) = 0 then *)
+      (*   Machine.WUI(BOOL_TRUE) *)
+      (* else *)
+      (*   Machine.WUI(BOOL_FALSE); *)
     end;
+  _Exit:
     DelRef(A);
     DelRef(B);
  // end;
@@ -4731,7 +4743,7 @@ begin
       continue;
     WUS(S_);
     CallCommand(C[Context[I]^.sNOTFOUND]);
-    if WOI = 0 then
+    if WOI <> 0 then
       Exit;
   end;
   LogError('unknown command "' + S_ + '"');
@@ -4741,8 +4753,10 @@ function OForthMachine.CompileName(W: PChar): Boolean;
 var
   I: Integer;
   Command: PForthCommand;
+  S_: TString;
 begin
-  Command := FindCommand(W, @I);
+  S_ := W;
+  Command := FindCommand(S_, @I);
   if Command <> nil then begin
     if IsImmediate(C[I]) then
       C[I].Code(@Self, C[I])
@@ -4750,20 +4764,22 @@ begin
       EWO(I);
     Exit;
   end;
-  (* for I := High(C) downto 0 do *)
-  (*   if StrComp(C[I].Name, W) = 0 then begin *)
-  (*     if IsImmediate(C[I]) then *)
-  (*       C[I].Code(@Self, C[I]) *)
-  (*     else *)
-  (*       EWO(I); *)
-  (*     Exit; *)
-  (*   end; *)
-  if ConvertStrToInt(W, I) <> 0 then
-    LogError('Unknown command: ' + W)
-  else begin
-    EWO('(literal)');
-    EWI(I);
+  for I := High(Context) downto 0 do begin
+    if Context[I] = nil then
+      continue;
+    if Context[I]^.sNOTFOUND = -1 then
+      continue;
+    WUS(S_);
+    CallCommand(C[Context[I]^.sNOTFOUND]);
+    if WOI <> 0 then
+      Exit;
   end;
+  (* if ConvertStrToInt(W, I) <> 0 then *)
+  (*   LogError('Unknown command: ' + W) *)
+  (* else begin *)
+  (*   EWO('(literal)'); *)
+  (*   EWI(I); *)
+  (* end; *)
 end;
 
 procedure OForthMachine.Interpret(const Line: PChar);
@@ -5214,11 +5230,16 @@ begin
     B := Machine.WOS;
     // Writeln('_NOTFOUND_(', B, ')');
     if ConvertStrToInt(B, I) = 0 then begin
-      WUI(I);
-      WUI(BOOL_FALSE);
+      if Machine^.State = FS_INTERPRET then
+        Machine^.WUI(I)
+      else begin
+        Machine^.EWO('(literal)');
+        MAchine^.EWI(I);
+      end;
+      WUI(BOOL_TRUE);
       Exit;
     end;
-    WUI(BOOL_TRUE);
+    WUI(BOOL_FALSE);
   end;
 end;
 
@@ -5334,6 +5355,7 @@ begin
   Result := nil;}
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+
 // ( Вся соль :)
 all_implement
 

@@ -135,6 +135,7 @@ syn keyword dembroOperators ?dnegate
 
 " stack manipulations
 syn keyword dembroStack drop nip dup over tuck swap rot lrot rrot 
+syn keyword dembroStack bdrop bnip bdup bover btuck bswap brot blrot brrot 
 syn keyword lrotn rrotn ?dup pick roll
 syn keyword dembroRStack >r r> r@ rdrop
 

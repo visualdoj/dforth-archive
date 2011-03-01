@@ -1,1 +1,1 @@
-..\..\dembro32 -r locals.de
+..\..\dembro32 +r locals.de
