@@ -6796,7 +6796,7 @@ begin
     if not ReadUTF8Char(P, U) then
       Break
     else begin
-      C^.Sym[Len*4] := U;
+      PArrayOfCardinal(@C^.Sym[0])^[Len] := U;
       Inc(Len);
       Write(Char(U));
     end;
