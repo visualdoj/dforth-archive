@@ -171,7 +171,7 @@ syn keyword dembroFileWords file-size
 syn keyword dembroMath decimal hex base
 syn match dembroInteger '\<-\=[0-9.]*[0-9.]\+\>'
 syn match dembroInteger '\<&-\=[0-9.]*[0-9.]\+\>'
-" recognize hex and binary numbers, the '$' and '%' notation is for gdembro
+" recognize hex and binary numbers, the '$' and '%' notation is for gforth
 syn match dembroInteger '\<\$\x*\x\+\>' " *1* --- dont't mess
 syn match dembroInteger '\<\x*\d\x*\>'  " *2* --- this order!
 syn match dembroInteger '\<\h\x*\x\+\>'
@@ -179,8 +179,13 @@ syn match dembroInteger '\<%[0-1]*[0-1]\+\>'
 syn match dembroFloat '\<-\=\d*[.]\=\d\+[DdEe]\d\+\>'
 syn match dembroFloat '\<-\=\d*[.]\=\d\+[DdEe][-+]\d\+\>'
 
+" Magic chars in strings
+syn match dembroMagicChar '\^.'
+
 " Strings
-syn region dembroString matchgroup=dembroQuote start=+\k*\" + end=+"\k*+ end=+$+
+syn region dembroString matchgroup=dembroQuote start=+\k*\" + end=+"\k*+ contains=dembroMagicChar
+syn match dembroQuote 'char .'
+syn match dembroQuote '\[char\] .'
 
 " Comments
 syn match dembroComment 'summary\s.*$' contains=dembroTodo,dembroSpaceError
@@ -266,6 +271,7 @@ if version >= 508 || !exists("did_dembro_syn_inits")
     HiLink dembroConversion String
     HiLink dembroForth Statement
     HiLink dembroVocs Statement
+    HiLink dembroMagicChar Statement
     HiLink dembroString String
     HiLink dembroQuote Statement
     HiLink dembroComment Comment

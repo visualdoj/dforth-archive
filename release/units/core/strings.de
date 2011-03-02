@@ -11,5 +11,7 @@
 : ." ( "xxx"-) ( C:"xxx") ( R:-) 
         state @ if ['] [.str]" execute else .str" then ; immediate
 
+: stred ( s-s) ( C:s-) ( R:-s) state @ if ['] str-literal execute then ;
+
 // n — число байт, занимаемое utf8-символом, i - первый байт символа
 // : utf8-size ( i-in) dup 128 > if b00 ;

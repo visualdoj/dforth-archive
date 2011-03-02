@@ -2078,6 +2078,9 @@ procedure _execute(Machine: TForthMachine; Command: PForthCommand);
   procedure run_pchar_dq(Machine: TForthMachine; Command: PForthCommand);
   procedure pchar_dot(Machine: TForthMachine; Command: PForthCommand);
 
+  procedure _char(Machine: TForthMachine; Command: PForthCommand);
+  procedure _compile_char(Machine: TForthMachine; Command: PForthCommand);
+
   // стековые команды над строками отличаются
   procedure str_push(Machine: TForthMachine; B: TString); overload;
   procedure str_push(Machine: TForthMachine; B: TStr); overload;
@@ -2106,6 +2109,7 @@ procedure _execute(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dq(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_str_dq(Machine: TForthMachine; Command: PForthCommand);
   procedure run_str_dq(Machine: TForthMachine; Command: PForthCommand);
+  procedure _str_literal(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dot(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dollar(Machine: TForthMachine; Command: PForthCommand);
   procedure str_new(Machine: TForthMachine; Command: PForthCommand);
@@ -3675,6 +3679,17 @@ begin
     //Machine.FMemoryDebug.Log(ToStr([' - str" ', PChar(@B^.Sym[0]), '" ', B^.Ref]));
 end;
 
+procedure _char(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Machine.WUI(Ord(Machine.SNC));
+end;
+
+procedure _compile_char(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Machine.EWO('(literal)');
+  Machine.EWI(Ord(Machine.SNC));
+end;
+
 procedure str_push(Machine: TForthMachine; B: TString);
 var
   FS: TStr;
@@ -3823,7 +3838,7 @@ begin
   Y := CreateStr(X^.Width, X^.Len - S);
   Move(X^.Sym[0], Y^.Sym[0], P * X^.Width); 
   Move(X^.Sym[(P+S)*X^.Width], Y^.Sym[P*X^.Width], (X^.Len - (P+S)) * X^.Width); 
-  DelRef(X);
+  str_drop(Machine, nil);
   str_push(Machine, Y);
 end;
 
@@ -3842,6 +3857,7 @@ begin
   end;
   Y := CreateStr(X^.Width, S);
   Move(X^.Sym[P*X^.Width], Y^.Sym[0], S * X^.Width); 
+  str_drop(Machine, nil);
   DelRef(X);
   str_push(Machine, Y);
 end;
@@ -3885,7 +3901,17 @@ begin
       C := Machine.NextChar;
       while C <> '"' do begin
         SetLength(Temp, Length(Temp) + 1); 
-        Temp[High(Temp)] := C; 
+        if C = '^' then begin
+          C := Machine.NextChar;
+          case C of
+            'n': Temp[High(Temp)] := #13;
+            '"': Temp[High(Temp)] := '"';
+          else
+            Temp[High(Temp)] := C; 
+          end
+        end else begin
+          Temp[High(Temp)] := C; 
+        end;
         C := Machine.NextChar;
       end; 
       GetMem(B, 3*SizeOf(TInt) + Length(Temp) + 1);
@@ -3917,7 +3943,16 @@ begin
       C := Machine.NextChar;
       L := 0;
       while C <> '"' do begin
-        Machine.EWC(C);
+        if C = '^' then begin
+          C := Machine.NextChar;
+          case C of
+            'n': Machine.EWC(#13);
+          else
+            Machine.EWC(C);
+          end
+        end else begin
+          Machine.EWC(C);
+        end;
         C := Machine.NextChar;
         Inc(L);
       end;
@@ -3928,7 +3963,7 @@ begin
       S := PStrRec(TBlock(Pointer(TUInt(Machine.BWP) + (-1)*(SizeOf(Pointer)))^));
       Machine.EWO('(str)"');
       E := Machine.EL;
-      Machine.EWV(S, SizeOf(Integer)*3 + S^.Len + 1);
+      Machine.EWV(S, SizeOf(Integer)*3 + S^.Len*S^.Width + 1);
       Integer(Pointer(@Machine.E[E])^) := 1;
     end;
  // end;
@@ -3941,8 +3976,23 @@ begin
  // with Machine^ do begin
     B := @Machine.E[Machine.EC];
     str_push(Machine, B);
-    Inc(Machine.EC, 3*SizeOf(TInt) + PStrRec(B)^.Len + 1);
+    Inc(Machine.EC, 3*SizeOf(TInt) + PStrRec(B)^.Len*B^.Width + 1);
  // end;
+end;
+
+procedure _str_literal(Machine: TForthMachine; Command: PForthCommand);
+const
+  One: Integer = 1;
+var
+  B: TStr;
+  E: Integer;
+begin
+  Machine.EWO('(str-literal)');
+  B := str_pop(Machine);
+  E := Machine.EL;
+  Machine.EWV(B, 3*SizeOf(TInt) + B^.Len*B^.Width + 1);
+  Move(One, Machine.E[E], SizeOf(Integer));
+  DelRef(B);
 end;
 
 procedure str_equel(Machine: TForthMachine; Command: PForthCommand);
@@ -5022,6 +5072,9 @@ begin
   AddCommand('pchar-concat', pchar_concat);
   AddCommand('pchar=', pchar_equel);
 
+  AddCommand('char', _char);
+  AddCommand('[char]', _compile_char, True);
+
   AddCommand('str0', str_nil);
   AddCommand('str#', str_len);
   AddCommand('str-width', str_width);
@@ -5039,6 +5092,8 @@ begin
   AddCommand('str"', str_dq);
   AddCommand('[str]"', compile_str_dq, True);
   AddCommand('(str)"', run_str_dq);
+  AddCommand('(str-literal)', run_str_dq);
+  AddCommand('str-literal', _str_literal, True);
   AddCommand('str.', str_dot);
   AddCommand('str$', str_dollar);
   AddCommand('str-drop', bdrop);

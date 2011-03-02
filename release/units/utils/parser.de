@@ -10,7 +10,6 @@ RUS summary ( ps B: x -- B: lr) ( -x ^l ^r) разбивает строку на
 
 : parse-binary? str^? if str# bdrop str-leftright true else drop false then ; 
 RUS summary ( B: sb -- f B: lr) парсит строку вида s=lbr, f -- флаг успеха
-
 : parse-list bswap ( bs) 
   begin bover parse-binary? while bswap dup bdyn+ repeat bdrop bdyn+ bdrop ;
 RUS summary ( d B: sb - d ) разбивает строку s на части разделителем b
@@ -45,16 +44,3 @@ detail ( B: str1 sub -- B: str2)
   Примеры. 
     Удаление пробелов по краям строки: str"  " str-trim
 \detail
-
-" expe" " rience" str+ // сложили две строки, получили experience
-2 4 str-cut // оставили четыре символа, начиная со второго, получили peri (нумерация с нуля)
-bdup str+ // сложили строку с самой собой, получили periperi
-" rip" str^ // определяем символ, начиная с которого идёт первое вхождение rip в строке, получаем число 2
-str# // узнали длину строки rip, т.е. 3
-// Итого, на обычном стеке: 2 3
-// На стеке строк: " periperi" " rip"
-bdrop // скидывем строку rip со стека
-str-del // удаляем три символа, начиная со второго, получаем peeri
-utf8->unicode unicode->cp1251 // перекодировываем строку из utf8 в cp1251
-" peeri" str= // проверяем равны ли строки, в данном случае получаем true
-." Hello world!"cr // печатаем на консоль строку
