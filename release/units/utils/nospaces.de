@@ -1,0 +1,23 @@
+// 2011.03.01 # Doj
+// ћодуль, после подключени€ которого не требуетс€ оставл€ть пробел после
+// команд " str" [str]" ." | и т.д.
+
+
+: source-rest ( B: slr-) brrot 0 str# bdrop str-del bswap ( sr)
+  str# bover str# bover over - tuck over bswap str-cut str=
+  if bdrop str-del else drop drop source-cut "  " bswap str+ str+ then ;
+
+: str-rest ( B: sl-) " ^"" source-rest ;
+
+: str-nospace ( s-.T|F) 
+  " str^""   str^ 0= if str-rest true exit then bdrop
+  " [str]^"" str^ 0= if str-rest ['] str-literal execute true exit then bdrop
+  " ^""      str^ 0= if str-rest stred true exit then bdrop
+  false
+;
+
+: _NOTFOUND_ bdup _NOTFOUND_ ?dup if;
+    str-nospace if true exit then
+    " |" str^ 0= bdrop if 0 1 str-del "  "str+ " |"source-cut str+ |ed true exit then
+    false
+;
