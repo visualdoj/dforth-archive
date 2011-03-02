@@ -13,7 +13,7 @@
   " str^""   str^ 0= if str-rest true exit then bdrop
   " [str]^"" str^ 0= if str-rest ['] str-literal execute true exit then bdrop
   " ^""      str^ 0= if str-rest stred true exit then bdrop
-  false
+  bdrop false
 ;
 
 : _NOTFOUND_ bdup _NOTFOUND_ ?dup if;
