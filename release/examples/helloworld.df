@@ -1,1 +1,1 @@
-str" Hello world!" str. cr str$
+." Hello world!" cr
