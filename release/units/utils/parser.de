@@ -3,13 +3,16 @@
 
 : str-right str# over - str-cut ;
 RUS summary ( p B: s -- B: r) ( -s ^r) оставляет фрагмент s[p..s#-1]
+
 : str-left 0 swap str-cut ;
 RUS summary ( p B: s -- B: l) ( -s ^l) оставляет фрагмент s[0..p-1]
+
 : str-leftright swap str-split str-right ;
 RUS summary ( ps B: x -- B: lr) ( -x ^l ^r) разбивает строку на части l=x[0..p-1] r=x[p+s..x#-1]
 
 : parse-binary? str^? if str# bdrop str-leftright true else drop false then ; 
 RUS summary ( B: sb -- f B: lr) парсит строку вида s=lbr, f -- флаг успеха
+
 : parse-list bswap ( bs) 
   begin bover parse-binary? while bswap dup bdyn+ repeat bdrop bdyn+ bdrop ;
 RUS summary ( d B: sb - d ) разбивает строку s на части разделителем b
