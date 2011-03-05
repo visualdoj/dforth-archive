@@ -6,15 +6,9 @@
 include" units\structures\dyn.de"
 include" units\utils\headers.de"
 
-// {{{ vars
-ptr-nil ptr-value lib-user32 // переменная для хранения загруженной либы user32
-1000 dyn user32-funcs // массив для хранения функций, которые необходимо загрузить
-ptr-nil ptr-value *lib-kernel32* // то же для kernel32
-1000 dyn *kernel32-funcs* 
-// }}}
-// завершает объявление прототипа функции, которая должна браться из user32 библиотеки
 stdcall declare-header User32.dll
 stdcall declare-header Kernel32.dll
+stdcall declare-header GDI32.dll
 
 // {{{ types
 : BOOLEAN   t_int8 ;
@@ -262,7 +256,7 @@ h0002           constant WM_DESTROY
 // {{{ prototypes
 :a MessageBoxA HWND LPCSTR LPCSTR UINT                  LONG User32.dll header;
 :a AdjustWindowRect LPRECT DWORD WINBOOL                WINBOOL User32.dll header;
-// :a ChoosePixelFormat HDC PPIXELFORMATDESCRIPTOR         LONG gdi32;
+:a ChoosePixelFormat HDC PPIXELFORMATDESCRIPTOR         LONG GDI32.dll header;
 :a CloseClipboard                                       WINBOOL User32.dll header;
 :a CreateWindowExA DWORD LPCTSTR LPCTSTR DWORD LONG LONG 
                    LONG LONG HWND HMENU HINST LPVOID    HWND User32.dll header;
@@ -293,25 +287,27 @@ h0002           constant WM_DESTROY
 :a SetClipboardData UINT HANDLE                         HANDLE User32.dll header;
 :a SetFocus HWND                                        HWND User32.dll header;
 :a SetForegroundWindow HWND                             WINBOOL User32.dll header;
-// :a SetPixelFormat HDC LONG PPIXELFORMATDESCRIPTOR       WINBOOL gdi32;
+:a SetPixelFormat HDC LONG PPIXELFORMATDESCRIPTOR       WINBOOL GDI32.dll header;
 :a SetWindowLongA HWND LONG LONG                        LONG User32.dll header;
 :a SetWindowTextA HWND LPCSTR                           WINBOOL User32.dll header;
 :a SetWindowPos HWND HWND LONG LONG LONG LONG UINT      WINBOOL User32.dll header;
 :a ShowCursor WINBOOL                                   t_int User32.dll header;
 :a ShowWindow HWND t_int                                WINBOOL User32.dll header;
-// :a SwapBuffers HDC                                      WINBOOL gdi32;
+:a SwapBuffers HDC                                      WINBOOL GDI32.dll header;
 :a TranslateMessage LPMSG                               WINBOOL User32.dll header;
 :a UpdateWindow HWND                                    WINBOOL User32.dll header;
-// :a wglCreateContext HDC                                 HGLRC gdi32;
-// :a wglMakeCurrent HDC HGLRC                             WINBOOL gdi32;
+// :a wglCreateContext HDC                                 HGLRC GDI32.dll header;
+// :a wglMakeCurrent HDC HGLRC                             WINBOOL GDI32.dll header;
 :a QueryPerformanceCounter PLARGE_INTEGER               WINBOOL Kernel32.dll header;
 :a QueryPerformanceFrequency PLARGE_INTEGER             WINBOOL Kernel32.dll header;
-// :a SetCurrentDirectory LPCSTR                           WINBOOL Kernel32.dll header;
-// :a GetCurrentDirectory DWORD LPSTR                      DWORD Kernel32.dll header;
-// :a FindFirstFile LPCSTR LPWIN32_FIND_DATA               HANDLE Kernel32.dll header;
-// :a FindNextFile HANDLE LPWIN32_FIND_DATA                WINBOOL Kernel32.dll header;
+:a SetCurrentDirectoryA LPCSTR                          WINBOOL Kernel32.dll header;
+:a GetCurrentDirectoryA DWORD LPSTR                     DWORD Kernel32.dll header;
+:a FindFirstFileA LPCSTR LPWIN32_FIND_DATA              HANDLE Kernel32.dll header;
+:a FindNextFileA HANDLE LPWIN32_FIND_DATA               WINBOOL Kernel32.dll header;
 :a FindClose HANDLE                                     WINBOOL Kernel32.dll header;
 :a SetErrorMode UINT                                    UINT Kernel32.dll header;
 // }}}
 
-: windows-load Kernel32.dll header-load User32.dll header-load ;
+: windows-load Kernel32.dll header-load 
+               User32.dll   header-load
+               GDI32.dll    header-load ;

@@ -18,24 +18,24 @@ struct s_header
    dup .funcs 128 dyn-new swap ptr! ( conv ptr) 
    dup .name dup off b! ( conv ptr) .conv ! ;
 // Завершить объявление alien-функции с добавлением в переданную структуру s_header
-: header; ( .h-) [.str]" header; start"cr dup 0 l! .conv @ ['] a; execute last dup . 0 l@ .funcs @ dyn+ [.str]" header; done"cr ; immediate
+: header; ( .h-) dup 0 l! .conv @ ['] a; execute last 
+                     0 l@ .funcs @ dyn+ ; immediate
 
 // Обработка ошибки в случае, если функцию не удалось запустить
 : header-load-fun-error ( s-) [str]" [windows] Cannot load fun: " str. str. cr ;
 // Загружает функцию
-: header-load-xt-fun ( lx-) tuck dup . xt.n@ ." before conv"cr pchar->str ." inside" bdup lib-fun
+: header-load-xt-fun ( lx-) tuck xt.n@ pchar->str bdup lib-fun
                  dup 0= if bdup header-load-fun-error then bdrop swap xt.d@ ! ;
 // Загружает i-ую функцию из заголовка h
 : header-load-indexed-fun ( hi) swap dup .lib @ rrot .funcs @ dyn@ header-load-xt-fun ;
 // Загружает функции для заданного заголовка
 // 0 -- удалось, иначе нет
-: header-load ( h-i) [.str]" header-load start" 
+: header-load ( h-i)
    dup .name b@ lib-load 0= if lib-unload drop -1 exit then
    ( hl) over .lib ! 
    0 begin ( hi) over .funcs @ dyn# over > while 
      over over header-load-indexed-fun 
    1+ repeat drop drop 0 
-   [.str]" header-load done" cr
 ;
 // Выгружает загаловок
 : header-unload ( h-) .lib @ lib-unload ;
