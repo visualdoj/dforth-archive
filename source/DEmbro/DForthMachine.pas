@@ -77,6 +77,9 @@ const
 {$IFNDEF FLAG_FPC}{$REGION 'file_commands'}{$ENDIF}
 
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'os_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 const
   BOOL_FALSE: Integer   = 0;
@@ -1921,6 +1924,7 @@ end;
   
 
   
+  procedure file_exists (Machine: TForthMachine; Command: PForthCommand);
   procedure file_open (Machine: TForthMachine; Command: PForthCommand);
   procedure file_close (Machine: TForthMachine; Command: PForthCommand);
   procedure file_w (Machine: TForthMachine; Command: PForthCommand);
@@ -1930,6 +1934,11 @@ end;
   procedure file_write_from_w (Machine: TForthMachine; Command: PForthCommand);
   procedure file_read_to_w (Machine: TForthMachine; Command: PForthCommand);
   procedure file_size (Machine: TForthMachine; Command: PForthCommand);
+  
+  
+
+  
+  procedure current_directory (Machine: TForthMachine; Command: PForthCommand);
   
   
 
@@ -6205,6 +6214,7 @@ begin
       AddCommand('throw', _throw);
     
     
+     AddCommand('file-exists', file_open);
      AddCommand('file-open', file_open);
      AddCommand('file-close', file_close);
      AddCommand('file-w', file_w);
@@ -6212,6 +6222,9 @@ begin
      AddCommand('file-write', file_write);
      AddCommand('file-read', file_read);
      AddCommand('file-size', file_size);
+    
+    
+       AddCommand('current-directory', current_directory);
     ;
 end;
 
@@ -6937,10 +6950,6 @@ end;
    
     
        function OForthMachine.ConvertStrTo(const B: TString; var X: TInt): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -6975,10 +6984,6 @@ end;
    
     
        function OForthMachine.ConvertStrToint(const B: TString; var X: TInt): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -7013,10 +7018,6 @@ end;
    
     
        function OForthMachine.ConvertStrToint8(const B: TString; var X: TInt8): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -7051,10 +7052,6 @@ end;
    
     
        function OForthMachine.ConvertStrToint16(const B: TString; var X: TInt16): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -7089,10 +7086,6 @@ end;
    
     
        function OForthMachine.ConvertStrToint32(const B: TString; var X: TInt32): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -7127,10 +7120,6 @@ end;
    
     
        function OForthMachine.ConvertStrToint64(const B: TString; var X: TInt64): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -7165,10 +7154,6 @@ end;
    
     
        function OForthMachine.ConvertStrTouint(const B: TString; var X: TUInt): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -7203,10 +7188,6 @@ end;
    
     
        function OForthMachine.ConvertStrTouint8(const B: TString; var X: TUInt8): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -7241,10 +7222,6 @@ end;
    
     
        function OForthMachine.ConvertStrTouint16(const B: TString; var X: TUInt16): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -7279,10 +7256,6 @@ end;
    
     
        function OForthMachine.ConvertStrTouint32(const B: TString; var X: TUInt32): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -7317,10 +7290,6 @@ end;
    
     
        function OForthMachine.ConvertStrTouint64(const B: TString; var X: TUInt64): Integer;
-       const
-         Digits: array[0..15] of TChar = ('0', '1', '2', '3', '4', '5', '6', 
-                                          '7', '8', '9', 'A', 'B', 'C', 'D',
-                                          'E', 'F');
        var
          D: Byte;
              function GetDigit(C: TChar; var D: Byte): Boolean;
@@ -10376,8 +10345,6 @@ end;
    
     
      procedure _sys_exceptions_execute (Machine: TForthMachine; Command: PForthCommand);
-     var
-       Res: Integer;
      begin with Machine^ do begin Integer(ExceptionsP^) := 0;
        Inc(ExceptionsP, SizeOf(Integer));
        Integer(ExceptionsP^) := EC;
@@ -10408,6 +10375,13 @@ end;
           Name: String;
           Mode: TInt;
         end;
+      procedure file_exists (Machine: TForthMachine; Command: PForthCommand);
+      var
+        S: TString;
+      begin
+        S := TString(PChar(@(str_top(Machine)^.Sym[0])));
+        Machine.WUI(Ord(FileExists(S))*BOOL_TRUE);
+      end;
       procedure file_open (Machine: TForthMachine; Command: PForthCommand); 
       var 
         F: PdfFile;
@@ -10464,6 +10438,13 @@ end;
       procedure file_read_to_w (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin  end; end;
       procedure file_size (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUI(PdfFile(WOP)^.Data.Size);  end; end;
+    
+   
+    
+       procedure current_directory (Machine: TForthMachine; Command: PForthCommand);
+       begin
+         Machine.WUS(GetCurrentDirectory);
+       end;
     
   
 

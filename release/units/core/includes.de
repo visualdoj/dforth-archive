@@ -18,7 +18,7 @@
 
 // Переводит путь до include-файла из относительного в абсолютный
 // Кладёт true на вершину, если это удалось
-: include-absolute ( s-sb) true ;
+: include-absolute ( s-s?) true ;
 // Добавляет строку в массив загруженных
 : once+ ( s-) bdup *once-names* str-dyn+ [str]" Loaded " str. str. cr ;
 // Исполняет файл, если он не был исполнен раньше.
