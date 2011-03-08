@@ -225,6 +225,8 @@ procedure SetCurrentDirectory(const Folder: TString);
 // Директория, в которой лежит Exe
 function GetExeDirectory: TString;
 
+// function FileExists(): Boolean;
+
 implementation
 
 //Var

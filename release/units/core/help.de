@@ -3,10 +3,13 @@
 
 include" units\core\w.de"
 include" units\structures\dyn.de"
+include" units\utils\debug.de"
 
-1000 dup str-dyn *help-names
-     dup str-dyn *help-articles
-         str-dyn *help-summary
+1000 
+dup str-dyn *help-names
+dup str-dyn *help-articles
+dup str-dyn *help-summary
+drop
 
 // Ищет описание
 // Если найти не удалось, то на вершине будет false.

@@ -80,6 +80,9 @@ const
 {$IFNDEF FLAG_FPC}{$REGION 'os_commands'}{$ENDIF}
 
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'f_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 const
   BOOL_FALSE: Integer   = 0;
@@ -1939,6 +1942,63 @@ end;
 
   
   procedure current_directory (Machine: TForthMachine; Command: PForthCommand);
+  
+  
+
+  
+      procedure finit (Machine: TForthMachine; Command: PForthCommand);
+      procedure fdrop (Machine: TForthMachine; Command: PForthCommand);
+      procedure fnip (Machine: TForthMachine; Command: PForthCommand);
+      procedure fdup (Machine: TForthMachine; Command: PForthCommand);
+      procedure fover (Machine: TForthMachine; Command: PForthCommand);
+      procedure ftuck (Machine: TForthMachine; Command: PForthCommand);
+      procedure fswap (Machine: TForthMachine; Command: PForthCommand);
+      procedure flrot (Machine: TForthMachine; Command: PForthCommand);
+      procedure frrot (Machine: TForthMachine; Command: PForthCommand);
+      procedure f0 (Machine: TForthMachine; Command: PForthCommand);
+      procedure f1 (Machine: TForthMachine; Command: PForthCommand);
+      procedure fpi (Machine: TForthMachine; Command: PForthCommand);
+      procedure flog10 (Machine: TForthMachine; Command: PForthCommand);
+      procedure floge (Machine: TForthMachine; Command: PForthCommand);
+      procedure f10log2 (Machine: TForthMachine; Command: PForthCommand);
+      procedure fln2 (Machine: TForthMachine; Command: PForthCommand);
+      procedure w2f (Machine: TForthMachine; Command: PForthCommand);
+      procedure f2w (Machine: TForthMachine; Command: PForthCommand);
+
+      procedure fadd (Machine: TForthMachine; Command: PForthCommand);
+      procedure fsub (Machine: TForthMachine; Command: PForthCommand);
+      procedure fswapsub (Machine: TForthMachine; Command: PForthCommand);
+      procedure fmul (Machine: TForthMachine; Command: PForthCommand);
+      procedure fdiv (Machine: TForthMachine; Command: PForthCommand);
+      procedure fswapdiv (Machine: TForthMachine; Command: PForthCommand);
+
+      procedure fabs (Machine: TForthMachine; Command: PForthCommand);
+      procedure fneg (Machine: TForthMachine; Command: PForthCommand);
+      procedure fsqrt (Machine: TForthMachine; Command: PForthCommand);
+      procedure fscale (Machine: TForthMachine; Command: PForthCommand);
+      procedure fround (Machine: TForthMachine; Command: PForthCommand);
+
+      procedure fptan   (Machine: TForthMachine; Command: PForthCommand);
+      procedure fpatan  (Machine: TForthMachine; Command: PForthCommand);
+      procedure flogmul (Machine: TForthMachine; Command: PForthCommand);
+      procedure flog1plus_mul  (Machine: TForthMachine; Command: PForthCommand);
+      procedure f2pwr   (Machine: TForthMachine; Command: PForthCommand);
+      procedure fcos    (Machine: TForthMachine; Command: PForthCommand);
+      procedure fsin    (Machine: TForthMachine; Command: PForthCommand);
+      procedure fsincos (Machine: TForthMachine; Command: PForthCommand);
+
+      procedure _float_fliteral (Machine: TForthMachine; Command: PForthCommand);
+      procedure _double_fliteral (Machine: TForthMachine; Command: PForthCommand);
+      procedure _extended_fliteral (Machine: TForthMachine; Command: PForthCommand);
+      procedure _float_to_str (Machine: TForthMachine; Command: PForthCommand);
+      procedure _double_to_str (Machine: TForthMachine; Command: PForthCommand);
+      procedure _extended_to_str (Machine: TForthMachine; Command: PForthCommand);
+      procedure _str_to_float_ask (Machine: TForthMachine; Command: PForthCommand);
+      procedure _str_to_double_ask (Machine: TForthMachine; Command: PForthCommand);
+      procedure _str_to_extended_ask (Machine: TForthMachine; Command: PForthCommand);
+      procedure _str_to_float_excl_ask (Machine: TForthMachine; Command: PForthCommand);
+      procedure _str_to_double_excl_ask (Machine: TForthMachine; Command: PForthCommand);
+      procedure _str_to_extended_excl_ask (Machine: TForthMachine; Command: PForthCommand);
   
   
 
@@ -6225,7 +6285,64 @@ begin
     
     
        AddCommand('current-directory', current_directory);
-    ;
+    
+    
+     AddCommand('finit',   finit);
+     AddCommand('fdrop',   fdrop);
+     AddCommand('fnip',    fnip);
+     AddCommand('fdup',    fdup);
+     AddCommand('fover',   fover);
+     AddCommand('ftuck',   ftuck);
+     AddCommand('fswap',   fswap);
+     AddCommand('flrot',   flrot);
+     AddCommand('frrot',   frrot);
+
+     AddCommand('f0',      f0);
+     AddCommand('f1',      f1);
+     AddCommand('fpi',     fpi);
+     AddCommand('flog10',  flog10);
+     AddCommand('floge',   floge);
+     AddCommand('f10log2', f10log2);
+     AddCommand('fln2',    fln2);    
+
+     AddCommand('w>f',     w2f);    
+     AddCommand('f>w',     f2w);    
+
+     AddCommand('f+',     fadd);    
+     AddCommand('f-',     fsub);    
+     AddCommand('fswap-', fswapsub);    
+     AddCommand('f*',     fmul);    
+     AddCommand('f/',     fdiv);    
+     AddCommand('fswap/', fswapdiv);    
+
+     AddCommand('fabs', fabs);    
+     AddCommand('fneg', fneg);    
+     AddCommand('fsqrt', fsqrt);    
+     AddCommand('fscale', fscale);    
+     AddCommand('fround', fround);    
+
+     AddCommand('fptan',    fptan);    
+     AddCommand('fpatan',   fpatan);    
+     AddCommand('flog*',     flogmul);    
+     AddCommand('flog1+mul',   flog1plus_mul);    
+     AddCommand('f2pwr1-',  f2pwr);    
+     AddCommand('fcos',     fcos);    
+     AddCommand('fsin',     fsin);    
+     AddCommand('fsincos',  fsincos);    
+
+     AddCommand('float-fliteral',  _float_fliteral);    
+     AddCommand('double-fliteral',  _double_fliteral);    
+     AddCommand('extended-fliteral',  _extended_fliteral);    
+     AddCommand('float->str',  _float_to_str);    
+     AddCommand('double->str',  _double_to_str);    
+     AddCommand('extended->str',  _extended_to_str);    
+     AddCommand('str->float?',  _str_to_float_ask);    
+     AddCommand('str->double?',  _str_to_double_ask);    
+     AddCommand('str->extended?',  _str_to_extended_ask);    
+     AddCommand('str->float!?',  _str_to_float_excl_ask);    
+     AddCommand('str->double!?',  _str_to_double_excl_ask);    
+     AddCommand('str->extended!?',  _str_to_extended_excl_ask);    
+   ;
 end;
 
 destructor OForthMachine.Destroy; 
@@ -6297,12 +6414,7 @@ begin
     if WOI <> 0 then
       Exit;
   end;
-  (* if ConvertStrToInt(W, I) <> 0 then *)
-  (*   LogError('Unknown command: ' + W) *)
-  (* else begin *)
-  (*   EWO('(literal)'); *)
-  (*   EWI(I); *)
-  (* end; *)
+  LogError('Unknown command: ' + W)
 end;
 
 procedure OForthMachine.Interpret(const Line: PChar);
@@ -10378,8 +10490,10 @@ end;
       procedure file_exists (Machine: TForthMachine; Command: PForthCommand);
       var
         S: TString;
+        B: TStr;
       begin
-        S := TString(PChar(@(str_top(Machine)^.Sym[0])));
+        B := str_top(Machine);
+        S := TString(PChar(@(B^.Sym[0])));
         Machine.WUI(Ord(FileExists(S))*BOOL_TRUE);
       end;
       procedure file_open (Machine: TForthMachine; Command: PForthCommand); 
@@ -10445,6 +10559,313 @@ end;
        begin
          Machine.WUS(GetCurrentDirectory);
        end;
+    
+   
+    
+      procedure finit (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        finit
+      end;
+      procedure fdrop (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fstp ST(0)
+      end;
+      procedure fnip (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fxch ST(1)
+        fstp ST(0)
+      end;
+      procedure fdup (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fld ST(0)
+      end;
+      procedure fover (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fld ST(1)
+      end;
+      procedure ftuck (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fxch ST(1)
+        fld  ST(1)
+      end;
+      procedure fswap (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fxch ST(1)
+      end;
+      procedure flrot (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fxch ST(1)
+        fxch ST(2)
+      end;
+      procedure frrot (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fxch ST(2)
+        fxch ST(1)
+      end;
+      procedure f0 (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fldz
+      end;
+      procedure f1 (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fld1
+      end;
+      procedure fpi (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fldpi
+      end;
+      procedure flog10 (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fldl2t
+      end;
+      procedure floge (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fldl2e
+      end;
+      procedure f10log2 (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fldlg2
+      end;
+      procedure fln2 (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fldln2
+      end;
+      procedure w2f (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        mov ecx, [eax]
+        sub [eax], 4
+        fild DWORD [ecx-4]
+      end;
+      procedure f2w (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        mov ecx, [eax]
+        fistp DWORD [ecx]
+        add [eax], 4
+        fwait
+      end;
+      procedure fadd (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fadd
+      end;
+      procedure fsub (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fsub
+      end;
+      procedure fswapsub (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fsubr
+      end;
+      procedure fmul (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fmul
+      end;
+      procedure fdiv (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fdiv
+      end;
+      procedure fswapdiv (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fdivr
+      end;
+      procedure fabs (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fabs
+      end;
+      procedure fneg (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fchs
+      end;
+      procedure fsqrt (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fsqrt
+      end;
+      procedure fscale (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fscale
+      end;
+      procedure fround (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        frndint
+      end;
+      procedure fptan   (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fptan
+      end;
+      procedure fpatan  (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fpatan
+      end;
+      procedure flogmul (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fyl2x
+      end;
+      procedure flog1plus_mul (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fyl2xp1
+      end;
+      procedure f2pwr   (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        f2xm1
+      end;
+      procedure fcos    (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fcos
+      end;
+      procedure fsin    (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fsin
+      end;
+      procedure fsincos (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        fsincos
+      end;
+      procedure _float_fliteral (Machine: TForthMachine; Command: PForthCommand);
+      var
+        F: Single;
+      begin
+        asm
+          fstp F
+        end;
+        Machine.EWO('float-(fliteral)');
+        Machine.EWV(@F, SizeOf(F));
+      end;
+      procedure _double_fliteral (Machine: TForthMachine; Command: PForthCommand);
+      var
+        F: Double;
+      begin
+        asm
+          fstp F
+        end;
+        Machine.EWO('double-(fliteral)');
+        Machine.EWV(@F, SizeOf(F));
+      end;
+      procedure _extended_fliteral (Machine: TForthMachine; Command: PForthCommand);
+      var
+        F: Double;
+      begin
+        asm
+          fstp F
+        end;
+        Machine.EWO('extended-(fliteral)');
+        Machine.EWV(@F, SizeOf(F));
+      end;
+      procedure _float_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        F: Single;
+        S: String;
+      begin
+        asm
+          fstp f
+        end;
+        str(F, S);
+        Machine.WUS(S);
+      end;
+      procedure _double_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        F: Double;
+        S: String;
+      begin
+        asm
+          fstp f
+        end;
+        str(F, S);
+        Machine.WUS(S);
+      end;
+      procedure _extended_to_str (Machine: TForthMachine; Command: PForthCommand);
+      var
+        F: Extended;
+        S: String;
+      begin
+        asm
+          fstp f
+        end;
+        str(F, S);
+        Machine.WUS(S);
+      end;
+      procedure _str_to_float_ask (Machine: TForthMachine; Command: PForthCommand);
+      var
+        Code: Word;
+        S: TString;
+        V: Single;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          asm fld V end;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+      procedure _str_to_double_ask (Machine: TForthMachine; Command: PForthCommand);
+      var
+        Code: Word;
+        S: TString;
+        V: Double;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          asm fld V end;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+      procedure _str_to_extended_ask (Machine: TForthMachine; Command: PForthCommand);
+      var
+        Code: Word;
+        S: TString;
+        V: Extended;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          asm fld V end;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+      procedure _str_to_float_excl_ask (Machine: TForthMachine; Command: PForthCommand);
+      var
+        Code: Word;
+        S: TString;
+        V: Single;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          Single(Machine.WOP^) := V;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+      procedure _str_to_double_excl_ask (Machine: TForthMachine; Command: PForthCommand);
+      var
+        Code: Word;
+        S: TString;
+        V: Double;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          Double(Machine.WOP^) := V;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+      procedure _str_to_extended_excl_ask (Machine: TForthMachine; Command: PForthCommand);
+      var
+        Code: Word;
+        S: TString;
+        V: Extended;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          Extended(Machine.WOP^) := V;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
     
   
 

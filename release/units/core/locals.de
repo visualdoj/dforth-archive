@@ -7,6 +7,7 @@ include" units\utils\parser.de"
 8 bdyn *local-names
 
 : local-offset>> *local-offset dup @ cell+ swap !  ;
+: local-offset-off *local-offset off ;
 
 : local-created ( sp) str+ created immediate *local-offset @ , ;
 : put-local-offset ( p-i) compile (literal) @ , ;
@@ -34,28 +35,42 @@ include" units\utils\parser.de"
 : prepare-local-name? ( B: x -- f B: y) bdup str0 str= not ;
 
 : local-generated-cell ( varname -- flag)
-  prepare-local-name? 0;
+  prepare-local-name? not if false exit then
   bdup local-generated!
   bdup local-generated@
   bdup local-++generated
   bdup local-generated++
   bdup local---generated
   bdup local-generated--
-  bdrop
+  bdrop true
 ;
 
-: |ed ( B: s --) compile branch >mark *local-offset off
-  *local-names "  " parse-list
-  *local-names bdyn# begin dup 0 > while 1-
+: parse-locals-list ( B: s -) *local-names "  " parse-list ;
+
+: generate-all-locals
+  *local-names bdyn# begin dup 0> while 1-
     dup *local-names bdyn[]@ local-generated-cell if local-offset>> then
   repeat drop 
-  >resolve 
+;
+
+: initialiaze-all-locals
   *local-offset off *local-names bdyn# begin dup 0 > while 1-
     dup *local-names bdyn[]@ prepare-local-name?
     if *local-offset @ ['] literal execute compile l! local-offset>>
     else bdrop then
   repeat drop 
-  *local-offset @ 0; ['] literal execute compile l+
+;
+
+: get-memory-for-locals *local-offset @ 0; ['] literal execute compile l+ ;
+
+: |ed ( B: s --) bdup str.
+  compile branch >mark 
+    local-offset-off
+    parse-locals-list
+    generate-all-locals 
+  >resolve 
+  get-memory-for-locals
+  initialiaze-all-locals 
 ;
 
 : | ( "x1 x2 .. xn|"-) " |" source-cut |ed ; immediate

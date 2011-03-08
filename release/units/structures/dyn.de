@@ -46,12 +46,17 @@ wp
 : dyn# ( d-i) dyn.l@ ;
 : dyn@ ( id-i) dyn[] @ ;
 : dyn! ( iid-) dyn[] ! ;
+: 0dyn+ ( d-) 0 swap dyn+ ;
+
+: dyn[]! ( nid-) dyn[] ! ;
+: dyn[]@ ( id-n) dyn[] @ ;
 
 : str-dyn dyn ;
 : str-dyn# dyn# ;
 : str-dyn.inclen ( d-) dup @ swap dup 1+! dyn[] str0 swap str! ;
 // : str-dyn+ ( sd-) dup str-dyn# swap dup str-dyn.inclen dyn[] str! ;
-: str-dyn+ ( sd-) b>w swap dyn+ ;
+: str-0dyn+ str0 b>w swap dyn+ ;
+: str-dyn+ ( d B: s -) b>w swap ( sd) dup dyn# swap ( sid) dup str-0dyn+ dyn[]! ;
 : str-dyn@ ( id-s) dyn[] b@ ;
 : str-dyn! ( sid-) dyn[] b! ;
 

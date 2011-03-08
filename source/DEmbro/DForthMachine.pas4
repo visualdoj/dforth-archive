@@ -976,8 +976,10 @@ define(~file_commands|,
       procedure file_exists cmdhdr;
       var
         S: TString;
+        B: TStr;
       begin
-        S := TString(PChar(@(str_top(Machine)^.Sym[0])));
+        B := str_top(Machine);
+        S := TString(PChar(@(B^.Sym[0])));
         Machine.WUI(Ord(FileExists(S))*BOOL_TRUE);
       end;
       procedure file_open cmdhdr; 
@@ -1073,6 +1075,441 @@ define(~os_commands|,
     ~
        AddCommand('current-directory', current_directory);
     |)
+|)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'f_commands'}{$ENDIF}
+define(~f_commands|, 
+  ~
+      procedure finit cmdhdr;
+      procedure fdrop cmdhdr;
+      procedure fnip cmdhdr;
+      procedure fdup cmdhdr;
+      procedure fover cmdhdr;
+      procedure ftuck cmdhdr;
+      procedure fswap cmdhdr;
+      procedure flrot cmdhdr;
+      procedure frrot cmdhdr;
+      procedure f0 cmdhdr;
+      procedure f1 cmdhdr;
+      procedure fpi cmdhdr;
+      procedure flog10 cmdhdr;
+      procedure floge cmdhdr;
+      procedure f10log2 cmdhdr;
+      procedure fln2 cmdhdr;
+      procedure w2f cmdhdr;
+      procedure f2w cmdhdr;
+
+      procedure fadd cmdhdr;
+      procedure fsub cmdhdr;
+      procedure fswapsub cmdhdr;
+      procedure fmul cmdhdr;
+      procedure fdiv cmdhdr;
+      procedure fswapdiv cmdhdr;
+
+      procedure fabs cmdhdr;
+      procedure fneg cmdhdr;
+      procedure fsqrt cmdhdr;
+      procedure fscale cmdhdr;
+      procedure fround cmdhdr;
+
+      procedure fptan   cmdhdr;
+      procedure fpatan  cmdhdr;
+      procedure flogmul cmdhdr;
+      procedure flog1plus_mul  cmdhdr;
+      procedure f2pwr   cmdhdr;
+      procedure fcos    cmdhdr;
+      procedure fsin    cmdhdr;
+      procedure fsincos cmdhdr;
+
+      procedure _float_fliteral cmdhdr;
+      procedure _double_fliteral cmdhdr;
+      procedure _extended_fliteral cmdhdr;
+      procedure _float_to_str cmdhdr;
+      procedure _double_to_str cmdhdr;
+      procedure _extended_to_str cmdhdr;
+      procedure _str_to_float_ask cmdhdr;
+      procedure _str_to_double_ask cmdhdr;
+      procedure _str_to_extended_ask cmdhdr;
+      procedure _str_to_float_excl_ask cmdhdr;
+      procedure _str_to_double_excl_ask cmdhdr;
+      procedure _str_to_extended_excl_ask cmdhdr;
+  define(~all_implement|, all_implement 
+    ~
+      procedure finit cmdhdr;
+      asm
+        finit
+      end;
+      procedure fdrop cmdhdr;
+      asm
+        fstp ST(0)
+      end;
+      procedure fnip cmdhdr;
+      asm
+        fxch ST(1)
+        fstp ST(0)
+      end;
+      procedure fdup cmdhdr;
+      asm
+        fld ST(0)
+      end;
+      procedure fover cmdhdr;
+      asm
+        fld ST(1)
+      end;
+      procedure ftuck cmdhdr;
+      asm
+        fxch ST(1)
+        fld  ST(1)
+      end;
+      procedure fswap cmdhdr;
+      asm
+        fxch ST(1)
+      end;
+      procedure flrot cmdhdr;
+      asm
+        fxch ST(1)
+        fxch ST(2)
+      end;
+      procedure frrot cmdhdr;
+      asm
+        fxch ST(2)
+        fxch ST(1)
+      end;
+      procedure f0 cmdhdr;
+      asm
+        fldz
+      end;
+      procedure f1 cmdhdr;
+      asm
+        fld1
+      end;
+      procedure fpi cmdhdr;
+      asm
+        fldpi
+      end;
+      procedure flog10 cmdhdr;
+      asm
+        fldl2t
+      end;
+      procedure floge cmdhdr;
+      asm
+        fldl2e
+      end;
+      procedure f10log2 cmdhdr;
+      asm
+        fldlg2
+      end;
+      procedure fln2 cmdhdr;
+      asm
+        fldln2
+      end;
+      procedure w2f cmdhdr;
+      asm
+        mov ecx, [eax]
+        sub [eax], 4
+        fild DWORD [ecx-4]
+      end;
+      procedure f2w cmdhdr;
+      asm
+        mov ecx, [eax]
+        fistp DWORD [ecx]
+        add [eax], 4
+        fwait
+      end;
+      procedure fadd cmdhdr;
+      asm
+        fadd
+      end;
+      procedure fsub cmdhdr;
+      asm
+        fsub
+      end;
+      procedure fswapsub cmdhdr;
+      asm
+        fsubr
+      end;
+      procedure fmul cmdhdr;
+      asm
+        fmul
+      end;
+      procedure fdiv cmdhdr;
+      asm
+        fdiv
+      end;
+      procedure fswapdiv cmdhdr;
+      asm
+        fdivr
+      end;
+      procedure fabs cmdhdr;
+      asm
+        fabs
+      end;
+      procedure fneg cmdhdr;
+      asm
+        fchs
+      end;
+      procedure fsqrt cmdhdr;
+      asm
+        fsqrt
+      end;
+      procedure fscale cmdhdr;
+      asm
+        fscale
+      end;
+      procedure fround cmdhdr;
+      asm
+        frndint
+      end;
+      procedure fptan   cmdhdr;
+      asm
+        fptan
+      end;
+      procedure fpatan  cmdhdr;
+      asm
+        fpatan
+      end;
+      procedure flogmul cmdhdr;
+      asm
+        fyl2x
+      end;
+      procedure flog1plus_mul cmdhdr;
+      asm
+        fyl2xp1
+      end;
+      procedure f2pwr   cmdhdr;
+      asm
+        f2xm1
+      end;
+      procedure fcos    cmdhdr;
+      asm
+        fcos
+      end;
+      procedure fsin    cmdhdr;
+      asm
+        fsin
+      end;
+      procedure fsincos cmdhdr;
+      asm
+        fsincos
+      end;
+      procedure _float_fliteral cmdhdr;
+      var
+        F: Single;
+      begin
+        asm
+          fstp F
+        end;
+        Machine.EWO('float-(fliteral)');
+        Machine.EWV(@F, SizeOf(F));
+      end;
+      procedure _double_fliteral cmdhdr;
+      var
+        F: Double;
+      begin
+        asm
+          fstp F
+        end;
+        Machine.EWO('double-(fliteral)');
+        Machine.EWV(@F, SizeOf(F));
+      end;
+      procedure _extended_fliteral cmdhdr;
+      var
+        F: Double;
+      begin
+        asm
+          fstp F
+        end;
+        Machine.EWO('extended-(fliteral)');
+        Machine.EWV(@F, SizeOf(F));
+      end;
+      procedure _float_run_fliteral cmdhdr;
+      begin
+        asm
+          //fld [Machine.EC]
+        end;
+      end;
+      procedure _double_run_fliteral cmdhdr;    
+      procedure _extended_run_fliteral cmdhdr;    
+      procedure _float_to_str cmdhdr;
+      var
+        F: Single;
+        S: String;
+      begin
+        asm
+          fstp f
+        end;
+        str(F, S);
+        Machine.WUS(S);
+      end;
+      procedure _double_to_str cmdhdr;
+      var
+        F: Double;
+        S: String;
+      begin
+        asm
+          fstp f
+        end;
+        str(F, S);
+        Machine.WUS(S);
+      end;
+      procedure _extended_to_str cmdhdr;
+      var
+        F: Extended;
+        S: String;
+      begin
+        asm
+          fstp f
+        end;
+        str(F, S);
+        Machine.WUS(S);
+      end;
+      procedure _str_to_float_ask cmdhdr;
+      var
+        Code: Word;
+        S: TString;
+        V: Single;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          asm fld V end;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+      procedure _str_to_double_ask cmdhdr;
+      var
+        Code: Word;
+        S: TString;
+        V: Double;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          asm fld V end;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+      procedure _str_to_extended_ask cmdhdr;
+      var
+        Code: Word;
+        S: TString;
+        V: Extended;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          asm fld V end;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+      procedure _str_to_float_excl_ask cmdhdr;
+      var
+        Code: Word;
+        S: TString;
+        V: Single;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          Single(Machine.WOP^) := V;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+      procedure _str_to_double_excl_ask cmdhdr;
+      var
+        Code: Word;
+        S: TString;
+        V: Double;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          Double(Machine.WOP^) := V;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+      procedure _str_to_extended_excl_ask cmdhdr;
+      var
+        Code: Word;
+        S: TString;
+        V: Extended;
+      begin
+        S := Machine.WOS;
+        val(S, V, Code);
+        if Code = 0 then begin
+          Extended(Machine.WOP^) := V;
+          Machine.WUI(BOOL_TRUE);
+        end else
+          Machine.WUI(BOOL_FALSE);
+      end;
+    |
+  )
+  define(~regist_all_commands|, regist_all_commands
+    ~
+     AddCommand('finit',   finit);
+     AddCommand('fdrop',   fdrop);
+     AddCommand('fnip',    fnip);
+     AddCommand('fdup',    fdup);
+     AddCommand('fover',   fover);
+     AddCommand('ftuck',   ftuck);
+     AddCommand('fswap',   fswap);
+     AddCommand('flrot',   flrot);
+     AddCommand('frrot',   frrot);
+
+     AddCommand('f0',      f0);
+     AddCommand('f1',      f1);
+     AddCommand('fpi',     fpi);
+     AddCommand('flog10',  flog10);
+     AddCommand('floge',   floge);
+     AddCommand('f10log2', f10log2);
+     AddCommand('fln2',    fln2);    
+
+     AddCommand('w>f',     w2f);    
+     AddCommand('f>w',     f2w);    
+
+     AddCommand('f+',     fadd);    
+     AddCommand('f-',     fsub);    
+     AddCommand('fswap-', fswapsub);    
+     AddCommand('f*',     fmul);    
+     AddCommand('f/',     fdiv);    
+     AddCommand('fswap/', fswapdiv);    
+
+     AddCommand('fabs', fabs);    
+     AddCommand('fneg', fneg);    
+     AddCommand('fsqrt', fsqrt);    
+     AddCommand('fscale', fscale);    
+     AddCommand('fround', fround);    
+
+     AddCommand('fptan',    fptan);    
+     AddCommand('fpatan',   fpatan);    
+     AddCommand('flog*',     flogmul);    
+     AddCommand('flog1+mul',   flog1plus_mul);    
+     AddCommand('f2pwr1-',  f2pwr);    
+     AddCommand('fcos',     fcos);    
+     AddCommand('fsin',     fsin);    
+     AddCommand('fsincos',  fsincos);    
+
+     AddCommand('float-fliteral',  _float_fliteral, True);    
+     AddCommand('double-fliteral',  _double_fliteral, True);    
+     AddCommand('extended-fliteral',  _extended_fliteral, True);    
+     AddCommand('float-(fliteral)',  _float_run_fliteral);    
+     AddCommand('double-(fliteral)',  _double_run_fliteral);    
+     AddCommand('extended-(fliteral)',  _extended_run_fliteral);    
+     AddCommand('float->str',  _float_to_str);    
+     AddCommand('double->str',  _double_to_str);    
+     AddCommand('extended->str',  _extended_to_str);    
+     AddCommand('str->float?',  _str_to_float_ask);    
+     AddCommand('str->double?',  _str_to_double_ask);    
+     AddCommand('str->extended?',  _str_to_extended_ask);    
+     AddCommand('str->float!?',  _str_to_float_excl_ask);    
+     AddCommand('str->double!?',  _str_to_double_excl_ask);    
+     AddCommand('str->extended!?',  _str_to_extended_excl_ask);    
+   |)
 |)
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
@@ -1604,6 +2041,7 @@ end;
   exception_commands
   file_commands
   os_commands
+  f_commands
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'misc commands'}{$ENDIF}
   procedure _nop(Machine: TForthMachine; Command: PForthCommand);
@@ -4851,12 +5289,7 @@ begin
     if WOI <> 0 then
       Exit;
   end;
-  (* if ConvertStrToInt(W, I) <> 0 then *)
-  (*   LogError('Unknown command: ' + W) *)
-  (* else begin *)
-  (*   EWO('(literal)'); *)
-  (*   EWI(I); *)
-  (* end; *)
+  LogError('Unknown command: ' + W)
 end;
 
 procedure OForthMachine.Interpret(const Line: PChar);

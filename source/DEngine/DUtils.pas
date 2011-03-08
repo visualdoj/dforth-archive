@@ -208,6 +208,7 @@ function CharArrToStr(const C: Array of Char): TString;
 Function HexToInt(S: TString): Integer;
 Function IntToHex(Value: Integer; Digits: Integer = 0): TString;
 Function FileExist(const Filename: TString): boolean;
+Function FileExists(const Filename: TString): boolean;
 Procedure CreateFile(const FileName: TString);
 Procedure DeleteFile(const Filename: TString);
 Function GetTimer: integer;
@@ -815,6 +816,20 @@ begin
 end;
 //}}}
 Function FileExist;//{{{
+  Var
+    F: File;
+begin
+  FileMode := 64;
+  AssignFile(F, Filename);
+  {$I-}
+  Reset(F);
+  {$I+}
+  Result := IOResult = 0;
+    If Result then
+      CloseFile(F);
+end;
+//}}}
+Function FileExists;//{{{
   Var
     F: File;
 begin

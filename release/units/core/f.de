@@ -1,0 +1,43 @@
+// 2011.03.07 # Doj
+// Математический сопроцессор
+
+: ftan   fptan fswap/ ;
+RUS summary ( F: f -- F: h) вычисляет h = tg(f)
+: fctan  fptan f/ ;
+RUS summary ( F: f -- F: h) вычисляет h = ctg(f)
+: fsec   fptan fswap/ fdup f+ fdup f1 f+ fswap f1 fswap- f/ ;
+RUS summary ( F: f -- F: h) вычисляет h = sec(f)
+: fcosec fptan fswap/ fdup f+ fdup f1 f+ fswap f/ ;
+RUS summary ( F: f -- F: h) вычисляет h = cosec(f)
+: fatan  fswap/ fpatan ;
+RUS summary ( F: f -- F: h) вычисляет h = atan(f)
+
+: flog    f1      fswap flog* ;
+RUS summary ( F: f -- F: h) вычисляет логарифм по основанию 2
+: fln     floge   fswap flog* ;
+RUS summary ( F: f -- F: h) вычисляет натуральный логарифм (по основанию e)
+: flog10  f10log2 fswap flog* ;
+RUS summary ( F: f -- F: h) вычисляет логарифм по основанию 10
+
+// : fexp    floge f* fdup fdup fround f- f2pwr1- f1 f+ fscale ;
+// RUS summary ( F: f -- F: h) вычислает экспоненту: h = e^f
+   // fld     qword ptr valX
+   // fldl2e
+   // fmul
+   // fld     st
+   // frndint
+   // fsub    st(1), st
+   // fxch    st(1)
+   // f2xm1
+   // fld1
+   // fadd
+   // fscale
+   // fstp    st(1)
+
+: _NOTFOUND_ bdup _NOTFOUND_ ?dup if; 
+             " f" str^? over 0= and 
+             if str# bdrop str-del str->extended? 
+                state @ if float-literal then
+                if true exit then
+             else bdrop then false 
+;
