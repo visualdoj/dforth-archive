@@ -1,6 +1,39 @@
 // 2010.12.06 # Doj
 // Команды для упрощения работы со строками
 
+// {{{ Встроенный функционал
+samebuiltin *poststr
+samebuiltin *postname
+// samebuiltin str0
+samebuiltin str#
+samebuiltin str-width
+samebuiltin str+
+// samebuiltin str@
+// samebuiltin str!
+samebuiltin str=
+samebuiltin str^
+samebuiltin str^?
+samebuiltin str-ins
+samebuiltin str-del
+samebuiltin str-cut
+samebuiltin str-split
+samebuiltin str-sub
+samebuiltin str-sub
+// samebuiltin str" уже есть в system
+samebuiltin [str]"
+samebuiltin (str)"
+samebuiltin str.
+samebuiltin str$
+samebuiltin str-new
+samebuiltin str[]@
+samebuiltin str[]!
+
+samebuiltin str->pchar
+samebuiltin pchar->str
+samebuiltin pchar"
+// samebuiltin [pchar]"
+// }}}
+
 // Универсальная команда для строковых констант.
 // В режиме интерпретации работает как str", а в режиме исполнения как "
 : " ( "xxx""-s) ( C:"xxx""-) ( R:-s) 

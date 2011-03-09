@@ -1,6 +1,17 @@
 // 2010.12.03 # Doj
 // Модуль для удобной работы со словарями
 
+// {{{ встроенный функционал
+samebuiltin vocabulary-new
+samebuiltin vLOCAL
+samebuiltin vGLOBAL
+samebuiltin vBUILTIN
+samebuiltin target<
+samebuiltin target>
+samebuiltin context<
+samebuiltin context>
+// }}}
+
 : vocabulary ( "name") vocabulary-new value ;
 : voc.use ( v) dup target< context< ;
 : GLOBAL vGLOBAL voc.use ; immediate

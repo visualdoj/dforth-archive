@@ -38,9 +38,10 @@ drop
 
 : find-article ( B: s -- i) bdup help-find 
         if bdrop else *help-names bdyn# new-article then ;
-: summary ( " xxx\n") last xt.n@ pchar->str find-article 
-                      source-line *help-summary bdyn[]! ;
-: detail ( " xxx\n\\") last xt.n@ pchar->str find-article 
+: summary ( " xxx\n") ." summary " last xt.n@ pchar->str bdup str. cr find-article 
+                      source-line ." before: " bdup str. 
+                      space dup . *help-summary dup bdyn# . cr bdyn[]! ." out"cr ;
+: detail ( " xxx\n\\") last xt.n@ pchar->str find-article
                        " \detail" source-cut *help-articles bdyn[]! ;
 : RUS ;
 : ENG ;

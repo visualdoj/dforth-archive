@@ -1,43 +1,238 @@
 // 2011.03.07 # Doj
-// Њ вҐ¬ вЁзҐбЄЁ© б®Їа®жҐбб®а
+// Математический сопроцессор
 
-: ftan   fptan fswap/ ;
-RUS summary ( F: f -- F: h) ўлзЁб«пҐв h = tg(f)
-: fctan  fptan f/ ;
-RUS summary ( F: f -- F: h) ўлзЁб«пҐв h = ctg(f)
-: fsec   fptan fswap/ fdup f+ fdup f1 f+ fswap f1 fswap- f/ ;
-RUS summary ( F: f -- F: h) ўлзЁб«пҐв h = sec(f)
-: fcosec fptan fswap/ fdup f+ fdup f1 f+ fswap f/ ;
-RUS summary ( F: f -- F: h) ўлзЁб«пҐв h = cosec(f)
-: fatan  fswap/ fpatan ;
-RUS summary ( F: f -- F: h) ўлзЁб«пҐв h = atan(f)
+// {{{ встроенные команды
+samebuiltin finit
+
+samebuiltin fdrop
+samebuiltin fnip
+samebuiltin fdup
+samebuiltin fover
+samebuiltin ftuck
+samebuiltin fswap
+samebuiltin flrot
+samebuiltin frrot
+
+samebuiltin f0
+samebuiltin f1
+samebuiltin fpi
+samebuiltin flog10
+samebuiltin floge
+samebuiltin f10log2
+samebuiltin fln2
+
+samebuiltin w>f
+samebuiltin f>w
+
+samebuiltin f+
+samebuiltin f-
+samebuiltin fswap-
+samebuiltin f*
+samebuiltin f/
+samebuiltin fswap/
+
+samebuiltin fsqrt
+samebuiltin fscale
+samebuiltin fabs
+samebuiltin fneg
+samebuiltin fround
+
+samebuiltin fptan
+samebuiltin fpatan
+builtin fpatan fatan2
+samebuiltin flog*
+builtin flog1+mul flog1+*
+RUS summary ( F: xy -- F: f) f = y*log_2(1+x), 0 < x < 1 - 1/sqrt(2)
+detail ( F: x y -- F: f)
+  Вычисляет выражение y*log_2(1+x), при этом число x должно быть в диапазоне
+    0 < x < 1 - 1/sqrt(2)
+\detail
+builtin f2pwr1- f2**1-
+RUS summary ( F: x -- F: f) f = 2^x - 1, 0 <= x <= 0.5
+detail ( F: x -- F: f) f = 2^x - 1
+  При достаточно малых значениях x возводит 2 в степень x и вычитает единицу.
+  x должно быть в диапазоне
+    0 <= x <= 0.5
+\detail
+samebuiltin fcos
+RUS summary ( F: x -- F: f) f = cos(x), x должно быть в радианах
+samebuiltin fsin
+RUS summary ( F: x -- F: f) f = sin(x), x должно быть в радианах
+samebuiltin fsincos
+RUS summary ( F: x -- F: fg) f = sin(x), g = cos(x), x должно быть в радианах
+
+builtin extended->str f->str
+RUS summary ( F: f -- B: s) конвертирует число с плавающей точкой в строку
+detail ( F: f -- B: s)
+  Снимает со стека сопроцессора значение, и преобразует его в строку.
+\detail
+samebuiltin float->str
+RUS summary ( F: f -- B: s) конвертирует float в строку
+detail ( F: f -- B: s)
+  Снимает со стека сопроцессора значение, и преобразует его в строку с точностью
+  числа float.
+\detail
+samebuiltin double->str
+RUS summary ( F: f -- B: s) конвертирует double в строку
+detail ( F: f -- B: s)
+  Снимает со стека сопроцессора значение, и преобразует его в строку с точностью
+  числа double.
+\detail
+samebuiltin extended->str
+RUS summary ( F: f -- B: s) конвертирует extended в строку
+detail ( F: f -- B: s)
+  Снимает со стека сопроцессора значение, и преобразует его в строку с точностью
+  числа extended.
+\detail
+
+builtin str->extended? str->f?
+RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
+detail
+  Пытается сконвертировать строку в число с плавающей точкой. Если это удаётся,
+  полученное число кладётся на стек сопроцессора, а на обычный стек true.
+  В случае, если сконвертировать не удалось, на стек кладётся false, а стек
+  сопроцессора остаётся неизменным.
+\detail
+
+builtin str->float?
+RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
+detail
+  Пытается сконвертировать строку в число с плавающей точкой точностью float. 
+  Если это удаётся, полученное число кладётся на стек сопроцессора, а 
+  на обычный стек true. В случае, если сконвертировать не удалось, на стек 
+  кладётся false, а стек сопроцессора остаётся неизменным.
+\detail
+
+builtin str->double?
+RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
+detail
+  Пытается сконвертировать строку в число с плавающей точкой точностью double. 
+  Если это удаётся, полученное число кладётся на стек сопроцессора, а 
+  на обычный стек true. В случае, если сконвертировать не удалось, на стек 
+  кладётся false, а стек сопроцессора остаётся неизменным.
+\detail
+
+builtin str->extended?
+RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
+detail
+  Пытается сконвертировать строку в число с плавающей точкой точностью extended. 
+  Если это удаётся, полученное число кладётся на стек сопроцессора, а 
+  на обычный стек true. В случае, если сконвертировать не удалось, на стек 
+  кладётся false, а стек сопроцессора остаётся неизменным.
+\detail
+// }}}
+
+: ftan   fptan f/ ;
+RUS summary ( F: f -- F: h) вычисляет h = tg(f)
+detail ( F: f -- F: h) 
+  Вычисляет тангенс угла: h = tg(f).
+  Угол f должен быть в радианах.
+\detail
+." test1"cr
+: fctan  fptan fswap/ ;
+." test2"cr
+// RUS summary ( F: f -- F: h) вычисляет h = ctg(f)
+detail ( F: f -- F: h) 
+  Вычисляет котангенс угла: h = ctg(f).
+  Угол f должен быть в радианах.
+\detail
+." test"cr
+: fsec   fptan f/ fdup f+ fdup f1 f+ fswap f1 fswap- f/ ;
+// RUS summary ( F: f -- F: h) вычисляет h = sec(f)
+: fcosec fptan f/ fdup f+ fdup f1 f+ fswap f/ ;
+// RUS summary ( F: f -- F: h) вычисляет h = cosec(f)
+: fatan  f/ fpatan ;
+// RUS summary ( F: f -- F: h) вычисляет h = atan(f)
 
 : flog    f1      fswap flog* ;
-RUS summary ( F: f -- F: h) ўлзЁб«пҐв «®Ј аЁд¬ Ї® ®б­®ў ­Ёо 2
+// RUS summary ( F: f -- F: h) вычисляет логарифм по основанию 2
 : fln     floge   fswap flog* ;
-RUS summary ( F: f -- F: h) ўлзЁб«пҐв ­ вга «м­л© «®Ј аЁд¬ (Ї® ®б­®ў ­Ёо e)
-: flog10  f10log2 fswap flog* ;
-RUS summary ( F: f -- F: h) ўлзЁб«пҐв «®Ј аЁд¬ Ї® ®б­®ў ­Ёо 10
+// RUS summary ( F: f -- F: h) вычисляет натуральный логарифм (по основанию e)
+: f10log  f10log2 fswap flog* ;
+// RUS summary ( F: f -- F: h) вычисляет логарифм по основанию 10
 
-// : fexp    floge f* fdup fdup fround f- f2pwr1- f1 f+ fscale ;
-// RUS summary ( F: f -- F: h) ўлзЁб« Ґв нЄбЇ®­Ґ­вг: h = e^f
-   // fld     qword ptr valX
-   // fldl2e
-   // fmul
-   // fld     st
-   // frndint
-   // fsub    st(1), st
-   // fxch    st(1)
-   // f2xm1
-   // fld1
-   // fadd
-   // fscale
-   // fstp    st(1)
+: f2power  fdup fdup fround f- f2**1- f1 f+ fscale fnip ;
+// RUS summary ( F: f -- F: h) вычислает степень двойки: h = 2^f
+: fpower   fswap flog f* f2power ; 
+// RUS summary ( F: fg -- F: h) возводит в степень: h = f^g
+: fexp     floge f* f2power ;
+// RUS summary ( F: f -- F: h) вычислает экспоненту: h = e^f
+: f10power flog10 f* f2power ;
+// RUS summary ( F: f -- F: h) вычислает степень десяти: h = 10^f
 
-: _NOTFOUND_ bdup _NOTFOUND_ ?dup if; 
+: fe    [ " 1.0" str->extended? not if f0 then fexp ] extended-fliteral ;
+// RUS summary ( -- F: e) кладёт константу - математическое число e
+
+: def-str->f  str->f? if fnip then ;
+// RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
+detail (F: f B: s -- F: g)
+  Снимает строку со стека B. Пытается её сконвертировать в число с плавающей
+  точкой. Если это удаётся, то снимает f со стека, и кладёт полученное число.
+  В противном случае ничего не делает, т.е. на стеке сопроцессора останется
+  число f. Таким образом можно реализовывать преобразование с дефолтным 
+  значением.
+  Примеры: 
+    " 3.0" f1 def-str->f // положит на стек 3.0
+    " @@@" f1 def-str->f // положит на стек 1.0
+\detail
+: def-str->float ( F: f B: s -- F: g) str->float? if fnip then ;
+// RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
+detail (F: f B: s -- F: g)
+  Снимает строку со стека B. Пытается её сконвертировать в число с плавающей
+  точкой с точностью float. Если это удаётся, то снимает f со стека, и кладёт 
+  полученное число. В противном случае ничего не делает, т.е. на стеке 
+  сопроцессора останется число f. Таким образом можно реализовывать 
+  преобразование с дефолтным значением.
+  Примеры: 
+    " 3.0" f1 def-str->float // положит на стек 3.0
+    " @@@" f1 def-str->float // положит на стек 1.0
+\detail
+: def-str->double ( F: f B: s -- F: g) str->double? if fnip then ;
+// RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
+detail (F: f B: s -- F: g)
+  Снимает строку со стека B. Пытается её сконвертировать в число с плавающей
+  точкой с точностью double. Если это удаётся, то снимает f со стека, и кладёт 
+  полученное число. В противном случае ничего не делает, т.е. на стеке 
+  сопроцессора останется число f. Таким образом можно реализовывать 
+  преобразование с дефолтным значением.
+  Примеры: 
+    " 3.0" f1 def-str->double // положит на стек 3.0
+    " @@@" f1 def-str->double // положит на стек 1.0
+\detail
+: def-str->extended ( F: f B: s -- F: g) str->extended? if fnip then ;
+// RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
+detail (F: f B: s -- F: g)
+  Снимает строку со стека B. Пытается её сконвертировать в число с плавающей
+  точкой с точностью extended. Если это удаётся, то снимает f со стека, и кладёт 
+  полученное число. В противном случае ничего не делает, т.е. на стеке 
+  сопроцессора останется число f. Таким образом можно реализовывать 
+  преобразование с дефолтным значением.
+  Примеры: 
+    " 3.0" f1 def-str->extended // положит на стек 3.0
+    " @@@" f1 def-str->extended // положит на стек 1.0
+\detail
+
+: str->f f0 def-str->f ;
+// RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->f
+: str->float f0 def-str->float ;
+// RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->float
+: str->double f0 def-str->double ;
+// RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->double
+: str->extended f0 def-str->extended ;
+// RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->extended
+
+: f.        extended->str str. ;
+// RUS summary ( F: f -- ) снимает с вершины стека F значение и печатает на консоль
+: float.    float->str    str. ;
+// RUS summary ( F: f -- ) то же, что "f.", но с точностью float 
+: double.   double->str   str. ;
+// RUS summary ( F: f -- ) то же, что "f.", но с точностью double
+: extended. extended->str str. ;
+RUS summary ( F: f -- ) то же, что "f.", но с точностью extended
+
+: _NOTFOUND_ bdup _NOTFOUND_ dup if true exit then drop
              " f" str^? over 0= and 
              if str# bdrop str-del str->extended? 
-                state @ if float-literal then
-                if true exit then
-             else bdrop then false 
+               if state @ if ['] float-literal execute then true exit then
+             else bdrop then false
 ;

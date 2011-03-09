@@ -1,7 +1,7 @@
 // 2011.01.30 # Doj
 // Заголовок к MMSystem (вывод звука в windows)
 
-include" units\windows.de"
+include" units\headers\windows.de"
 include" units\utils\headers.de"
 
 // {{{ constants
@@ -182,6 +182,5 @@ h40000000       constant MEVT_F_CALLBACK
 // {{{ prototypes
 stdcall declare-header winmm.dll
 :a sndPlaySoundA LPCSTR UINT BOOL winmm.dll header;
-last . cr
 // }}}
 : mmsystem-load winmm.dll header-load ;

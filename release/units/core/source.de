@@ -1,4 +1,12 @@
-: source-char ( "c"-8) source-next-char uint8-drop source-next-char ; immediate
+// 2011.03.08 # Doj
+// Функции для работы с входящим потоком.
+
+// {{{ Встроенное
+samebuiltin source-cut
+samebuiltin source-next-char
+// }}}
+
+// : source-char ( "c"-8) source-next-char uint8-drop source-next-char ; immediate
 // : source-quote ( " xxx""-s) source-char "source-read-to-char 
 //                             source-next-char uint8-drop ;
 : source-quote ( " xxx""-s) str" ;

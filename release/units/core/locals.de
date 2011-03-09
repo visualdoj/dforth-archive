@@ -63,9 +63,10 @@ include" units\utils\parser.de"
 
 : get-memory-for-locals *local-offset @ 0; ['] literal execute compile l+ ;
 
-: |ed ( B: s --) bdup str.
+: |ed ( B: s --)  
   compile branch >mark 
     local-offset-off
+    *local-names bdyn.clear
     parse-locals-list
     generate-all-locals 
   >resolve 

@@ -1,7 +1,7 @@
 // 2010.12.12 # Doj
 // Пример создания окна в Windows
 
-include" units\windows.de"
+include" units\headers\windows.de"
 
 // Функция WindowsProc, в неё будут передаваться сообщения, приходящие
 // окну из системы.
@@ -60,8 +60,8 @@ create *msg*
 // Проверяет произошла ли ошибка, сравнивая i с нулём. Если равна, то печатает
 // на консоль строку s и код, возвращённый вызовом GetLastError, иначе нет. 
 // На консоль кладёт флаг ошибки, выставленный если ошибка имела место.
-: check' ( is-f) swap if cdrop false else [str]" ! Failed " str. str. 
-                         [str]"  " str. GetLastError . cr true then ;
+: check' ( is-f) swap if bdrop false else ." ! Failed " str. 
+                         ."  " GetLastError . cr true then ;
 // Слово немедленного исполнения. Выполняет check' и если была ошибка,
 // то выходит из текущей команды если возвращённый командой check' флаг выставлен
 // в true

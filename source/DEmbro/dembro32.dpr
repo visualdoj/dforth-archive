@@ -122,20 +122,20 @@ begin
 end;
 
 begin
-  with TAlien.Create do begin
-    WP := @Stack[0];
-    GenerateCallback(@Buffer[0], 64*1024, [4, 4, 4, 4], 4,
-                     @WP, 998877, 112233, @__Test);
-    (* __Test(998877, 112233); *)
-    (* TProc(@Buffer[0])(12,13,14,15); *)
-    (* TProc(@Buffer[0])(16,17,18,19); *)
-    Assign(F, 'call.bin');
-    Rewrite(F);
-    BlockWrite(F, (@Buffer[0])^, MachineCode.Size);
-    Close(F);
-    Free;
-    //Exit;
-  end;
+  //with TAlien.Create do begin
+  //  WP := @Stack[0];
+  //  GenerateCallback(@Buffer[0], 64*1024, [4, 4, 4, 4], 4,
+  //                   @WP, 998877, 112233, @__Test);
+  //  (* __Test(998877, 112233); *)
+  //  (* TProc(@Buffer[0])(12,13,14,15); *)
+  //  (* TProc(@Buffer[0])(16,17,18,19); *)
+  //  Assign(F, 'call.bin');
+  //  Rewrite(F);
+  //  BlockWrite(F, (@Buffer[0])^, MachineCode.Size);
+  //  Close(F);
+  //  Free;
+  //  //Exit;
+  //end;
   ParseCommandLine;
   if CommandLine.Error then
     Halt(-1);
@@ -165,7 +165,12 @@ begin
         Readln(S);
         SetLength(S, Length(S) + 1);
         S[Length(S)] := #0;
-        Machine.Interpret(@S[1]);
+        try
+          Machine.Interpret(@S[1]);
+        except
+          Writeln('Error');
+          continue;
+        end;
         Writeln(' ok');
       end;
     end else begin

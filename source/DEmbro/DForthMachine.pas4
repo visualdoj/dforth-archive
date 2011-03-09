@@ -243,8 +243,8 @@ define(~counter_commands|,
                                   binc(BVar(0)); BInc; )
      procedure bexclamation cmdhdr; body( WDec(CELL); BDec; bdec(TBlock(Pointer(WP^)^));
                                           TBlock(Pointer(WP^)^) := BVar(0);)
-     procedure _binc cmdhdr; body( WDec(CELL); binc(TBlock(Pointer(WP^)^)); )
-     procedure _bdec cmdhdr; body( WDec(CELL); bdec(TBlock(Pointer(WP^)^)); )
+     procedure _binc cmdhdr; body( WDec(CELL); binc(TBlock(Pointer(WP^))); )
+     procedure _bdec cmdhdr; body( WDec(CELL); bdec(TBlock(Pointer(WP^))); )
      procedure bdrop cmdhdr; body( BDec; bdec(BVar(0)); )
      procedure bdup cmdhdr; body( BVar(0) := BVar(-1); binc(BVar(0)); BInc; )
      procedure bnip cmdhdr; body( BDec; bdec(BVar(-1)); BVar(-1) := BVar(0); )
@@ -1124,6 +1124,9 @@ define(~f_commands|,
       procedure _float_fliteral cmdhdr;
       procedure _double_fliteral cmdhdr;
       procedure _extended_fliteral cmdhdr;
+      procedure _float_run_fliteral cmdhdr;
+      procedure _double_run_fliteral cmdhdr;    
+      procedure _extended_run_fliteral cmdhdr;    
       procedure _float_to_str cmdhdr;
       procedure _double_to_str cmdhdr;
       procedure _extended_to_str cmdhdr;
@@ -1323,13 +1326,35 @@ define(~f_commands|,
         Machine.EWV(@F, SizeOf(F));
       end;
       procedure _float_run_fliteral cmdhdr;
+      var
+        P: Pointer;
       begin
+        P := @Machine.E[Machine.EC];
         asm
-          //fld [Machine.EC]
+          fld single [P]
         end;
+        Inc(Machine.EC, SizeOf(Single));
       end;
       procedure _double_run_fliteral cmdhdr;    
+      var
+        P: Pointer;
+      begin
+        P := @Machine.E[Machine.EC];
+        asm
+          fld double [P]
+        end;
+        Inc(Machine.EC, SizeOf(Double));
+      end;
       procedure _extended_run_fliteral cmdhdr;    
+      var
+        P: Pointer;
+      begin
+        P := @Machine.E[Machine.EC];
+        asm
+          fld extended [P]
+        end;
+        Inc(Machine.EC, SizeOf(Extended));
+      end;
       procedure _float_to_str cmdhdr;
       var
         F: Single;
@@ -1662,6 +1687,7 @@ OForthMachine = object
   Target: array of PVoc;
   vGLOBAL: PVoc;
   vLOCAL: PVoc;
+  vBUILTIN: PVoc;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'plugin datas'}{$ENDIF}
   Code: packed record
@@ -2045,11 +2071,14 @@ end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'misc commands'}{$ENDIF}
   procedure _nop(Machine: TForthMachine; Command: PForthCommand);
+  procedure _builtedin(Machine: TForthMachine; Command: PForthCommand);
+  procedure _builtin(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileLineComment(Machine: TForthMachine; Command: PForthCommand);
   procedure _vocabulary(Machine: TForthMachine; Command: PForthCommand);
   procedure _vLOCAL(Machine: TForthMachine; Command: PForthCommand);
   procedure _vGLOBAL(Machine: TForthMachine; Command: PForthCommand);
+  procedure _vBUILTIN(Machine: TForthMachine; Command: PForthCommand);
   procedure _TargetPush(Machine: TForthMachine; Command: PForthCommand);
   procedure _TargetPop(Machine: TForthMachine; Command: PForthCommand);
   procedure _ContextPush(Machine: TForthMachine; Command: PForthCommand);
@@ -3757,6 +3786,11 @@ function StrToString(S: TStr): TString;
 var
   I: Integer;
 begin
+  if S = nil then begin
+    Result := '';
+    Exit;
+  end;
+  Writeln('StrToString: ref=', S^.Ref, ' len=', S^.Len);
   SetLength(Result, S^.Len);
   case S^.Width of
     1: Move(S^.Sym[0], Result[1], S^.Len);
@@ -4385,6 +4419,11 @@ begin
   end;
 end;
 
+procedure _vBUILTIN(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Machine^.WUP(Machine^.vBUILTIN);
+end;
+
 procedure _TargetPush(Machine: TForthMachine; Command: PForthCommand);
 begin
   with Machine^ do begin
@@ -4415,6 +4454,33 @@ end;
 
 procedure _nop(Machine: TForthMachine; Command: PForthCommand);
 begin
+end;
+
+procedure _builtedin(Machine: TForthMachine; Command: PForthCommand);
+var
+  S: TString;
+  NewName: PAnsiChar;
+  V: PVocItem;
+begin
+  NewName := PAnsiChar(Machine.WOS);
+  S := TString(Machine.WOS);
+  V := Machine.vBUILTIN.Item;
+  while V <> nil do begin
+    if TString(Machine.C[V^.Index].Name) = S then begin
+      with Machine^ do
+        AddCommand(NewName, C[V^.Index].Code, IsImmediate(C[V^.Index]));
+      Exit;
+    end;
+    V := V^.Next;
+  end;
+  Machine.LogError('not found command "' + S + '"');
+end;
+
+procedure _builtin(Machine: TForthMachine; Command: PForthCommand);
+begin
+  source_next_name(Machine, Command);
+  source_next_name(Machine, Command);
+  _builtedin(Machine, Command);
 end;
 
 procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
@@ -5018,36 +5084,46 @@ begin
 
   new(vGLOBAL);
   new(vLOCAL);
+  new(vBUILTIN);
   vGLOBAL^.Item := nil;
   vLOCAL^.Item := nil;
+  vBUILTIN^.Item := nil;
   vGLOBAL^.sFIND := -1;
   vGLOBAL^.sNOTFOUND := -1;
   vLOCAL^.sFIND := -1;
   vLOCAL^.sNOTFOUND := -1;
+  vBUILTIN^.sFIND := -1;
+  vBUILTIN^.sNOTFOUND := -1;
   UseVoc(vGLOBAL);
   ContextPush(vLOCAL);
   // it must have zero opcode
   AddCommand('exit', _exit);
+  AddCommand('_FIND_', _FIND_);
+  AddCommand('(', CompileComment, True); {) для m4}
+  AddCommand('//', CompileLineComment, True);
+  AddCommand('builtin', _builtin);
+  AddCommand('builtedin', _builtedin);
 
+  UseVoc(vBUILTIN);
   AddCommand('nop', _nop);
   nop := C[High(C)];
 
   ConvStr := nop;
   ConvName := nop;
 
-  AddCommand('_FIND_', _FIND_);
   AddCommand('_NOTFOUND_', _NOTFOUND_);
   AddCommand('vocabulary-new', _vocabulary);
   AddCommand('vLOCAL', _vLOCAL);
   AddCommand('vGLOBAL', _vGLOBAL);
+  AddCommand('vBUILTIN', _vBUILTIN);
   AddCommand('target<', _TargetPush);
   AddCommand('target>', _TargetPop);
   AddCommand('context<', _ContextPush);
   AddCommand('context>', _ContextPop);
   AddCommand('align', _align);
   AddCommand('palign', _palign);
-  AddCommand('*poststr*', _poststr);
-  AddCommand('*postname*', _postname);
+  AddCommand('*poststr', _poststr);
+  AddCommand('*postname', _postname);
   AddCommand('utf8->unicode', _utf8_2_unicode);
   AddCommand('utf8->raw', _utf8_2_raw);
   AddCommand('raw->unicode', _raw_2_unicode);
@@ -5081,8 +5157,6 @@ begin
   AddType('extended', SizeOf(PType));
 
   AddCommand('exit', _exit);
-  AddCommand('(', CompileComment, True); {) для m4}
-  AddCommand('//', CompileLineComment, True);
 {$IFNDEF FLAG_FPC}{$REGION 'control commands'}{$ENDIF}
   AddCommand(':', compile_def);
   AddCommand(':noname', compile_noname);
@@ -5218,6 +5292,7 @@ begin
   AddCommand('spaces', spaces);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   regist_all_commands;
+  UnuseVoc;
 end;
 
 destructor OForthMachine.Destroy; 
@@ -5246,7 +5321,7 @@ begin
   Command := FindCommand(S_);
   // Writeln('FOUND COMMAND: ', Integer(Command));
   if Command <> nil then begin
-    // Writeln('INTERPRET COMMAND ', Command^.Name);
+    Writeln('INTERPRET COMMAND ', Command^.Name);
     Command.Code(@Self, Command);
     Exit;
   end;
