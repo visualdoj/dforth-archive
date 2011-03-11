@@ -255,11 +255,11 @@ once+ once+ once+ once+
 
 include" units\core\help.de"
 include" units\core\statements.de"
+include" units\core\voc.de"
 include" units\core\f.de"
 include" units\utils\debug.de"
 include" units\core\w.de"
 include" units\core\createwords.de"
 include" docs\russian.de"
-include" units\core\voc.de"
 
 ." Loaded system file"cr

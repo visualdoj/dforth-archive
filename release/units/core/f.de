@@ -85,6 +85,14 @@ detail ( F: f -- B: s)
   числа extended.
 \detail
 
+samebuiltin extended-fliteral
+RUS summary ( C: f -- ) ( R: -- F: f) компилирует семантику положить extended на стек
+detail ( C: f -- ) ( R: -- F: f)
+  В режиме компиляции: снимает число с плавающей точкой со стека, компилирует
+    в шитый код команду extended-(fliteral) и это число.
+  В режиме исполнения: кладёт число f на стек, пропускает его в шитом коде.
+\detail
+
 builtin str->extended? str->f?
 RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
 detail
@@ -94,7 +102,7 @@ detail
   сопроцессора остаётся неизменным.
 \detail
 
-builtin str->float?
+samebuiltin str->float?
 RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
 detail
   Пытается сконвертировать строку в число с плавающей точкой точностью float. 
@@ -103,7 +111,7 @@ detail
   кладётся false, а стек сопроцессора остаётся неизменным.
 \detail
 
-builtin str->double?
+samebuiltin str->double?
 RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
 detail
   Пытается сконвертировать строку в число с плавающей точкой точностью double. 
@@ -112,7 +120,7 @@ detail
   кладётся false, а стек сопроцессора остаётся неизменным.
 \detail
 
-builtin str->extended?
+samebuiltin str->extended?
 RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
 detail
   Пытается сконвертировать строку в число с плавающей точкой точностью extended. 
@@ -131,40 +139,37 @@ detail ( F: f -- F: h)
 ." test1"cr
 : fctan  fptan fswap/ ;
 ." test2"cr
-// RUS summary ( F: f -- F: h) вычисляет h = ctg(f)
+RUS summary ( F: f -- F: h) вычисляет h = ctg(f)
 detail ( F: f -- F: h) 
   Вычисляет котангенс угла: h = ctg(f).
   Угол f должен быть в радианах.
 \detail
 ." test"cr
 : fsec   fptan f/ fdup f+ fdup f1 f+ fswap f1 fswap- f/ ;
-// RUS summary ( F: f -- F: h) вычисляет h = sec(f)
+RUS summary ( F: f -- F: h) вычисляет h = sec(f)
 : fcosec fptan f/ fdup f+ fdup f1 f+ fswap f/ ;
-// RUS summary ( F: f -- F: h) вычисляет h = cosec(f)
+RUS summary ( F: f -- F: h) вычисляет h = cosec(f)
 : fatan  f/ fpatan ;
-// RUS summary ( F: f -- F: h) вычисляет h = atan(f)
+RUS summary ( F: f -- F: h) вычисляет h = atan(f)
 
 : flog    f1      fswap flog* ;
-// RUS summary ( F: f -- F: h) вычисляет логарифм по основанию 2
+RUS summary ( F: f -- F: h) вычисляет логарифм по основанию 2
 : fln     floge   fswap flog* ;
-// RUS summary ( F: f -- F: h) вычисляет натуральный логарифм (по основанию e)
+RUS summary ( F: f -- F: h) вычисляет натуральный логарифм (по основанию e)
 : f10log  f10log2 fswap flog* ;
-// RUS summary ( F: f -- F: h) вычисляет логарифм по основанию 10
+RUS summary ( F: f -- F: h) вычисляет логарифм по основанию 10
 
-: f2power  fdup fdup fround f- f2**1- f1 f+ fscale fnip ;
-// RUS summary ( F: f -- F: h) вычислает степень двойки: h = 2^f
-: fpower   fswap flog f* f2power ; 
-// RUS summary ( F: fg -- F: h) возводит в степень: h = f^g
-: fexp     floge f* f2power ;
-// RUS summary ( F: f -- F: h) вычислает экспоненту: h = e^f
-: f10power flog10 f* f2power ;
-// RUS summary ( F: f -- F: h) вычислает степень десяти: h = 10^f
-
-: fe    [ " 1.0" str->extended? not if f0 then fexp ] extended-fliteral ;
-// RUS summary ( -- F: e) кладёт константу - математическое число e
+: f2**  fdup fdup fround f- f2**1- f1 f+ fscale fnip ;
+RUS summary ( F: f -- F: h) вычислает степень двойки: h = 2^f
+: f**   fswap flog f* f2** ; 
+RUS summary ( F: fg -- F: h) возводит в степень: h = f^g
+: fexp     floge f* f2** ;
+RUS summary ( F: f -- F: h) вычислает экспоненту: h = e^f
+: f10** flog10 f* f2** ;
+RUS summary ( F: f -- F: h) вычислает степень десяти: h = 10^f
 
 : def-str->f  str->f? if fnip then ;
-// RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
+RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
 detail (F: f B: s -- F: g)
   Снимает строку со стека B. Пытается её сконвертировать в число с плавающей
   точкой. Если это удаётся, то снимает f со стека, и кладёт полученное число.
@@ -176,7 +181,7 @@ detail (F: f B: s -- F: g)
     " @@@" f1 def-str->f // положит на стек 1.0
 \detail
 : def-str->float ( F: f B: s -- F: g) str->float? if fnip then ;
-// RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
+RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
 detail (F: f B: s -- F: g)
   Снимает строку со стека B. Пытается её сконвертировать в число с плавающей
   точкой с точностью float. Если это удаётся, то снимает f со стека, и кладёт 
@@ -188,7 +193,7 @@ detail (F: f B: s -- F: g)
     " @@@" f1 def-str->float // положит на стек 1.0
 \detail
 : def-str->double ( F: f B: s -- F: g) str->double? if fnip then ;
-// RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
+RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
 detail (F: f B: s -- F: g)
   Снимает строку со стека B. Пытается её сконвертировать в число с плавающей
   точкой с точностью double. Если это удаётся, то снимает f со стека, и кладёт 
@@ -200,7 +205,7 @@ detail (F: f B: s -- F: g)
     " @@@" f1 def-str->double // положит на стек 1.0
 \detail
 : def-str->extended ( F: f B: s -- F: g) str->extended? if fnip then ;
-// RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
+RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
 detail (F: f B: s -- F: g)
   Снимает строку со стека B. Пытается её сконвертировать в число с плавающей
   точкой с точностью extended. Если это удаётся, то снимает f со стека, и кладёт 
@@ -212,27 +217,77 @@ detail (F: f B: s -- F: g)
     " @@@" f1 def-str->extended // положит на стек 1.0
 \detail
 
+: fe    [ " 1.0" str->extended? not if f0 then fexp ] extended-fliteral ;
+RUS summary ( -- F: e) кладёт константу - математическое число e
+
+
 : str->f f0 def-str->f ;
-// RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->f
+RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->f
 : str->float f0 def-str->float ;
-// RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->float
+RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->float
 : str->double f0 def-str->double ;
-// RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->double
+RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->double
 : str->extended f0 def-str->extended ;
-// RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->extended
+RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->extended
 
 : f.        extended->str str. ;
-// RUS summary ( F: f -- ) снимает с вершины стека F значение и печатает на консоль
+RUS summary ( F: f -- ) снимает с вершины стека F значение и печатает на консоль
 : float.    float->str    str. ;
-// RUS summary ( F: f -- ) то же, что "f.", но с точностью float 
+RUS summary ( F: f -- ) то же, что "f.", но с точностью float 
 : double.   double->str   str. ;
-// RUS summary ( F: f -- ) то же, что "f.", но с точностью double
+RUS summary ( F: f -- ) то же, что "f.", но с точностью double
 : extended. extended->str str. ;
 RUS summary ( F: f -- ) то же, что "f.", но с точностью extended
 
-: _NOTFOUND_ bdup _NOTFOUND_ dup if true exit then drop
+: _NOTFOUND_ bdup _NOTFOUND_ dup if bdrop true ." Done"cr exit then drop
              " f" str^? over 0= and 
              if str# bdrop str-del str->extended? 
                if state @ if ['] float-literal execute then true exit then
              else bdrop then false
 ;
+
+( namespace FPU
+
+  : drop fdrop ;
+  : nip fnip ;
+  : dup fdup ;
+  : over fover ;
+  : tuck ftuck ;
+  : swap fswap ;
+  : lrot flrot ;
+  : rrot frrot ;
+
+  : + f+ ;
+  : - f- ;
+  : swap- fswap- ;
+  : * f* ;
+  : / f/ ;
+  : swap/ fswap/ ;
+  : ** f** ;
+  : 2** f2** ;
+  : exp fexp ;
+
+  : 0 f0 ;
+  : 1 f1 ;
+  : pi fpi ;
+  : log10 flog10 ;
+  : loge floge ;
+  : 10log2 f10log2 ;
+  : ln2 fln2 ;
+  : e fe ;
+
+  : sqrt fsqrt ;
+  : scale fscale ;
+  : abs fabs ;
+  : neg fneg ;
+
+  : log flog ;
+  : 10log f10log ;
+  : ln fln ;
+
+  : sin fsin ;
+  : cos fcos ;
+  : tan ftan ;
+  : ctan fctan ;
+  : atan fatan ;
+\namespace)

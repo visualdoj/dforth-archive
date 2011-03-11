@@ -46,7 +46,7 @@ samebuiltin context>
 : declare-namespace ( "name") vocabulary immediate does> @ context< ; 
 : extend-namespace context> voc.use ;
 : namespace ( "name") declare-namespace last execute extend-namespace ; 
-: /namespace target> drop context> drop ; immediate
+: \namespace target> drop context> drop ; immediate
 : ^^^ context> drop ;
 : ^ ^^^ ; immediate
 : uses 0 context< 0 target< ;

@@ -3728,7 +3728,7 @@ begin
     Result := '';
     Exit;
   end;
-  Writeln('StrToString: ref=', S^.Ref, ' len=', S^.Len);
+  // Writeln('StrToString: ref=', S^.Ref, ' len=', S^.Len);
   SetLength(Result, S^.Len);
   case S^.Width of
     1: Move(S^.Sym[0], Result[1], S^.Len);
@@ -6427,7 +6427,7 @@ begin
   Command := FindCommand(S_);
   // Writeln('FOUND COMMAND: ', Integer(Command));
   if Command <> nil then begin
-    Writeln('INTERPRET COMMAND ', Command^.Name);
+    // Writeln('INTERPRET COMMAND ', Command^.Name);
     Command.Code(@Self, Command);
     Exit;
   end;
