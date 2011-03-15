@@ -5,7 +5,15 @@
 // потока, а из строки со стека
 : valued ( is-) created , does> @ ;
 : constanted ( is-) valued ;
-: variabled ( s-) created ;
+: variabled ( s-) created 0 , ;
+
+: bvalued ( B: xs-) created b>w , does> b@ ;
+: bconstanted ( B: xs-) bvalued ;
+: bvariabled ( B: s-) variabled ;
+
+: bvalue    ( B: x "name"-) source-next-name bvalued ;
+: bconstant ( B: x "name"-) source-next-name bconstanted ;
+: bvariable ( B: x "name"-) source-next-name bvariabled ;
 
 // Создание перечислимых типов
 // Пример:

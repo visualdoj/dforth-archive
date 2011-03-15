@@ -136,15 +136,12 @@ detail ( F: f -- F: h)
   ¬ычисл€ет тангенс угла: h = tg(f).
   ”гол f должен быть в радианах.
 \detail
-." test1"cr
 : fctan  fptan fswap/ ;
-." test2"cr
 RUS summary ( F: f -- F: h) вычисл€ет h = ctg(f)
 detail ( F: f -- F: h) 
   ¬ычисл€ет котангенс угла: h = ctg(f).
   ”гол f должен быть в радианах.
 \detail
-." test"cr
 : fsec   fptan f/ fdup f+ fdup f1 f+ fswap f1 fswap- f/ ;
 RUS summary ( F: f -- F: h) вычисл€ет h = sec(f)
 : fcosec fptan f/ fdup f+ fdup f1 f+ fswap f/ ;
@@ -239,15 +236,14 @@ RUS summary ( F: f -- ) то же, что "f.", но с точностью double
 : extended. extended->str str. ;
 RUS summary ( F: f -- ) то же, что "f.", но с точностью extended
 
-: _NOTFOUND_ bdup _NOTFOUND_ dup if bdrop true ." Done"cr exit then drop
+: _NOTFOUND_ bdup _NOTFOUND_ if bdrop true ." Done"cr exit then
              " f" str^? over 0= and 
              if str# bdrop str-del str->extended? 
-               if state @ if ['] float-literal execute then true exit then
+               if state @ if ['] float-fliteral execute then true exit then
              else bdrop then false
 ;
 
-( namespace FPU
-
+namespace FPU
   : drop fdrop ;
   : nip fnip ;
   : dup fdup ;
@@ -290,4 +286,4 @@ RUS summary ( F: f -- ) то же, что "f.", но с точностью extended
   : tan ftan ;
   : ctan fctan ;
   : atan fatan ;
-\namespace)
+\namespace

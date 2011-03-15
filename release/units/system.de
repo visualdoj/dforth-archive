@@ -1,7 +1,7 @@
 // 2010.12.03 # Doj
 // Модуль, подключающий все полезные возможности общего назначения
 
-// {{{ Встроенные операторы
+// {{{ Встроенные команды
 ( 
 Изначально доступны:
 exit
@@ -86,6 +86,9 @@ samebuiltin minmax
 samebuiltin div
 samebuiltin mod
 samebuiltin divmod
+samebuiltin shl
+samebuiltin shr
+samebuiltin **
 samebuiltin inc
 samebuiltin dec
 builtin inc 1+

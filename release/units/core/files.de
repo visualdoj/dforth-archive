@@ -1,0 +1,13 @@
+// 2011.03.15 # Doj
+// Âחאטלמהויסעגטו ס פאיכאלט.
+
+// {{{ builtin
+samebuiltin file-exists
+samebuiltin file-open
+samebuiltin file-close
+samebuiltin file-w
+samebuiltin file-r
+samebuiltin file-write
+samebuiltin file-read
+samebuiltin file-size
+// }}}

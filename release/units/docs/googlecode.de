@@ -1,0 +1,18 @@
+// 2011.03.14 # Doj
+// Функции для генерации документации в формате googlecode'а
+
+namespace GOOGLECODE
+  variable file
+  bvariable folder
+  : file@ file @ ;
+  : open ( s) " w" textfile-open file ! ;
+  : open-article ( i) folder b@ " article" str+ int->str str+ " .wiki" str+ open ;
+  : close file@ textfile-close ;
+  : . ( s) file@ textfile-write ; 
+  : cr file@ textfile-cr ; 
+  : header. ( i) " == " help-names bdyn[]@ str+ "  ==" str+ . cr ; 
+  : body. ( i) help-articles bdyn[]@ . cr ;
+  : article ( i) dup open-article dup header. article. close ;
+  : generate-docs ( s-) folder b! 
+             0 | i| begin i@ help-names bdyn# < while ++i article repeat
+\namespace

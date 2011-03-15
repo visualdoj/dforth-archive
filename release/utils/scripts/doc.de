@@ -1,0 +1,6 @@
+// 2011.03.14 # Doj
+// Генерирует хелп для вики
+
+include" units\docs\googlecode.de"
+
+" ..\..\..\..\wiki\" GOOGLECODE generate-docs ^

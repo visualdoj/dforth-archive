@@ -601,6 +601,9 @@ define(~number_arithmetic_commands|,
   procedure $1_div cmdhdr;
   procedure $1_mod cmdhdr;
   procedure $1_divmod cmdhdr;
+  procedure $1_shl cmdhdr;
+  procedure $1_shr cmdhdr;
+  procedure $1_power cmdhdr;
   procedure $1_ptr_inc cmdhdr;
   procedure $1_ptr_dec cmdhdr
   define(~all_implement|, all_implement 
@@ -619,6 +622,25 @@ define(~number_arithmetic_commands|,
                                                      $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) div $2(WVar(-SizeOf($2)));
                                                      $2(WVar(-  SizeOf($2))) := $2(WVar(0)); 
                                                )
+     procedure $1_shl cmdhdr; body( Dec(WP, SizeOf($2));
+                    $2(WVar(-SizeOf($2))) := $2(WVar(-SizeOf($2))) shl $2(WVar(0)) )
+     procedure $1_shr cmdhdr; body( Dec(WP, SizeOf($2));
+                    $2(WVar(-SizeOf($2))) := $2(WVar(-SizeOf($2))) shr $2(WVar(0)) )
+     procedure $1_power cmdhdr; 
+     idle(var 
+       Power, Base, Value: Cardinal;) 
+     body(
+       Power := WOI;
+       Base := WOI;
+       Value := 1;
+       while Power > 0 do begin
+         if (Power mod 2) > 0 then
+           Value := Value * Base;
+         Base := Base * Base;
+         Power := Power div 2;
+       end;
+       WUI(Value);
+     )
      procedure $1_ptr_inc cmdhdr;
      body(
        $2(Pointer(WVar(-SizeOf(Pointer)))^) := 
@@ -648,6 +670,9 @@ define(~number_arithmetic_commands|,
      AddCommand('genname($1, div)', $1_div);
      AddCommand('genname($1, mod)', $1_mod);
      AddCommand('genname($1, divmod)', $1_divmod);
+     AddCommand('genname($1, shl)', $1_shl);
+     AddCommand('genname($1, shr)', $1_shr);
+     AddCommand('genname($1, **)', $1_power);
     |)
 |)
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -3403,8 +3428,6 @@ end;
 
 procedure __Callback(Machine: TForthMachine; Command: PForthCommand; DogWP: Pointer); stdcall;
 begin
-  // Writeln('** __Callback ** ', Cardinal(@Machine.WP), ' ', Cardinal(DogWP), ' ', Cardinal(Machine.WP), ' ', Cardinal(Pointer(Cardinal(Machine.WP)-SizeOf(Integer))^), ' ', Cardinal(Machine));
-  // Command^.Code(Machine, Command);
   Machine.CallCommand(Command);
 end;
 
@@ -4354,9 +4377,9 @@ procedure OForthMachine.OnUpdateCommand(Opcode: Integer);
 begin
   VocAdd(HighTarget, Opcode);
   // Writeln('Add command ', C[Opcode]^.Name);
-  if C[Opcode]^.Name = '_FIND_' then
+  if TString(C[Opcode]^.Name) = '_FIND_' then
     HighTarget.sFIND := Opcode
-  else if C[Opcode]^.Name = '_NOTFOUND_' then
+  else if TString(C[Opcode]^.Name) = '_NOTFOUND_' then
     HighTarget.sNOTFOUND := Opcode
 end;
 
@@ -5488,16 +5511,24 @@ begin
   RUI(Ord(FSession) * BOOL_TRUE);
   RUI(Ord(FRunning) * BOOL_TRUE);
   RUI(EC);
+  RUP(S);
+  RUI(SC);
   RUP(RB);
   RUP(RP);
+  S := '';
+  SC := 0;
   RB := RP;
   FSession := True;
   FRunning := False;
   Command^.Code(@Self, Command);
-  if FRunning then
+  if FRunning then begin
+    // Writeln('MAINLOOP');
     MainLoop;
+  end;
   RP := ROP;
   RB := ROP; 
+  SC := ROI;
+  S := ROP;
   EC := ROI;
   FRunning := ROI <> BOOL_FALSE;
   FSession := ROI <> BOOL_FALSE;
