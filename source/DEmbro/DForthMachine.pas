@@ -1961,6 +1961,7 @@ end;
   
 
   
+  const CR_windows: array[0..1] of Byte = ( 13, 10 );
   procedure file_exists (Machine: TForthMachine; Command: PForthCommand);
   procedure file_open (Machine: TForthMachine; Command: PForthCommand);
   procedure file_close (Machine: TForthMachine; Command: PForthCommand);
@@ -1968,9 +1969,12 @@ end;
   procedure file_r (Machine: TForthMachine; Command: PForthCommand);
   procedure file_write (Machine: TForthMachine; Command: PForthCommand);
   procedure file_read (Machine: TForthMachine; Command: PForthCommand);
-  procedure file_write_from_w (Machine: TForthMachine; Command: PForthCommand);
-  procedure file_read_to_w (Machine: TForthMachine; Command: PForthCommand);
+  procedure file_str_write (Machine: TForthMachine; Command: PForthCommand); 
+  procedure file_str_read (Machine: TForthMachine; Command: PForthCommand); 
   procedure file_size (Machine: TForthMachine; Command: PForthCommand);
+  procedure star_cr (Machine: TForthMachine; Command: PForthCommand);
+  procedure star_cr_hash (Machine: TForthMachine; Command: PForthCommand);
+  procedure file_cr (Machine: TForthMachine; Command: PForthCommand);
   
   
 
@@ -2110,6 +2114,8 @@ procedure immediate(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$REGION 'TEmbroCommands'}{$ENDIF}
 procedure compile(Machine: TForthMachine; Command: PForthCommand);
 procedure q_compile_q(Machine: TForthMachine; Command: PForthCommand);
+procedure _call(Machine: TForthMachine; Command: PForthCommand);
+procedure postpone(Machine: TForthMachine; Command: PForthCommand);
 procedure _execute(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TDataCommands'}{$ENDIF}
@@ -2210,6 +2216,8 @@ procedure _execute(Machine: TForthMachine; Command: PForthCommand);
   procedure str_equel(Machine: TForthMachine; Command: PForthCommand);
   procedure str_pos(Machine: TForthMachine; Command: PForthCommand);
   procedure str_pos_ask(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_minus(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_replace(Machine: TForthMachine; Command: PForthCommand);
   procedure str_ins(Machine: TForthMachine; Command: PForthCommand);
   procedure str_del(Machine: TForthMachine; Command: PForthCommand);
   procedure str_cut(Machine: TForthMachine; Command: PForthCommand);
@@ -2688,6 +2696,23 @@ begin
   with Machine^ do begin
     Machine.EWO(Machine.C[Machine.ERU].Name);
   end;
+end;
+
+procedure _call(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Machine.EWO(Machine.NextName);
+end;
+
+procedure postpone(Machine: TForthMachine; Command: PForthCommand);
+var
+  C: PForthCommand;
+  Opcode: TOpcode;
+begin
+  C := Machine.FindCommand(Machine.NextName, @Opcode);
+  Writeln(C^.Name);
+  if not IsImmediate(C) then
+    Machine.EWO('(compile)');
+  Machine.EWO(Opcode)
 end;
 
 procedure _execute(Machine: TForthMachine; Command: PForthCommand);
@@ -3916,6 +3941,88 @@ begin
     Machine.WUI(BOOL_TRUE);
 end;
 
+procedure str_minus(Machine: TForthMachine; Command: PForthCommand);
+label
+  _Break,_Exit;
+var
+  X,S,Y: TStr;
+  I,J,Len: Integer;
+begin
+  S := str_pop(Machine);
+  X := str_top(Machine);
+  if X^.Ref = 1 then begin
+    Y := X;
+    X^.Ref := 2;
+  end else begin
+    str_pop(Machine);
+    Y := CreateStr(X^.Width, X^.Len);
+    str_push(Machine, Y);
+  end;
+  Len := 0;
+  I := 0;
+  while I < X^.Len do begin
+    for J := 0 to S^.Len - 1 do
+      if StrSymbol(X, I+J) <> StrSymbol(S, J) then
+        goto _Break;
+    Inc(I, S^.Len);
+    continue;
+  _Break:
+    Move(X^.Sym[I*X^.Width], Y^.Sym[Len*X^.Width], X^.Width);  
+    Inc(Len);
+    Inc(I);
+  end;
+  Y^.Len := Len;
+  DelRef(X);
+  DelRef(S);
+end;
+
+procedure str_replace(Machine: TForthMachine; Command: PForthCommand);
+label
+  _Break,_Exit;
+var
+  X,S,N,Y: TStr;
+  I,J,Len: Integer;
+  Buffer: array of Byte;
+begin
+  N := str_pop(Machine);
+  S := str_pop(Machine);
+  X := str_top(Machine);
+  // эвристика -- больше пяти замен будет происходить редко
+  SetLength(Buffer, (X^.Len + 5*N^.Len)*X^.Width);
+  Len := 0;
+  I := 0;
+  while I < X^.Len do begin
+    for J := 0 to S^.Len - 1 do
+      if StrSymbol(X, I+J) <> StrSymbol(S, J) then
+        goto _Break;
+    Inc(I, S^.Len);
+    if Len + N^.Len > Length(Buffer) div X^.Width then
+      SetLength(Buffer, 2*Length(Buffer)); 
+    // Move(N^.Sym[0], Buffer[Len*X^.Width], N^.Len * N^.Width);
+    MoveChars(@Buffer[Len*X^.Width], @N^.Sym[0], N^.Len, X^.Width, N^.Width);
+    Inc(Len, N^.Len);
+    continue;
+  _Break:
+    if Len > Length(Buffer) div X^.Width then
+      SetLength(Buffer, 2*Length(Buffer)); 
+    Move(X^.Sym[I*X^.Width], Buffer[Len*X^.Width], X^.Width);  
+    Inc(Len);
+    Inc(I);
+  end;
+  if (X^.Ref = 1) and (Len <= X^.Len) then begin
+    Move(Buffer[0], X^.Sym[0], Len*X^.Width);
+    X^.Len := Len;
+  end else begin
+    str_pop(Machine);
+    Y := CreateStr(X^.Width, Len);
+    Move(Buffer[0], Y^.Sym[0], X^.Width * Len);
+    str_push(Machine, Y);
+    DelRef(X);
+  end;
+  DelRef(S);
+  DelRef(N);
+end;
+
 procedure str_ins(Machine: TForthMachine; Command: PForthCommand);
 var
   X,Y,S: TStr;
@@ -4004,6 +4111,7 @@ var
   C: TChar;
   Temp: array of Char;
   B: TStr;
+  I: Integer;
 begin
  // with Machine^ do begin
     //if Machine.State = FS_COMPILE then begin
@@ -4016,7 +4124,12 @@ begin
         if C = '^' then begin
           C := Machine.NextChar;
           case C of
-            'n': Temp[High(Temp)] := #13;
+            'n': 
+              begin
+                SetLength(Temp, Length(Temp) + Length(CR_windows) - 1);
+                for I := 0 to High(CR_windows) do
+                  Temp[High(Temp) - I] := Char(CR_windows[High(CR_windows) - I]);
+              end;
             '"': Temp[High(Temp)] := '"';
           else
             Temp[High(Temp)] := C; 
@@ -5151,6 +5264,8 @@ begin
 {$IFNDEF FLAG_FPC}{$REGION 'embro commands'}{$ENDIF}
   AddCommand('compile', compile, True);
   AddCommand('(compile)', q_compile_q, True);
+  AddCommand('call', _call, True);
+  AddCommand('postpone', postpone, True);
   AddCommand('evaluate', Evaluate);
   AddCommand('evaluate-file', EvaluateFile);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -5236,6 +5351,8 @@ begin
   AddCommand('str=', str_equel);
   AddCommand('str^', str_pos);
   AddCommand('str^?', str_pos_ask);
+  AddCommand('str-', str_minus);
+  AddCommand('str\', str_replace);
   AddCommand('str-ins', str_ins);
   AddCommand('str-del', str_del);
   AddCommand('str-cut', str_cut);
@@ -6395,9 +6512,14 @@ begin
      AddCommand('file-close', file_close);
      AddCommand('file-w', file_w);
      AddCommand('file-r', file_r);
+     AddCommand('file-str-write', file_str_write);
+     AddCommand('file-str-read', file_str_read);
      AddCommand('file-write', file_write);
      AddCommand('file-read', file_read);
      AddCommand('file-size', file_size);
+     AddCommand('*cr', star_cr);
+     AddCommand('*cr', star_cr_hash);
+     AddCommand('file-cr', file_cr);
     
     
        AddCommand('current-directory', current_directory);
@@ -10741,7 +10863,10 @@ end;
               end else
                 Break;
             end;
-            _L := _L + _C; 
+            if _C = #13 then
+              _L := _L + #13#10
+            else
+              _L := _L + _C; 
           end; 
         _Exit:
           DelRef(_S);
@@ -10863,21 +10988,49 @@ end;
         Src: Pointer;
         I: TInt;
         F: PdfFile;
-      begin with Machine^ do begin //I := WOI; 
-        //Src := WOP; 
-        //F := WOP; 
-        //F^.Data.ReadVar(Src, I);
-        //PdfFile((Pointer(TUInt(Machine.WP) + (-SizeOf(PdfFile)))^))^.Data.ReadVar(Src, I);
-        F := WOP;
+      begin with Machine^ do begin F := WOP;
         I := WOI;
         Src := WOP;
         F^.Data.WriteVar(WOP, I);
        end; end;
-      procedure file_write_from_w (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine^ do begin  end; end;
-      procedure file_read_to_w (Machine: TForthMachine; Command: PForthCommand);
-      begin with Machine^ do begin  end; end;
+      procedure file_str_write (Machine: TForthMachine; Command: PForthCommand); 
+      var
+        B: TStr;
+        F: PdfFile;
+      begin with Machine^ do begin F := WOP;
+        B := str_pop(Machine);
+        F^.Data.WriteVar(@B^.Sym[0], B^.Len * B^.Width);
+       end; end;
+      procedure file_str_read (Machine: TForthMachine; Command: PForthCommand); 
+      var
+        B: TStr;
+        F: PdfFile;
+        Len: Integer;
+        Buffer: array of Byte;
+      begin with Machine^ do begin F := WOP;
+        SetLength(Buffer, 80);
+        Len := 0;
+        Buffer[Len] := F^.Data.ReadByte;
+        while (Buffer[Len] <> 13) and not F^.Data.IsEmpty do begin
+          Inc(Len);
+          if Len > High(Buffer) then
+            SetLength(Buffer, Length(Buffer)*2);
+          Buffer[Len] := F^.Data.ReadByte;
+        end;
+        B := CreateStr(1, Len);
+        Move(Buffer[0], B^.Sym[0], Len);
+        B^.Sym[Len] := 0;
+        str_push(Machine, B);
+       end; end;
       procedure file_size (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUI(PdfFile(WOP)^.Data.Size);  end; end;
+      procedure star_cr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(@CR_windows[0])  end; end;
+      procedure star_cr_hash (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUI(SizeOf(CR_windows))  end; end;
+      procedure file_cr (Machine: TForthMachine; Command: PForthCommand); 
+      var 
+        F: PdfFile; 
+      begin with Machine^ do begin F := WOP;
+        F^.Data.WriteVar(@CR_windows[0], SizeOf(CR_windows));
+       end; end;
     
    
     
@@ -10958,15 +11111,15 @@ end;
       end;
       procedure w2f (Machine: TForthMachine; Command: PForthCommand);
       asm
-        mov ecx, [eax]
-        sub [eax], 4
+        mov ecx,[eax]
+        sub [eax],4
         fild DWORD [ecx-4]
       end;
       procedure f2w (Machine: TForthMachine; Command: PForthCommand);
       asm
-        mov ecx, [eax]
+        mov ecx,[eax]
         fistp DWORD [ecx]
-        add [eax], 4
+        add [eax],4
         fwait
       end;
       procedure fadd (Machine: TForthMachine; Command: PForthCommand);

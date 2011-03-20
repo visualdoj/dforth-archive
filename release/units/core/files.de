@@ -7,7 +7,10 @@ samebuiltin file-open
 samebuiltin file-close
 samebuiltin file-w
 samebuiltin file-r
+samebuiltin file-str-write
+samebuiltin file-str-read
 samebuiltin file-write
 samebuiltin file-read
 samebuiltin file-size
+samebuiltin file-cr
 // }}}

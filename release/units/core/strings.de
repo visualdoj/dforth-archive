@@ -13,6 +13,8 @@ samebuiltin str+
 samebuiltin str=
 samebuiltin str^
 samebuiltin str^?
+samebuiltin str-
+samebuiltin str\
 samebuiltin str-ins
 samebuiltin str-del
 samebuiltin str-cut
@@ -32,6 +34,9 @@ samebuiltin str->pchar
 samebuiltin pchar->str
 samebuiltin pchar"
 // samebuiltin [pchar]"
+
+samebuiltin int->str
+samebuiltin str->int
 // }}}
 
 // ”ниверсальна€ команда дл€ строковых констант.
@@ -48,3 +53,15 @@ samebuiltin pchar"
 
 // n Ч число байт, занимаемое utf8-символом, i - первый байт символа
 // : utf8-size ( i-in) dup 128 > if b00 ;
+
+: str+" str" str+ ;
+: [str+]" postpone [str]" postpone str+ ; immediate
+: +" state @ if postpone [str+]" else str+" then ; immediate
+
+: str-" str" str- ;
+: [str-]" postpone [str]" postpone str- ; immediate
+: -" state @ if postpone [str-]" else str-" then ; immediate
+
+: str\" str" str\ ;
+: [str\]" postpone [str]" postpone str\ ; immediate
+: \" state @ if postpone [str\]" else str\" then ; immediate

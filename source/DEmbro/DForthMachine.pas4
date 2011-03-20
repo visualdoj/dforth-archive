@@ -883,7 +883,10 @@ define(~misc_commands|,
               end else
                 Break;
             end;
-            _L := _L + _C; 
+            if _C = #13 then
+              _L := _L + #13#10
+            else
+              _L := _L + _C; 
           end; 
         _Exit:
           DelRef(_S);
@@ -979,6 +982,7 @@ define(~misc_commands|,
 {$IFNDEF FLAG_FPC}{$REGION 'file_commands'}{$ENDIF}
 define(~file_commands|, 
   ~
+  const CR_windows: array[0..1] of Byte = ( 13, 10 );
   procedure file_exists cmdhdr;
   procedure file_open cmdhdr;
   procedure file_close cmdhdr;
@@ -986,9 +990,12 @@ define(~file_commands|,
   procedure file_r cmdhdr;
   procedure file_write cmdhdr;
   procedure file_read cmdhdr;
-  procedure file_write_from_w cmdhdr;
-  procedure file_read_to_w cmdhdr;
+  procedure file_str_write cmdhdr; 
+  procedure file_str_read cmdhdr; 
   procedure file_size cmdhdr;
+  procedure star_cr cmdhdr;
+  procedure star_cr_hash cmdhdr;
+  procedure file_cr cmdhdr;
   define(~all_implement|, all_implement 
     ~
       type
@@ -1052,23 +1059,52 @@ define(~file_commands|,
         I: TInt;
         F: PdfFile;
       body( 
-        //I := WOI; 
-        //Src := WOP; 
-        //F := WOP; 
-        //F^.Data.ReadVar(Src, I);
-        //PdfFile(WVar(-SizeOf(PdfFile)))^.Data.ReadVar(Src, I);
         F := WOP;
         I := WOI;
         Src := WOP;
         F^.Data.WriteVar(WOP, I);
       )
-      procedure file_write_from_w cmdhdr;
-      body(
+      procedure file_str_write cmdhdr; 
+      var
+        B: TStr;
+        F: PdfFile;
+      body( 
+        F := WOP;
+        B := str_pop(Machine);
+        F^.Data.WriteVar(@B^.Sym[0], B^.Len * B^.Width);
       )
-      procedure file_read_to_w cmdhdr;
-      body(
+      procedure file_str_read cmdhdr; 
+      var
+        B: TStr;
+        F: PdfFile;
+        Len: Integer;
+        Buffer: array of Byte;
+      body( 
+        F := WOP;
+        SetLength(Buffer, 80);
+        Len := 0;
+        Buffer[Len] := F^.Data.ReadByte;
+        while (Buffer[Len] <> 13) and not F^.Data.IsEmpty do begin
+          Inc(Len);
+          if Len > High(Buffer) then
+            SetLength(Buffer, Length(Buffer)*2);
+          Buffer[Len] := F^.Data.ReadByte;
+        end;
+        B := CreateStr(1, Len);
+        Move(Buffer[0], B^.Sym[0], Len);
+        B^.Sym[Len] := 0;
+        str_push(Machine, B);
       )
       procedure file_size cmdhdr; body( WUI(PdfFile(WOP)^.Data.Size); )
+      procedure star_cr cmdhdr; body( WUP(@CR_windows[0]) )
+      procedure star_cr_hash cmdhdr; body( WUI(SizeOf(CR_windows)) )
+      procedure file_cr cmdhdr; 
+      var 
+        F: PdfFile; 
+      body(  
+        F := WOP;
+        F^.Data.WriteVar(@CR_windows[0], SizeOf(CR_windows));
+      )
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -1078,9 +1114,14 @@ define(~file_commands|,
      AddCommand('file-close', file_close);
      AddCommand('file-w', file_w);
      AddCommand('file-r', file_r);
+     AddCommand('file-str-write', file_str_write);
+     AddCommand('file-str-read', file_str_read);
      AddCommand('file-write', file_write);
      AddCommand('file-read', file_read);
      AddCommand('file-size', file_size);
+     AddCommand('*cr', star_cr);
+     AddCommand('*cr', star_cr_hash);
+     AddCommand('file-cr', file_cr);
     |)
 |)
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -1164,169 +1205,169 @@ define(~f_commands|,
   define(~all_implement|, all_implement 
     ~
       procedure finit cmdhdr;
-      asm
+      idle(asm
         finit
-      end;
+      end;)
       procedure fdrop cmdhdr;
-      asm
+      idle(asm
         fstp ST(0)
-      end;
+      end;)
       procedure fnip cmdhdr;
-      asm
+      idle(asm
         fxch ST(1)
         fstp ST(0)
-      end;
+      end;)
       procedure fdup cmdhdr;
-      asm
+      idle(asm
         fld ST(0)
-      end;
+      end;)
       procedure fover cmdhdr;
-      asm
+      idle(asm
         fld ST(1)
-      end;
+      end;)
       procedure ftuck cmdhdr;
-      asm
+      idle(asm
         fxch ST(1)
         fld  ST(1)
-      end;
+      end;)
       procedure fswap cmdhdr;
-      asm
+      idle(asm
         fxch ST(1)
-      end;
+      end;)
       procedure flrot cmdhdr;
-      asm
+      idle(asm
         fxch ST(1)
         fxch ST(2)
-      end;
+      end;)
       procedure frrot cmdhdr;
-      asm
+      idle(asm
         fxch ST(2)
         fxch ST(1)
-      end;
+      end;)
       procedure f0 cmdhdr;
-      asm
+      idle(asm
         fldz
-      end;
+      end;)
       procedure f1 cmdhdr;
-      asm
+      idle(asm
         fld1
-      end;
+      end;)
       procedure fpi cmdhdr;
-      asm
+      idle(asm
         fldpi
-      end;
+      end;)
       procedure flog10 cmdhdr;
-      asm
+      idle(asm
         fldl2t
-      end;
+      end;)
       procedure floge cmdhdr;
-      asm
+      idle(asm
         fldl2e
-      end;
+      end;)
       procedure f10log2 cmdhdr;
-      asm
+      idle(asm
         fldlg2
-      end;
+      end;)
       procedure fln2 cmdhdr;
-      asm
+      idle(asm
         fldln2
-      end;
+      end;)
       procedure w2f cmdhdr;
-      asm
+      idle(asm
         mov ecx, [eax]
         sub [eax], 4
         fild DWORD [ecx-4]
-      end;
+      end;)
       procedure f2w cmdhdr;
-      asm
+      idle(asm
         mov ecx, [eax]
         fistp DWORD [ecx]
         add [eax], 4
         fwait
-      end;
+      end;)
       procedure fadd cmdhdr;
-      asm
+      idle(asm
         fadd
-      end;
+      end;)
       procedure fsub cmdhdr;
-      asm
+      idle(asm
         fsub
-      end;
+      end;)
       procedure fswapsub cmdhdr;
-      asm
+      idle(asm
         fsubr
-      end;
+      end;)
       procedure fmul cmdhdr;
-      asm
+      idle(asm
         fmul
-      end;
+      end;)
       procedure fdiv cmdhdr;
-      asm
+      idle(asm
         fdiv
-      end;
+      end;)
       procedure fswapdiv cmdhdr;
-      asm
+      idle(asm
         fdivr
-      end;
+      end;)
       procedure fabs cmdhdr;
-      asm
+      idle(asm
         fabs
-      end;
+      end;)
       procedure fneg cmdhdr;
-      asm
+      idle(asm
         fchs
-      end;
+      end;)
       procedure fsqrt cmdhdr;
-      asm
+      idle(asm
         fsqrt
-      end;
+      end;)
       procedure fscale cmdhdr;
-      asm
+      idle(asm
         fscale
-      end;
+      end;)
       procedure fround cmdhdr;
-      asm
+      idle(asm
         frndint
-      end;
+      end;)
       procedure fptan   cmdhdr;
-      asm
+      idle(asm
         fptan
-      end;
+      end;)
       procedure fpatan  cmdhdr;
-      asm
+      idle(asm
         fpatan
-      end;
+      end;)
       procedure flogmul cmdhdr;
-      asm
+      idle(asm
         fyl2x
-      end;
+      end;)
       procedure flog1plus_mul cmdhdr;
-      asm
+      idle(asm
         fyl2xp1
-      end;
+      end;)
       procedure f2pwr   cmdhdr;
-      asm
+      idle(asm
         f2xm1
-      end;
+      end;)
       procedure fcos    cmdhdr;
-      asm
+      idle(asm
         fcos
-      end;
+      end;)
       procedure fsin    cmdhdr;
-      asm
+      idle(asm
         fsin
-      end;
+      end;)
       procedure fsincos cmdhdr;
-      asm
+      idle(asm
         fsincos
-      end;
+      end;)
       procedure _float_fliteral cmdhdr;
       var
         F: Single;
       begin
-        asm
+        idle(asm
           fstp F
-        end;
+        end;)
         Machine.EWO('float-(fliteral)');
         Machine.EWV(@F, SizeOf(F));
       end;
@@ -1334,9 +1375,9 @@ define(~f_commands|,
       var
         F: Double;
       begin
-        asm
+        idle(asm
           fstp F
-        end;
+        end;)
         Machine.EWO('double-(fliteral)');
         Machine.EWV(@F, SizeOf(F));
       end;
@@ -1344,9 +1385,9 @@ define(~f_commands|,
       var
         F: Double;
       begin
-        asm
+        idle(asm
           fstp F
-        end;
+        end;)
         Machine.EWO('extended-(fliteral)');
         Machine.EWV(@F, SizeOf(F));
       end;
@@ -1355,9 +1396,9 @@ define(~f_commands|,
         P: Pointer;
       begin
         P := @Machine.E[Machine.EC];
-        asm
+        idle(asm
           fld single [P]
-        end;
+        end;)
         Inc(Machine.EC, SizeOf(Single));
       end;
       procedure _double_run_fliteral cmdhdr;    
@@ -1365,9 +1406,9 @@ define(~f_commands|,
         P: Pointer;
       begin
         P := @Machine.E[Machine.EC];
-        asm
+        idle(asm
           fld double [P]
-        end;
+        end;)
         Inc(Machine.EC, SizeOf(Double));
       end;
       procedure _extended_run_fliteral cmdhdr;    
@@ -1375,9 +1416,9 @@ define(~f_commands|,
         P: Pointer;
       begin
         P := @Machine.E[Machine.EC];
-        asm
+        idle(asm
           fld extended [P]
-        end;
+        end;)
         Inc(Machine.EC, SizeOf(Extended));
       end;
       procedure _float_to_str cmdhdr;
@@ -1385,9 +1426,9 @@ define(~f_commands|,
         F: Single;
         S: String;
       begin
-        asm
+        idle(asm
           fstp f
-        end;
+        end;)
         str(F, S);
         Machine.WUS(S);
       end;
@@ -1396,9 +1437,9 @@ define(~f_commands|,
         F: Double;
         S: String;
       begin
-        asm
+        idle(asm
           fstp f
-        end;
+        end;)
         str(F, S);
         Machine.WUS(S);
       end;
@@ -1407,9 +1448,9 @@ define(~f_commands|,
         F: Extended;
         S: String;
       begin
-        asm
+        idle(asm
           fstp f
-        end;
+        end;)
         str(F, S);
         Machine.WUS(S);
       end;
@@ -1422,7 +1463,7 @@ define(~f_commands|,
         S := Machine.WOS;
         val(S, V, Code);
         if Code = 0 then begin
-          asm fld V end;
+          idle(asm fld V end;)
           Machine.WUI(BOOL_TRUE);
         end else
           Machine.WUI(BOOL_FALSE);
@@ -1436,7 +1477,7 @@ define(~f_commands|,
         S := Machine.WOS;
         val(S, V, Code);
         if Code = 0 then begin
-          asm fld V end;
+          idle(asm fld V end;)
           Machine.WUI(BOOL_TRUE);
         end else
           Machine.WUI(BOOL_FALSE);
@@ -1450,7 +1491,7 @@ define(~f_commands|,
         S := Machine.WOS;
         val(S, V, Code);
         if Code = 0 then begin
-          asm fld V end;
+          idle(asm fld V end;)
           Machine.WUI(BOOL_TRUE);
         end else
           Machine.WUI(BOOL_FALSE);
@@ -2164,6 +2205,8 @@ procedure immediate(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$REGION 'TEmbroCommands'}{$ENDIF}
 procedure compile(Machine: TForthMachine; Command: PForthCommand);
 procedure q_compile_q(Machine: TForthMachine; Command: PForthCommand);
+procedure _call(Machine: TForthMachine; Command: PForthCommand);
+procedure postpone(Machine: TForthMachine; Command: PForthCommand);
 procedure _execute(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TDataCommands'}{$ENDIF}
@@ -2264,6 +2307,8 @@ procedure _execute(Machine: TForthMachine; Command: PForthCommand);
   procedure str_equel(Machine: TForthMachine; Command: PForthCommand);
   procedure str_pos(Machine: TForthMachine; Command: PForthCommand);
   procedure str_pos_ask(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_minus(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_replace(Machine: TForthMachine; Command: PForthCommand);
   procedure str_ins(Machine: TForthMachine; Command: PForthCommand);
   procedure str_del(Machine: TForthMachine; Command: PForthCommand);
   procedure str_cut(Machine: TForthMachine; Command: PForthCommand);
@@ -2742,6 +2787,23 @@ begin
   with Machine^ do begin
     Machine.EWO(Machine.C[Machine.ERU].Name);
   end;
+end;
+
+procedure _call(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Machine.EWO(Machine.NextName);
+end;
+
+procedure postpone(Machine: TForthMachine; Command: PForthCommand);
+var
+  C: PForthCommand;
+  Opcode: TOpcode;
+begin
+  C := Machine.FindCommand(Machine.NextName, @Opcode);
+  Writeln(C^.Name);
+  if not IsImmediate(C) then
+    Machine.EWO('(compile)');
+  Machine.EWO(Opcode)
 end;
 
 procedure _execute(Machine: TForthMachine; Command: PForthCommand);
@@ -3970,6 +4032,88 @@ begin
     Machine.WUI(BOOL_TRUE);
 end;
 
+procedure str_minus(Machine: TForthMachine; Command: PForthCommand);
+label
+  _Break, _Exit;
+var
+  X, S, Y: TStr;
+  I, J, Len: Integer;
+begin
+  S := str_pop(Machine);
+  X := str_top(Machine);
+  if X^.Ref = 1 then begin
+    Y := X;
+    X^.Ref := 2;
+  end else begin
+    str_pop(Machine);
+    Y := CreateStr(X^.Width, X^.Len);
+    str_push(Machine, Y);
+  end;
+  Len := 0;
+  I := 0;
+  while I < X^.Len do begin
+    for J := 0 to S^.Len - 1 do
+      if StrSymbol(X, I+J) <> StrSymbol(S, J) then
+        goto _Break;
+    Inc(I, S^.Len);
+    continue;
+  _Break:
+    Move(X^.Sym[I*X^.Width], Y^.Sym[Len*X^.Width], X^.Width);  
+    Inc(Len);
+    Inc(I);
+  end;
+  Y^.Len := Len;
+  DelRef(X);
+  DelRef(S);
+end;
+
+procedure str_replace(Machine: TForthMachine; Command: PForthCommand);
+label
+  _Break, _Exit;
+var
+  X, S, N, Y: TStr;
+  I, J, Len: Integer;
+  Buffer: array of Byte;
+begin
+  N := str_pop(Machine);
+  S := str_pop(Machine);
+  X := str_top(Machine);
+  // эвристика -- больше пяти замен будет происходить редко
+  SetLength(Buffer, (X^.Len + 5*N^.Len)*X^.Width);
+  Len := 0;
+  I := 0;
+  while I < X^.Len do begin
+    for J := 0 to S^.Len - 1 do
+      if StrSymbol(X, I+J) <> StrSymbol(S, J) then
+        goto _Break;
+    Inc(I, S^.Len);
+    if Len + N^.Len > Length(Buffer) div X^.Width then
+      SetLength(Buffer, 2*Length(Buffer)); 
+    // Move(N^.Sym[0], Buffer[Len*X^.Width], N^.Len * N^.Width);
+    MoveChars(@Buffer[Len*X^.Width], @N^.Sym[0], N^.Len, X^.Width, N^.Width);
+    Inc(Len, N^.Len);
+    continue;
+  _Break:
+    if Len > Length(Buffer) div X^.Width then
+      SetLength(Buffer, 2*Length(Buffer)); 
+    Move(X^.Sym[I*X^.Width], Buffer[Len*X^.Width], X^.Width);  
+    Inc(Len);
+    Inc(I);
+  end;
+  if (X^.Ref = 1) and (Len <= X^.Len) then begin
+    Move(Buffer[0], X^.Sym[0], Len*X^.Width);
+    X^.Len := Len;
+  end else begin
+    str_pop(Machine);
+    Y := CreateStr(X^.Width, Len);
+    Move(Buffer[0], Y^.Sym[0], X^.Width * Len);
+    str_push(Machine, Y);
+    DelRef(X);
+  end;
+  DelRef(S);
+  DelRef(N);
+end;
+
 procedure str_ins(Machine: TForthMachine; Command: PForthCommand);
 var
   X, Y, S: TStr;
@@ -4058,6 +4202,7 @@ var
   C: TChar;
   Temp: array of Char;
   B: TStr;
+  I: Integer;
 begin
  // with Machine^ do begin
     //if Machine.State = FS_COMPILE then begin
@@ -4070,7 +4215,12 @@ begin
         if C = '^' then begin
           C := Machine.NextChar;
           case C of
-            'n': Temp[High(Temp)] := #13;
+            'n': 
+              begin
+                SetLength(Temp, Length(Temp) + Length(CR_windows) - 1);
+                for I := 0 to High(CR_windows) do
+                  Temp[High(Temp) - I] := Char(CR_windows[High(CR_windows) - I]);
+              end;
             '"': Temp[High(Temp)] := '"';
           else
             Temp[High(Temp)] := C; 
@@ -5200,6 +5350,8 @@ begin
 {$IFNDEF FLAG_FPC}{$REGION 'embro commands'}{$ENDIF}
   AddCommand('compile', compile, True);
   AddCommand('(compile)', q_compile_q, True);
+  AddCommand('call', _call, True);
+  AddCommand('postpone', postpone, True);
   AddCommand('evaluate', Evaluate);
   ~AddCommand('evaluate-file', EvaluateFile);|
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -5285,6 +5437,8 @@ begin
   AddCommand('str=', str_equel);
   AddCommand('str^', str_pos);
   AddCommand('str^?', str_pos_ask);
+  AddCommand('str-', str_minus);
+  AddCommand('str\', str_replace);
   AddCommand('str-ins', str_ins);
   AddCommand('str-del', str_del);
   AddCommand('str-cut', str_cut);

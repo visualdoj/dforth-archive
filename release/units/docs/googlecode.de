@@ -2,17 +2,88 @@
 // Функции для генерации документации в формате googlecode'а
 
 namespace GOOGLECODE
+  : dembroname->simplename ( B: x - B: y)
+    // заменяем значки на текстовые эквиваленты
+    " _" \" _underline_"
+    " #" \" _hash_"
+    " ?" \" _question_"
+    " @" \" _dog_"
+    " !" \" _ex_"
+    " >" \" _gt_"
+    " <" \" _lt_"
+    " =" \" _eq_"
+    " +" \" _plus_"
+    " -" \" _minus_"
+    " *" \" _mul_"
+    " /" \" _div_"
+    " \" \" _slash_"
+    " '" \" _q_"
+    " ^"" \" _dq_"
+    " :" \" _colon_"
+    " ;" \" _endcolon_"
+    " ." \" _dot_"
+    " [" \" _lsq_"
+    " ]" \" _rsq_"
+    " {" \" _lfg_"
+    " }" \" _rfg_"
+    " (" \" _lcr_"
+    " )" \" _rcr_"
+    " ^^" \" _lid_"
+    " ," \" _comma_"
+  ;
+  : dembroname->articlename dembroname->simplename " article_" bswap str+ ;
+  : dembroname->articlename.wiki dembroname->articlename +" .wiki" ;
+
+  : articlebody->body ( B: x - B: y)
+    // " <code>" \" {{{"
+    // " </code>" \" }}}"
+  ;
+
   variable file
   bvariable folder
   : file@ file @ ;
-  : open ( s) " w" textfile-open file ! ;
-  : open-article ( i) folder b@ " article" str+ int->str str+ " .wiki" str+ open ;
-  : close file@ textfile-close ;
-  : . ( s) file@ textfile-write ; 
-  : cr file@ textfile-cr ; 
-  : header. ( i) " == " help-names bdyn[]@ str+ "  ==" str+ . cr ; 
-  : body. ( i) help-articles bdyn[]@ . cr ;
-  : article ( i) dup open-article dup header. article. close ;
-  : generate-docs ( s-) folder b! 
-             0 | i| begin i@ help-names bdyn# < while ++i article repeat
+  : open ( s) file-w file-open file ! ;
+  // : open-article ( i) folder b@ " article" str+ int->str str+ " .wiki" str+ open ;
+  : open-article ( i) folder b@ 
+                      *help-names bdyn[]@ dembroname->articlename.wiki 
+                      str+ open ;
+  : close file@ file-close ;
+  : int. . ; 
+  : . ( s) file@ file-str-write ; 
+  : cr file@ file-cr ; 
+  : header. ( i) " == " *help-names bdyn[]@ str+ "  ==" str+ . cr ; 
+  : body. ( i) *help-articles bdyn[]@ articlebody->body . cr ;
+  : article ( i) dup open-article dup header. body. close ;
+  : generate-articles
+    0 begin 
+      dup *help-names bdyn# < 
+    while 
+      dup article 
+      1+ 
+    repeat drop
+  ;
+  : generate-group ( i)
+    folder b@ " group_" str+ dup *help-group-names bdyn[]@ str+ +" .wiki" open
+    " === " . dup *help-group-names bdyn[]@ . "  ===" . cr
+    dup *help-group-descriptions bdyn[]@ ( articlebody->body) . cr
+    0 begin 
+      dup *help-names bdyn# < 
+    while 
+      over over *help-group dyn[]@ = if 
+        "   # [" . dup *help-names bdyn[]@ bdup dembroname->articlename . 
+            "  " . . " ]" . cr
+      then 1+ 
+    repeat drop drop
+    close
+  ;
+  : generate-groups 
+    0 begin 
+      dup *help-group-names bdyn# < 
+    while 
+      dup generate-group
+      1+ 
+    repeat drop
+  ;
+  : generate-docs ( s-) folder b! generate-articles generate-groups ;
+  // : generate-docs ( s-) 0 begin dup 100 < while dup . 1+ repeat ;
 \namespace

@@ -6,10 +6,30 @@ include" units\structures\dyn.de"
 include" units\utils\debug.de"
 
 1000 
-dup str-dyn *help-names
-dup str-dyn *help-articles
-dup str-dyn *help-summary
+dup str-dyn *help-names // названия статей
+dup str-dyn *help-articles // тексты статей
+dup str-dyn *help-summary // краткое описание статьи
+dup dyn *help-group // какой группе принадлежит статья
 drop
+
+50
+variable *help-current-group // текущая группа
+0 *help-current-group !
+dup str-dyn *help-group-names // названия групп
+dup str-dyn *help-group-descriptions // описания групп
+drop
+
+: help-group! ( i) *help-current-group ! ;
+
+: help-group: ( B: s "name") source-next-name-passive  
+              *help-group-names bdyn# dup help-group! 
+              " help-group-" source-next-name str+ created ,
+              *help-group-names bdyn+
+              *help-group-descriptions bdyn+
+              does> @ help-group! ;
+
+" Команды, не отнесённые к какой-либо категории"
+help-group: misc
 
 // Ищет описание
 // Если найти не удалось, то на вершине будет false.
@@ -25,7 +45,9 @@ drop
     if *help-summary bdyn[]@ str. cr
     else drop str. cr then 
   else [.str]" not found"cr then ;
-: described ( ss-) *help-articles str-dyn+ *help-names str-dyn+  ;
+: described ( ss-) *help-articles str-dyn+ 
+                   *help-names str-dyn+
+                   str0 *help-summary bdyn+   ;
 
 : help ( "name"-) source-next-name helped ;
 // : describe ( ") source-next-name *help-names str-dyn+ 
@@ -34,7 +56,8 @@ drop
 
 : new-article ( B: s-) *help-names    bdyn+ 
                   str0 *help-articles bdyn+ 
-                  str0 *help-summary  bdyn+ ;
+                  str0 *help-summary  bdyn+
+                  *help-current-group @ *help-group dyn+ ;
 
 : find-article ( B: s -- i) bdup help-find 
         if bdrop else *help-names bdyn# new-article then ;

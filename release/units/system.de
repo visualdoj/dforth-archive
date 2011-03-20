@@ -118,6 +118,16 @@ builtin inc! 1+!
 builtin dec! 1-!
 // }}}
 // {{{ создание команд, режим компиляции
+builtin drop embro-drop
+builtin dup embro-dup
+builtin lrot embro-lrot
+builtin lrotn embro-lrotn
+builtin nip embro-nip
+builtin over embro-over
+builtin rrot embro-rrot
+builtin rrotn embro-rrotn
+builtin swap embro-swap
+builtin tuck embro-tuck
 samebuiltin '
 samebuiltin (compile)
 samebuiltin ,
@@ -131,29 +141,21 @@ samebuiltin [']
 samebuiltin allot
 samebuiltin allot
 samebuiltin branch
+samebuiltin call
 samebuiltin compile
+samebuiltin constant
 samebuiltin create
 samebuiltin created
 samebuiltin does>
 samebuiltin here
 samebuiltin immediate
 samebuiltin last
+samebuiltin postpone
 samebuiltin recurse
 samebuiltin state
-samebuiltin variable
-samebuiltin constant
-samebuiltin value
 samebuiltin to
-builtin drop embro-drop
-builtin nip embro-nip
-builtin dup embro-dup
-builtin over embro-over
-builtin tuck embro-tuck
-builtin swap embro-swap
-builtin lrot embro-lrot
-builtin rrot embro-rrot
-builtin lrotn embro-lrotn
-builtin rrotn embro-rrotn
+samebuiltin value
+samebuiltin variable
 // }}}
 // {{{ встроенные типы
 samebuiltin typeof
@@ -256,13 +258,15 @@ str" units\core\includes.de" bdup evaluate-file
 // нужно в него добавить всё, что было подключено до него
 once+ once+ once+ once+
 
+include" units\core\createwords.de"
 include" units\core\help.de"
 include" units\core\statements.de"
 include" units\core\voc.de"
 include" units\core\f.de"
 include" units\utils\debug.de"
 include" units\core\w.de"
-include" units\core\createwords.de"
+include" units\core\files.de"
+include" units\core\locals.de"
 include" docs\russian.de"
 
 ." Loaded system file"cr
