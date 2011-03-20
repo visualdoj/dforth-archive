@@ -87,7 +87,8 @@ namespace GOOGLECODE
     repeat drop
   ;
   : generate-group-summary ( i)
-    " ==== " . dup *help-group-names bdyn[]@ . "  ====" . cr cr
+    " ==== [" . dup *help-group-names " group_" bdyn[]@ bdup brrot str+ . "  " .
+               . " ] ====" . cr cr
     dup *help-group-descriptions bdyn[]@ articlebody->body . cr cr
     0 begin 
       dup *help-names bdyn# < 
