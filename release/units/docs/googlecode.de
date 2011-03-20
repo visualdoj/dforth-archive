@@ -73,7 +73,7 @@ namespace GOOGLECODE
     while 
       over over *help-group dyn[]@ = if 
         "   # [" . dup *help-names bdyn[]@ bdup dembroname->articlename . 
-            "  " . . " ]" . cr
+            "  " . . " ] " . dup *help-summary bdyn[]@ . cr
       then 1+ 
     repeat drop drop
     close
