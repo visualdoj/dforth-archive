@@ -21,6 +21,7 @@ detail ( bdyn B: str sep -- bdyn)
   строки в bdyn.
 
   Пример
+  <code>
     5 bdyn x // создали массив, в который мы сохраним строки
     x " a,b,,c,d" " ," parse-list // записали в массив пять строк
     0 x bdyn[]@ str. // a
@@ -28,6 +29,7 @@ detail ( bdyn B: str sep -- bdyn)
     2 x bdyn[]@ str. // пустая строка
     3 x bdyn[]@ str. // c
     4 x bdyn[]@ str. // d
+  </code>
 \detail
 
 : parse-trim 
@@ -45,5 +47,8 @@ detail ( B: str1 sub -- B: str2)
      Если это так, то удаляет это вхождение из str1, и повторяет пункт 2.
   
   Примеры. 
-    Удаление пробелов по краям строки: str"  " str-trim
+    Удаление пробелов по краям строки: 
+    <code>
+      str"  " str-trim
+    </code>
 \detail
