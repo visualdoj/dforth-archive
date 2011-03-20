@@ -1,8 +1,7 @@
 // 2011.03.07 # Doj
 // Математический сопроцессор
 
-" 
-"
+RUS " Команды использования сопроцессора для вычислений с плавающей точкой."
 help-group: fpu
 
 // {{{ встроенные команды
@@ -177,9 +176,11 @@ detail (F: f B: s -- F: g)
   В противном случае ничего не делает, т.е. на стеке сопроцессора останется
   число f. Таким образом можно реализовывать преобразование с дефолтным 
   значением.
-  Примеры: 
+  Примеры:
+  <code> 
     " 3.0" f1 def-str->f // положит на стек 3.0
     " @@@" f1 def-str->f // положит на стек 1.0
+  </code>
 \detail
 : def-str->float ( F: f B: s -- F: g) str->float? if fnip then ;
 RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
@@ -190,8 +191,10 @@ detail (F: f B: s -- F: g)
   сопроцессора останется число f. Таким образом можно реализовывать 
   преобразование с дефолтным значением.
   Примеры: 
+  <code> 
     " 3.0" f1 def-str->float // положит на стек 3.0
     " @@@" f1 def-str->float // положит на стек 1.0
+  </code> 
 \detail
 : def-str->double ( F: f B: s -- F: g) str->double? if fnip then ;
 RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
@@ -202,8 +205,10 @@ detail (F: f B: s -- F: g)
   сопроцессора останется число f. Таким образом можно реализовывать 
   преобразование с дефолтным значением.
   Примеры: 
+  <code> 
     " 3.0" f1 def-str->double // положит на стек 3.0
     " @@@" f1 def-str->double // положит на стек 1.0
+  </code> 
 \detail
 : def-str->extended ( F: f B: s -- F: g) str->extended? if fnip then ;
 RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
@@ -214,8 +219,10 @@ detail (F: f B: s -- F: g)
   сопроцессора останется число f. Таким образом можно реализовывать 
   преобразование с дефолтным значением.
   Примеры: 
+  <code> 
     " 3.0" f1 def-str->extended // положит на стек 3.0
     " @@@" f1 def-str->extended // положит на стек 1.0
+  </code> 
 \detail
 
 : fe    [ " 1.0" str->extended? not if f0 then fexp ] extended-fliteral ;

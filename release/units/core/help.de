@@ -45,9 +45,9 @@ help-group: misc
     if *help-summary bdyn[]@ str. cr
     else drop str. cr then 
   else [.str]" not found"cr then ;
-: described ( ss-) *help-articles str-dyn+ 
-                   *help-names str-dyn+
-                   str0 *help-summary bdyn+   ;
+: described ( ss-) *help-articles bdyn+ 
+                   *help-names bdyn+
+                   str0 *help-summary bdyn+ ;
 
 : help ( "name"-) source-next-name helped ;
 // : describe ( ") source-next-name *help-names str-dyn+ 

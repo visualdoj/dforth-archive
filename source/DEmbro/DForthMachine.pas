@@ -4279,7 +4279,7 @@ end;
 procedure str_nil(Machine: TForthMachine; Command: PForthCommand);
 begin
   with Machine^ do begin
-    str_push(Machine, @FStrNil);
+    str_push(Machine, FStrNil);
   end;
 end;
 
@@ -5118,10 +5118,10 @@ end;
 
 constructor OForthMachine.Create;
 begin
-  GetMem(FStrNil, 2*SizeOf(TInt) + 1);
+  GetMem(FStrNil, 3*SizeOf(TInt) + 1);
   PStrRec(FStrNil)^.Ref := 1;
   PStrRec(FStrNil)^.Len := 0;
-  PStrRec(FStrNil)^.Width := 0;
+  PStrRec(FStrNil)^.Width := 1;
   PStrRec(FStrNil)^.Sym[0] := 0;
 
   SetLength(E, 1024 * 1024);

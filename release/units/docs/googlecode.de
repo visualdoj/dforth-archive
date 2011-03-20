@@ -1,9 +1,9 @@
 // 2011.03.14 # Doj
-// ‘ÛÌÍˆËË ‰Îˇ „ÂÌÂ‡ˆËË ‰ÓÍÛÏÂÌÚ‡ˆËË ‚ ÙÓÏ‡ÚÂ googlecode'‡
+// –§—É–Ω–∫—Ü–∏–∏ –¥–ª—è –≥–µ–Ω–µ—Ä–∞—Ü–∏–∏ –¥–æ–∫—É–º–µ–Ω—Ç–∞—Ü–∏–∏ –≤ —Ñ–æ—Ä–º–∞—Ç–µ googlecode'–∞
 
 namespace GOOGLECODE
   : dembroname->simplename ( B: x - B: y)
-    // Á‡ÏÂÌˇÂÏ ÁÌ‡˜ÍË Ì‡ ÚÂÍÒÚÓ‚˚Â ˝Í‚Ë‚‡ÎÂÌÚ˚
+    // –∑–∞–º–µ–Ω—è–µ–º –∑–Ω–∞—á–∫–∏ –Ω–∞ —Ç–µ–∫—Å—Ç–æ–≤—ã–µ —ç–∫–≤–∏–≤–∞–ª–µ–Ω—Ç—ã
     " _" \" _underline_"
     " #" \" _hash_"
     " ?" \" _question_"
@@ -35,8 +35,8 @@ namespace GOOGLECODE
   : dembroname->articlename.wiki dembroname->articlename +" .wiki" ;
 
   : articlebody->body ( B: x - B: y)
-    // " <code>" \" {{{"
-    // " </code>" \" }}}"
+    " <code>" \" {{{"
+    " </code>" \" }}}"
   ;
 
   variable file
@@ -52,7 +52,9 @@ namespace GOOGLECODE
   : . ( s) file@ file-str-write ; 
   : cr file@ file-cr ; 
   : header. ( i) " == " *help-names bdyn[]@ str+ "  ==" str+ . cr ; 
-  : body. ( i) *help-articles bdyn[]@ articlebody->body . cr ;
+  : body. ( i) dup *help-articles bdyn[]@ bdup str0 str= 
+               if bdrop *help-summary bdyn[]@ else drop then 
+               articlebody->body . cr ;
   : article ( i) dup open-article dup header. body. close ;
   : generate-articles
     0 begin 
@@ -65,7 +67,7 @@ namespace GOOGLECODE
   : generate-group ( i)
     folder b@ " group_" str+ dup *help-group-names bdyn[]@ str+ +" .wiki" open
     " === " . dup *help-group-names bdyn[]@ . "  ===" . cr
-    dup *help-group-descriptions bdyn[]@ ( articlebody->body) . cr
+    dup *help-group-descriptions bdyn[]@ articlebody->body . cr
     0 begin 
       dup *help-names bdyn# < 
     while 
@@ -84,6 +86,32 @@ namespace GOOGLECODE
       1+ 
     repeat drop
   ;
-  : generate-docs ( s-) folder b! generate-articles generate-groups ;
+  : generate-group-summary ( i)
+    " ==== " . dup *help-group-names bdyn[]@ . "  ====" . cr
+    dup *help-group-descriptions bdyn[]@ articlebody->body . cr
+    0 begin 
+      dup *help-names bdyn# < 
+    while 
+      over over *help-group dyn[]@ = if 
+        " [" . dup *help-names bdyn[]@ bdup dembroname->articlename . 
+            "  " . . " ] " .
+      then 1+ 
+    repeat drop drop cr
+  ;
+  : generate-main
+    folder b@ " doc.wiki" str+ open
+    " = –î–æ–∫—É–º–µ–Ω—Ç–∞—Ü–∏—è =" . cr 
+    0 begin 
+      dup *help-group-names bdyn# < 
+    while 
+      dup generate-group-summary
+      1+ 
+    repeat drop
+    close
+  ;
+  : generate-docs ( s-) folder b! 
+                        generate-articles 
+                        generate-groups 
+                        generate-main ;
   // : generate-docs ( s-) 0 begin dup 100 < while dup . 1+ repeat ;
 \namespace
