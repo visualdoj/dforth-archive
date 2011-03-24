@@ -9,22 +9,44 @@ include" units\utils\parser.de"
 : local-offset>> *local-offset dup @ cell+ swap !  ;
 : local-offset-off *local-offset off ;
 
+// : dup dup ;
+
 : local-created ( sp) str+ created immediate *local-offset @ , ;
-: put-local-offset ( p-i) compile (literal) @ , ;
+: put-local-offset ( p-) @ call literal ;
 : local-generated! ( s-) " !" local-created does> put-local-offset compile l! ;
 : local-generated@ ( s-) " @" local-created does> put-local-offset compile l@ ;
 : local-++generated ( s-) " ++" bswap local-created 
-  does> dup put-local-offset compile l@ compile 1+ compile dup
-            put-local-offset compile l! ;
+  does> dup put-local-offset 
+            compile l@ 
+            compile 1+ 
+            compile dup
+            put-local-offset 
+            compile l! 
+;
 : local-generated++ ( s-) " ++" local-created 
-  does> dup put-local-offset compile l@ compile dup compile 1+
-            put-local-offset compile l! ;
+  does> dup put-local-offset 
+            compile l@ 
+            compile dup 
+            compile 1+
+            put-local-offset 
+            compile l! 
+;
 : local---generated ( s-) " --" bswap local-created 
-  does> dup put-local-offset compile l@ compile 1- compile dup
-            put-local-offset compile l! ;
+  does> dup put-local-offset 
+            compile l@ 
+            compile 1- 
+            compile dup
+            put-local-offset 
+            compile l! 
+;
 : local-generated-- ( s-) " --" local-created 
-  does> dup put-local-offset compile l@ compile dup compile 1-
-            put-local-offset compile l! ;
+  does> dup put-local-offset 
+            compile l@ 
+            compile dup 
+            compile 1-
+            put-local-offset 
+            compile l! 
+;
 
 : local-generated-int ( s-)
   bdup local-generated!
@@ -56,7 +78,11 @@ include" units\utils\parser.de"
 : initialiaze-all-locals
   *local-offset off *local-names bdyn# begin dup 0 > while 1-
     dup *local-names bdyn[]@ prepare-local-name?
-    if *local-offset @ ['] literal execute compile l! local-offset>>
+    if *local-offset @ 
+      // ['] literal execute 
+      call literal
+      compile l! 
+      local-offset>>
     else bdrop then
   repeat drop 
 ;

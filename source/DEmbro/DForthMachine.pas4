@@ -82,13 +82,14 @@ define(~typed_commands|,
          idle(asm
            sub [eax], 4
          end;)
-         procedure dup_$1 cmdhdr;
+         {procedure dup_$1 cmdhdr;
          idle(asm
            mov ecx, [eax]
            mov edx, [ecx-4]
            mov [ecx], edx
            add [eax], 4
-         end;)
+         end;)}
+         procedure dup_$1 cmdhdr; body(Move(WVar(-$2), WVar(0), $2); WInc($2); Writeln('dup');)
          procedure nip_$1 cmdhdr;
          idle(asm
            mov ecx, [eax]
@@ -175,7 +176,9 @@ define(~typed_commands|,
             $2);
        WInc($2 - SizeOf(TInt));
      )
-     procedure _comma_$1 cmdhdr; body( Dec(WP, $2); Move(WP^, Here^, $2); EA($2); )
+     procedure _comma_$1 cmdhdr; body( Dec(WP, $2); ifelse(~|,$1,
+                                                            EWI(Integer(WP^)),
+                                                            EWV(WP, $2); ) )
      procedure _dog_$1 cmdhdr; body( Move(Pointer(WVar(-PSize))^, WVar(-PSize), $2); Inc(WP, $2 - PSize) )
      procedure _exclamation_$1 cmdhdr; body( Move(WVar(-PSize-$2), Pointer(WVar(-PSize))^, $2); Dec(WP, PSize + $2) )
      procedure ptr_plus_$1 cmdhdr; body( PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; )
@@ -189,7 +192,10 @@ define(~typed_commands|,
      procedure _value_$1 cmdhdr; body( with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_$1; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); Flags := Flags and not 1; end; )
      procedure _variable_$1 cmdhdr; body( with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, $2); Move(WP^, Here^, $2);} EA($2); end; )
      procedure RunValue_$1 cmdhdr; body( Move(Command.Data^, WP^, $2); Inc(WP, $2); )
-    procedure literal_$1 cmdhdr; body( EWO('genname($1, (literal))'); Dec(WP, $2); EWV(WP, $2); )
+    procedure literal_$1 cmdhdr; body( EWO('genname($1, (literal))'); Dec(WP, $2); 
+                                       ifelse(~|,$1,
+                                              EWI(Integer(WP^)), 
+                                              EWV(WP, $2);) )
     procedure run_literal_$1 cmdhdr; body( ERV(WP, $2); Inc(WP, $2); )
     |
   )
@@ -2783,9 +2789,12 @@ begin
 end;
 
 procedure q_compile_q(Machine: TForthMachine; Command: PForthCommand);
+var
+  O: TOpcode;
 begin
   with Machine^ do begin
-    Machine.EWO(Machine.C[Machine.ERU].Name);
+    O := Machine.ERU;
+    Machine.EWO(Machine.C[O].Name);
   end;
 end;
 
@@ -4701,6 +4710,7 @@ begin
     LogError('trying to run command with opcode -1');
     Exit;
   end;
+  Writeln(C[M].Name);
   C[M].Code(@Self, C[M]);
 end;
 

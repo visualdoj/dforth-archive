@@ -2692,9 +2692,12 @@ begin
 end;
 
 procedure q_compile_q(Machine: TForthMachine; Command: PForthCommand);
+var
+  O: TOpcode;
 begin
   with Machine^ do begin
-    Machine.EWO(Machine.C[Machine.ERU].Name);
+    O := Machine.ERU;
+    Machine.EWO(Machine.C[O].Name);
   end;
 end;
 
@@ -4610,6 +4613,7 @@ begin
     LogError('trying to run command with opcode -1');
     Exit;
   end;
+  Writeln(C[M].Name);
   C[M].Code(@Self, C[M]);
 end;
 
@@ -7822,13 +7826,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_ (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_ (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
          procedure nip_ (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -7903,7 +7908,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _comma_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); EWI(Integer(WP^))  end; end;
      procedure _dog_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
      procedure ptr_plus_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
@@ -7917,7 +7922,8 @@ end;
      procedure _value_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_; Move((Pointer(TUInt(Machine.WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
      procedure _variable_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
      procedure RunValue_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure literal_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('(literal)'); Dec(WP, 4); 
+                                       EWI(Integer(WP^))  end; end;
     procedure run_literal_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
@@ -7927,13 +7933,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
          procedure nip_ptr (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8008,7 +8015,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _comma_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); EWV(WP, 4);   end; end;
      procedure _dog_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
      procedure ptr_plus_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
@@ -8022,7 +8029,8 @@ end;
      procedure _value_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_ptr; Move((Pointer(TUInt(Machine.WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
      procedure _variable_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
      procedure RunValue_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('ptr-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('ptr-(literal)'); Dec(WP, 4); 
+                                       EWV(WP, 4);  end; end;
     procedure run_literal_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
@@ -8032,13 +8040,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_int (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_int (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
          procedure nip_int (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8113,7 +8122,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _comma_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); EWV(WP, 4);   end; end;
      procedure _dog_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
      procedure ptr_plus_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
@@ -8127,7 +8136,8 @@ end;
      procedure _value_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int; Move((Pointer(TUInt(Machine.WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
      procedure _variable_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
      procedure RunValue_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure literal_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int-(literal)'); Dec(WP, 4); 
+                                       EWV(WP, 4);  end; end;
     procedure run_literal_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
@@ -8137,13 +8147,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1))^), (Pointer(TUInt(Machine.WP) + (0))^), 1); Inc(WP, 1); Writeln('dup'); end; end;
          procedure nip_int8 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8218,7 +8229,7 @@ end;
             1);
        Inc(WP, 1 - SizeOf(TInt));
       end; end;
-     procedure _comma_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1); Move(WP^, Here^, 1); EA(1);  end; end;
+     procedure _comma_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1); EWV(WP, 1);   end; end;
      procedure _dog_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 1); Inc(WP, 1 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-1))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 1); Dec(WP, (SizeOf(Pointer)) + 1)  end; end;
      procedure ptr_plus_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 1;  end; end;
@@ -8232,7 +8243,8 @@ end;
      procedure _value_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int8; Move((Pointer(TUInt(Machine.WP) + (-1))^), Here^, 1); Dec(WP, 1); EA(1); Flags := Flags and not 1; end;  end; end;
      procedure _variable_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 1); Move(WP^, Here^, 1);} EA(1); end;  end; end;
      procedure RunValue_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 1); Inc(WP, 1);  end; end;
-    procedure literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int8-(literal)'); Dec(WP, 1); EWV(WP, 1);  end; end;
+    procedure literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int8-(literal)'); Dec(WP, 1); 
+                                       EWV(WP, 1);  end; end;
     procedure run_literal_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 1); Inc(WP, 1);  end; end;
     
    
@@ -8242,13 +8254,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-2))^), (Pointer(TUInt(Machine.WP) + (0))^), 2); Inc(WP, 2); Writeln('dup'); end; end;
          procedure nip_int16 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8323,7 +8336,7 @@ end;
             2);
        Inc(WP, 2 - SizeOf(TInt));
       end; end;
-     procedure _comma_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 2); Move(WP^, Here^, 2); EA(2);  end; end;
+     procedure _comma_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 2); EWV(WP, 2);   end; end;
      procedure _dog_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 2); Inc(WP, 2 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-2))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 2); Dec(WP, (SizeOf(Pointer)) + 2)  end; end;
      procedure ptr_plus_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 2;  end; end;
@@ -8337,7 +8350,8 @@ end;
      procedure _value_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int16; Move((Pointer(TUInt(Machine.WP) + (-2))^), Here^, 2); Dec(WP, 2); EA(2); Flags := Flags and not 1; end;  end; end;
      procedure _variable_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 2); Move(WP^, Here^, 2);} EA(2); end;  end; end;
      procedure RunValue_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 2); Inc(WP, 2);  end; end;
-    procedure literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int16-(literal)'); Dec(WP, 2); EWV(WP, 2);  end; end;
+    procedure literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int16-(literal)'); Dec(WP, 2); 
+                                       EWV(WP, 2);  end; end;
     procedure run_literal_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 2); Inc(WP, 2);  end; end;
     
    
@@ -8347,13 +8361,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
          procedure nip_int32 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8428,7 +8443,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _comma_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); EWV(WP, 4);   end; end;
      procedure _dog_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
      procedure ptr_plus_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
@@ -8442,7 +8457,8 @@ end;
      procedure _value_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int32; Move((Pointer(TUInt(Machine.WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
      procedure _variable_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
      procedure RunValue_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int32-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int32-(literal)'); Dec(WP, 4); 
+                                       EWV(WP, 4);  end; end;
     procedure run_literal_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
@@ -8452,13 +8468,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-8))^), (Pointer(TUInt(Machine.WP) + (0))^), 8); Inc(WP, 8); Writeln('dup'); end; end;
          procedure nip_int64 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8533,7 +8550,7 @@ end;
             8);
        Inc(WP, 8 - SizeOf(TInt));
       end; end;
-     procedure _comma_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8); Move(WP^, Here^, 8); EA(8);  end; end;
+     procedure _comma_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8); EWV(WP, 8);   end; end;
      procedure _dog_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 8); Inc(WP, 8 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-8))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 8); Dec(WP, (SizeOf(Pointer)) + 8)  end; end;
      procedure ptr_plus_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 8;  end; end;
@@ -8547,7 +8564,8 @@ end;
      procedure _value_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_int64; Move((Pointer(TUInt(Machine.WP) + (-8))^), Here^, 8); Dec(WP, 8); EA(8); Flags := Flags and not 1; end;  end; end;
      procedure _variable_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 8); Move(WP^, Here^, 8);} EA(8); end;  end; end;
      procedure RunValue_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 8); Inc(WP, 8);  end; end;
-    procedure literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int64-(literal)'); Dec(WP, 8); EWV(WP, 8);  end; end;
+    procedure literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('int64-(literal)'); Dec(WP, 8); 
+                                       EWV(WP, 8);  end; end;
     procedure run_literal_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 8); Inc(WP, 8);  end; end;
     
    
@@ -8557,13 +8575,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_uint (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_uint (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
          procedure nip_uint (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8638,7 +8657,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _comma_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); EWV(WP, 4);   end; end;
      procedure _dog_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
      procedure ptr_plus_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
@@ -8652,7 +8671,8 @@ end;
      procedure _value_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint; Move((Pointer(TUInt(Machine.WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
      procedure _variable_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
      procedure RunValue_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure literal_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint-(literal)'); Dec(WP, 4); 
+                                       EWV(WP, 4);  end; end;
     procedure run_literal_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
@@ -8662,13 +8682,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1))^), (Pointer(TUInt(Machine.WP) + (0))^), 1); Inc(WP, 1); Writeln('dup'); end; end;
          procedure nip_uint8 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8743,7 +8764,7 @@ end;
             1);
        Inc(WP, 1 - SizeOf(TInt));
       end; end;
-     procedure _comma_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1); Move(WP^, Here^, 1); EA(1);  end; end;
+     procedure _comma_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1); EWV(WP, 1);   end; end;
      procedure _dog_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 1); Inc(WP, 1 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-1))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 1); Dec(WP, (SizeOf(Pointer)) + 1)  end; end;
      procedure ptr_plus_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 1;  end; end;
@@ -8757,7 +8778,8 @@ end;
      procedure _value_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint8; Move((Pointer(TUInt(Machine.WP) + (-1))^), Here^, 1); Dec(WP, 1); EA(1); Flags := Flags and not 1; end;  end; end;
      procedure _variable_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 1); Move(WP^, Here^, 1);} EA(1); end;  end; end;
      procedure RunValue_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 1); Inc(WP, 1);  end; end;
-    procedure literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint8-(literal)'); Dec(WP, 1); EWV(WP, 1);  end; end;
+    procedure literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint8-(literal)'); Dec(WP, 1); 
+                                       EWV(WP, 1);  end; end;
     procedure run_literal_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 1); Inc(WP, 1);  end; end;
     
    
@@ -8767,13 +8789,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-2))^), (Pointer(TUInt(Machine.WP) + (0))^), 2); Inc(WP, 2); Writeln('dup'); end; end;
          procedure nip_uint16 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8848,7 +8871,7 @@ end;
             2);
        Inc(WP, 2 - SizeOf(TInt));
       end; end;
-     procedure _comma_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 2); Move(WP^, Here^, 2); EA(2);  end; end;
+     procedure _comma_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 2); EWV(WP, 2);   end; end;
      procedure _dog_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 2); Inc(WP, 2 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-2))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 2); Dec(WP, (SizeOf(Pointer)) + 2)  end; end;
      procedure ptr_plus_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 2;  end; end;
@@ -8862,7 +8885,8 @@ end;
      procedure _value_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint16; Move((Pointer(TUInt(Machine.WP) + (-2))^), Here^, 2); Dec(WP, 2); EA(2); Flags := Flags and not 1; end;  end; end;
      procedure _variable_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 2); Move(WP^, Here^, 2);} EA(2); end;  end; end;
      procedure RunValue_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 2); Inc(WP, 2);  end; end;
-    procedure literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint16-(literal)'); Dec(WP, 2); EWV(WP, 2);  end; end;
+    procedure literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint16-(literal)'); Dec(WP, 2); 
+                                       EWV(WP, 2);  end; end;
     procedure run_literal_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 2); Inc(WP, 2);  end; end;
     
    
@@ -8872,13 +8896,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
          procedure nip_uint32 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8953,7 +8978,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _comma_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); EWV(WP, 4);   end; end;
      procedure _dog_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
      procedure ptr_plus_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
@@ -8967,7 +8992,8 @@ end;
      procedure _value_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint32; Move((Pointer(TUInt(Machine.WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
      procedure _variable_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
      procedure RunValue_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint32-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint32-(literal)'); Dec(WP, 4); 
+                                       EWV(WP, 4);  end; end;
     procedure run_literal_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
@@ -8977,13 +9003,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-8))^), (Pointer(TUInt(Machine.WP) + (0))^), 8); Inc(WP, 8); Writeln('dup'); end; end;
          procedure nip_uint64 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -9058,7 +9085,7 @@ end;
             8);
        Inc(WP, 8 - SizeOf(TInt));
       end; end;
-     procedure _comma_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8); Move(WP^, Here^, 8); EA(8);  end; end;
+     procedure _comma_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8); EWV(WP, 8);   end; end;
      procedure _dog_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 8); Inc(WP, 8 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-8))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 8); Dec(WP, (SizeOf(Pointer)) + 8)  end; end;
      procedure ptr_plus_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 8;  end; end;
@@ -9072,7 +9099,8 @@ end;
      procedure _value_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_uint64; Move((Pointer(TUInt(Machine.WP) + (-8))^), Here^, 8); Dec(WP, 8); EA(8); Flags := Flags and not 1; end;  end; end;
      procedure _variable_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 8); Move(WP^, Here^, 8);} EA(8); end;  end; end;
      procedure RunValue_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 8); Inc(WP, 8);  end; end;
-    procedure literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint64-(literal)'); Dec(WP, 8); EWV(WP, 8);  end; end;
+    procedure literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('uint64-(literal)'); Dec(WP, 8); 
+                                       EWV(WP, 8);  end; end;
     procedure run_literal_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 8); Inc(WP, 8);  end; end;
     
    
@@ -9082,13 +9110,14 @@ end;
          asm
            sub [eax],4
          end;
-         procedure dup_embro (Machine: TForthMachine; Command: PForthCommand);
+         {procedure dup_embro (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
            mov edx,[ecx-4]
            mov [ecx],edx
            add [eax],4
-         end;
+         end;}
+         procedure dup_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
          procedure nip_embro (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -9163,7 +9192,7 @@ end;
             4);
        Inc(WP, 4 - SizeOf(TInt));
       end; end;
-     procedure _comma_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); Move(WP^, Here^, 4); EA(4);  end; end;
+     procedure _comma_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); EWV(WP, 4);   end; end;
      procedure _dog_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
      procedure _exclamation_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
      procedure ptr_plus_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
@@ -9177,7 +9206,8 @@ end;
      procedure _value_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_embro; Move((Pointer(TUInt(Machine.WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
      procedure _variable_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
      procedure RunValue_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
-    procedure literal_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('embro-(literal)'); Dec(WP, 4); EWV(WP, 4);  end; end;
+    procedure literal_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('embro-(literal)'); Dec(WP, 4); 
+                                       EWV(WP, 4);  end; end;
     procedure run_literal_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
     
    
