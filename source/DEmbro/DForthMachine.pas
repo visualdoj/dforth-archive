@@ -2299,6 +2299,9 @@ procedure _execute(Machine: TForthMachine; Command: PForthCommand);
   procedure pchar_dq(Machine: TForthMachine; Command: PForthCommand);
   procedure compile_pchar_dq(Machine: TForthMachine; Command: PForthCommand);
   procedure run_pchar_dq(Machine: TForthMachine; Command: PForthCommand);
+  procedure pwidechar_dq(Machine: TForthMachine; Command: PForthCommand);
+  procedure compile_pwidechar_dq(Machine: TForthMachine; Command: PForthCommand);
+  procedure run_pwidechar_dq(Machine: TForthMachine; Command: PForthCommand);
   procedure pchar_dot(Machine: TForthMachine; Command: PForthCommand);
 
   procedure _char(Machine: TForthMachine; Command: PForthCommand);
@@ -3776,6 +3779,55 @@ begin
       Inc(Machine.EC);
     Inc(Machine.EC);
  // end;
+end;
+
+procedure pwidechar_dq(Machine: TForthMachine; Command: PForthCommand);
+var
+  P: Pointer;
+  C: WideChar;
+begin
+    (* if Machine.State = FS_COMPILE then begin *)
+    (*   compile_pwidechar_dq(Machine, Command); *)
+    (* end else begin *)
+      SetLength(Machine.FPChars, Length(Machine.FPChars) + 1);
+      SetLength(Machine.FPChars[High(Machine.FPChars)], 0); 
+      C := WideChar(Machine.NextChar);
+      while C <> '"' do begin
+        SetLength(Machine.FPChars[High(Machine.FPChars)], Length(Machine.FPChars[High(Machine.FPChars)]) + SizeOf(C)); 
+        Move(C, Machine.FPChars[High(Machine.FPChars)][Length(Machine.FPChars[High(Machine.FPChars)]) - SizeOf(C)], SizeOf(C)); 
+        C := WideChar(Machine.NextChar);
+      end; 
+      SetLength(Machine.FPChars[High(Machine.FPChars)], Length(Machine.FPChars[High(Machine.FPChars)]) + SizeOf(C)); 
+      C := #0;
+      Move(C, Machine.FPChars[High(Machine.FPChars)][Length(Machine.FPChars[High(Machine.FPChars)]) - SizeOf(C)], SizeOf(C)); 
+      Machine.WUP(Machine.FPChars[High(Machine.FPChars)]);
+    //end;
+end;
+
+procedure compile_pwidechar_dq(Machine: TForthMachine; Command: PForthCommand);
+var
+  C: WideChar;
+begin
+ // with Machine^ do begin
+    Machine.EWO('(pwidechar)"');
+    C := WideChar(Machine.NextChar);
+    while C <> '"' do begin
+      Machine.EWV(@C, SizeOf(C));
+      C := WideChar(Machine.NextChar);
+    end;
+    C := #0;
+    Machine.EWV(@C, SizeOf(C));
+end;
+
+procedure run_pwidechar_dq(Machine: TForthMachine; Command: PForthCommand);
+var
+  P: Pointer;
+begin
+    P := @Machine.E[Machine.EC];
+    Machine.WUP(P);
+    while WideChar((@Machine.E[Machine.EC])^) <> #0 do
+      Inc(Machine.EC, SizeOf(WideChar));
+    Inc(Machine.EC, SizeOf(WideChar));
 end;
 
 procedure pchar_dot(Machine: TForthMachine; Command: PForthCommand);
@@ -5447,6 +5499,9 @@ begin
 {$IFNDEF FLAG_FPC}{$REGION 'string commands'}{$ENDIF}
   AddCommand('pchar"', pchar_dq, True);
   AddCommand(' pchar"', run_pchar_dq);
+  AddCommand('pwidechar"', pwidechar_dq, True);
+  AddCommand('[pwidechar]"', compile_pwidechar_dq, True);
+  AddCommand('(pwidechar)"', run_pwidechar_dq);
   AddCommand('pchar.', pchar_dot);
   AddCommand('pchar-alloc', pchar_alloc);
   AddCommand('pchar-free', pchar_free);

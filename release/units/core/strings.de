@@ -33,7 +33,12 @@ samebuiltin str[]!
 samebuiltin str->pchar
 samebuiltin pchar->str
 samebuiltin pchar"
+samebuiltin pchar.
 // samebuiltin [pchar]"
+
+samebuiltin pwidechar"
+samebuiltin [pwidechar]"
+samebuiltin (pwidechar)"
 
 samebuiltin int->str
 samebuiltin str->int
