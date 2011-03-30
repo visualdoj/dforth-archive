@@ -375,8 +375,8 @@ OForthMachine = object
   
 ;
   
-  procedure EW_single (V: Single);
-  function ER_single: Single
+  procedure EW_float (V: Single);
+  function ER_float: Single
   
   
 ;
@@ -1067,6 +1067,90 @@ end;
   
 ;
   
+    procedure drop_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure literal_float (Machine: TForthMachine; Command: PForthCommand);
+    procedure run_literal_float (Machine: TForthMachine; Command: PForthCommand)
+  
+  
+;
+  
+    procedure drop_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure literal_double (Machine: TForthMachine; Command: PForthCommand);
+    procedure run_literal_double (Machine: TForthMachine; Command: PForthCommand)
+  
+  
+;
+  
+    procedure drop_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure dup_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure nip_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure swap_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure over_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure tuck_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrot_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrot_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure lrotn_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure rrotn_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure pick_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure _comma_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure _dog_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure _exclamation_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure ptr_plus_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure _to_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure _compile_to_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure _run_to_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure _interpret_to_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure _value_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure _variable_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure RunValue_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure literal_extended (Machine: TForthMachine; Command: PForthCommand);
+    procedure run_literal_extended (Machine: TForthMachine; Command: PForthCommand)
+  
+  
+;
+  
   procedure _plus (Machine: TForthMachine; Command: PForthCommand);
   procedure _minus (Machine: TForthMachine; Command: PForthCommand);
   procedure _star (Machine: TForthMachine; Command: PForthCommand);
@@ -1397,32 +1481,32 @@ end;
   
 ;
   
-  procedure single_plus (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_minus (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_star (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_equel (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_nequel (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_lt (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_gt (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_lte (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_gte (Machine: TForthMachine; Command: PForthCommand);  
-  procedure single_0_equel (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_0_nequel (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_0_lt (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_0_gt (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_0_lte (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_0_gte (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_ask_dup (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_0_exit (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_if_exit (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_max (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_min (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_minmax (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_dot (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_dollar (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
+  procedure float_plus (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_minus (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_star (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_gte (Machine: TForthMachine; Command: PForthCommand);  
+  procedure float_0_equel (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_0_nequel (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_0_lt (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_0_gt (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_0_lte (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_0_gte (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_ask_dup (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_0_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_if_exit (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_max (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_min (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_minmax (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_dot (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_dollar (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_conv_from_str (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1523,8 +1607,8 @@ end;
   
 ;
   
-  procedure single_abs (Machine: TForthMachine; Command: PForthCommand);
-  procedure single_neg (Machine: TForthMachine; Command: PForthCommand)
+  procedure float_abs (Machine: TForthMachine; Command: PForthCommand);
+  procedure float_neg (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1813,17 +1897,17 @@ end;
   
 ;
   
-  procedure single_convert_to_double (Machine: TForthMachine; Command: PForthCommand)
+  procedure float_convert_to_double (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-  procedure double_convert_to_single (Machine: TForthMachine; Command: PForthCommand)
+  procedure double_convert_to_float (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-  procedure single_convert_to_extended (Machine: TForthMachine; Command: PForthCommand)
+  procedure float_convert_to_extended (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -1838,21 +1922,36 @@ end;
   
 ;
   
-  procedure extended_convert_to_single (Machine: TForthMachine; Command: PForthCommand)
+  procedure extended_convert_to_float (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
   
-   procedure single_push  (Machine: TForthMachine; Command: PForthCommand);
-   procedure single_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
-   procedure single_compile_push  (Machine: TForthMachine; Command: PForthCommand);
-   procedure single_run_push  (Machine: TForthMachine; Command: PForthCommand);
-   procedure single_slash (Machine: TForthMachine; Command: PForthCommand);
-   procedure single_cos (Machine: TForthMachine; Command: PForthCommand);
-   procedure single_sin (Machine: TForthMachine; Command: PForthCommand);
-   procedure single_tan (Machine: TForthMachine; Command: PForthCommand);
-   procedure single_atan (Machine: TForthMachine; Command: PForthCommand);
-   procedure single_atan2 (Machine: TForthMachine; Command: PForthCommand)
+  procedure int_convert_to_float (Machine: TForthMachine; Command: PForthCommand)
+  
+  
+;
+  
+  procedure int_convert_to_double (Machine: TForthMachine; Command: PForthCommand)
+  
+  
+;
+  
+  procedure int_convert_to_extended (Machine: TForthMachine; Command: PForthCommand)
+  
+  
+;
+  
+   procedure float_push  (Machine: TForthMachine; Command: PForthCommand);
+   procedure float_interpret_push  (Machine: TForthMachine; Command: PForthCommand);
+   procedure float_compile_push  (Machine: TForthMachine; Command: PForthCommand);
+   procedure float_run_push  (Machine: TForthMachine; Command: PForthCommand);
+   procedure float_slash (Machine: TForthMachine; Command: PForthCommand);
+   procedure float_cos (Machine: TForthMachine; Command: PForthCommand);
+   procedure float_sin (Machine: TForthMachine; Command: PForthCommand);
+   procedure float_tan (Machine: TForthMachine; Command: PForthCommand);
+   procedure float_atan (Machine: TForthMachine; Command: PForthCommand);
+   procedure float_atan2 (Machine: TForthMachine; Command: PForthCommand)
   
   
 ;
@@ -2002,6 +2101,13 @@ end;
       procedure fln2 (Machine: TForthMachine; Command: PForthCommand);
       procedure w2f (Machine: TForthMachine; Command: PForthCommand);
       procedure f2w (Machine: TForthMachine; Command: PForthCommand);
+      procedure float_w2f (Machine: TForthMachine; Command: PForthCommand);
+      procedure double_w2f (Machine: TForthMachine; Command: PForthCommand);
+      procedure extended_w2f (Machine: TForthMachine; Command: PForthCommand);
+      procedure float_f2w (Machine: TForthMachine; Command: PForthCommand);
+      procedure double_f2w (Machine: TForthMachine; Command: PForthCommand);
+      procedure extended_f2w (Machine: TForthMachine; Command: PForthCommand);
+      procedure frandom (Machine: TForthMachine; Command: PForthCommand);
 
       procedure fadd (Machine: TForthMachine; Command: PForthCommand);
       procedure fsub (Machine: TForthMachine; Command: PForthCommand);
@@ -2074,6 +2180,8 @@ end;
   procedure _utf8_2_raw (Machine: TForthMachine; Command: PForthCommand);
   procedure _unicode_2_utf8 (Machine: TForthMachine; Command: PForthCommand);
   procedure _unicode_2_raw (Machine: TForthMachine; Command: PForthCommand);
+  procedure _randomize (Machine: TForthMachine; Command: PForthCommand);
+  procedure _random (Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TBoolCommands'}{$ENDIF}
 procedure _bool_push(Machine: TForthMachine; Command: PForthCommand);
@@ -2165,7 +2273,7 @@ procedure _execute(Machine: TForthMachine; Command: PForthCommand);
   procedure _pchar(Machine: TForthMachine; Command: PForthCommand);
   procedure _ptr(Machine: TForthMachine; Command: PForthCommand);
   procedure _type(Machine: TForthMachine; Command: PForthCommand);
-  procedure _single(Machine: TForthMachine; Command: PForthCommand);
+  procedure _float(Machine: TForthMachine; Command: PForthCommand);
   procedure _double(Machine: TForthMachine; Command: PForthCommand);
   procedure _extended(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -2712,7 +2820,7 @@ var
   Opcode: TOpcode;
 begin
   C := Machine.FindCommand(Machine.NextName, @Opcode);
-  Writeln(C^.Name);
+  // Writeln(C^.Name);
   if not IsImmediate(C) then
     Machine.EWO('(compile)');
   Machine.EWO(Opcode)
@@ -3186,13 +3294,13 @@ begin
   end;
 end;
 
-procedure _single(Machine: TForthMachine; Command: PForthCommand);
+procedure _float(Machine: TForthMachine; Command: PForthCommand);
 begin
   with Machine^ do begin
     if Machine.State = FS_COMPILE then
-      compile_type(Machine, 'single')
+      compile_type(Machine, 'float')
     else
-      interpete_type(Machine, 'single');
+      interpete_type(Machine, 'float');
   end;
 end;
 
@@ -4613,7 +4721,7 @@ begin
     LogError('trying to run command with opcode -1');
     Exit;
   end;
-  Writeln(C[M].Name);
+  // Writeln(C[M].Name);
   C[M].Code(@Self, C[M]);
 end;
 
@@ -5026,9 +5134,9 @@ end;
 
 procedure OForthMachine.WOV(const P: Pointer; Size: Integer);
 begin
+  Dec(WP, Size);
   if P <> nil then
     Move(WP^, P^, Size);
-  Dec(WP, Size);
 end;
 
 procedure OForthMachine.WUS(const S: TString);
@@ -5215,6 +5323,8 @@ begin
   AddCommand('raw->unicode', _raw_2_unicode);
   AddCommand('unicode->utf8', _unicode_2_utf8);
   AddCommand('unicode->raw', _unicode_2_raw);
+  AddCommand('randomize', _randomize);
+  AddCommand('random', _random);
   
   AddCommand('w>b', _WtoB);
   AddCommand('b>w', _BtoW);
@@ -5243,7 +5353,7 @@ begin
   AddType('pchar', SizeOf(PChar));
   AddType('str', SizeOf(TStr));
   AddType('type', SizeOf(PType));
-  AddType('single', SizeOf(PType));
+  AddType('float', SizeOf(PType));
   AddType('double', SizeOf(PType));
   AddType('extended', SizeOf(PType));
 
@@ -5318,7 +5428,8 @@ begin
   AddCommand('t_pchar', _pchar, True);
   AddCommand('t_ptr', _ptr, True);
   AddCommand('t_type', _type, True);
-  AddCommand('t_single', _single, True);
+  AddCommand('t_float', _float, True);
+  AddCommand('t_single', _float, True);
   AddCommand('t_double', _double, True);
   AddCommand('t_extended', _extended, True);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -5754,6 +5865,84 @@ begin
      AddCommand('embro-(literal)', run_literal_embro);
     
     
+     AddCommand('float-drop', drop_float);
+     AddCommand('float-dup', dup_float);
+     AddCommand('float-nip', nip_float);
+     AddCommand('float-swap', swap_float);
+     AddCommand('float-over', over_float);
+     AddCommand('float-tuck', tuck_float);
+     AddCommand('float-lrot', lrot_float);
+     AddCommand('float-rrot', rrot_float);
+     AddCommand('float-lrotn', lrotn_float);
+     AddCommand('float-rrotn', rrotn_float);
+     AddCommand('float-pick', pick_float);
+     AddCommand('float,', _comma_float);
+     AddCommand('float@', _dog_float);
+     AddCommand('float!', _exclamation_float);
+     AddCommand('ptr+float', ptr_plus_float);
+     AddCommand('float-to', _to_float, True);
+     AddCommand('compile@float-to', _compile_to_float);
+     AddCommand('run@float-to', _run_to_float);
+     AddCommand('interpret@float-to', _interpret_to_float);
+     AddCommand('float-value', _value_float);
+     AddCommand('float-constant', _value_float);
+     AddCommand('float-variable', _variable_float);
+     AddCommand('float-literal', literal_float, True);
+     AddCommand('float-(literal)', run_literal_float);
+    
+    
+     AddCommand('double-drop', drop_double);
+     AddCommand('double-dup', dup_double);
+     AddCommand('double-nip', nip_double);
+     AddCommand('double-swap', swap_double);
+     AddCommand('double-over', over_double);
+     AddCommand('double-tuck', tuck_double);
+     AddCommand('double-lrot', lrot_double);
+     AddCommand('double-rrot', rrot_double);
+     AddCommand('double-lrotn', lrotn_double);
+     AddCommand('double-rrotn', rrotn_double);
+     AddCommand('double-pick', pick_double);
+     AddCommand('double,', _comma_double);
+     AddCommand('double@', _dog_double);
+     AddCommand('double!', _exclamation_double);
+     AddCommand('ptr+double', ptr_plus_double);
+     AddCommand('double-to', _to_double, True);
+     AddCommand('compile@double-to', _compile_to_double);
+     AddCommand('run@double-to', _run_to_double);
+     AddCommand('interpret@double-to', _interpret_to_double);
+     AddCommand('double-value', _value_double);
+     AddCommand('double-constant', _value_double);
+     AddCommand('double-variable', _variable_double);
+     AddCommand('double-literal', literal_double, True);
+     AddCommand('double-(literal)', run_literal_double);
+    
+    
+     AddCommand('extended-drop', drop_extended);
+     AddCommand('extended-dup', dup_extended);
+     AddCommand('extended-nip', nip_extended);
+     AddCommand('extended-swap', swap_extended);
+     AddCommand('extended-over', over_extended);
+     AddCommand('extended-tuck', tuck_extended);
+     AddCommand('extended-lrot', lrot_extended);
+     AddCommand('extended-rrot', rrot_extended);
+     AddCommand('extended-lrotn', lrotn_extended);
+     AddCommand('extended-rrotn', rrotn_extended);
+     AddCommand('extended-pick', pick_extended);
+     AddCommand('extended,', _comma_extended);
+     AddCommand('extended@', _dog_extended);
+     AddCommand('extended!', _exclamation_extended);
+     AddCommand('ptr+extended', ptr_plus_extended);
+     AddCommand('extended-to', _to_extended, True);
+     AddCommand('compile@extended-to', _compile_to_extended);
+     AddCommand('run@extended-to', _run_to_extended);
+     AddCommand('interpret@extended-to', _interpret_to_extended);
+     AddCommand('extended-value', _value_extended);
+     AddCommand('extended-constant', _value_extended);
+     AddCommand('extended-variable', _variable_extended);
+     AddCommand('extended-literal', literal_extended, True);
+     AddCommand('extended-(literal)', run_literal_extended);
+    
+    
      AddCommand('+', _plus);
      AddCommand('-', _minus);
      AddCommand('*', _star);
@@ -6062,32 +6251,32 @@ begin
      AddCommand('str->uint64', uint64_conv_from_str);
     
     
-     AddCommand('single+', single_plus);
-     AddCommand('single-', single_minus);
-     AddCommand('single*', single_star);
-     AddCommand('single=', single_equel);
-     AddCommand('single<>', single_nequel);
-     AddCommand('single<', single_lt);
-     AddCommand('single>', single_gt);
-     AddCommand('single<=', single_lte);
-     AddCommand('single>=', single_gte);
-     AddCommand('single-0=', single_0_equel);
-     AddCommand('single-0<>', single_0_nequel);
-     AddCommand('single-0<', single_0_lt);
-     AddCommand('single-0>', single_0_gt);
-     AddCommand('single-0<=', single_0_lte);
-     AddCommand('single-0>=', single_0_gte);
-     AddCommand('single-?dup', single_ask_dup);
-     addcommand('single-0;', single_0_exit);
-     addcommand('single-if;', single_if_exit);
-     AddCommand('single-min', single_min);
-     AddCommand('single-max', single_max);
-     AddCommand('single-minmax', single_minmax);
-     AddCommand('single.', single_dot);
-     AddCommand('single$', single_dollar);
-     AddCommand('single+!', single_ptr_plus_exclamation);
-     AddCommand('single->str', single_conv_to_str);
-     AddCommand('str->single', single_conv_from_str);
+     AddCommand('float+', float_plus);
+     AddCommand('float-', float_minus);
+     AddCommand('float*', float_star);
+     AddCommand('float=', float_equel);
+     AddCommand('float<>', float_nequel);
+     AddCommand('float<', float_lt);
+     AddCommand('float>', float_gt);
+     AddCommand('float<=', float_lte);
+     AddCommand('float>=', float_gte);
+     AddCommand('float-0=', float_0_equel);
+     AddCommand('float-0<>', float_0_nequel);
+     AddCommand('float-0<', float_0_lt);
+     AddCommand('float-0>', float_0_gt);
+     AddCommand('float-0<=', float_0_lte);
+     AddCommand('float-0>=', float_0_gte);
+     AddCommand('float-?dup', float_ask_dup);
+     addcommand('float-0;', float_0_exit);
+     addcommand('float-if;', float_if_exit);
+     AddCommand('float-min', float_min);
+     AddCommand('float-max', float_max);
+     AddCommand('float-minmax', float_minmax);
+     AddCommand('float.', float_dot);
+     AddCommand('float$', float_dollar);
+     AddCommand('float+!', float_ptr_plus_exclamation);
+     AddCommand('float->str', float_conv_to_str);
+     AddCommand('str->float', float_conv_from_str);
     
     
      AddCommand('double+', double_plus);
@@ -6163,8 +6352,8 @@ begin
     AddCommand('int64-abs', int64_abs);
      AddCommand('int64-neg', int64_neg);
     
-    AddCommand('single-abs', single_abs);
-     AddCommand('single-neg', single_neg);
+    AddCommand('float-abs', float_abs);
+     AddCommand('float-neg', float_neg);
     
     AddCommand('double-abs', double_abs);
      AddCommand('double-neg', double_neg);
@@ -6399,27 +6588,33 @@ begin
     
     AddCommand('uint64->uint', uint64_convert_to_uint);
     
-    AddCommand('single->double', single_convert_to_double);
+    AddCommand('float->double', float_convert_to_double);
     
-    AddCommand('double->single', double_convert_to_single);
+    AddCommand('double->float', double_convert_to_float);
     
-    AddCommand('single->extended', single_convert_to_extended);
+    AddCommand('float->extended', float_convert_to_extended);
     
     AddCommand('double->extended', double_convert_to_extended);
     
     AddCommand('extended->double', extended_convert_to_double);
     
-    AddCommand('extended->single', extended_convert_to_single);
+    AddCommand('extended->float', extended_convert_to_float);
+    
+    AddCommand('int->float', int_convert_to_float);
+    
+    AddCommand('int->double', int_convert_to_double);
+    
+    AddCommand('int->extended', int_convert_to_extended);
     
     
-     AddCommand('single-push', single_push, True);
-     AddCommand('run@single-push', single_run_push);
-     AddCommand('single/', single_slash);
-     AddCommand('single-cos', single_cos);
-     AddCommand('single-sin', single_sin);
-     AddCommand('single-tan', single_tan);
-     AddCommand('single-atan', single_atan);
-     AddCommand('single-atan2', single_atan2);
+     AddCommand('float-push', float_push, True);
+     AddCommand('run@float-push', float_run_push);
+     AddCommand('float/', float_slash);
+     AddCommand('float-cos', float_cos);
+     AddCommand('float-sin', float_sin);
+     AddCommand('float-tan', float_tan);
+     AddCommand('float-atan', float_atan);
+     AddCommand('float-atan2', float_atan2);
     
     
      AddCommand('double-push', double_push, True);
@@ -6546,9 +6741,16 @@ begin
      AddCommand('floge',   floge);
      AddCommand('f10log2', f10log2);
      AddCommand('fln2',    fln2);    
+     AddCommand('frandom', frandom);    
 
      AddCommand('w>f',     w2f);    
      AddCommand('f>w',     f2w);    
+     AddCommand('float-w>f',    float_w2f);    
+     AddCommand('double-w>f',   double_w2f);    
+     AddCommand('extended-w>f', extended_w2f);    
+     AddCommand('float-f>w',    float_f2w);    
+     AddCommand('double-f>w',   double_f2w);    
+     AddCommand('extended-f>w', extended_f2w);    
 
      AddCommand('f+',     fadd);    
      AddCommand('f-',     fsub);    
@@ -7177,9 +7379,9 @@ begin
     else begin
       PArrayOfCardinal(@C^.Sym[0])^[Len] := U;
       Inc(Len);
-      Write(Char(U));
+      // Write(Char(U));
     end;
-  Writeln;
+  // Writeln;
   C^.Len := Len;
   DelRef(B);
   str_push(Machine, C);
@@ -7200,6 +7402,16 @@ begin
   MoveChars(@C^.Sym[0], @B^.Sym[0], B^.Len, 1, B^.Width);
   DelRef(B);
   str_push(Machine, C);
+end;
+
+procedure _randomize (Machine: TForthMachine; Command: PForthCommand);
+begin
+  Randomize;
+end;
+
+procedure _random (Machine: TForthMachine; Command: PForthCommand);
+begin
+  Machine.WUI(Random(Machine.WOI));
 end;
 
 function OForthMachine.FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
@@ -7300,8 +7512,8 @@ end;
     
    
     
-      procedure OForthMachine.EW_single; begin EWV(@V, SizeOf(V)) end;
-      function OForthMachine.ER_single; begin ERV(@Result, SizeOf(Result)) end;
+      procedure OForthMachine.EW_float; begin EWV(@V, SizeOf(V)) end;
+      function OForthMachine.ER_float; begin ERV(@Result, SizeOf(Result)) end;
     
    
     
@@ -7833,7 +8045,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
+         procedure dup_ (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4);  end; end;
          procedure nip_ (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -7940,7 +8152,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
+         procedure dup_ptr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4);  end; end;
          procedure nip_ptr (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8047,7 +8259,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
+         procedure dup_int (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4);  end; end;
          procedure nip_int (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8154,7 +8366,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1))^), (Pointer(TUInt(Machine.WP) + (0))^), 1); Inc(WP, 1); Writeln('dup'); end; end;
+         procedure dup_int8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1))^), (Pointer(TUInt(Machine.WP) + (0))^), 1); Inc(WP, 1);  end; end;
          procedure nip_int8 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8261,7 +8473,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-2))^), (Pointer(TUInt(Machine.WP) + (0))^), 2); Inc(WP, 2); Writeln('dup'); end; end;
+         procedure dup_int16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-2))^), (Pointer(TUInt(Machine.WP) + (0))^), 2); Inc(WP, 2);  end; end;
          procedure nip_int16 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8368,7 +8580,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
+         procedure dup_int32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4);  end; end;
          procedure nip_int32 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8475,7 +8687,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-8))^), (Pointer(TUInt(Machine.WP) + (0))^), 8); Inc(WP, 8); Writeln('dup'); end; end;
+         procedure dup_int64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-8))^), (Pointer(TUInt(Machine.WP) + (0))^), 8); Inc(WP, 8);  end; end;
          procedure nip_int64 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8582,7 +8794,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
+         procedure dup_uint (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4);  end; end;
          procedure nip_uint (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8689,7 +8901,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1))^), (Pointer(TUInt(Machine.WP) + (0))^), 1); Inc(WP, 1); Writeln('dup'); end; end;
+         procedure dup_uint8 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1))^), (Pointer(TUInt(Machine.WP) + (0))^), 1); Inc(WP, 1);  end; end;
          procedure nip_uint8 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8796,7 +9008,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-2))^), (Pointer(TUInt(Machine.WP) + (0))^), 2); Inc(WP, 2); Writeln('dup'); end; end;
+         procedure dup_uint16 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-2))^), (Pointer(TUInt(Machine.WP) + (0))^), 2); Inc(WP, 2);  end; end;
          procedure nip_uint16 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -8903,7 +9115,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
+         procedure dup_uint32 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4);  end; end;
          procedure nip_uint32 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -9010,7 +9222,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-8))^), (Pointer(TUInt(Machine.WP) + (0))^), 8); Inc(WP, 8); Writeln('dup'); end; end;
+         procedure dup_uint64 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-8))^), (Pointer(TUInt(Machine.WP) + (0))^), 8); Inc(WP, 8);  end; end;
          procedure nip_uint64 (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -9117,7 +9329,7 @@ end;
            mov [ecx],edx
            add [eax],4
          end;}
-         procedure dup_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4); Writeln('dup'); end; end;
+         procedure dup_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4);  end; end;
          procedure nip_embro (Machine: TForthMachine; Command: PForthCommand);
          asm
            mov ecx,[eax]
@@ -9209,6 +9421,327 @@ end;
     procedure literal_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('embro-(literal)'); Dec(WP, 4); 
                                        EWV(WP, 4);  end; end;
     procedure run_literal_embro (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
+    
+   
+    
+     
+         procedure drop_float (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         {procedure dup_float (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;}
+         procedure dup_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4); Inc(WP, 4);  end; end;
+         procedure nip_float (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_float (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_float (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_float (Machine: TForthMachine; Command: PForthCommand);
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
+         end;
+       
+     procedure lrot_float (Machine: TForthMachine; Command: PForthCommand); 
+     begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(Machine.WP) + (-3*4))^), (Pointer(TUInt(Machine.WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(Machine.WP) + (-2*4))^), (Pointer(TUInt(Machine.WP) + (-3*4))^), 4);
+       Move(WP^, (Pointer(TUInt(Machine.WP) + (-2*4))^), 4);
+      end; end;
+     procedure rrot_float (Machine: TForthMachine; Command: PForthCommand);
+     begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1*4))^), WP^, 4);
+       Move((Pointer(TUInt(Machine.WP) + (-2*4))^), (Pointer(TUInt(Machine.WP) + (-1*4))^), 4);
+       Move((Pointer(TUInt(Machine.WP) + (-3*4))^), (Pointer(TUInt(Machine.WP) + (-2*4))^), 4);
+       Move(WP^, (Pointer(TUInt(Machine.WP) + (-3*4))^), 4);
+      end; end;
+     procedure lrotn_float (Machine: TForthMachine; Command: PForthCommand); 
+     var
+       N: Integer;
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       Move((Pointer(TUInt(Machine.WP) + (-4*N))^), (Pointer(TUInt(Machine.WP) + (0))^), 4);
+       while N > 0 do begin
+         Move((Pointer(TUInt(Machine.WP) + (-4*(N-1)))^), (Pointer(TUInt(Machine.WP) + (-4*N))^), 4);
+         Dec(N);
+       end;
+       //Move((Pointer(TUInt(Machine.WP) + (0))^), (Pointer(TUInt(Machine.WP) + (-4))^), 4);
+      end; end;
+     procedure rrotn_float (Machine: TForthMachine; Command: PForthCommand);
+     var
+       I: Integer;
+       N: Integer;
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       //Move((Pointer(TUInt(Machine.WP) + (-4))^), (Pointer(TUInt(Machine.WP) + (0))^), 4);
+       for I := 0 to N - 1 do
+         Move((Pointer(TUInt(Machine.WP) + (-4*(I+1)))^), (Pointer(TUInt(Machine.WP) + (-4*I))^), 4);
+       Move((Pointer(TUInt(Machine.WP) + (0))^), (Pointer(TUInt(Machine.WP) + (-N*4))^), 4);
+      end; end;
+     procedure pick_float (Machine: TForthMachine; Command: PForthCommand); 
+     begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt) -4*TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^))))^), 
+            (Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^),
+            4);
+       Inc(WP, 4 - SizeOf(TInt));
+      end; end;
+     procedure _comma_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 4); EWV(WP, 4);   end; end;
+     procedure _dog_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 4); Inc(WP, 4 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-4))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 4); Dec(WP, (SizeOf(Pointer)) + 4)  end; end;
+     procedure ptr_plus_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 4;  end; end;
+     procedure _to_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_float(Machine, Command) else _interpret_to_float(Machine, Command);  end; end;
+     procedure _compile_to_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@float-to'); EWO(NextName);  end; end;
+     procedure _run_to_float (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(Machine.WP) + (-4))^), C[O].Data^, 4); Dec(WP, 4);  end; end;
+     procedure _interpret_to_float (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
+               if Comm = nil then begin LogError('unkown name after float-to: ' + N); FSession := False; Exit; end; 
+               Move((Pointer(TUInt(Machine.WP) + (-4))^), Comm.Data^, 4); Dec(WP, 4);
+              end; end;
+     procedure _value_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_float; Move((Pointer(TUInt(Machine.WP) + (-4))^), Here^, 4); Dec(WP, 4); EA(4); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 4); Move(WP^, Here^, 4);} EA(4); end;  end; end;
+     procedure RunValue_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 4); Inc(WP, 4);  end; end;
+    procedure literal_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('float-(literal)'); Dec(WP, 4); 
+                                       EWV(WP, 4);  end; end;
+    procedure run_literal_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 4); Inc(WP, 4);  end; end;
+    
+   
+    
+     
+         procedure drop_double (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         {procedure dup_double (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;}
+         procedure dup_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-8))^), (Pointer(TUInt(Machine.WP) + (0))^), 8); Inc(WP, 8);  end; end;
+         procedure nip_double (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_double (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_double (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_double (Machine: TForthMachine; Command: PForthCommand);
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
+         end;
+       
+     procedure lrot_double (Machine: TForthMachine; Command: PForthCommand); 
+     begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1*8))^), WP^, 8);
+       Move((Pointer(TUInt(Machine.WP) + (-3*8))^), (Pointer(TUInt(Machine.WP) + (-1*8))^), 8);
+       Move((Pointer(TUInt(Machine.WP) + (-2*8))^), (Pointer(TUInt(Machine.WP) + (-3*8))^), 8);
+       Move(WP^, (Pointer(TUInt(Machine.WP) + (-2*8))^), 8);
+      end; end;
+     procedure rrot_double (Machine: TForthMachine; Command: PForthCommand);
+     begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1*8))^), WP^, 8);
+       Move((Pointer(TUInt(Machine.WP) + (-2*8))^), (Pointer(TUInt(Machine.WP) + (-1*8))^), 8);
+       Move((Pointer(TUInt(Machine.WP) + (-3*8))^), (Pointer(TUInt(Machine.WP) + (-2*8))^), 8);
+       Move(WP^, (Pointer(TUInt(Machine.WP) + (-3*8))^), 8);
+      end; end;
+     procedure lrotn_double (Machine: TForthMachine; Command: PForthCommand); 
+     var
+       N: Integer;
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       Move((Pointer(TUInt(Machine.WP) + (-8*N))^), (Pointer(TUInt(Machine.WP) + (0))^), 8);
+       while N > 0 do begin
+         Move((Pointer(TUInt(Machine.WP) + (-8*(N-1)))^), (Pointer(TUInt(Machine.WP) + (-8*N))^), 8);
+         Dec(N);
+       end;
+       //Move((Pointer(TUInt(Machine.WP) + (0))^), (Pointer(TUInt(Machine.WP) + (-8))^), 8);
+      end; end;
+     procedure rrotn_double (Machine: TForthMachine; Command: PForthCommand);
+     var
+       I: Integer;
+       N: Integer;
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       //Move((Pointer(TUInt(Machine.WP) + (-8))^), (Pointer(TUInt(Machine.WP) + (0))^), 8);
+       for I := 0 to N - 1 do
+         Move((Pointer(TUInt(Machine.WP) + (-8*(I+1)))^), (Pointer(TUInt(Machine.WP) + (-8*I))^), 8);
+       Move((Pointer(TUInt(Machine.WP) + (0))^), (Pointer(TUInt(Machine.WP) + (-N*8))^), 8);
+      end; end;
+     procedure pick_double (Machine: TForthMachine; Command: PForthCommand); 
+     begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt) -8*TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^))))^), 
+            (Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^),
+            8);
+       Inc(WP, 8 - SizeOf(TInt));
+      end; end;
+     procedure _comma_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 8); EWV(WP, 8);   end; end;
+     procedure _dog_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 8); Inc(WP, 8 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-8))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 8); Dec(WP, (SizeOf(Pointer)) + 8)  end; end;
+     procedure ptr_plus_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 8;  end; end;
+     procedure _to_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_double(Machine, Command) else _interpret_to_double(Machine, Command);  end; end;
+     procedure _compile_to_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@double-to'); EWO(NextName);  end; end;
+     procedure _run_to_double (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(Machine.WP) + (-8))^), C[O].Data^, 8); Dec(WP, 8);  end; end;
+     procedure _interpret_to_double (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
+               if Comm = nil then begin LogError('unkown name after double-to: ' + N); FSession := False; Exit; end; 
+               Move((Pointer(TUInt(Machine.WP) + (-8))^), Comm.Data^, 8); Dec(WP, 8);
+              end; end;
+     procedure _value_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_double; Move((Pointer(TUInt(Machine.WP) + (-8))^), Here^, 8); Dec(WP, 8); EA(8); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 8); Move(WP^, Here^, 8);} EA(8); end;  end; end;
+     procedure RunValue_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 8); Inc(WP, 8);  end; end;
+    procedure literal_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('double-(literal)'); Dec(WP, 8); 
+                                       EWV(WP, 8);  end; end;
+    procedure run_literal_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 8); Inc(WP, 8);  end; end;
+    
+   
+    
+     
+         procedure drop_extended (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           sub [eax],4
+         end;
+         {procedure dup_extended (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           mov [ecx],edx
+           add [eax],4
+         end;}
+         procedure dup_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-10))^), (Pointer(TUInt(Machine.WP) + (0))^), 10); Inc(WP, 10);  end; end;
+         procedure nip_extended (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           lea ecx,[ecx-4]
+           mov edx,[ecx]
+           mov [ecx-4],edx
+           mov [eax],ecx
+         end;
+         procedure swap_extended (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-4]
+           xchg [ecx-8],edx
+           mov [ecx-4],edx
+         end;
+         procedure over_extended (Machine: TForthMachine; Command: PForthCommand);
+         asm
+           mov ecx,[eax]
+           mov edx,[ecx-8]
+           mov [ecx],edx
+           add [eax],4
+         end;
+         procedure tuck_extended (Machine: TForthMachine; Command: PForthCommand);
+         asm // ab-bab  @wp=eax 
+           mov ecx,[eax]       // ecx := wp 
+           add [eax],4         // @wp++
+           mov edx,[ecx-4]     // edx := b
+           mov [ecx],edx       // top := b
+           mov eax,[ecx-8]     // eax := a
+           mov [ecx-4],eax     // top[1] := a
+           mov [ecx-8],edx     // top[2] := b
+         end;
+       
+     procedure lrot_extended (Machine: TForthMachine; Command: PForthCommand); 
+     begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1*10))^), WP^, 10);
+       Move((Pointer(TUInt(Machine.WP) + (-3*10))^), (Pointer(TUInt(Machine.WP) + (-1*10))^), 10);
+       Move((Pointer(TUInt(Machine.WP) + (-2*10))^), (Pointer(TUInt(Machine.WP) + (-3*10))^), 10);
+       Move(WP^, (Pointer(TUInt(Machine.WP) + (-2*10))^), 10);
+      end; end;
+     procedure rrot_extended (Machine: TForthMachine; Command: PForthCommand);
+     begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-1*10))^), WP^, 10);
+       Move((Pointer(TUInt(Machine.WP) + (-2*10))^), (Pointer(TUInt(Machine.WP) + (-1*10))^), 10);
+       Move((Pointer(TUInt(Machine.WP) + (-3*10))^), (Pointer(TUInt(Machine.WP) + (-2*10))^), 10);
+       Move(WP^, (Pointer(TUInt(Machine.WP) + (-3*10))^), 10);
+      end; end;
+     procedure lrotn_extended (Machine: TForthMachine; Command: PForthCommand); 
+     var
+       N: Integer;
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       Move((Pointer(TUInt(Machine.WP) + (-10*N))^), (Pointer(TUInt(Machine.WP) + (0))^), 10);
+       while N > 0 do begin
+         Move((Pointer(TUInt(Machine.WP) + (-10*(N-1)))^), (Pointer(TUInt(Machine.WP) + (-10*N))^), 10);
+         Dec(N);
+       end;
+       //Move((Pointer(TUInt(Machine.WP) + (0))^), (Pointer(TUInt(Machine.WP) + (-10))^), 10);
+      end; end;
+     procedure rrotn_extended (Machine: TForthMachine; Command: PForthCommand);
+     var
+       I: Integer;
+       N: Integer;
+     begin with Machine^ do begin Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       //Move((Pointer(TUInt(Machine.WP) + (-10))^), (Pointer(TUInt(Machine.WP) + (0))^), 10);
+       for I := 0 to N - 1 do
+         Move((Pointer(TUInt(Machine.WP) + (-10*(I+1)))^), (Pointer(TUInt(Machine.WP) + (-10*I))^), 10);
+       Move((Pointer(TUInt(Machine.WP) + (0))^), (Pointer(TUInt(Machine.WP) + (-N*10))^), 10);
+      end; end;
+     procedure pick_extended (Machine: TForthMachine; Command: PForthCommand); 
+     begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt) -10*TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^))))^), 
+            (Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^),
+            10);
+       Inc(WP, 10 - SizeOf(TInt));
+      end; end;
+     procedure _comma_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 10); EWV(WP, 10);   end; end;
+     procedure _dog_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, (Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^), 10); Inc(WP, 10 - (SizeOf(Pointer)))  end; end;
+     procedure _exclamation_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))-10))^), Pointer((Pointer(TUInt(Machine.WP) + (-(SizeOf(Pointer))))^))^, 10); Dec(WP, (SizeOf(Pointer)) + 10)  end; end;
+     procedure ptr_plus_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PtrInt((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) + 10;  end; end;
+     procedure _to_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State <> FS_INTERPRET then _compile_to_extended(Machine, Command) else _interpret_to_extended(Machine, Command);  end; end;
+     procedure _compile_to_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@extended-to'); EWO(NextName);  end; end;
+     procedure _run_to_extended (Machine: TForthMachine; Command: PForthCommand); var O: TOpcode; begin with Machine^ do begin O := ERO; Move((Pointer(TUInt(Machine.WP) + (-10))^), C[O].Data^, 10); Dec(WP, 10);  end; end;
+     procedure _interpret_to_extended (Machine: TForthMachine; Command: PForthCommand); var N: TString; Comm: PForthCommand; begin with Machine^ do begin N := NextName; Comm := FindCommand(N);
+               if Comm = nil then begin LogError('unkown name after extended-to: ' + N); FSession := False; Exit; end; 
+               Move((Pointer(TUInt(Machine.WP) + (-10))^), Comm.Data^, 10); Dec(WP, 10);
+              end; end;
+     procedure _value_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_extended; Move((Pointer(TUInt(Machine.WP) + (-10))^), Here^, 10); Dec(WP, 10); EA(10); Flags := Flags and not 1; end;  end; end;
+     procedure _variable_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, 10); Move(WP^, Here^, 10);} EA(10); end;  end; end;
+     procedure RunValue_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Move(Command.Data^, WP^, 10); Inc(WP, 10);  end; end;
+    procedure literal_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('extended-(literal)'); Dec(WP, 10); 
+                                       EWV(WP, 10);  end; end;
+    procedure run_literal_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin ERV(WP, 10); Inc(WP, 10);  end; end;
     
    
     
@@ -9938,61 +10471,61 @@ end;
     
    
     
-      procedure single_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) + Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
+      procedure float_plus  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) + Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
                                                    Dec(WP, SizeOf(Single));  end; end;
-      procedure single_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) - Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
+      procedure float_minus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) - Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
                                                    Dec(WP, SizeOf(Single));  end; end;
-      procedure single_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) * Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
+      procedure float_star  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) * Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
                                                    Dec(WP, SizeOf(Single));  end; end;
-      procedure single_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) = Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
+      procedure float_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) = Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) <> Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
+      procedure float_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) <> Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) < Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
+      procedure float_lt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) < Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) > Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
+      procedure float_gt (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) > Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) <= Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
+      procedure float_lte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) <= Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) >= Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
+      procedure float_gte (Machine: TForthMachine; Command: PForthCommand);   begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := BOOL_TRUE*Ord(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) >= Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); 
                                                    Dec(WP, 2*SizeOf(Single) - SizeOf(TInt));  end; end;
-      procedure single_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) = 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) <> 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) < 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) > 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) <= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) >= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
-      procedure single_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) <> 0 then begin Single(WP^) := Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)); Inc(WP, SizeOf(Single)); end;  end; end;
-      procedure single_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) = 0 then begin Dec(WP, SizeOf(Single)); _exit(Machine, Command); end  end; end;
-      procedure single_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) <> 0 then begin Dec(WP, SizeOf(Single)); _exit(Machine, Command); end  end; end;
-      procedure single_max (Machine: TForthMachine; Command: PForthCommand);
+      procedure float_0_equel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) = 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure float_0_nequel (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) <> 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure float_0_lt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) < 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure float_0_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) > 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure float_0_lte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) <= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure float_0_gte (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) := BOOL_TRUE*Ord((Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) >= 0); Dec(WP, SizeOf(Single) - SizeOf(TInt))  end; end;
+      procedure float_ask_dup (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if (Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^))) <> 0 then begin Single(WP^) := Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)); Inc(WP, SizeOf(Single)); end;  end; end;
+      procedure float_0_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) = 0 then begin Dec(WP, SizeOf(Single)); _exit(Machine, Command); end  end; end;
+      procedure float_if_exit (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) <> 0 then begin Dec(WP, SizeOf(Single)); _exit(Machine, Command); end  end; end;
+      procedure float_max (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) < Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^), SizeOf(Single));
         Dec(WP, SizeOf(Single));
        end; end;
-      procedure single_min (Machine: TForthMachine; Command: PForthCommand);
+      procedure float_min (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) > Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) then
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^), SizeOf(Single));
         Dec(WP, SizeOf(Single));
        end; end;
-      procedure single_minmax (Machine: TForthMachine; Command: PForthCommand);
+      procedure float_minmax (Machine: TForthMachine; Command: PForthCommand);
       begin with Machine^ do begin if Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) > Single((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^)) then begin
           Move((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^), (Pointer(TUInt(Machine.WP) + (-0*SizeOf(Single)))^), SizeOf(Single));
           Move((Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^), (Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^), SizeOf(Single));
           Move((Pointer(TUInt(Machine.WP) + (-0*SizeOf(Single)))^), (Pointer(TUInt(Machine.WP) + (-1*SizeOf(Single)))^), SizeOf(Single));
         end;
        end; end;
-      procedure single_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(Single)); Write(Single(WP^), ' ');  end; end;
-      procedure single_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Single; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(Single)); Inc(WP, SizeOf(Single));  end; end;
-      procedure single_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) := Single(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) + Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)-SizeOf(Single)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Single));  end; end;
-      procedure single_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
+      procedure float_dot (Machine: TForthMachine; Command: PForthCommand);    begin with Machine^ do begin Dec(WP, SizeOf(Single)); Write(Single(WP^), ' ');  end; end;
+      procedure float_dollar (Machine: TForthMachine; Command: PForthCommand); var Temp: Single; begin with Machine^ do begin Read(Temp); Move(Temp, WP^, SizeOf(Single)); Inc(WP, SizeOf(Single));  end; end;
+      procedure float_ptr_plus_exclamation (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) := Single(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) + Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)-SizeOf(Single)))^)); Dec(WP, SizeOf(Pointer) + SizeOf(Single));  end; end;
+      procedure float_conv_to_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TString;
       begin with Machine^ do begin Str(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)), B);
         Dec(WP, SizeOf(Single));
         str_push(Machine, B);
        end; end;
-      procedure single_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
+      procedure float_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
         Res: Word;
@@ -10159,8 +10692,8 @@ end;
      procedure int64_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt64((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt64)))^)) := - TInt64((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt64)))^));  end; end;
     
    
-    procedure single_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Abs(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)));  end; end;
-     procedure single_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := - Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^));  end; end;
+    procedure float_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Abs(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)));  end; end;
+     procedure float_neg (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := - Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^));  end; end;
     
    
     procedure double_abs (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(Machine.WP) + (-SizeOf(Double)))^)) := Abs(Double((Pointer(TUInt(Machine.WP) + (-SizeOf(Double)))^)));  end; end;
@@ -10743,17 +11276,17 @@ end;
     
    
     
-     procedure single_convert_to_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
+     procedure float_convert_to_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
                                                             Dec(WP, SizeOf(Single) - SizeOf(Double));  end; end;
     
    
     
-     procedure double_convert_to_single (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Double)))^)) := Double((Pointer(TUInt(Machine.WP) + (-SizeOf(Double)))^)); 
+     procedure double_convert_to_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Double)))^)) := Double((Pointer(TUInt(Machine.WP) + (-SizeOf(Double)))^)); 
                                                             Dec(WP, SizeOf(Double) - SizeOf(Single));  end; end;
     
    
     
-     procedure single_convert_to_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
+     procedure float_convert_to_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
                                                             Dec(WP, SizeOf(Single) - SizeOf(Extended));  end; end;
     
    
@@ -10768,22 +11301,37 @@ end;
     
    
     
-     procedure extended_convert_to_single (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Extended)))^)) := Extended((Pointer(TUInt(Machine.WP) + (-SizeOf(Extended)))^)); 
+     procedure extended_convert_to_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Extended)))^)) := Extended((Pointer(TUInt(Machine.WP) + (-SizeOf(Extended)))^)); 
                                                             Dec(WP, SizeOf(Extended) - SizeOf(Single));  end; end;
     
    
     
-     procedure single_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then single_compile_push(Machine, Command) else single_interpret_push(Machine, Command)  end; end;
-     procedure single_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single(WP^) := (StrToFloat(NextName)); Inc(WP, SizeOf(Single));  end; end;
-     procedure single_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@single-push'); EW_single(StrToFloat(NextName));  end; end;
-     procedure single_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single(WP^) := ER_single; Inc(WP, SizeOf(Single));  end; end;
-     procedure single_slash (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) / Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
+     procedure int_convert_to_float (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)); 
+                                                            Dec(WP, SizeOf(TInt) - SizeOf(Single));  end; end;
+    
+   
+    
+     procedure int_convert_to_double (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Double((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)); 
+                                                            Dec(WP, SizeOf(TInt) - SizeOf(Double));  end; end;
+    
+   
+    
+     procedure int_convert_to_extended (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Extended((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)); 
+                                                            Dec(WP, SizeOf(TInt) - SizeOf(Extended));  end; end;
+    
+   
+    
+     procedure float_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin if State = FS_COMPILE then float_compile_push(Machine, Command) else float_interpret_push(Machine, Command)  end; end;
+     procedure float_interpret_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single(WP^) := (StrToFloat(NextName)); Inc(WP, SizeOf(Single));  end; end;
+     procedure float_compile_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin EWO('run@float-push'); EW_float(StrToFloat(NextName));  end; end;
+     procedure float_run_push  (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single(WP^) := ER_float; Inc(WP, SizeOf(Single));  end; end;
+     procedure float_slash (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) / Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)); 
                                                    Dec(WP, SizeOf(Single));  end; end;
-     procedure single_cos (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Cos(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)));  end; end;
-     procedure single_sin (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Sin(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)));  end; end;
-     procedure single_tan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Tan(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)));  end; end;
-     procedure single_atan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := ArcTan(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)));  end; end;
-     procedure single_atan2 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := ArcTan2(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)), Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); Dec(WP, SizeOf(Single))  end; end;
+     procedure float_cos (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Cos(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)));  end; end;
+     procedure float_sin (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Sin(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)));  end; end;
+     procedure float_tan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := Tan(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)));  end; end;
+     procedure float_atan (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)) := ArcTan(Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^)));  end; end;
+     procedure float_atan2 (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)) := ArcTan2(Single((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Single)))^)), Single((Pointer(TUInt(Machine.WP) + (-SizeOf(Single)))^))); Dec(WP, SizeOf(Single))  end; end;
     
    
     
@@ -11152,6 +11700,52 @@ end;
         add [eax],4
         fwait
       end;
+      procedure float_w2f (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        sub [eax],4
+        mov ecx,[eax]
+        fld Single [ecx]
+      end;
+      procedure double_w2f (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        sub [eax],8
+        mov ecx,[eax]
+        fld Double [ecx]
+      end;
+      procedure extended_w2f (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        sub [eax],SizeOf(Extended)
+        mov ecx,[eax]
+        fld Extended [ecx]
+      end;
+      procedure float_f2w (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        mov ecx,[eax]
+        fstp Single [ecx]
+        add [eax],4
+        fwait
+      end;
+      procedure double_f2w (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        mov ecx,[eax]
+        fstp Double [ecx]
+        add [eax],8
+        fwait
+      end;
+      procedure extended_f2w (Machine: TForthMachine; Command: PForthCommand);
+      asm
+        mov ecx,[eax]
+        fstp Extended [ecx]
+        add [eax],10
+        fwait
+      end;
+      procedure frandom (Machine: TForthMachine; Command: PForthCommand);
+      var
+        E: Extended;
+      begin
+        E := Random;
+        asm fld E end;
+      end;
       procedure fadd (Machine: TForthMachine; Command: PForthCommand);
       asm
         fadd
@@ -11293,9 +11887,10 @@ end;
         F: Single;
         S: String;
       begin
-        asm
+        {asm
           fstp f
-        end;
+        end;}
+        Machine.WOV(@F, SizeOf(F));
         str(F, S);
         Machine.WUS(S);
       end;
@@ -11304,9 +11899,10 @@ end;
         F: Double;
         S: String;
       begin
-        asm
+        {asm
           fstp f
-        end;
+        end;}
+        Machine.WOV(@F, SizeOf(F));
         str(F, S);
         Machine.WUS(S);
       end;
@@ -11315,9 +11911,10 @@ end;
         F: Extended;
         S: String;
       begin
-        asm
+        {asm
           fstp f
-        end;
+        end;}
+        Machine.WOV(@F, SizeOf(F));
         str(F, S);
         Machine.WUS(S);
       end;
@@ -11330,7 +11927,8 @@ end;
         S := Machine.WOS;
         val(S, V, Code);
         if Code = 0 then begin
-          asm fld V end;
+          // asm fld V end;
+          Machine.WUV(@V, SizeOf(V));
           Machine.WUI(BOOL_TRUE);
         end else
           Machine.WUI(BOOL_FALSE);
@@ -11344,7 +11942,8 @@ end;
         S := Machine.WOS;
         val(S, V, Code);
         if Code = 0 then begin
-          asm fld V end;
+          // asm fld V end;
+          Machine.WUV(@V, SizeOf(V));
           Machine.WUI(BOOL_TRUE);
         end else
           Machine.WUI(BOOL_FALSE);
@@ -11358,7 +11957,8 @@ end;
         S := Machine.WOS;
         val(S, V, Code);
         if Code = 0 then begin
-          asm fld V end;
+          // asm fld V end;
+          Machine.WUV(@V, SizeOf(V));
           Machine.WUI(BOOL_TRUE);
         end else
           Machine.WUI(BOOL_FALSE);

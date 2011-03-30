@@ -89,7 +89,7 @@ define(~typed_commands|,
            mov [ecx], edx
            add [eax], 4
          end;)}
-         procedure dup_$1 cmdhdr; body(Move(WVar(-$2), WVar(0), $2); WInc($2); Writeln('dup');)
+         procedure dup_$1 cmdhdr; body(Move(WVar(-$2), WVar(0), $2); WInc($2); )
          procedure nip_$1 cmdhdr;
          idle(asm
            mov ecx, [eax]
@@ -1170,6 +1170,13 @@ define(~f_commands|,
       procedure fln2 cmdhdr;
       procedure w2f cmdhdr;
       procedure f2w cmdhdr;
+      procedure float_w2f cmdhdr;
+      procedure double_w2f cmdhdr;
+      procedure extended_w2f cmdhdr;
+      procedure float_f2w cmdhdr;
+      procedure double_f2w cmdhdr;
+      procedure extended_f2w cmdhdr;
+      procedure frandom cmdhdr;
 
       procedure fadd cmdhdr;
       procedure fsub cmdhdr;
@@ -1291,6 +1298,52 @@ define(~f_commands|,
         add [eax], 4
         fwait
       end;)
+      procedure float_w2f cmdhdr;
+      idle(asm
+        sub [eax], 4
+        mov ecx, [eax]
+        fld Single [ecx]
+      end;)
+      procedure double_w2f cmdhdr;
+      idle(asm
+        sub [eax], 8
+        mov ecx, [eax]
+        fld Double [ecx]
+      end;)
+      procedure extended_w2f cmdhdr;
+      idle(asm
+        sub [eax], SizeOf(Extended)
+        mov ecx, [eax]
+        fld Extended [ecx]
+      end;)
+      procedure float_f2w cmdhdr;
+      idle(asm
+        mov ecx, [eax]
+        fstp Single [ecx]
+        add [eax], 4
+        fwait
+      end;)
+      procedure double_f2w cmdhdr;
+      idle(asm
+        mov ecx, [eax]
+        fstp Double [ecx]
+        add [eax], 8
+        fwait
+      end;)
+      procedure extended_f2w cmdhdr;
+      idle(asm
+        mov ecx, [eax]
+        fstp Extended [ecx]
+        add [eax], 10
+        fwait
+      end;)
+      procedure frandom cmdhdr;
+      var
+        E: Extended;
+      begin
+        E := Random;
+        idle(asm fld E end;)
+      end;
       procedure fadd cmdhdr;
       idle(asm
         fadd
@@ -1432,9 +1485,10 @@ define(~f_commands|,
         F: Single;
         S: String;
       begin
-        idle(asm
+        {idle(asm
           fstp f
-        end;)
+        end;)}
+        Machine.WOV(@F, SizeOf(F));
         str(F, S);
         Machine.WUS(S);
       end;
@@ -1443,9 +1497,10 @@ define(~f_commands|,
         F: Double;
         S: String;
       begin
-        idle(asm
+        {idle(asm
           fstp f
-        end;)
+        end;)}
+        Machine.WOV(@F, SizeOf(F));
         str(F, S);
         Machine.WUS(S);
       end;
@@ -1454,9 +1509,10 @@ define(~f_commands|,
         F: Extended;
         S: String;
       begin
-        idle(asm
+        {idle(asm
           fstp f
-        end;)
+        end;)}
+        Machine.WOV(@F, SizeOf(F));
         str(F, S);
         Machine.WUS(S);
       end;
@@ -1469,7 +1525,8 @@ define(~f_commands|,
         S := Machine.WOS;
         val(S, V, Code);
         if Code = 0 then begin
-          idle(asm fld V end;)
+          // idle(asm fld V end;)
+          Machine.WUV(@V, SizeOf(V));
           Machine.WUI(BOOL_TRUE);
         end else
           Machine.WUI(BOOL_FALSE);
@@ -1483,7 +1540,8 @@ define(~f_commands|,
         S := Machine.WOS;
         val(S, V, Code);
         if Code = 0 then begin
-          idle(asm fld V end;)
+          // idle(asm fld V end;)
+          Machine.WUV(@V, SizeOf(V));
           Machine.WUI(BOOL_TRUE);
         end else
           Machine.WUI(BOOL_FALSE);
@@ -1497,7 +1555,8 @@ define(~f_commands|,
         S := Machine.WOS;
         val(S, V, Code);
         if Code = 0 then begin
-          idle(asm fld V end;)
+          // idle(asm fld V end;)
+          Machine.WUV(@V, SizeOf(V));
           Machine.WUI(BOOL_TRUE);
         end else
           Machine.WUI(BOOL_FALSE);
@@ -1565,9 +1624,16 @@ define(~f_commands|,
      AddCommand('floge',   floge);
      AddCommand('f10log2', f10log2);
      AddCommand('fln2',    fln2);    
+     AddCommand('frandom', frandom);    
 
      AddCommand('w>f',     w2f);    
      AddCommand('f>w',     f2w);    
+     AddCommand('float-w>f',    float_w2f);    
+     AddCommand('double-w>f',   double_w2f);    
+     AddCommand('extended-w>f', extended_w2f);    
+     AddCommand('float-f>w',    float_f2w);    
+     AddCommand('double-f>w',   double_f2w);    
+     AddCommand('extended-f>w', extended_f2w);    
 
      AddCommand('f+',     fadd);    
      AddCommand('f-',     fsub);    
@@ -1845,7 +1911,7 @@ OForthMachine = object
   system_commands(uint16, TUInt16);
   system_commands(uint32, TUInt32);
   system_commands(uint64, TUInt64);
-  system_commands(single, Single);
+  system_commands(float, Single);
   system_commands(double, Double);
   system_commands(extended, Extended);
   sysar_commands(, TInt);
@@ -2076,6 +2142,9 @@ end;
   typed_commands(uint32, 4);
   typed_commands(uint64, 8);
   typed_commands(embro, 4);
+  typed_commands(float, 4);
+  typed_commands(double, 8);
+  typed_commands(extended, 10);
   arithmetic_commands(, TInt);
   arithmetic_commands(int, TInt);
   arithmetic_commands(int8, TInt8);
@@ -2087,7 +2156,7 @@ end;
   arithmetic_commands(uint16, TUInt16);
   arithmetic_commands(uint32, TUInt32);
   arithmetic_commands(uint64, TUInt64);
-  arithmetic_commands(single, Single);
+  arithmetic_commands(float, Single);
   arithmetic_commands(double, Double);
   arithmetic_commands(extended, Extended);
   signed_arithmetic_commands(, TInt);
@@ -2096,7 +2165,7 @@ end;
   signed_arithmetic_commands(int16, TInt16);
   signed_arithmetic_commands(int32, TInt32);
   signed_arithmetic_commands(int64, TInt64);
-  signed_arithmetic_commands(single, Single);
+  signed_arithmetic_commands(float, Single);
   signed_arithmetic_commands(double, Double);
   number_arithmetic_commands(, TInt);
   number_arithmetic_commands(int, TInt);
@@ -2125,13 +2194,16 @@ end;
   convert_number_arithmetic_commands(uint16,   TUInt16,  uint,     TUInt);
   convert_number_arithmetic_commands(uint32,   TUInt32,  uint,     TUInt);
   convert_number_arithmetic_commands(uint64,   TUInt64,  uint,     TUInt);
-  convert_number_arithmetic_commands(single,   Single,   double,   Double);
-  convert_number_arithmetic_commands(double,   Double,   single,   Single);
-  convert_number_arithmetic_commands(single,   Single,   extended, Extended);
+  convert_number_arithmetic_commands(float,    Single,   double,   Double);
+  convert_number_arithmetic_commands(double,   Double,   float,   Single);
+  convert_number_arithmetic_commands(float,    Single,   extended, Extended);
   convert_number_arithmetic_commands(double,   Double,   extended, Extended);
   convert_number_arithmetic_commands(extended, Extended, double,   Double);
-  convert_number_arithmetic_commands(extended, Extended, single,   Single);
-  float_arithmetic_commands(single, Single);
+  convert_number_arithmetic_commands(extended, Extended, float,   Single);
+  convert_number_arithmetic_commands(int,      TInt,     float,    Single);
+  convert_number_arithmetic_commands(int,      TInt,     double,   Double);
+  convert_number_arithmetic_commands(int,      TInt,     extended, Extended);
+  float_arithmetic_commands(float, Single);
   float_arithmetic_commands(double, Double);
   float_arithmetic_commands(extended, Extended);
   counter_commands
@@ -2171,6 +2243,8 @@ end;
   procedure _utf8_2_raw cmdhdr;
   procedure _unicode_2_utf8 cmdhdr;
   procedure _unicode_2_raw cmdhdr;
+  procedure _randomize cmdhdr;
+  procedure _random cmdhdr;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TBoolCommands'}{$ENDIF}
 procedure _bool_push(Machine: TForthMachine; Command: PForthCommand);
@@ -2262,7 +2336,7 @@ procedure _execute(Machine: TForthMachine; Command: PForthCommand);
   procedure _pchar(Machine: TForthMachine; Command: PForthCommand);
   procedure _ptr(Machine: TForthMachine; Command: PForthCommand);
   procedure _type(Machine: TForthMachine; Command: PForthCommand);
-  procedure _single(Machine: TForthMachine; Command: PForthCommand);
+  procedure _float(Machine: TForthMachine; Command: PForthCommand);
   procedure _double(Machine: TForthMachine; Command: PForthCommand);
   procedure _extended(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -2809,7 +2883,7 @@ var
   Opcode: TOpcode;
 begin
   C := Machine.FindCommand(Machine.NextName, @Opcode);
-  Writeln(C^.Name);
+  // Writeln(C^.Name);
   if not IsImmediate(C) then
     Machine.EWO('(compile)');
   Machine.EWO(Opcode)
@@ -3283,13 +3357,13 @@ begin
   end;
 end;
 
-procedure _single(Machine: TForthMachine; Command: PForthCommand);
+procedure _float(Machine: TForthMachine; Command: PForthCommand);
 begin
   with Machine^ do begin
     if Machine.State = FS_COMPILE then
-      compile_type(Machine, 'single')
+      compile_type(Machine, 'float')
     else
-      interpete_type(Machine, 'single');
+      interpete_type(Machine, 'float');
   end;
 end;
 
@@ -4710,7 +4784,7 @@ begin
     LogError('trying to run command with opcode -1');
     Exit;
   end;
-  Writeln(C[M].Name);
+  // Writeln(C[M].Name);
   C[M].Code(@Self, C[M]);
 end;
 
@@ -5123,9 +5197,9 @@ end;
 
 procedure OForthMachine.WOV(const P: Pointer; Size: Integer);
 begin
+  Dec(WP, Size);
   if P <> nil then
     Move(WP^, P^, Size);
-  Dec(WP, Size);
 end;
 
 procedure OForthMachine.WUS(const S: TString);
@@ -5312,6 +5386,8 @@ begin
   AddCommand('raw->unicode', _raw_2_unicode);
   AddCommand('unicode->utf8', _unicode_2_utf8);
   AddCommand('unicode->raw', _unicode_2_raw);
+  AddCommand('randomize', _randomize);
+  AddCommand('random', _random);
   
   AddCommand('w>b', _WtoB);
   AddCommand('b>w', _BtoW);
@@ -5335,7 +5411,7 @@ begin
   AddType('pchar', SizeOf(PChar));
   AddType('str', SizeOf(TStr));
   AddType('type', SizeOf(PType));
-  AddType('single', SizeOf(PType));
+  AddType('float', SizeOf(PType));
   AddType('double', SizeOf(PType));
   AddType('extended', SizeOf(PType));
 
@@ -5410,7 +5486,8 @@ begin
   AddCommand('t_pchar', _pchar, True);
   AddCommand('t_ptr', _ptr, True);
   AddCommand('t_type', _type, True);
-  AddCommand('t_single', _single, True);
+  AddCommand('t_float', _float, True);
+  AddCommand('t_single', _float, True);
   AddCommand('t_double', _double, True);
   AddCommand('t_extended', _extended, True);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -6069,9 +6146,9 @@ begin
     else begin
       PArrayOfCardinal(@C^.Sym[0])^[Len] := U;
       Inc(Len);
-      Write(Char(U));
+      // Write(Char(U));
     end;
-  Writeln;
+  // Writeln;
   C^.Len := Len;
   DelRef(B);
   str_push(Machine, C);
@@ -6094,6 +6171,16 @@ begin
   MoveChars(@C^.Sym[0], @B^.Sym[0], B^.Len, 1, B^.Width);
   DelRef(B);
   str_push(Machine, C);
+end;
+
+procedure _randomize cmdhdr;
+begin
+  Randomize;
+end;
+
+procedure _random cmdhdr;
+begin
+  Machine.WUI(Random(Machine.WOI));
 end;
 
 function OForthMachine.FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;

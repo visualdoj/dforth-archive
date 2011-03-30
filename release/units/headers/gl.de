@@ -1,6 +1,16 @@
 // 2011.02.02 # Doj
 // Заголовок к OpenGL (1.1)
 
+include" units\utils\headers.de"
+include" units\headers\windows.de"
+
+stdcall declare-header OpenGL32.dll
+
+: extdecl; 
+  call OpenGL32.dll
+  call header; 
+; immediate
+
 // {{{ types
 : GLenum        t_uint32 ;
 : GLboolean     t_uint8 ;
@@ -1110,12 +1120,12 @@
 // {{{ prototypes
 :a glAccum ( op) GLenum ( value) GLfloat GLvoid extdecl;
 :a glAlphaFunc ( func) GLenum ( ref) GLclampf GLvoid extdecl;
-:a glAreTexturesResident  ( n) GLsizei ( textures) PGLuint ( residences) PGLboolean GLboolean extdecl;
+:a glAreTexturesResident  ( n) GLsizei ( textures) GLuint* ( residences) GLboolean* GLboolean extdecl;
 :a glArrayElement ( i) GLint GLvoid  extdecl;
 :a glBegin ( mode) GLenum GLvoid  extdecl;
 :a glBindTexture ( target) GLenum ( texture) GLuint GLvoid  extdecl;
 :a glBitmap  ( width height) GLsizei GLsizei ( xorig yorig)  GLfloat GLfloat 
-             ( xmove ymove)  GLfloat GLfloat ( bitmap) PGLubyte
+             ( xmove ymove)  GLfloat GLfloat ( bitmap) GLubyte*
              GLvoid extdecl;
 :a glBlendFunc ( sfactor) GLenum ( dfactor) GLenum GLvoid extdecl;
 :a glCallList ( list) GLuint GLvoid  extdecl;
@@ -1132,21 +1142,21 @@
 :a glColor3d ( red green blue) GLdouble dup dup GLvoid   extdecl;
 :a glColor3dv ( v) GLdouble* GLvoid   extdecl;
 :a glColor3f ( red green blue) GLfloat dup dup GLvoid   extdecl;
-:a glColor3fv ( v) PGLfloat GLvoid   extdecl;
+:a glColor3fv ( v) GLfloat* GLvoid   extdecl;
 :a glColor3i ( red green blue) GLint dup dup GLvoid   extdecl;
-:a glColor3iv ( v) PGLint GLvoid   extdecl;
+:a glColor3iv ( v) GLint* GLvoid   extdecl;
 :a glColor3s ( red green blue) GLshort dup dup GLvoid   extdecl;
 :a glColor3sv ( v) GLshort* GLvoid extdecl;
 :a glColor3ub ( red green blue) GLubyte GLvoid extdecl;
 :a glColor3ubv ( v) GLubyte* GLvoid extdecl;
 :a glColor3ui ( red green blue) GLuint dup dup GLvoid extdecl;
-:a glColor3uiv ( v) PGLuint GLvoid extdecl;
+:a glColor3uiv ( v) GLuint* GLvoid extdecl;
 :a glColor3us ( red green blue) GLushort dup dup GLvoid extdecl;
-:a glColor3usv ( v) PGLushort GLvoid extdecl;
+:a glColor3usv ( v) GLushort* GLvoid extdecl;
 :a glColor4b ( red green blue alpha) GLbyte dup dup dup GLvoid extdecl;
-:a glColor4bv ( v) PGLbyte GLvoid extdecl;
+:a glColor4bv ( v) GLbyte* GLvoid extdecl;
 :a glColor4d ( red green blue alpha) GLdouble dup dup dup GLvoid extdecl;
-:a glColor4dv ( v) PGLdouble GLvoid extdecl;
+:a glColor4dv ( v) GLdouble* GLvoid extdecl;
 :a glColor4f ( red green blue alpha) GLfloat dup dup dup GLvoid extdecl;
 :a glColor4fv ( v) GLfloat* GLvoid extdecl;
 :a glColor4i ( red green blue alpha) GLint dup dup dup GLvoid extdecl;
@@ -1193,8 +1203,8 @@
 :a glEdgeFlagv ( flag) GLboolean* GLvoid extdecl;
 :a glEnable ( cap) GLenum GLvoid extdecl;
 :a glEnableClientState ( aarray) GLenum GLvoid extdecl;
-:a glEnd extdecl;
-:a glEndList extdecl;
+:a glEnd GLvoid extdecl;
+:a glEndList GLvoid extdecl;
 :a glEvalCoord1d ( u) GLdouble GLvoid extdecl;
 :a glEvalCoord1dv ( u) GLdouble* GLvoid extdecl;
 :a glEvalCoord1f ( u) GLfloat GLvoid extdecl;
@@ -1208,8 +1218,8 @@
 :a glEvalPoint1 ( i) GLint GLvoid extdecl;
 :a glEvalPoint2 ( i j) GLint GLvoid extdecl;
 :a glFeedbackBuffer ( size) GLsizei ( atype) GLenum ( buffer) GLfloat* GLvoid extdecl;
-:a glFinish extdecl;
-:a glFlush extdecl;
+:a glFinish GLvoid extdecl;
+:a glFlush GLvoid extdecl;
 :a glFogf ( pname) GLenum ( param) GLfloat GLvoid extdecl;
 :a glFogfv ( pname) GLenum ( params) GLfloat* GLvoid extdecl;
 :a glFogi ( pname) GLenum ( param) GLint* GLvoid extdecl;
@@ -1224,14 +1234,14 @@
 :a glGetDoublev ( pname) GLenum ( params) GLdouble* GLvoid extdecl;
 :a glGetError GLenum extdecl;
 :a glGetFloatv ( pname) GLenum ( params) GLfloat* GLvoid extdecl;
-:a glGetIntegerv ( pname) GLenum ( params) PGLint GLvoid extdecl;
+:a glGetIntegerv ( pname) GLenum ( params) GLint* GLvoid extdecl;
 :a glGetLightfv ( light pname) GLenum dup ( params) GLfloat* extdecl;
 :a glGetLightiv ( light pname) GLenum dup ( params) GLint* extdecl;
 :a glGetMapdv ( target query) GLenum dup ( v) GLdouble* GLvoid extdecl;
 :a glGetMapfv ( target query) GLenum dup ( v) GLfloat* GLvoid extdecl;
 :a glGetMapiv ( target query) GLenum dup ( v) GLint* GLvoid extdecl;
-:a glGetMaterialfv ( face pname) GLenum ( params) PGLfloat GLvoid extdecl;
-:a glGetMaterialiv ( face pname) GLenum ( params) PGLint GLvoid extdecl;
+:a glGetMaterialfv ( face pname) GLenum ( params) GLfloat* GLvoid extdecl;
+:a glGetMaterialiv ( face pname) GLenum ( params) GLint* GLvoid extdecl;
 :a glGetPixelMapfv ( map) GLenum ( values) GLfloat* GLvoid extdecl;
 :a glGetPixelMapuiv ( map) GLenum ( values) GLuint* GLvoid extdecl;
 :a glGetPixelMapusv ( map) GLenum ( values) GLushort* GLvoid extdecl;
@@ -1360,7 +1370,7 @@
 :a glRasterPos3f ( x y z) GLfloat dup dup GLvoid extdecl;
 :a glRasterPos3fv ( v) GLfloat* GLvoid extdecl;
 :a glRasterPos3i ( x y z) GLint dup dup GLvoid extdecl;
-:a glRasterPos3iv ( v) PGLint GLvoid extdecl;
+:a glRasterPos3iv ( v) GLint* GLvoid extdecl;
 :a glRasterPos3s ( x y z) GLshort dup dup GLvoid extdecl;
 :a glRasterPos3sv ( v) GLshort* GLvoid extdecl;
 :a glRasterPos4d ( x y z w) GLdouble dup dup dup GLvoid extdecl;
@@ -1377,9 +1387,9 @@
 :a glRectd ( x1 y1 x2 y2) GLdouble dup dup dup GLvoid extdecl;
 :a glRectdv ( v1 v2) GLdouble* dup GLvoid extdecl;
 :a glRectf ( x1 y1 x2 y2) GLfloat dup dup dup GLvoid extdecl;
-:a glRectfv ( v1 v2) PGLfloat* dup GLvoid extdecl;
+:a glRectfv ( v1 v2) GLfloat* dup GLvoid extdecl;
 :a glRecti ( x1 y1 x2 y2) GLint dup dup dup GLvoid extdecl;
-:a glRectiv ( v1 v2) PGLint* dup GLvoid extdecl;
+:a glRectiv ( v1 v2) GLint* dup GLvoid extdecl;
 :a glRects ( x1 y1 x2 y2) GLshort dup dup dup GLvoid extdecl;
 :a glRectsv ( v1 v2) GLshort* dup GLvoid extdecl;
 :a glRenderMode ( mode) GLint GLint extdecl;
@@ -1436,7 +1446,7 @@
 :a glTexGenf ( coord) GLenum ( pname) GLenum ( param) GLfloat GLvoid extdecl;
 :a glTexGenfv ( coord) GLenum ( pname) GLenum ( params) GLfloat* GLvoid extdecl;
 :a glTexGeni ( coord) GLenum ( pname) GLenum ( param) GLint GLvoid extdecl;
-:a glTexGeniv ( coord) GLenum ( pname) GLenum ( params) PGLint* GLvoid extdecl;
+:a glTexGeniv ( coord) GLenum ( pname) GLenum ( params) GLint* GLvoid extdecl;
 :a glTexImage1D ( target) GLenum ( level internalformat) GLint dup 
                 ( width) GLsizei ( border) GLint ( format atype) GLenum dup
                 ( pixels) GLvoid* GLvoid extdecl;
@@ -1447,7 +1457,7 @@
 :a glTexParameterfv ( target) GLenum ( pname) GLenum ( params) GLfloat* 
                     GLvoid extdecl;
 :a glTexParameteri ( target) GLenum ( pname) GLenum ( param) GLint GLvoid extdecl;
-:a glTexParameteriv ( target) GLenum ( pname) GLenum ( params) PGLint* GLvoid extdecl;
+:a glTexParameteriv ( target) GLenum ( pname) GLenum ( params) GLint* GLvoid extdecl;
 :a glTexSubImage1D ( target) GLenum ( level xoffset) GLint dup 
                    ( width) GLsizei ( format atype) GLenum dup 
                    ( pixels) GLvoid* GLvoid extdecl;
@@ -1471,7 +1481,7 @@
 :a glVertex3i ( x y z) GLint dup dup GLvoid extdecl;
 :a glVertex3iv ( v) GLint* GLvoid extdecl;
 :a glVertex3s ( x y z) GLshort dup dup GLvoid extdecl;
-:a glVertex3sv ( v) PGLshort* GLvoid extdecl;
+:a glVertex3sv ( v) GLshort* GLvoid extdecl;
 :a glVertex4d ( x y z w) GLdouble dup dup dup GLvoid extdecl;
 :a glVertex4dv ( v) GLdouble* GLvoid extdecl;
 :a glVertex4f ( x y z w) GLfloat dup dup dup GLvoid extdecl;
@@ -1483,4 +1493,8 @@
 :a glVertexPointer ( size) GLint ( atype) GLenum ( stride) GLsizei 
                    ( pointer) GLvoid* extdecl;
 :a glViewport ( x y) GLint dup ( width height) GLsizei dup GLvoid extdecl;
+:a wglCreateContext HDC HGLRC extdecl;
+:a wglMakeCurrent HDC HGLRC WINBOOL extdecl;
 // }}}
+
+: opengl-load OpenGL32.dll header-load ;

@@ -6,26 +6,50 @@ help-group: fpu
 
 // {{{ встроенные команды
 samebuiltin finit
+RUS summary Устанавливает сопроцессор в стандартное состояние
 
 samebuiltin fdrop
+RUS summary ( F: f --) удаляет с вершины стека сопроцессора элемент
 samebuiltin fnip
+RUS summary ( F: fg -- F: g) удаляет с второй вершины стека сопроцессора элемент
 samebuiltin fdup
+RUS summary ( F: f -- F: ff) дублирует верхний элемент стека сопроцессора
 samebuiltin fover
+RUS summary ( F: fg -- F: fgf) дублирует второй элемент стека сопроцессора
 samebuiltin ftuck
+RUS summary ( F: fg -- F: gfg) дублирует вершину стека сопроцессора под второй элемент
 samebuiltin fswap
+RUS summary ( F: fg -- F: gf) меняет два верхних элемента стека сопроцессора местами
 samebuiltin flrot
+RUS summary ( F: fgh -- F: ghf) сдвигает влево три верхних элемента сопроцессора
 samebuiltin frrot
+RUS summary ( F: fgh -- F: hfg) сдвигает вправо три верхних элемента сопроцессора
 
 samebuiltin f0
+RUS summary ( -- F: f) кладёт на стек F число 0.0
 samebuiltin f1
+RUS summary ( -- F: f) кладёт на стек F число 1.0
 samebuiltin fpi
+RUS summary ( -- F: f) кладёт на стек F число pi
 samebuiltin flog10
+RUS summary ( -- F: f) кладёт на стек F двоичный логарифм десяти
 samebuiltin floge
+RUS summary ( -- F: f) кладёт на стек F двоичный логарифм числа e
 samebuiltin f10log2
+RUS summary ( -- F: f) кладёт на стек F десятичный логарифм двойки
 samebuiltin fln2
+RUS summary ( -- F: f) кладёт на стек F натуральный логарифм двойки
+samebuiltin frandom
+RUS summary ( -- F: f) кладёт на стек F случайное число из полуинтервала [0..1)
 
 samebuiltin w>f
 samebuiltin f>w
+samebuiltin float-w>f
+samebuiltin double-w>f
+samebuiltin extended-w>f
+samebuiltin float-f>w
+samebuiltin double-f>w
+samebuiltin extended-f>w
 
 samebuiltin f+
 samebuiltin f-
@@ -35,9 +59,12 @@ samebuiltin f/
 samebuiltin fswap/
 
 samebuiltin fsqrt
+RUS summary ( F: f -- F: g) извлекает квадратный корень из f
 samebuiltin fscale
 samebuiltin fabs
+RUS summary ( F: f -- F: g) находит модуль числа f
 samebuiltin fneg
+RUS summary ( F: f -- F: g) обращает знак числа f
 samebuiltin fround
 
 samebuiltin fptan
@@ -64,29 +91,16 @@ RUS summary ( F: x -- F: f) f = sin(x), x должно быть в радиан�
 samebuiltin fsincos
 RUS summary ( F: x -- F: fg) f = sin(x), g = cos(x), x должно быть в радианах
 
-builtin extended->str f->str
-RUS summary ( F: f -- B: s) конвертирует число с плавающей точкой в строку
-detail ( F: f -- B: s)
-  Снимает со стека сопроцессора значение, и преобразует его в строку.
-\detail
 samebuiltin float->str
-RUS summary ( F: f -- B: s) конвертирует float в строку
-detail ( F: f -- B: s)
-  Снимает со стека сопроцессора значение, и преобразует его в строку с точностью
-  числа float.
-\detail
+RUS summary ( W: f -- B: s) конвертирует float в строку
 samebuiltin double->str
-RUS summary ( F: f -- B: s) конвертирует double в строку
-detail ( F: f -- B: s)
-  Снимает со стека сопроцессора значение, и преобразует его в строку с точностью
-  числа double.
-\detail
+RUS summary ( W: d -- B: s) конвертирует double в строку
 samebuiltin extended->str
-RUS summary ( F: f -- B: s) конвертирует extended в строку
-detail ( F: f -- B: s)
-  Снимает со стека сопроцессора значение, и преобразует его в строку с точностью
-  числа extended.
-\detail
+RUS summary ( W: e -- B: s) конвертирует extended в строку
+
+samebuiltin float-literal
+samebuiltin double-literal
+samebuiltin extended-literal
 
 samebuiltin extended-fliteral
 RUS summary ( C: f -- ) ( R: -- F: f) компилирует семантику положить extended на стек
@@ -96,41 +110,13 @@ detail ( C: f -- ) ( R: -- F: f)
   В режиме исполнения: кладёт число f на стек, пропускает его в шитом коде.
 \detail
 
-builtin str->extended? str->f?
-RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
-detail
-  Пытается сконвертировать строку в число с плавающей точкой. Если это удаётся,
-  полученное число кладётся на стек сопроцессора, а на обычный стек true.
-  В случае, если сконвертировать не удалось, на стек кладётся false, а стек
-  сопроцессора остаётся неизменным.
-\detail
-
 samebuiltin str->float?
-RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
-detail
-  Пытается сконвертировать строку в число с плавающей точкой точностью float. 
-  Если это удаётся, полученное число кладётся на стек сопроцессора, а 
-  на обычный стек true. В случае, если сконвертировать не удалось, на стек 
-  кладётся false, а стек сопроцессора остаётся неизменным.
-\detail
-
 samebuiltin str->double?
-RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
-detail
-  Пытается сконвертировать строку в число с плавающей точкой точностью double. 
-  Если это удаётся, полученное число кладётся на стек сопроцессора, а 
-  на обычный стек true. В случае, если сконвертировать не удалось, на стек 
-  кладётся false, а стек сопроцессора остаётся неизменным.
-\detail
-
 samebuiltin str->extended?
-RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
-detail
-  Пытается сконвертировать строку в число с плавающей точкой точностью extended. 
-  Если это удаётся, полученное число кладётся на стек сопроцессора, а 
-  на обычный стек true. В случае, если сконвертировать не удалось, на стек 
-  кладётся false, а стек сопроцессора остаётся неизменным.
-\detail
+
+samebuiltin int->float
+samebuiltin int->double
+samebuiltin int->extended
 // }}}
 
 : ftan   fptan f/ ;
@@ -168,7 +154,43 @@ RUS summary ( F: f -- F: h) вычислает экспоненту: h = e^f
 : f10** flog10 f* f2** ;
 RUS summary ( F: f -- F: h) вычислает степень десяти: h = 10^f
 
-: def-str->f  str->f? if fnip then ;
+: fstr->f? str->extended? dup if extended-w>f then ;
+RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
+detail
+  Пытается сконвертировать строку в число с плавающей точкой. Если это удаётся,
+  полученное число кладётся на стек сопроцессора, а на обычный стек true.
+  В случае, если сконвертировать не удалось, на стек кладётся false, а стек
+  сопроцессора остаётся неизменным.
+\detail
+
+: fstr->float? str->float? dup if float-w>f then ;
+RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
+detail
+  Пытается сконвертировать строку в число с плавающей точкой точностью float. 
+  Если это удаётся, полученное число кладётся на стек сопроцессора, а 
+  на обычный стек true. В случае, если сконвертировать не удалось, на стек 
+  кладётся false, а стек сопроцессора остаётся неизменным.
+\detail
+
+: fstr->double? str->double? dup if double-w>f then ;
+RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
+detail
+  Пытается сконвертировать строку в число с плавающей точкой точностью double. 
+  Если это удаётся, полученное число кладётся на стек сопроцессора, а 
+  на обычный стек true. В случае, если сконвертировать не удалось, на стек 
+  кладётся false, а стек сопроцессора остаётся неизменным.
+\detail
+
+: fstr->extended? str->extended? dup if extended-w>f then ;
+RUS summary ( B: s -- T F: f | F) конвертирует строку в число плавающей точкой
+detail
+  Пытается сконвертировать строку в число с плавающей точкой точностью extended. 
+  Если это удаётся, полученное число кладётся на стек сопроцессора, а 
+  на обычный стек true. В случае, если сконвертировать не удалось, на стек 
+  кладётся false, а стек сопроцессора остаётся неизменным.
+\detail
+
+: def-str->f  str->extended? if fnip then ;
 RUS summary ( F: f B: s -- F: g) если s не число, то g=f, иначе g=StrToReal(s)
 detail (F: f B: s -- F: g)
   Снимает строку со стека B. Пытается её сконвертировать в число с плавающей
@@ -228,6 +250,32 @@ detail (F: f B: s -- F: g)
 : fe    [ " 1.0" str->extended? not if f0 then fexp ] extended-fliteral ;
 RUS summary ( -- F: e) кладёт константу - математическое число e
 
+: ff->str extended-f>w extended->str ;
+RUS summary ( F: f -- B: s) конвертирует число с плавающей точкой в строку
+detail ( F: f -- B: s)
+  Снимает со стека сопроцессора значение, и преобразует его в строку.
+\detail
+
+: ffloat->str float-f>w float->str ;
+RUS summary ( F: f -- B: s) конвертирует float в строку
+detail ( F: f -- B: s)
+  Снимает со стека сопроцессора значение, и преобразует его в строку с точностью
+  числа float.
+\detail
+
+: fdouble->str double-f>w double->str ;
+RUS summary ( F: f -- B: s) конвертирует double в строку
+detail ( F: f -- B: s)
+  Снимает со стека сопроцессора значение, и преобразует его в строку с точностью
+  числа double.
+\detail
+
+: fextended->str extended-f>w extended->str ;
+RUS summary ( F: f -- B: s) конвертирует extended в строку
+detail ( F: f -- B: s)
+  Снимает со стека сопроцессора значение, и преобразует его в строку с точностью
+  числа extended.
+\detail
 
 : str->f f0 def-str->f ;
 RUS summary ( B: s -- F: f) эквивалентно коду f0 def-str->f
@@ -253,6 +301,21 @@ RUS summary ( F: f -- ) то же, что "f.", но с точностью exten
                if state @ if ['] float-fliteral execute then true exit then
              else bdrop then false
 ;
+
+namespace FLOAT
+  // : _NOTFOUND_ str->float? if state @ if call float-literal then true 
+  //                          else false then ;
+\namespace
+
+namespace DOUBLE
+  // : _NOTFOUND_ str->double? if state @ if call double-literal then true 
+  //                           else false then ;
+\namespace
+
+namespace EXTENDED
+  // : _NOTFOUND_ str->extended? if state @ if call extended-literal then true 
+  //                             else false then ;
+\namespace
 
 namespace FPU
   : drop fdrop ;
@@ -297,6 +360,41 @@ namespace FPU
   : tan ftan ;
   : ctan fctan ;
   : atan fatan ;
+\namespace
+
+namespace WSTACK-FPU
+  samebuiltin float-drop
+  samebuiltin float-nip
+  samebuiltin float-dup
+  samebuiltin float-over
+  samebuiltin float-tuck
+  samebuiltin float-swap
+  samebuiltin float-lrot
+  samebuiltin float-rrot
+  samebuiltin float@
+  samebuiltin float!
+
+  samebuiltin double-drop
+  samebuiltin double-nip
+  samebuiltin double-dup
+  samebuiltin double-over
+  samebuiltin double-tuck
+  samebuiltin double-swap
+  samebuiltin double-lrot
+  samebuiltin double-rrot
+  samebuiltin double@
+  samebuiltin double!
+
+  samebuiltin extended-drop
+  samebuiltin extended-nip
+  samebuiltin extended-dup
+  samebuiltin extended-over
+  samebuiltin extended-tuck
+  samebuiltin extended-swap
+  samebuiltin extended-lrot
+  samebuiltin extended-rrot
+  samebuiltin extended@
+  samebuiltin extended!
 \namespace
 
 help-group-misc

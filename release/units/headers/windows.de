@@ -251,6 +251,17 @@ h0003           constant MB_YESNOCANCEL
 
 // {{{ messages
 h0002           constant WM_DESTROY
+256             constant WM_KEYDOWN 
+257             constant WM_KEYUP 
+258             constant WM_CHAR 
+515             constant WM_LBUTTONDBLCLK 
+513             constant WM_LBUTTONDOWN 
+514             constant WM_LBUTTONUP 
+516             constant WM_RBUTTONDOWN 
+517             constant WM_RBUTTONUP 
+519             constant WM_MBUTTONDOWN 
+520             constant WM_MBUTTONUP 
+h0216           constant WM_MOVING
 // }}}
 // }}}
 // {{{ prototypes
