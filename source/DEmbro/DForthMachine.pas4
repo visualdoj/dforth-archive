@@ -1890,6 +1890,7 @@ OForthMachine = object
   FCurrentFileName: TString;
   FCurrentLine: Integer;
   FCurrentPos: Integer;
+  Directories: array of TString;
   procedure CompileSource(Source: PChar);
   function CompileName(W: PChar): Boolean; overload;
   function NextMnemonic: Cardinal;
@@ -5774,20 +5775,34 @@ var
 begin
   S := str_pop(Machine);
   // Writeln('Evaluate file "', PChar(@(PStrRec(S)^.Sym[0])), '"');
-  Assign(F, PChar(GetCurrentDirectory) + '\' + PChar(@(PStrRec(S)^.Sym[0])));
-  {$I-}
-  Reset(F);
-  {$I+}
-  if IOResult <> 0 then begin
-    Assign(F, PChar(GetExeDirectory) + '\' + PChar(@(PStrRec(S)^.Sym[0])));
+  if Length(Machine.Directories) > 0 then begin
+    Assign(F, Machine.Directories[High(Machine.Directories)] + TString(PChar(@(PStrRec(S)^.Sym[0]))));
+    {$I-}
+    Reset(F);
+    {$I+}
+  end;
+  if (Length(Machine.Directories) = 0) or (IOResult <> 0) then begin
+    Assign(F, PChar(GetCurrentDirectory) + '\' + PChar(@(PStrRec(S)^.Sym[0])));
     {$I-}
     Reset(F);
     {$I+}
     if IOResult <> 0 then begin
-      Machine.LogError('cannot open file "' + PChar(@(PStrRec(S)^.Sym[0])) + '"');
-      Exit;
+      Assign(F, PChar(GetExeDirectory) + '\' + PChar(@(PStrRec(S)^.Sym[0])));
+      {$I-}
+      Reset(F);
+      {$I+}
+      if IOResult <> 0 then begin
+        Machine.LogError('cannot open file "' + PChar(@(PStrRec(S)^.Sym[0])) + '"');
+        Exit;
+      end;
     end;
   end;
+  B := TString(PChar(@(PStrRec(S)^.Sym[0])));
+  while (Length(B) > 0) and (B[Length(B)] <> '\') do begin
+    SetLength(B, Length(B) - 1);
+  end;
+  SetLength(Machine.Directories, Length(Machine.Directories) + 1);
+  Machine.Directories[High(Machine.Directories)] := B;
   B := '';
   while not EOF(F) do begin
     Readln(F, T);
@@ -5796,6 +5811,7 @@ begin
   Close(F);
   Machine.Interpret(PChar(B));
   DelRef(S);
+  SetLength(Machine.Directories, Length(Machine.Directories) - 1);
   // Writeln('End of evaluate file "', PChar(@S^.Sym[0]), '"');
 end;
 
