@@ -321,6 +321,10 @@ str" units\core\includes.de" bdup evaluate-file
 // нужно в него добавить всё, что было подключено до него
 once+ once+ once+ once+
 
+variable *wp-debug
+: wp{ wp *wp-debug ! ;
+: }wp wp *wp-debug @ <> if ." WP ERROR" cr then ;
+
 include" units\core\createwords.de"
 include" units\core\help.de"
 include" units\core\statements.de"
