@@ -1,5 +1,5 @@
 // 2011.02.02 # Doj
-// Команды для работы с локальными переменными
+// РљРѕРјР°РЅРґС‹ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ Р»РѕРєР°Р»СЊРЅС‹РјРё РїРµСЂРµРјРµРЅРЅС‹РјРё
 
 include" units\utils\parser.de"
 
@@ -43,6 +43,20 @@ include" units\utils\parser.de"
   does> dup put-local-offset 
             compile l@ 
             compile dup 
+            compile 1-
+            put-local-offset 
+            compile l! 
+;
+: local-generated1+ ( s-) " 1+" local-created 
+  does> dup put-local-offset 
+            compile l@ 
+            compile 1+
+            put-local-offset 
+            compile l! 
+;
+: local-generated1+ ( s-) " 1-" local-created 
+  does> dup put-local-offset 
+            compile l@ 
             compile 1-
             put-local-offset 
             compile l! 

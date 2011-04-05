@@ -205,6 +205,7 @@ samebuiltin constant
 samebuiltin create
 samebuiltin created
 samebuiltin does>
+samebuiltin (does>)
 samebuiltin here
 samebuiltin immediate
 samebuiltin last
@@ -214,6 +215,8 @@ samebuiltin state
 samebuiltin to
 samebuiltin value
 samebuiltin variable
+samebuiltin literal
+samebuiltin (literal)
 // }}}
 // {{{ встроенные типы
 samebuiltin typeof
@@ -244,6 +247,7 @@ samebuiltin evaluate-file
 samebuiltin execute
 samebuiltin xt.n@
 samebuiltin xt.d@
+samebuiltin opcode->command
 // }}}
 // {{{ alien
 samebuiltin lib-load
@@ -275,6 +279,7 @@ samebuiltin str!
 samebuiltin str@
 samebuiltin str"
 samebuiltin [str]"
+samebuiltin (str)"
 samebuiltin str.
 samebuiltin str=
 // }}}

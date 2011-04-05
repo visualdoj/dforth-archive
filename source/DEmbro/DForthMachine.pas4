@@ -4942,11 +4942,15 @@ procedure OForthMachine.EWO(V: TString);
 var
   I: TOpcode;
 begin
-  for I := High(C) downto 0 do
-    if TString(C[I].Name) = V then begin
-      EWO(I);
-      Exit;
-    end;
+  (* for I := High(C) downto 0 do *)
+  (*   if TString(C[I].Name) = V then begin *)
+  (*     EWO(I); *)
+  (*     Exit; *)
+  (*   end; *)
+  if FindCommand(V, @I) <> nil then begin
+    EWO(I);
+    Exit;
+  end;
   FSession := False;
   LogError('command "' + V + '" not found');
 end;
