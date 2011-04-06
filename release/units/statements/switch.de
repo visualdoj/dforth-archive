@@ -1,5 +1,5 @@
 // 2011.04.06 # Doj
-// Оператор switch
+// РћРїРµСЂР°С‚РѕСЂ switch
 
 include" units\core\locals.de"
 
@@ -13,19 +13,19 @@ include" units\core\locals.de"
 : switch ( C: -di) ( R: i-)
   8 dyn-new // *switch-marks dyn+
   dup dyn# .
-  // добавляем адрес смещения в массив *switch-offsets
+  // РґРѕР±Р°РІР»СЏРµРј Р°РґСЂРµСЃ СЃРјРµС‰РµРЅРёСЏ РІ РјР°СЃСЃРёРІ *switch-offsets
   *local-offset @ // *switch-offsets dyn+
-  // увеличиваем переменную *local-offset
+  // СѓРІРµР»РёС‡РёРІР°РµРј РїРµСЂРµРјРµРЅРЅСѓСЋ *local-offset
   local-offset>>
-  // компилируем выделение памяти под локальную переменную
+  // РєРѕРјРїРёР»РёСЂСѓРµРј РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё РїРѕРґ Р»РѕРєР°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
   1 cells postpone literal postpone l+
-  // записываем начальное значение в локальную переменную
+  // Р·Р°РїРёСЃС‹РІР°РµРј РЅР°С‡Р°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РІ Р»РѕРєР°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
   ( switch-local-offset) dup postpone literal postpone l!
 ; immediate
 
-RUS summary начинает объявление оператора switch
+RUS summary РЅР°С‡РёРЅР°РµС‚ РѕР±СЉСЏРІР»РµРЅРёРµ РѕРїРµСЂР°С‚РѕСЂР° switch
 detail ( C: -di) ( R: i-) 
-  Пример использования
+  РџСЂРёРјРµСЂ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ
   <code>
     : test 
       switch
