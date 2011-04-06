@@ -927,7 +927,7 @@ define(~misc_commands|,
       procedure Cell_plus cmdhdr; body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); )
       procedure _malloc cmdhdr; var P: Pointer; body( P := Pointer(WVar(-SizeOf(Integer))); GetMem(P, Integer(WVar(-SizeOf(Integer)))); Pointer(WVar(-SizeOf(Integer))) := P; )
       procedure _free cmdhdr; var P: Pointer; body( Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P); )
-      procedure _last cmdhdr; var P: Pointer; body( Pointer(WP^) := C[High(C)]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer)); )
+      procedure _last cmdhdr; var P: Pointer; body( Pointer(WP^) := C[FLastMnemonic]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer)); )
       procedure _xt_dot_n cmdhdr; body( Pointer(WVar(-SizeOf(Pointer))) := @(PForthCommand(WVar(-SizeOf(Pointer))).Name[0]); )
       procedure _xt_dot_d cmdhdr; body( Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Data )
       procedure _move cmdhdr; body( Dec(WP, SizeOf(Pointer)*3); Move(Pointer(WVar(0))^, Pointer(WVar(SizeOf(Pointer)))^, TUint(WVar(2*SizeOf(Pointer)))); {Writeln(TUInt(WVar(0)), TUInt(WVar(SizeOf(Pointer))), TUint(WVar(2*SizeOf(Pointer))));} )
@@ -2797,6 +2797,7 @@ begin
     Machine.State := FS_INTERPRET;
     Machine.C[Index]^.Flags := Machine.C[Index]^.Flags and not 1;
     Machine.OnUpdateCommand(Index);
+    Machine.FLastMnemonic := Index;
     //Writeln('LAST COMMAND ', High(Machine.C), ' ' + Machine.C[High(Machine.C)].Name);
   end;
 end;
@@ -4657,6 +4658,7 @@ begin
   SetImmediate(C[High(C)], Immediate);
   SetBuiltin(C[High(C)], Builtin);
   OnUpdateCommand(High(C));
+  FLastMnemonic := High(C);
 end;
 
 procedure OForthMachine.OnUpdateCommand(Opcode: Integer);
@@ -4666,7 +4668,8 @@ begin
   if TString(C[Opcode]^.Name) = '_FIND_' then
     HighTarget.sFIND := Opcode
   else if TString(C[Opcode]^.Name) = '_NOTFOUND_' then
-    HighTarget.sNOTFOUND := Opcode
+    HighTarget.sNOTFOUND := Opcode;
+  FLastMnemonic := Opcode;
 end;
 
 procedure OForthMachine.OnUpdateCommand(Command: PForthCommand);
@@ -6091,8 +6094,10 @@ begin
   C[High(C)].Code := call;
   FLastMnemonic := High(C);
   Result := C[High(C)];
-  if Name <> '' then
+  if Name <> '' then begin
     OnUpdateCommand(High(C));
+    FLastMnemonic := High(C);
+  end;
 end;
 
 procedure OForthMachine.ReadEmbro(P: Pointer; Size: Integer);

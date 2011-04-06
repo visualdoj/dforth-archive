@@ -1,1 +1,1 @@
-dembro32 doc.de
+dembro32 -r doc.de

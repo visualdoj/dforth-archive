@@ -43,6 +43,7 @@ wp
 : dyn.e@ ( id-i) dyn.ptr @ swap cells + @ ;
 
 : dyn+ ( id-) dyn.add ;
+: dyn- ( d-) dup dyn# 0; 1- swap dyn.l! ;
 : dyn# ( d-i) dyn.l@ ;
 : dyn@ ( id-i) dyn[] @ ;
 : dyn! ( iid-) dyn[] ! ;
@@ -50,6 +51,7 @@ wp
 
 : dyn[]! ( nid-) dyn[] ! ;
 : dyn[]@ ( id-n) dyn[] @ ;
+: dyn.top ( d-i) dup dyn# 1- swap dyn[]@ ;
 
 : str-dyn dyn ;
 : str-dyn# dyn# ;

@@ -6,7 +6,7 @@ include" units\utils\parser.de"
 0 variable *local-offset
 8 bdyn *local-names
 
-: local-offset>> *local-offset dup @ cell+ swap !  ;
+: local-offset>> *local-offset dup @ cell+ swap ! ;
 : local-offset-off *local-offset off ;
 
 // : dup dup ;
@@ -54,12 +54,48 @@ include" units\utils\parser.de"
             put-local-offset 
             compile l! 
 ;
-: local-generated1+ ( s-) " 1-" local-created 
+: local-generated1- ( s-) " 1-" local-created 
   does> dup put-local-offset 
             compile l@ 
             compile 1-
             put-local-offset 
             compile l! 
+;
+: local-generated+ ( s-) " +" local-created 
+  does>     put-local-offset 
+            compile l@ 
+            compile +
+;
+: local-generated- ( s-) " -" local-created 
+  does>     put-local-offset 
+            compile l@ 
+            compile -
+;
+: local-generated* ( s-) " *" local-created 
+  does>     put-local-offset 
+            compile l@ 
+            compile *
+;
+: local-generated+! ( s-) " +!" local-created 
+  does> dup put-local-offset 
+            compile l@ 
+            compile +
+            put-local-offset
+            compile l!
+;
+: local-generated-! ( s-) " -!" local-created 
+  does> dup put-local-offset 
+            compile l@ 
+            compile -
+            put-local-offset
+            compile l!
+;
+: local-generated*! ( s-) " *!" local-created 
+  does>     put-local-offset 
+            compile l@ 
+            compile *
+            put-local-offset
+            compile l!
 ;
 
 : local-generated-int ( s-)
@@ -74,10 +110,18 @@ include" units\utils\parser.de"
   prepare-local-name? not if false exit then
   bdup local-generated!
   bdup local-generated@
+  bdup local-generated1+
+  bdup local-generated1-
   bdup local-++generated
   bdup local-generated++
   bdup local---generated
   bdup local-generated--
+  bdup local-generated+
+  bdup local-generated-
+  bdup local-generated*
+  bdup local-generated+!
+  bdup local-generated-!
+  bdup local-generated*!
   bdrop true
 ;
 
@@ -97,7 +141,7 @@ include" units\utils\parser.de"
       call literal
       compile l! 
       local-offset>>
-    else bdrop then
+    then bdrop
   repeat drop 
 ;
 
@@ -115,3 +159,6 @@ include" units\utils\parser.de"
 ;
 
 : | ( "x1 x2 .. xn|"-) " |" source-cut |ed ; immediate
+
+// добавляем при завершении определения команды обнуление локальной переменной
+: ; postpone ; local-offset-off ; immediate

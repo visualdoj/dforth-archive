@@ -2734,6 +2734,7 @@ begin
     Machine.State := FS_INTERPRET;
     Machine.C[Index]^.Flags := Machine.C[Index]^.Flags and not 1;
     Machine.OnUpdateCommand(Index);
+    Machine.FLastMnemonic := Index;
     //Writeln('LAST COMMAND ', High(Machine.C), ' ' + Machine.C[High(Machine.C)].Name);
   end;
 end;
@@ -4594,6 +4595,7 @@ begin
   SetImmediate(C[High(C)], Immediate);
   SetBuiltin(C[High(C)], Builtin);
   OnUpdateCommand(High(C));
+  FLastMnemonic := High(C);
 end;
 
 procedure OForthMachine.OnUpdateCommand(Opcode: Integer);
@@ -4603,7 +4605,8 @@ begin
   if TString(C[Opcode]^.Name) = '_FIND_' then
     HighTarget.sFIND := Opcode
   else if TString(C[Opcode]^.Name) = '_NOTFOUND_' then
-    HighTarget.sNOTFOUND := Opcode
+    HighTarget.sNOTFOUND := Opcode;
+  FLastMnemonic := Opcode;
 end;
 
 procedure OForthMachine.OnUpdateCommand(Command: PForthCommand);
@@ -7325,8 +7328,10 @@ begin
   C[High(C)].Code := call;
   FLastMnemonic := High(C);
   Result := C[High(C)];
-  if Name <> '' then
+  if Name <> '' then begin
     OnUpdateCommand(High(C));
+    FLastMnemonic := High(C);
+  end;
 end;
 
 procedure OForthMachine.ReadEmbro(P: Pointer; Size: Integer);
@@ -11553,7 +11558,7 @@ end;
       procedure Cell_plus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) + SizeOf(TInt);  end; end;
       procedure _malloc (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin P := Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^)); GetMem(P, Integer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^))); Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^)) := P;  end; end;
       procedure _free (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P);  end; end;
-      procedure _last (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin Pointer(WP^) := C[High(C)]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _last (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin Pointer(WP^) := C[FLastMnemonic]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer));  end; end;
       procedure _xt_dot_n (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := @(PForthCommand((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)).Name[0]);  end; end;
       procedure _xt_dot_d (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PForthCommand((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)).Data  end; end;
       procedure _move (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, SizeOf(Pointer)*3); Move(Pointer((Pointer(TUInt(Machine.WP) + (0))^))^, Pointer((Pointer(TUInt(Machine.WP) + (SizeOf(Pointer)))^))^, TUint((Pointer(TUInt(Machine.WP) + (2*SizeOf(Pointer)))^))); {Writeln(TUInt((Pointer(TUInt(Machine.WP) + (0))^)), TUInt((Pointer(TUInt(Machine.WP) + (SizeOf(Pointer)))^)), TUint((Pointer(TUInt(Machine.WP) + (2*SizeOf(Pointer)))^)));}  end; end;

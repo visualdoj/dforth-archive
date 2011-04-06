@@ -341,4 +341,6 @@ include" units\core\files.de"
 include" units\core\locals.de"
 include" docs\russian.de"
 
+include" units\statements\switch.de"
+
 ." Loaded system file"cr

@@ -1,0 +1,58 @@
+// 2011.04.06 # Doj
+// ќператор switch
+
+include" units\core\locals.de"
+
+// 2 dyn *switch-marks 
+// 2 dyn *switch-offsets 
+
+// : switch-marks-top ( -d) *switch-marks dup dyn# 1- swap dyn[]@ ;
+// : switch-marks+ ( i) switch-marks-top dyn+ ;
+// : switch-local-offset ( -i) *switch-offsets dyn.top ;
+
+: switch ( C: -di) ( R: i-)
+  8 dyn-new // *switch-marks dyn+
+  dup dyn# .
+  // добавл€ем адрес смещени€ в массив *switch-offsets
+  *local-offset @ // *switch-offsets dyn+
+  // увеличиваем переменную *local-offset
+  local-offset>>
+  // компилируем выделение пам€ти под локальную переменную
+  1 cells postpone literal postpone l+
+  // записываем начальное значение в локальную переменную
+  ( switch-local-offset) dup postpone literal postpone l!
+; immediate
+
+RUS summary начинает объ€вление оператора switch
+detail ( C: -di) ( R: i-) 
+  ѕример использовани€
+  <code>
+    : test 
+      switch
+        0 of ." zero" \of
+        1 of ." one" \of
+        7 of ." seven" \of
+        ." unknown"
+      \switch
+      cr
+    ;
+  </code>
+\detail
+
+: of ( di-dim)
+  dup postpone literal postpone l@
+  postpone =
+  postpone ?branch
+  >mark
+; immediate
+
+: \of ( dim-di)
+  rrot
+  postpone branch over >mark swap dyn+
+  lrot
+  >resolve
+; immediate
+
+: \switch ( di)
+  drop dup dyn# | i| begin i-- while i@ over dyn[]@ >resolve repeat dyn.free
+; immediate
