@@ -37,6 +37,10 @@ namespace GOOGLECODE
   : articlebody->body ( B: x - B: y)
     " <code>" \" {{{"
     " </code>" \" }}}"
+    " <inline>" \" `"
+    " </inline>" \" `"
+    " <article>" \" [article_"
+    " </article>" \" ]"
   ;
 
   variable file

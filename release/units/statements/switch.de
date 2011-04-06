@@ -24,11 +24,11 @@ include" units\core\locals.de"
 ; immediate
 
 RUS summary начинает объявление оператора switch
-detail ( C: -di) ( R: i-) 
+detail <inline>( C: -di) ( R: i-) </inline>
   Семантика компиляции
-    Создаёт d - динамический массив ячеек.
-    Кладёт i - значение переменной *local-offset.
-    Увеличивает *local-offset на размер ячейки.
+    Создаёт <inline>d</inline> - динамический массив ячеек.
+    Кладёт <inline>i</inline> - значение переменной <inline>*local-offset</inline>.
+    Увеличивает <inline>*local-offset</inline> на размер ячейки.
   Семантика исполнения
     Выделяет локальную память. Снимает значение со стека, сохраняет его в
     выделенной памяти.
@@ -44,8 +44,7 @@ detail ( C: -di) ( R: i-)
       cr
     ;
   </code>
-  См. также 
-    of \of \switch
+  См. также <article>of</article> <article>\of<article> <article>\switch</article>
 \detail
 
 : of ( di-dim)
