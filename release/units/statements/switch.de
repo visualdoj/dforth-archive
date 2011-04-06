@@ -25,6 +25,13 @@ include" units\core\locals.de"
 
 RUS summary начинает объявление оператора switch
 detail ( C: -di) ( R: i-) 
+  Семантика компиляции
+    Создаёт d - динамический массив ячеек.
+    Кладёт i - значение переменной *local-offset.
+    Увеличивает *local-offset на размер ячейки.
+  Семантика исполнения
+    Выделяет локальную память. Снимает значение со стека, сохраняет его в
+    выделенной памяти.
   Пример использования
   <code>
     : test 
@@ -37,6 +44,8 @@ detail ( C: -di) ( R: i-)
       cr
     ;
   </code>
+  См. также 
+    of \of \switch
 \detail
 
 : of ( di-dim)
@@ -45,6 +54,10 @@ detail ( C: -di) ( R: i-)
   postpone ?branch
   >mark
 ; immediate
+
+RUS summary проверяет на равенство числу со стека значению, снятого при вызове switch
+detail ( C: di-dim) ( R: i-)
+\detail
 
 : \of ( dim-di)
   rrot
