@@ -15,17 +15,19 @@
 " described
 // }}}
 // {{{ stack
-" #stack" " 
-    См. команды
-      drop 
-      nip
-      dup
-      over
-      tuck
-      swap
-      lrot
-      rrot
-      pick" described
+" Основные стековые операции."
+help-group: W
+// " #stack" " 
+//     См. команды
+//       drop 
+//       nip
+//       dup
+//       over
+//       tuck
+//       swap
+//       lrot
+//       rrot
+//       pick" described
 " drop"         " ( a-) удаляет с вершины стека значение" described
 " nip"          " ( ab-b) удаляет второй по счёту элемент стека" described
 " dup"          " ( a-aa) дублирует верхний элемент стека" described
@@ -37,6 +39,8 @@
 " pick"         " ( a1 a2 .. an n -- a1 a2 .. an a1) копирует n-ный по счёту элемент стека на вершину" described
 // }}}
 // {{{ arithmetic
+" Основные арифметические операции."
+help-group: arithmetic
 " #arithmetic" " 
     Команды для всех чисел
       + - * = <> < > <= >= 0= 0< 0> 0<= 0>= ?dup 0; max min minmax
@@ -86,6 +90,8 @@
 " atan2" " ( yx -- atan2(y, x)) см. в гугле atan2" described
 // }}}
 // {{{ bool & bits
+" Команды для работы с bool и flag, побитовые команды."
+help-group: bool&bits
 " #bool&bits" " 
     false true not or and xor" described
 " false" " ( -- false) кладёт на стек ложь (ячейка со сброшенными всеми битами, т.е. 0)" described
@@ -96,6 +102,8 @@
 " xor" " ( a b -- a xor b) побитовое исключающее ИЛИ. Применённая к true и false даёт булевский вариант" described
 // }}}
 // {{{ createwords
+" Команды, создающие новые слова"
+help-group: createwords
 " #createword" " 
     create allot here , to variable value constant does>" described
 " create" " ( 'name'-) создаёт новую команду с именем name" described
@@ -109,6 +117,8 @@
 " does>" " в режиме компиляции приостанавливает компиляцию текущего определения и включает компиляцию для последнего созданного слова" described
 // }}}
 // {{{ ptr
+" Команды по работе с указателями"
+help-group: ptr
 " #ptr" " 
     @ ! 1+! 1-! cell+ cells malloc free move on off" described
 " @" " ( p-i) читает ячейку, на которую ссылается указатель" described
@@ -129,6 +139,8 @@
 " off" " ( ptr -- ) Выталкивает указатель, записывает 0 в него." described
 // }}}
 // {{{ statements
+" Стандартные блочные операторы."
+help-group: statements
 " #statements" " 
     branch ?branch >mark >resolve <mark <resolve : ; immediate exit recurse
     if else then" described
@@ -197,11 +209,15 @@
 // Если +loop пересекает границу limit и limit-1, то выполнение прекращается" described
 // }}}
 // {{{ console
+" Команды по работе со стеком."
+help-group: console
 " #console" " 
     ." described
 " ." " ( i-) выводит число с вершины стека на консоль" described
 // }}}
 // {{{ dyn
+" Команды по работе с динамическим массивом."
+help-group: dyn
 " #dyn" " 
     dyn dyn# dyn[] dyn@ dyn! dyn+ high dyn.l@ dyn.l! dyn.last dyn-new dyn.free" described
 " dyn" " ( start-length `name` -- )
@@ -283,6 +299,8 @@
   См. dyn dyn-new" described
 // }}}
 // {{{ file
+" Команды по работе с файлами и файловой системой"
+help-group: file
 " #file" " 
     file-open file-close file-w file-r file-write file-read file-size" described
 " file-open" " ( filename:str mode:int -- file) 
@@ -324,6 +342,8 @@
   См. file-open file-r" described
 // }}}
 // {{{ system
+" Системные команды виртуальной машины"
+help-group: DEVM
 " #system" " 
       _NOTFOUND_" described
 " _NOTFOUND_" " ( B: s -- ... true | false ) 
@@ -333,3 +353,5 @@
  При добавлении своего _NOTFOUND_ поведения рекомендуется учитывать старое:
   : _NOTFOUND_ bdup _NOTFOUND_ ?dup if; ... ;" described
 // }}}
+
+help-group-misc

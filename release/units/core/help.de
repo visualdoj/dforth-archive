@@ -21,7 +21,7 @@ drop
 
 : help-group! ( i) *help-current-group ! ;
 
-: help-group: ( B: s "name") source-next-name-passive  
+: help-group: ( B: s "name") source-next-name-passive
               *help-group-names bdyn# dup help-group! 
               " help-group-" source-next-name str+ created ,
               *help-group-names bdyn+
@@ -47,7 +47,8 @@ help-group: misc
   else [.str]" not found"cr then ;
 : described ( ss-) *help-articles bdyn+ 
                    *help-names bdyn+
-                   str0 *help-summary bdyn+ ;
+                   str0 *help-summary bdyn+
+                   *help-current-group @ *help-group dyn+ ;
 
 : help ( "name"-) source-next-name helped ;
 // : describe ( ") source-next-name *help-names str-dyn+ 
