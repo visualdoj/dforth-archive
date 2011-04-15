@@ -22,7 +22,7 @@ procedure SetDefault;
 begin
   CommandLine.Error  := False;
   CommandLine.Repl   := True;
-  CommandLine.System := 'system.de';
+  CommandLine.System := 'core\default\system.de';
 end;
 
 procedure Error(Param: String);
@@ -51,7 +51,7 @@ begin
   Writeln('           --norepl                do not run REPL after evaluated all files');
   Writeln('           --nosystem              run dembro without system file');
   Writeln('           --system <filename>     change system file location');
-  Writeln('                                   (default "system.de")');  
+  Writeln('                                   (default "core\default\system.de")');  
   Writeln('           --help                  print this help');
   Writeln('           <other>                 uses as filename to evaluate');  
   Writeln('Examples: dembro32');  

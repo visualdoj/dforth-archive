@@ -1,0 +1,346 @@
+// 2010.12.03 # Doj
+// Модуль, подключающий все полезные возможности общего назначения
+
+// {{{ Встроенные команды
+( 
+Изначально доступны:
+exit
+комментарии
+builtin
+builtedin
+_FIND_
+)
+
+// определение новых слов
+builtin : :
+builtin ; ;
+
+// получение следующего слова в исходнике
+builtin source-next-name source-next-name
+builtin source-next-name-passive source-next-name-passive
+
+: samebuiltin source-next-name-passive source-next-name builtedin ; 
+
+// системное
+samebuiltin _NOTFOUND_
+
+// {{{ W стековые команды
+samebuiltin drop
+samebuiltin nip
+samebuiltin dup
+samebuiltin over
+samebuiltin tuck
+samebuiltin swap
+samebuiltin lrot
+samebuiltin rrot
+samebuiltin lrotn
+samebuiltin rrotn
+samebuiltin pick
+// }}}
+// {{{ B стековые команды
+samebuiltin w>b
+samebuiltin b>w
+// samebuiltin b@w
+// samebuiltin w@b
+samebuiltin binc
+samebuiltin bdec
+samebuiltin b@
+samebuiltin b!
+samebuiltin bdrop
+samebuiltin bnip
+samebuiltin bdup
+samebuiltin bover
+samebuiltin btuck
+samebuiltin bswap
+samebuiltin blrot
+samebuiltin brrot
+// }}}
+// {{{ L стековые команды
+samebuiltin l@
+samebuiltin l!
+samebuiltin l+
+// samebuiltin l-
+// }}}
+// {{{ int арифметика
+samebuiltin +
+samebuiltin -
+samebuiltin *
+samebuiltin =
+samebuiltin <>
+samebuiltin <
+samebuiltin >
+samebuiltin <=
+samebuiltin >=
+samebuiltin 0=
+samebuiltin 0<>
+samebuiltin 0<
+samebuiltin 0>
+samebuiltin 0<=
+samebuiltin 0>=
+samebuiltin ?dup
+samebuiltin 0;
+// samebuiltin within
+samebuiltin max
+samebuiltin min
+samebuiltin minmax
+samebuiltin div
+samebuiltin mod
+samebuiltin divmod
+samebuiltin shl
+samebuiltin shr
+samebuiltin **
+samebuiltin inc
+samebuiltin dec
+builtin inc 1+
+builtin dec 1-
+samebuiltin abs
+samebuiltin neg
+// }}}
+// {{{ int типы
+samebuiltin uint->uint8
+samebuiltin uint->uint16
+samebuiltin uint->uint32
+samebuiltin uint->uint64
+samebuiltin uint8->uint
+samebuiltin uint16->uint
+samebuiltin uint32->uint
+samebuiltin uint64->uint
+samebuiltin int->int8
+samebuiltin int->int16
+samebuiltin int->int32
+samebuiltin int->int64
+samebuiltin int8->int
+samebuiltin int16->int
+samebuiltin int32->int
+samebuiltin int64->int
+samebuiltin int,
+samebuiltin int8,
+samebuiltin int16,
+samebuiltin int32,
+samebuiltin int64,
+samebuiltin uint,
+samebuiltin uint8,
+samebuiltin uint16,
+samebuiltin uint32,
+samebuiltin uint64,
+samebuiltin int!
+samebuiltin int8!
+samebuiltin int16!
+samebuiltin int32!
+samebuiltin int64!
+samebuiltin uint!
+samebuiltin uint8!
+samebuiltin uint16!
+samebuiltin uint32!
+samebuiltin uint64!
+samebuiltin int@
+samebuiltin int8@
+samebuiltin int16@
+samebuiltin int32@
+samebuiltin int64@
+samebuiltin uint@
+samebuiltin uint8@
+samebuiltin uint16@
+samebuiltin uint32@
+samebuiltin uint64@
+samebuiltin int.
+samebuiltin int8.
+samebuiltin int16.
+samebuiltin int32.
+samebuiltin int64.
+samebuiltin uint.
+samebuiltin uint8.
+samebuiltin uint16.
+samebuiltin uint32.
+samebuiltin uint64.
+// }}}
+// {{{ побитовые операции
+samebuiltin false
+samebuiltin true
+samebuiltin not
+samebuiltin or
+samebuiltin and
+samebuiltin xor
+// }}}
+// {{{ указатели
+samebuiltin @
+samebuiltin !
+samebuiltin malloc
+samebuiltin free
+samebuiltin move
+samebuiltin cell+
+samebuiltin cells
+samebuiltin inc!
+samebuiltin dec!
+builtin inc! 1+!
+builtin dec! 1-!
+// }}}
+// {{{ создание команд, режим компиляции
+builtin drop embro-drop
+builtin dup embro-dup
+builtin lrot embro-lrot
+builtin lrotn embro-lrotn
+builtin nip embro-nip
+builtin over embro-over
+builtin rrot embro-rrot
+builtin rrotn embro-rrotn
+builtin swap embro-swap
+builtin tuck embro-tuck
+samebuiltin '
+samebuiltin (compile)
+samebuiltin ,
+samebuiltin :noname
+samebuiltin <mark
+samebuiltin <resolve
+samebuiltin >mark
+samebuiltin >resolve
+samebuiltin ?branch
+samebuiltin [']
+samebuiltin allot
+samebuiltin allot
+samebuiltin branch
+samebuiltin call
+samebuiltin compile
+samebuiltin constant
+samebuiltin create
+samebuiltin created
+samebuiltin does>
+samebuiltin (does>)
+samebuiltin here
+samebuiltin immediate
+samebuiltin last
+samebuiltin postpone
+samebuiltin recurse
+samebuiltin state
+samebuiltin to
+samebuiltin value
+samebuiltin variable
+samebuiltin literal
+samebuiltin (literal)
+// }}}
+// {{{ встроенные типы
+samebuiltin typeof
+samebuiltin type-size
+samebuiltin t_void
+samebuiltin t_int
+samebuiltin t_int8
+samebuiltin t_int16
+samebuiltin t_int32
+samebuiltin t_int64
+samebuiltin t_uint
+samebuiltin t_uint8
+samebuiltin t_uint16
+samebuiltin t_uint32
+samebuiltin t_uint64
+samebuiltin t_bool
+samebuiltin t_str
+samebuiltin t_pchar
+samebuiltin t_ptr
+samebuiltin t_type
+samebuiltin t_single
+samebuiltin t_double
+samebuiltin t_extended
+// }}}
+// {{{ метакоманды
+samebuiltin evaluate
+samebuiltin evaluate-file
+samebuiltin execute
+samebuiltin xt.n@
+samebuiltin xt.d@
+samebuiltin opcode->command
+// }}}
+// {{{ alien
+samebuiltin lib-load
+samebuiltin lib-unload
+samebuiltin lib-fun
+samebuiltin :a
+samebuiltin a;
+samebuiltin :c
+samebuiltin c;
+samebuiltin stdcall
+samebuiltin cdecl
+// }}}
+// {{{ console
+samebuiltin .
+samebuiltin $
+samebuiltin cr
+samebuiltin emit
+samebuiltin space
+samebuiltin spaces
+// }}}
+// {{{ scattered colons
+samebuiltin ...
+samebuiltin ..:
+samebuiltin ;..
+// }}}
+// {{{ необходимый минимум для работы со строками
+samebuiltin str0
+samebuiltin str!
+samebuiltin str@
+samebuiltin str"
+samebuiltin [str]"
+samebuiltin (str)"
+samebuiltin str.
+samebuiltin str=
+// }}}
+// {{{ системные команды
+samebuiltin wp
+samebuiltin sys-version
+
+samebuiltin randomize
+samebuiltin random
+
+samebuiltin timer
+// }}}
+// }}}
+
+// Основные синтаксические конструкции
+: if compile ?branch >mark ; immediate
+: else compile branch >mark embro-swap >resolve ; immediate
+: then >resolve ; immediate
+: begin <mark ; immediate
+: while compile ?branch >mark embro-swap ; immediate
+: repeat compile branch <resolve >resolve ; immediate
+: until compile ?branch <resolve ; immediate
+
+: off ( p-) 0 swap ! ;
+: on ( p-) true swap ! ;
+
+: ptr! ! ;
+: op! ! ;
+: xt! ! ;
+: embroptr! ! ;
+: cell-allot here 1 cells allot ;
+
+: ,             , ;
+: ptr,          cell-allot ptr! ;
+: op,           cell-allot op! ;
+: xt,           cell-allot xt! ;
+: embroptr,     cell-allot embroptr! ;
+
+str" core\default\dyn.de" bdup evaluate-file
+str" core\default\strings.de" bdup evaluate-file
+str" core\default\source.de" bdup evaluate-file
+str" core\default\includes.de" bdup evaluate-file
+// т.к. только теперь подключён модуль для эксклюзивного подключения модулей
+// нужно в него добавить всё, что было подключено до него
+once+ once+ once+ once+
+
+variable *wp-debug
+: wp{ wp *wp-debug ! ;
+: }wp wp *wp-debug @ <> if ." WP ERROR" cr then ;
+
+include" core\default\createwords.de"
+include" core\default\help.de"
+include" core\default\statements.de"
+include" core\default\voc.de"
+include" core\default\f.de"
+// include" core\default\debug.de"
+include" core\default\w.de"
+include" core\default\files.de"
+include" core\default\locals.de"
+// include" docs\russian.de"
+
+include" units\statements\switch.de"
+
+." Loaded system file"cr

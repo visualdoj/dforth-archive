@@ -1,8 +1,6 @@
 // 2011.04.06 # Doj
 // Оператор switch
 
-include" units\core\locals.de"
-
 // 2 dyn *switch-marks 
 // 2 dyn *switch-offsets 
 

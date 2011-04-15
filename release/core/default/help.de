@@ -1,10 +1,6 @@
 // 2010.12.06 # Doj
 // Модуль для реализации встроенной помощи
 
-include" units\core\w.de"
-include" units\structures\dyn.de"
-include" units\utils\debug.de"
-
 1000 
 dup str-dyn *help-names // названия статей
 dup str-dyn *help-articles // тексты статей
