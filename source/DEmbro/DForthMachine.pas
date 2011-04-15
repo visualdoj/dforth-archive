@@ -293,7 +293,7 @@ OForthMachine = object
   FEmbroDump: array of TString;
   FEmbro: array of Byte;
   FTypes: array of TType;
-  FMemoryDebug: TDebug;
+  //FMemoryDebug: TDebug;
   FAlien: TAlien;
   FCurrentFileName: TString;
   FCurrentLine: Integer;
@@ -5331,8 +5331,8 @@ begin
   State := FS_INTERPRET;
   SetLength(FData, 2048);
   //FHere := 0;
-  FMemoryDebug := TDebug.Create('memory.tmp');
-  FMemoryDebug.Console := False;
+  //FMemoryDebug := TDebug.Create('memory.tmp');
+  //FMemoryDebug.Console := False;
 
   FAlien := TAlien.Create;
 
