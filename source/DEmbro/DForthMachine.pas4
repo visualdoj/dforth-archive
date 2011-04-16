@@ -2288,6 +2288,9 @@ procedure compile(Machine: TForthMachine; Command: PForthCommand);
 procedure q_compile_q(Machine: TForthMachine; Command: PForthCommand);
 procedure _call(Machine: TForthMachine; Command: PForthCommand);
 procedure postpone(Machine: TForthMachine; Command: PForthCommand);
+procedure _compiled(Machine: TForthMachine; Command: PForthCommand);
+procedure _postponed(Machine: TForthMachine; Command: PForthCommand);
+procedure _called(Machine: TForthMachine; Command: PForthCommand);
 procedure _execute(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TDataCommands'}{$ENDIF}
@@ -2894,6 +2897,35 @@ begin
   Machine.EWO(Opcode)
 end;
 
+procedure _compiled(Machine: TForthMachine; Command: PForthCommand);
+begin
+  with Machine^ do begin
+    //if Machine.State = FS_COMPILE then begin
+      Machine.EWO('(compile)');
+      Machine.EWO(Machine.WOS);
+    //end else begin
+    //  Machine.EWO(Machine.C[Machine.ERU].Name);
+    //end;
+  end;
+end;
+
+procedure _postponed(Machine: TForthMachine; Command: PForthCommand);
+var
+  C: PForthCommand;
+  Opcode: TOpcode;
+begin
+  C := Machine.FindCommand(Machine.WOS, @Opcode);
+  // Writeln(C^.Name);
+  if not IsImmediate(C) then
+    Machine.EWO('(compile)');
+  Machine.EWO(Opcode)
+end;
+
+procedure _called(Machine: TForthMachine; Command: PForthCommand);
+begin
+  Machine.EWO(Machine.WOS);
+end;
+
 procedure _execute(Machine: TForthMachine; Command: PForthCommand);
 begin
   with Machine^ do begin
@@ -3167,7 +3199,7 @@ begin
   with Machine^ do begin
     for I := 0 to High(Machine.FTypes) do
       if TString(Machine.FTypes[I].Name) = TString(Name) then begin
-        Machine.EWO(' typeof');
+        Machine.EWO('(typeof)');
         Machine.EWI(I);
         Exit;
       end;
@@ -3822,7 +3854,7 @@ var
   C: TChar;
 begin
  // with Machine^ do begin
-    Machine.EWO(' pchar"');
+    Machine.EWO('(pchar)"');
     C := Machine.NextChar;
     while C <> '"' do begin
       Machine.EWC(C);
@@ -5498,6 +5530,9 @@ begin
   AddCommand('(compile)', q_compile_q, True);
   AddCommand('call', _call, True);
   AddCommand('postpone', postpone, True);
+  AddCommand('compiled', _compiled, False);
+  AddCommand('postponed', _postponed, False);
+  AddCommand('called', _called, False);
   AddCommand('evaluate', Evaluate);
   ~AddCommand('evaluate-file', EvaluateFile);|
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -5528,7 +5563,7 @@ begin
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'type commands'}{$ENDIF}
   AddCommand('typeof', typeof, True);
-  AddCommand(' typeof', run_type);
+  AddCommand('(typeof)', run_type);
   AddCommand('type-size', type_size);
   AddCommand('t_void', _void, True);
   AddCommand('t_int', _int, True);
@@ -5564,7 +5599,7 @@ begin
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'string commands'}{$ENDIF}
   AddCommand('pchar"', pchar_dq, True);
-  AddCommand(' pchar"', run_pchar_dq);
+  AddCommand('(pchar)"', run_pchar_dq);
   AddCommand('pwidechar"', pwidechar_dq, True);
   AddCommand('[pwidechar]"', compile_pwidechar_dq, True);
   AddCommand('(pwidechar)"', run_pwidechar_dq);

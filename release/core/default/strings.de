@@ -33,8 +33,9 @@ samebuiltin str[]!
 samebuiltin str->pchar
 samebuiltin pchar->str
 samebuiltin pchar"
-samebuiltin pchar.
 // samebuiltin [pchar]"
+samebuiltin (pchar)"
+samebuiltin pchar.
 
 samebuiltin pwidechar"
 samebuiltin [pwidechar]"
@@ -62,6 +63,10 @@ samebuiltin str->int
 : str+" str" str+ ;
 : [str+]" postpone [str]" postpone str+ ; immediate
 : +" state @ if postpone [str+]" else str+" then ; immediate
+
+: str-swap+" str" bswap str+ ;
+: [str-swap+]" postpone [str]" postpone bswap postpone str+ ; immediate
+: swap+" state @ if postpone [str-swap+]" else str-swap+" then ; immediate
 
 : str-" str" str- ;
 : [str-]" postpone [str]" postpone str- ; immediate

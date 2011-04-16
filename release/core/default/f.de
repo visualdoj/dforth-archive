@@ -98,6 +98,10 @@ RUS summary ( W: d -- B: s) конвертирует double в строку
 samebuiltin extended->str
 RUS summary ( W: e -- B: s) конвертирует extended в строку
 
+samebuiltin float-(fliteral)
+samebuiltin double-(fliteral)
+samebuiltin extended-(fliteral)
+
 samebuiltin float-literal
 samebuiltin double-literal
 samebuiltin extended-literal

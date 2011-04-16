@@ -1,0 +1,20 @@
+// 2011.04.16 # Doj
+// ƒополнительные команды дл€ работы со строками.
+
+variable *str-variable-address
+
+: str-variable-generated@ ( s-) +" @" bdup str. cr created does> ( -s) b@ ;
+: str-variable-generated! ( s-) +" !" created does> ( -s) b! ;
+: str-variable-generated ( -) str0 , ;
+
+: str-variabled ( B: s) 
+  bdup str-variable-generated@ str-variable-generated!
+  str-variable-generated
+;
+: str-variable ( "name") source-next-name str-variabled ;
+
+: str-variabled! ( B: sn) 
+  bdup str-variable-generated@ str-variable-generated!
+  here str0 b>w , b!
+;
+: str-variable! ( B: s "name") source-next-name str-variabled! ;

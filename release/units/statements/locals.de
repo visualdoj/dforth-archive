@@ -145,9 +145,22 @@ include" units\utils\parser.de"
   repeat drop 
 ;
 
+: 0initialiaze-all-locals
+  *local-offset off *local-names bdyn# begin dup 0 > while 1-
+    dup *local-names bdyn[]@ prepare-local-name?
+    if *local-offset @ 
+      // ['] literal execute 
+      0 call literal
+      call literal
+      compile l! 
+      local-offset>>
+    then bdrop
+  repeat drop 
+;
+
 : get-memory-for-locals *local-offset @ 0; ['] literal execute compile l+ ;
 
-: |ed ( B: s --)  
+: x|ed ( B: s --)  
   compile branch >mark 
     local-offset-off
     *local-names bdyn.clear
@@ -155,10 +168,14 @@ include" units\utils\parser.de"
     generate-all-locals 
   >resolve 
   get-memory-for-locals
-  initialiaze-all-locals 
 ;
 
+: |ed x|ed initialiaze-all-locals ;
+: 0|ed x|ed 0initialiaze-all-locals ;
+
 : | ( "x1 x2 .. xn|"-) " |" source-cut |ed ; immediate
+: 0| ( "x1 x2 .. xn|"-) " |" source-cut 0|ed ; immediate
+: x| ( "x1 x2 .. xn|"-) " |" source-cut x|ed ; immediate
 
 // добавляем при завершении определения команды обнуление локальной переменной
 : ; postpone ; local-offset-off ; immediate

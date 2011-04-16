@@ -1,0 +1,6 @@
+// 2011.04.16 # Doj
+// Реализует механизм написания шаблонов.
+
+include" units\utils\strings.de"
+
+: template source-next-name " \template" source-cut bswap str-variabled! ;

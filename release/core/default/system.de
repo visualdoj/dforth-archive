@@ -200,7 +200,9 @@ samebuiltin allot
 samebuiltin allot
 samebuiltin branch
 samebuiltin call
+samebuiltin called
 samebuiltin compile
+samebuiltin compiled
 samebuiltin constant
 samebuiltin create
 samebuiltin created
@@ -210,6 +212,7 @@ samebuiltin here
 samebuiltin immediate
 samebuiltin last
 samebuiltin postpone
+samebuiltin postponed
 samebuiltin recurse
 samebuiltin state
 samebuiltin to
@@ -263,6 +266,8 @@ samebuiltin cdecl
 // {{{ console
 samebuiltin .
 samebuiltin $
+samebuiltin int.
+samebuiltin int$
 samebuiltin cr
 samebuiltin emit
 samebuiltin space
@@ -291,6 +296,9 @@ samebuiltin randomize
 samebuiltin random
 
 samebuiltin timer
+
+samebuiltin typeof
+samebuiltin (typeof)
 // }}}
 // }}}
 
@@ -318,29 +326,21 @@ samebuiltin timer
 : xt,           cell-allot xt! ;
 : embroptr,     cell-allot embroptr! ;
 
-str" core\default\dyn.de" bdup evaluate-file
-str" core\default\strings.de" bdup evaluate-file
-str" core\default\source.de" bdup evaluate-file
-str" core\default\includes.de" bdup evaluate-file
-// т.к. только теперь подключён модуль для эксклюзивного подключения модулей
-// нужно в него добавить всё, что было подключено до него
-once+ once+ once+ once+
+str" core\default\dyn.de" evaluate-file
+str" core\default\strings.de" evaluate-file
+str" core\default\source.de" evaluate-file
+str" core\default\includes.de" evaluate-file
+str" core\default\createwords.de" evaluate-file
+str" core\default\help.de" evaluate-file
+str" core\default\statements.de" evaluate-file
+str" core\default\voc.de" evaluate-file
+str" core\default\f.de" evaluate-file
+// str" core\default\debug.de" evaluate-file
+str" core\default\w.de" evaluate-file
+str" core\default\files.de" evaluate-file
+// str" core\default\locals.de" evaluate-file
+// str" docs\russian.de" evaluate-file
 
-variable *wp-debug
-: wp{ wp *wp-debug ! ;
-: }wp wp *wp-debug @ <> if ." WP ERROR" cr then ;
-
-include" core\default\createwords.de"
-include" core\default\help.de"
-include" core\default\statements.de"
-include" core\default\voc.de"
-include" core\default\f.de"
-// include" core\default\debug.de"
-include" core\default\w.de"
-include" core\default\files.de"
-include" core\default\locals.de"
-// include" docs\russian.de"
-
-include" units\statements\switch.de"
+// include" units\statements\switch.de"
 
 ." Loaded system file"cr
