@@ -1,0 +1,22 @@
+// 2011.04.16 # Doj
+// Тест встроенного QSort алгоритма.
+
+include" units\algorithms\qsort.de"
+
+10 dyn d
+
+randomize
+100 random d dyn+
+100 random d dyn+
+100 random d dyn+
+100 random d dyn+
+100 random d dyn+
+100 random d dyn+
+100 random d dyn+
+100 random d dyn+
+100 random d dyn+
+100 random d dyn+
+
+d dyn-qsort
+
+:noname 0 begin dup d dyn# < while dup d dyn[]@ . 1+ repeat ; execute

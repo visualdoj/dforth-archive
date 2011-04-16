@@ -1,0 +1,23 @@
+// 2011.04.16 # Doj
+// Пример использования шаблонов
+
+include" units\statements\template.de"
+
+template SOME
+  : NAME-X 35 OP ;
+  : NAME-Y 20 NAME-X ;
+\template
+
+SOME
+  " NAME" \" FIRST"
+  " OP" \" +"
+evaluate
+
+SOME
+  " NAME" \" SECOND"
+  " OP" \" *"
+  bdup str.
+evaluate
+
+FIRST-Y . cr
+SECOND-Y . cr

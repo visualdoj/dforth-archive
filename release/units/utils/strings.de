@@ -18,3 +18,6 @@ variable *str-variable-address
   here str0 b>w , b!
 ;
 : str-variable! ( B: s "name") source-next-name str-variabled! ;
+
+: str-constanted ( B: sn) created b>w , does> b@ ;
+: str-constant ( B: s "name") source-next-name str-constanted ;

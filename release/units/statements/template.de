@@ -3,4 +3,12 @@
 
 include" units\utils\strings.de"
 
-: template source-next-name " \template" source-cut bswap str-variabled! ;
+: template source-next-name " \template" source-cut bswap str-constanted ;
+
+RUS
+summary ( " name ... \template")
+
+: templated ( s) bdup swap+" \template^" " +" ^"" bdup str. source-cut 
+                 bswap str-constanted ;
+
+: template" ( "name" \template" name"") " ^"" source-cut templated ;

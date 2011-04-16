@@ -1,0 +1,45 @@
+// 2011.04.16 # Doj
+// Быстрая сортировка
+
+include" units\statements\locals.de"
+include" units\statements\template.de"
+
+template QUICK-SORT
+  local-offset-off
+  : (PREFIX)qsort-interval over . dup . cr | d a b|
+    over . dup . d@ . a@ . b@ . cr
+    a@ b@ >= if exit then
+    a@ . b@ . cr
+    a@ b@ + 2 div a@ b@ | m l r|
+    begin l@ r@ < while
+      l@ begin m@      d@ (<) while ++l repeat
+      r@ begin m@ swap d@ (<) while --r repeat
+      l@ r@ d@ (swap)
+      l@ m@ = if
+        l@ m@ l! m!
+      else r@ m@ = if
+        r@ m@ r! m!
+      then then
+    repeat
+    d@ l@ 1+ m@ recurse
+    d@ m@ r@ 1- recurse
+  ;
+  : (PREFIX)qsort ( d) dup (#) 1- 0 swap over . cr (PREFIX)qsort-interval ;
+\template
+
+local-offset-off
+: dyn-swap | l r d| 
+  l@ d@ dyn[]@ 
+  r@ d@ dyn[]@
+  l@ d@ dyn[]!
+  r@ d@ dyn[]!
+;
+: dyn-less ( abd) dup rrot dyn[]@ rrot dyn[]@ > ;
+
+// Специализируем для динамических массивов
+QUICK-SORT
+  " (PREFIX)" \" dyn-"
+  " (#)" \" dyn#"
+  " (<)" \" dyn-less"
+  " (swap)" \" dyn-swap"
+evaluate
