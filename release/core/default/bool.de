@@ -1,0 +1,12 @@
+// 2011.04.19 # Doj
+// Булевы и побитовые операции, команды для работы с флагами.
+
+samebuiltin false
+samebuiltin true
+samebuiltin not
+samebuiltin or
+samebuiltin and
+samebuiltin xor
+
+: off ( p-) 0 swap ! ;
+: on ( p-) true swap ! ;

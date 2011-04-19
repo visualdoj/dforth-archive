@@ -1,0 +1,9 @@
+// 2011.04.19 # Doj
+//     Команды для управления стеком локальных переменных.
+
+// {{{ L стековые команды
+samebuiltin l@
+samebuiltin l!
+samebuiltin l+
+// samebuiltin l-
+// }}}

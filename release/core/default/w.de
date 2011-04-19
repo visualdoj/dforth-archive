@@ -1,4 +1,21 @@
+// 2011.04.19 # Doj
+//   Модуль, реализующий основные команды для работы со стеком
 // 2010.12.06 # Doj
-// Дополнительные команды для работы со стеком
+//   Дополнительные команды для работы со стеком
+
+// {{{ W стековые команды
+samebuiltin wp
+samebuiltin drop
+samebuiltin nip
+samebuiltin dup
+samebuiltin over
+samebuiltin tuck
+samebuiltin swap
+samebuiltin lrot
+samebuiltin rrot
+samebuiltin lrotn
+samebuiltin rrotn
+samebuiltin pick
+// }}}
 
 : 2dup ( ab-abab) over over ;

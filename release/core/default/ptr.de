@@ -1,0 +1,14 @@
+// 2011.04.19 # Doj
+//     Операции с указателями. 
+
+samebuiltin @
+samebuiltin !
+samebuiltin malloc
+samebuiltin free
+samebuiltin move
+samebuiltin cell+
+samebuiltin cells
+samebuiltin inc!
+samebuiltin dec!
+builtin inc! 1+!
+builtin dec! 1-!

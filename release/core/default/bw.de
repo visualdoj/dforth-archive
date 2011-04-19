@@ -1,0 +1,21 @@
+// 2011.04.19 # Doj
+//     Модуль с основными командами для работы со стеком блоков
+
+// {{{ B стековые команды
+samebuiltin w>b
+samebuiltin b>w
+// samebuiltin b@w
+// samebuiltin w@b
+samebuiltin binc
+samebuiltin bdec
+samebuiltin b@
+samebuiltin b!
+samebuiltin bdrop
+samebuiltin bnip
+samebuiltin bdup
+samebuiltin bover
+samebuiltin btuck
+samebuiltin bswap
+samebuiltin blrot
+samebuiltin brrot
+// }}}

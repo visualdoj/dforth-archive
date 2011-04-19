@@ -1,0 +1,25 @@
+// 2011.04.19 # Doj
+//     Типы, встроенные в ядро.
+
+samebuiltin typeof
+samebuiltin (typeof)
+samebuiltin type-size
+samebuiltin t_void
+samebuiltin t_int
+samebuiltin t_int8
+samebuiltin t_int16
+samebuiltin t_int32
+samebuiltin t_int64
+samebuiltin t_uint
+samebuiltin t_uint8
+samebuiltin t_uint16
+samebuiltin t_uint32
+samebuiltin t_uint64
+samebuiltin t_bool
+samebuiltin t_str
+samebuiltin t_pchar
+samebuiltin t_ptr
+samebuiltin t_type
+samebuiltin t_single
+samebuiltin t_double
+samebuiltin t_extended

@@ -1,0 +1,12 @@
+// 2011.04.19 # Doj
+//     Команды для взаимодействия с внешними библиотеками и программами.
+
+samebuiltin lib-load
+samebuiltin lib-unload
+samebuiltin lib-fun
+samebuiltin :a
+samebuiltin a;
+samebuiltin :c
+samebuiltin c;
+samebuiltin stdcall
+samebuiltin cdecl

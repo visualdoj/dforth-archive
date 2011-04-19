@@ -1,0 +1,38 @@
+// 2011.04.19 # Doj
+//     Модуль с подключением основных команд численной арифметики.
+
+// {{{ int арифметика
+samebuiltin +
+samebuiltin -
+samebuiltin *
+samebuiltin =
+samebuiltin <>
+samebuiltin <
+samebuiltin >
+samebuiltin <=
+samebuiltin >=
+samebuiltin 0=
+samebuiltin 0<>
+samebuiltin 0<
+samebuiltin 0>
+samebuiltin 0<=
+samebuiltin 0>=
+samebuiltin ?dup
+samebuiltin 0;
+// samebuiltin within
+samebuiltin max
+samebuiltin min
+samebuiltin minmax
+samebuiltin div
+samebuiltin mod
+samebuiltin divmod
+samebuiltin shl
+samebuiltin shr
+samebuiltin **
+samebuiltin inc
+samebuiltin dec
+builtin inc 1+
+builtin dec 1-
+samebuiltin abs
+samebuiltin neg
+// }}}

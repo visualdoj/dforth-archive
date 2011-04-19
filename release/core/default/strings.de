@@ -1,7 +1,15 @@
 // 2010.12.06 # Doj
-// Команды для упрощения работы со строками
+//     Команды для упрощения работы со строками
 
 // {{{ Встроенный функционал
+samebuiltin str0
+samebuiltin str!
+samebuiltin str@
+samebuiltin [str]"
+samebuiltin (str)"
+samebuiltin str.
+samebuiltin str=
+
 samebuiltin *poststr
 samebuiltin *postname
 // samebuiltin str0

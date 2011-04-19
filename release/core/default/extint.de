@@ -1,0 +1,62 @@
+// 2011.04.19 # Doj
+//     Добавляет команды для работы с дополнительными видами целых чисел на
+//   стеке W.
+
+// {{{ int типы
+samebuiltin uint->uint8
+samebuiltin uint->uint16
+samebuiltin uint->uint32
+samebuiltin uint->uint64
+samebuiltin uint8->uint
+samebuiltin uint16->uint
+samebuiltin uint32->uint
+samebuiltin uint64->uint
+samebuiltin int->int8
+samebuiltin int->int16
+samebuiltin int->int32
+samebuiltin int->int64
+samebuiltin int8->int
+samebuiltin int16->int
+samebuiltin int32->int
+samebuiltin int64->int
+samebuiltin int,
+samebuiltin int8,
+samebuiltin int16,
+samebuiltin int32,
+samebuiltin int64,
+samebuiltin uint,
+samebuiltin uint8,
+samebuiltin uint16,
+samebuiltin uint32,
+samebuiltin uint64,
+samebuiltin int!
+samebuiltin int8!
+samebuiltin int16!
+samebuiltin int32!
+samebuiltin int64!
+samebuiltin uint!
+samebuiltin uint8!
+samebuiltin uint16!
+samebuiltin uint32!
+samebuiltin uint64!
+samebuiltin int@
+samebuiltin int8@
+samebuiltin int16@
+samebuiltin int32@
+samebuiltin int64@
+samebuiltin uint@
+samebuiltin uint8@
+samebuiltin uint16@
+samebuiltin uint32@
+samebuiltin uint64@
+samebuiltin int.
+samebuiltin int8.
+samebuiltin int16.
+samebuiltin int32.
+samebuiltin int64.
+samebuiltin uint.
+samebuiltin uint8.
+samebuiltin uint16.
+samebuiltin uint32.
+samebuiltin uint64.
+// }}}

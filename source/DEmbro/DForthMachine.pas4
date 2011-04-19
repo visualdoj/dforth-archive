@@ -183,7 +183,7 @@ define(~typed_commands|,
      procedure _exclamation_$1 cmdhdr; body( Move(WVar(-PSize-$2), Pointer(WVar(-PSize))^, $2); Dec(WP, PSize + $2) )
      procedure ptr_plus_$1 cmdhdr; body( PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; )
      procedure _to_$1 cmdhdr; body( if State <> FS_INTERPRET then _compile_to_$1(Machine, Command) else _interpret_to_$1(Machine, Command); )
-     procedure _compile_to_$1 cmdhdr; body( EWO('run@genname($1, ~to|)'); EWO(NextName); )
+     procedure _compile_to_$1 cmdhdr; body( BuiltinEWO('run@genname($1, ~to|)'); EWO(NextName); )
      procedure _run_to_$1 cmdhdr; var O: TOpcode; body( O := ERO; Move(WVar(-$2), C[O].Data^, $2); Dec(WP, $2); )
      procedure _interpret_to_$1 cmdhdr; var N: TString; Comm: PForthCommand; body( N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError('unkown name after genname($1, ~to|): ' + N); FSession := False; Exit; end; 
@@ -192,7 +192,7 @@ define(~typed_commands|,
      procedure _value_$1 cmdhdr; body( with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_$1; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); Flags := Flags and not 1; end; )
      procedure _variable_$1 cmdhdr; body( with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, $2); Move(WP^, Here^, $2);} EA($2); end; )
      procedure RunValue_$1 cmdhdr; body( Move(Command.Data^, WP^, $2); Inc(WP, $2); )
-    procedure literal_$1 cmdhdr; body( EWO('genname($1, (literal))'); Dec(WP, $2); 
+    procedure literal_$1 cmdhdr; body( BuiltinEWO('genname($1, (literal))'); Dec(WP, $2); 
                                        ifelse(~|,$1,
                                               EWI(Integer(WP^)), 
                                               EWV(WP, $2);) )
@@ -616,7 +616,7 @@ define(~number_arithmetic_commands|,
     ~
      procedure $1_push  cmdhdr; body( if State = FS_COMPILE then $1_compile_push(Machine, Command) else $1_interpret_push(Machine, Command) )
      procedure $1_interpret_push  cmdhdr; body( $2(WP^) := $2(StrToInt(NextName)); Inc(WP, SizeOf($2)); )
-     procedure $1_compile_push  cmdhdr; body( EWO('run@$1-push'); EW_$1(StrToInt(NextName)); )
+     procedure $1_compile_push  cmdhdr; body( BuiltinEWO('run@$1-push'); EW_$1(StrToInt(NextName)); )
      procedure $1_run_push  cmdhdr; body( $2(WP^) := ER_$1; Inc(WP, SizeOf($2)); )
      procedure $1_1_plus cmdhdr;  body( Inc($2(WVar(-SizeOf($2)))) )
      procedure $1_1_minus cmdhdr; body( Dec($2(WVar(-SizeOf($2)))) )
@@ -714,7 +714,7 @@ define(~float_arithmetic_commands|,
     ~
      procedure $1_push  cmdhdr; body( if State = FS_COMPILE then $1_compile_push(Machine, Command) else $1_interpret_push(Machine, Command) )
      procedure $1_interpret_push  cmdhdr; body( $2(WP^) := (StrToFloat(NextName)); Inc(WP, SizeOf($2)); )
-     procedure $1_compile_push  cmdhdr; body( EWO('run@$1-push'); EW_$1(StrToFloat(NextName)); )
+     procedure $1_compile_push  cmdhdr; body( BuiltinEWO('run@$1-push'); EW_$1(StrToFloat(NextName)); )
      procedure $1_run_push  cmdhdr; body( $2(WP^) := ER_$1; Inc(WP, SizeOf($2)); )
      procedure $1_slash cmdhdr; body( $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) / $2(WVar(-SizeOf($2))); 
                                                    Dec(WP, SizeOf($2)); )
@@ -902,7 +902,7 @@ define(~misc_commands|,
       procedure source_next_name_passive cmdhdr; body( // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
                                                                                                    interpret_source_next_name_passive(Machine, Command) )
       procedure interpret_source_next_name_passive cmdhdr; body( str_push(Machine, NextNamePassive) )
-      procedure compile_source_next_name_passive cmdhdr; body( EWO('(str)"'); EWStr(NextNamePassive); )
+      procedure compile_source_next_name_passive cmdhdr; body( BuiltinEWO('(str)"'); EWStr(NextNamePassive); )
       procedure run_source_next_name_passive cmdhdr; body( str_push(Machine, @E[EC]); )
       procedure source_read_to_char cmdhdr; var I: Integer; body( I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); str_push(Machine, TString(Copy(S, SC + 1, I - SC))); SC := I; )
       procedure ptr_nil cmdhdr; body( WUP(nil); )
@@ -910,17 +910,17 @@ define(~misc_commands|,
       procedure interpret_start cmdhdr; body( State := FS_INTERPRET )
       procedure run_start cmdhdr; body( State := FS_INTERPRET )
       procedure opcode_to_command cmdhdr; body( Pointer(WVar(-SizeOf(Integer))) := GetCommandByOpcode(Integer(WVar(-SizeOf(Integer)))) )
-      procedure literal cmdhdr; body( EWO('(literal)'); EWI(WOI); )
+      procedure literal cmdhdr; body( BuiltinEWO('(literal)'); EWI(WOI); )
       procedure sq_ap_sq cmdhdr; body( {if State <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
                 WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
-                EWO('opcode->command'); )
+                BuiltinEWO('opcode->command'); )
       procedure interpret_sq_ap_sq cmdhdr; body( WUP(FindCommand(NextName)) )
-      procedure compile_sq_ap_sq cmdhdr; body( EWO('run@['']'); EWO(NextName); )
+      procedure compile_sq_ap_sq cmdhdr; body( BuiltinEWO('run@['']'); EWO(NextName); )
       procedure run_sq_ap_sq cmdhdr; body( WUP(C[ERO]); )
       procedure _tick cmdhdr; body( Pointer(WP^) := FindCommand(NextName); Inc(WP, SizeOf(Pointer)); )
       procedure execute cmdhdr; var P: PForthCommand; body( 
                                              P := WOP; P.Code(Machine, P) )
-      procedure _does_gt cmdhdr; body( EWO('(does>)'); EWO('exit'); )
+      procedure _does_gt cmdhdr; body( BuiltinEWO('(does>)'); BuiltinEWO('exit'); )
       procedure _sq_does_gt_sq cmdhdr; body( Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; )
       procedure CallDoesGt cmdhdr; body( Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); )
       procedure Cells cmdhdr; body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt)))*SizeOf(Integer); )
@@ -1427,7 +1427,7 @@ define(~f_commands|,
         idle(asm
           fstp F
         end;)
-        Machine.EWO('float-(fliteral)');
+        Machine.BuiltinEWO('float-(fliteral)');
         Machine.EWV(@F, SizeOf(F));
       end;
       procedure _double_fliteral cmdhdr;
@@ -1437,7 +1437,7 @@ define(~f_commands|,
         idle(asm
           fstp F
         end;)
-        Machine.EWO('double-(fliteral)');
+        Machine.BuiltinEWO('double-(fliteral)');
         Machine.EWV(@F, SizeOf(F));
       end;
       procedure _extended_fliteral cmdhdr;
@@ -1447,7 +1447,7 @@ define(~f_commands|,
         idle(asm
           fstp F
         end;)
-        Machine.EWO('extended-(fliteral)');
+        Machine.BuiltinEWO('extended-(fliteral)');
         Machine.EWV(@F, SizeOf(F));
       end;
       procedure _float_run_fliteral cmdhdr;
@@ -1935,6 +1935,7 @@ OForthMachine = object
   procedure EWE(V: TEmbroPtr);
   procedure EWO(V: TOpcode); overload;
   procedure EWO(V: TString); overload;
+  procedure BuiltinEWO(V: TString); 
   procedure EWR(V: TOpcode); overload;
   procedure EWI8(V: TInt8);
   procedure EWI16(V: TInt16);
@@ -2122,7 +2123,9 @@ OForthMachine = object
 
   function GetEmbroDumpLines: Integer;
   function GetEmbroDumpLine(Index: Integer): TString;
-  function FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
+  function FindCommand(Voc: PVoc; const Name: TString; Index: PInteger = nil): PForthCommand; overload;
+  function FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand; overload;
+  function ExtendedFindCommand(const Name: TString; Index: PInteger = nil): PForthCommand; overload;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'all commands'}{$ENDIF}
@@ -2426,6 +2429,42 @@ procedure SetBuiltin(Command: PForthCommand; I: Boolean);
 function CopyStrToPChar(const B: TString): PChar;
 
 implementation
+
+function GetFileName(FullPath: TString): TString;
+var
+  I: Integer;
+begin
+  I := Length(FullPath);
+  while I > 0 do
+    if FullPath[I] = '\' then begin
+      Delete(FullPath, 1, I);
+      break;
+    end else
+      Dec(I);
+  Result := FullPath;
+end;
+
+function GetDirectory(const FullPath: TString): TString;
+var
+  I: Integer;
+begin
+  Result := FullPath;
+  I := Length(FullPath);
+  while I > 0 do
+    if Result[I] = '\' then begin
+      Result := Copy(Result, 1, I);
+      Exit
+    end else
+      Dec(I);
+end;
+
+function InternalFileName(const FullPath: TString): TString;
+begin
+  Result := GetFileName(FullPath);
+  if Length(Result) > 2 then
+    if Pos('.de', Result) = Length(Result) - 2 then
+      Delete(Result, Length(Result) - 2, 3);
+end;
 
 function IsImmediate(Command: PForthCommand): Boolean;
 begin
@@ -2796,7 +2835,7 @@ begin
     P := Machine.LOP;
     Index := Machine.LOI;
     Machine.C[Index]^.Name := P;
-    Machine.EWO('exit');
+    Machine.BuiltinEWO('exit');
     Machine.State := FS_INTERPRET;
     Machine.C[Index]^.Flags := Machine.C[Index]^.Flags and not 1;
     Machine.OnUpdateCommand(Index);
@@ -2832,7 +2871,7 @@ begin
  // with Machine^ do begin
     C := Machine.WOP;
     P := Cardinal(C^.Param);
-    Machine.EWO('branch');
+    Machine.BuiltinEWO('branch');
     Cardinal(C^.Param) := Machine.EL;
     Machine.EWU(Machine.WOU);
     Machine.State := FS_INTERPRET;
@@ -2842,7 +2881,7 @@ end;
 procedure scattered_dots(Machine: TForthMachine; Command: PForthCommand); 
 begin
   with Machine^ do begin
-    Machine.EWO('branch');
+    Machine.BuiltinEWO('branch');
     Cardinal(Machine.C[Machine.FLastMnemonic]^.Param) := Machine.EL;
     Machine.EWU(Machine.EL + SizeOf(TUInt));
   end;
@@ -2862,7 +2901,7 @@ var
 begin
   with Machine^ do begin
     //if Machine.State = FS_COMPILE then begin
-      Machine.EWO('(compile)');
+      Machine.BuiltinEWO('(compile)');
       Machine.EWO(Machine.NextName);
     //end else begin
     //  Machine.EWO(Machine.C[Machine.ERU].Name);
@@ -2893,7 +2932,7 @@ begin
   C := Machine.FindCommand(Machine.NextName, @Opcode);
   // Writeln(C^.Name);
   if not IsImmediate(C) then
-    Machine.EWO('(compile)');
+    Machine.BuiltinEWO('(compile)');
   Machine.EWO(Opcode)
 end;
 
@@ -2901,7 +2940,7 @@ procedure _compiled(Machine: TForthMachine; Command: PForthCommand);
 begin
   with Machine^ do begin
     //if Machine.State = FS_COMPILE then begin
-      Machine.EWO('(compile)');
+      Machine.BuiltinEWO('(compile)');
       Machine.EWO(Machine.WOS);
     //end else begin
     //  Machine.EWO(Machine.C[Machine.ERU].Name);
@@ -2917,7 +2956,7 @@ begin
   C := Machine.FindCommand(Machine.WOS, @Opcode);
   // Writeln(C^.Name);
   if not IsImmediate(C) then
-    Machine.EWO('(compile)');
+    Machine.BuiltinEWO('(compile)');
   Machine.EWO(Opcode)
 end;
 
@@ -3199,7 +3238,7 @@ begin
   with Machine^ do begin
     for I := 0 to High(Machine.FTypes) do
       if TString(Machine.FTypes[I].Name) = TString(Name) then begin
-        Machine.EWO('(typeof)');
+        Machine.BuiltinEWO('(typeof)');
         Machine.EWI(I);
         Exit;
       end;
@@ -3854,7 +3893,7 @@ var
   C: TChar;
 begin
  // with Machine^ do begin
-    Machine.EWO('(pchar)"');
+    Machine.BuiltinEWO('(pchar)"');
     C := Machine.NextChar;
     while C <> '"' do begin
       Machine.EWC(C);
@@ -3906,7 +3945,7 @@ var
   C: WideChar;
 begin
  // with Machine^ do begin
-    Machine.EWO('(pwidechar)"');
+    Machine.BuiltinEWO('(pwidechar)"');
     C := WideChar(Machine.NextChar);
     while C <> '"' do begin
       Machine.EWV(@C, SizeOf(C));
@@ -4083,7 +4122,7 @@ end;
 
 procedure _compile_char(Machine: TForthMachine; Command: PForthCommand);
 begin
-  Machine.EWO('(literal)');
+  Machine.BuiltinEWO('(literal)');
   Machine.EWI(Ord(Machine.SNC));
 end;
 
@@ -4420,7 +4459,7 @@ var
 begin
  // with Machine^ do begin
     if Machine.ConvStr = Machine.nop then begin
-      Machine.EWO('(str)"');
+      Machine.BuiltinEWO('(str)"');
       Machine.EWI(1);
       E := Machine.EL;
       Machine.EWI(0);
@@ -4446,7 +4485,7 @@ begin
     end else begin
       str_dq(Machine, Command);
       S := PStrRec(BVar(-1));
-      Machine.EWO('(str)"');
+      Machine.BuiltinEWO('(str)"');
       E := Machine.EL;
       Machine.EWV(S, SizeOf(Integer)*3 + S^.Len*S^.Width + 1);
       Integer(Pointer(@Machine.E[E])^) := 1;
@@ -4472,7 +4511,7 @@ var
   B: TStr;
   E: Integer;
 begin
-  Machine.EWO('(str-literal)');
+  Machine.BuiltinEWO('(str-literal)');
   B := str_pop(Machine);
   E := Machine.EL;
   Machine.EWV(B, 3*SizeOf(TInt) + B^.Len*B^.Width + 1);
@@ -4883,7 +4922,8 @@ end;
 
 procedure OForthMachine.RunError(const S: TString);
 begin
-  Error('Runtime(' + IntToStr(FCurrentLine) + ', ' +
+  Error('Runtime(' + InternalFileName(FCurrentFileName) + ', ' +
+                     IntToStr(FCurrentLine) + ', ' +
                      IntToStr(FCurrentPos) + '): ' + S);
   // FRunning := False;
 end;
@@ -4988,6 +5028,18 @@ begin
   end;
   FSession := False;
   LogError('command "' + V + '" not found');
+end;
+
+procedure OForthMachine.BuiltinEWO(V: TString); 
+var
+  I: TOpcode;
+begin
+  if FindCommand(vBUILTIN, V, @I) <> nil then begin
+    EWO(I);
+    Exit;
+  end;
+  FSession := False;
+  LogError('builtin command "' + V + '" not found');
 end;
 
 procedure OForthMachine.EWR(V: TOpcode);
@@ -5460,6 +5512,12 @@ begin
   ConvStr := nop;
   ConvName := nop;
 
+  AddCommand('exit', _exit);
+  AddCommand('_FIND_', _FIND_);
+  AddCommand('(', CompileComment, True); {) для m4}
+  AddCommand('//', CompileLineComment, True);
+  AddCommand('builtin', _builtin);
+  AddCommand('builtedin', _builtedin);
   AddCommand('_NOTFOUND_', _NOTFOUND_);
   AddCommand('vocabulary-new', _vocabulary);
   AddCommand('vLOCAL', _vLOCAL);
@@ -5752,7 +5810,13 @@ begin
   State := FS_INTERPRET;
   FSession := True;
   FRunning := False;
+  RUI(FCurrentLine);
+  RUI(FCurrentPos);
+  FCurrentLine := 1;
+  FCurrentPos := 1;
   MainLoop;
+  FCurrentPos := ROI;
+  FCurrentLine := ROI;
   RB := ROP; 
   SC := ROI;
   Self.S  := ROP;
@@ -5785,7 +5849,7 @@ begin
     B := B + T + EOL;
   end;
   Close(F);
-  //WUS(FCurrentFileName);
+  WUS(FCurrentFileName);
   LUI(FCurrentLine);
   LUI(FCurrentPos);
   FCurrentFileName := FileName;
@@ -5794,7 +5858,7 @@ begin
   Interpret(PChar(B));
   FCurrentPos := LOI;
   FCurrentLine := LOI;
-  //FCurrentFileName := WOS;
+  FCurrentFileName := WOS;
 end;
 
 procedure Evaluate(Machine: TForthMachine; Command: PForthCommand);
@@ -5814,46 +5878,72 @@ var
   //B: array of Byte;
   B: TString;
   T: TString;
+  FullPath: TString;
+  ShortPath: TString;
 begin
   S := str_pop(Machine);
-  // Writeln('Evaluate file "', PChar(@(PStrRec(S)^.Sym[0])), '"');
-  if Length(Machine.Directories) > 0 then begin
-    Assign(F, Machine.Directories[High(Machine.Directories)] + TString(PChar(@(PStrRec(S)^.Sym[0]))));
-    {$I-}
-    Reset(F);
-    {$I+}
-  end;
-  if (Length(Machine.Directories) = 0) or (IOResult <> 0) then begin
-    Assign(F, PChar(GetCurrentDirectory) + '\' + PChar(@(PStrRec(S)^.Sym[0])));
-    {$I-}
-    Reset(F);
-    {$I+}
-    if IOResult <> 0 then begin
-      Assign(F, PChar(GetExeDirectory) + '\' + PChar(@(PStrRec(S)^.Sym[0])));
-      {$I-}
-      Reset(F);
-      {$I+}
-      if IOResult <> 0 then begin
-        Machine.LogError('cannot open file "' + PChar(@(PStrRec(S)^.Sym[0])) + '"');
-        Exit;
-      end;
+  ShortPath := TString(PChar(@(PStrRec(S)^.Sym[0])));
+  FullPath := '';
+  while True do begin
+    if Length(Machine.Directories) > 0 then begin
+      FullPath := Machine.Directories[High(Machine.Directories)] + ShortPath;
+      if FileExists(FullPath) then 
+        Break;
     end;
-  end;
-  B := TString(PChar(@(PStrRec(S)^.Sym[0])));
-  while (Length(B) > 0) and (B[Length(B)] <> '\') do begin
-    SetLength(B, Length(B) - 1);
+    FullPath := PChar(GetCurrentDirectory) + '\' + ShortPath;
+    if FileExists(FullPath) then 
+      Break;
+    FullPath := PChar(GetExeDirectory) + '\' + ShortPath;
+    if FileExists(FullPath) then 
+      Break;
+    Exit;
   end;
   SetLength(Machine.Directories, Length(Machine.Directories) + 1);
-  Machine.Directories[High(Machine.Directories)] := B;
-  B := '';
-  while not EOF(F) do begin
-    Readln(F, T);
-    B := B + T + EOL;
-  end;
-  Close(F);
-  Machine.Interpret(PChar(B));
+  Machine.Directories[High(Machine.Directories)] := GetDirectory(FullPath);
   DelRef(S);
+  Machine.InterpretFile(FullPath);
   SetLength(Machine.Directories, Length(Machine.Directories) - 1);
+  (* // Writeln('Evaluate file "', PChar(@(PStrRec(S)^.Sym[0])), '"'); *)
+  (* if Length(Machine.Directories) > 0 then begin *)
+  (*   FullPath := Machine.Directories[High(Machine.Directories)] + ShortPath;  *)
+  (*   Assign(F, FullPath); *)
+  (*   {$I-} *)
+  (*   Reset(F); *)
+  (*   {$I+} *)
+  (* end; *)
+  (* if (Length(Machine.Directories) = 0) or (IOResult <> 0) then begin *)
+  (*   FullPath := PChar(GetCurrentDirectory) + '\\' + ShortPath; *)
+  (*   Assign(F, FullPath); *)
+  (*   {$I-} *)
+  (*   Reset(F); *)
+  (*   {$I+} *)
+  (*   if IOResult <> 0 then begin *)
+  (*     FullPath := PChar(GetExeDirectory) + '\\' + ShortPath; *)
+  (*     Assign(F, FullPath); *)
+  (*     {$I-} *)
+  (*     Reset(F); *)
+  (*     {$I+} *)
+  (*     if IOResult <> 0 then begin *)
+  (*       Machine.LogError('cannot open file "' + ShortPath + '"'); *)
+  (*       Exit; *)
+  (*     end; *)
+  (*   end; *)
+  (* end; *)
+  (* B := TString(PChar(@(PStrRec(S)^.Sym[0]))); *)
+  (* while (Length(B) > 0) and (B[Length(B)] <> '\\') do begin *)
+  (*   SetLength(B, Length(B) - 1); *)
+  (* end; *)
+  (* SetLength(Machine.Directories, Length(Machine.Directories) + 1); *)
+  (* Machine.Directories[High(Machine.Directories)] := B; *)
+  (* B := ''; *)
+  (* while not EOF(F) do begin *)
+  (*   Readln(F, T); *)
+  (*   B := B + T + EOL; *)
+  (* end; *)
+  (* Close(F); *)
+  (* Machine.Interpret(PChar(B)); *)
+  (* DelRef(S); *)
+  (* SetLength(Machine.Directories, Length(Machine.Directories) - 1); *)
   // Writeln('End of evaluate file "', PChar(@S^.Sym[0]), '"');
 end;
 
@@ -5934,7 +6024,8 @@ end;
 
 procedure OForthMachine.CompileError(const S: TString);
 begin
-  Error('Compile(' + IntToStr(FCurrentLine) + ', ' +
+  Error('Compile(' + InternalFileName(FCurrentFileName) + ', ' +
+                     IntToStr(FCurrentLine) + ', ' +
                      IntToStr(FCurrentPos) + '): ' + S);
   FCompilation := False;
 end;
@@ -6079,7 +6170,7 @@ begin
   if ConvertStrToInt(Name, I) <> 0 then
     LogError('Unknown command: ' + Name)
   else begin
-    EWO('(literal)');
+    BuiltinEWO('(literal)');
     EWI(I);
   end;
 end;
@@ -6205,7 +6296,7 @@ begin
       if Machine^.State = FS_INTERPRET then
         Machine^.WUI(I)
       else begin
-        Machine^.EWO('(literal)');
+        Machine^.BuiltinEWO('(literal)');
         MAchine^.EWI(I);
       end;
       WUI(BOOL_TRUE);
@@ -6298,43 +6389,69 @@ begin
   Machine.WUI(Random(Machine.WOI));
 end;
 
+function OForthMachine.FindCommand(Voc: PVoc; const Name: TString; Index: PInteger = nil): PForthCommand;
+begin
+  if Voc <> nil then begin
+    if Voc.sFIND <> -1 then begin
+      WUS(Name);
+      CallCommand(C[Voc.sFIND]);
+      if WOI = 0 then begin
+        if Index <> nil then begin
+          Index^ := WOI;
+          Result := C[Index^];
+        end else
+          Result := C[WOI];
+      end else begin
+        Result := nil;
+      end;
+    end else
+      Result := nil;
+  end else
+    Result := nil;
+end;
+
 function OForthMachine.FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
 var
   I: Integer;
 begin
   I := High(Context);
-  while I >= 0 do
-    if Context[I] <> nil then begin
-      if Context[I].sFIND = -1 then
-        Dec(I)
-      else
-        Break;
-    end else
-      Dec(I);
-  // Writeln('I = ', I);
-  if I <> -1 then begin
-    WUS(Name);
-    CallCommand(C[Context[I].sFIND]);
-    if WOI = 0 then begin
-      if Index <> nil then begin
-        Index^ := WOI;
-        Result := C[Index^];
-      end else
-        Result := C[WOI];
-    end else begin
-      Result := nil;
-    end;
-  end else
-    Result := nil;
-  // if Result = nil then
-  //   Writeln('Command not found');
-  {for I := High(C) downto 0 do
-    if TString(C[I].Name) = Name then begin
-      //Writeln('Found command ', C[I].Name);
-      Result := C[I];
+  Result := nil;
+  for I := High(Context) downto 0 do begin
+    Result := FindCommand(Context[I], Name, Index);
+    if Result <> nil then
       Exit;
-    end;
-  Result := nil;}
+  end;
+  (* I := High(Context); *)
+  (* while I >= 0 do *)
+  (*   if Context[I] <> nil then begin *)
+  (*     if Context[I].sFIND = -1 then *)
+  (*       Dec(I) *)
+  (*     else *)
+  (*       Break; *)
+  (*   end else *)
+  (*     Dec(I); *)
+  (* // Writeln('I = ', I); *)
+  (* if I <> -1 then begin *)
+  (*   WUS(Name); *)
+  (*   CallCommand(C[Context[I].sFIND]); *)
+  (*   if WOI = 0 then begin *)
+  (*     if Index <> nil then begin *)
+  (*       Index^ := WOI; *)
+  (*       Result := C[Index^]; *)
+  (*     end else *)
+  (*       Result := C[WOI]; *)
+  (*   end else begin *)
+  (*     Result := nil; *)
+  (*   end; *)
+  (* end else *)
+  (*   Result := nil; *)
+end;
+
+function OForthMachine.ExtendedFindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;
+begin
+  Result := FindCommand(Name, Index);
+  if Result = nil then
+    Result := FindCommand(vBUILTIN, Name, Index);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 

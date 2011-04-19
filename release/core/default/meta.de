@@ -1,0 +1,9 @@
+// 2011.04.19 # Doj
+//     Команды для взаимодействия с мета-информацией ядра.
+
+samebuiltin evaluate
+samebuiltin evaluate-file
+samebuiltin execute
+samebuiltin xt.n@
+samebuiltin xt.d@
+samebuiltin opcode->command

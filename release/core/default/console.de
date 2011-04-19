@@ -1,0 +1,11 @@
+// 2011.04.19 # Doj
+//      оманды дл€ работы со стандартной консолью.
+
+samebuiltin .
+samebuiltin $
+samebuiltin int.
+samebuiltin int$
+samebuiltin cr
+samebuiltin emit
+samebuiltin space
+samebuiltin spaces

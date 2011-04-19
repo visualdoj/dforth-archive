@@ -1,0 +1,60 @@
+// 2011.04.19 # Doj
+// Слова для компилирующего режима.
+
+builtin drop embro-drop
+builtin dup embro-dup
+builtin lrot embro-lrot
+builtin lrotn embro-lrotn
+builtin nip embro-nip
+builtin over embro-over
+builtin rrot embro-rrot
+builtin rrotn embro-rrotn
+builtin swap embro-swap
+builtin tuck embro-tuck
+samebuiltin '
+samebuiltin (compile)
+samebuiltin ,
+samebuiltin :noname
+samebuiltin <mark
+samebuiltin <resolve
+samebuiltin >mark
+samebuiltin >resolve
+samebuiltin ?branch
+samebuiltin [']
+samebuiltin allot
+samebuiltin allot
+samebuiltin branch
+samebuiltin call
+samebuiltin called
+samebuiltin compile
+samebuiltin compiled
+samebuiltin constant
+samebuiltin create
+samebuiltin created
+samebuiltin does>
+samebuiltin (does>)
+samebuiltin here
+samebuiltin immediate
+samebuiltin last
+samebuiltin postpone
+samebuiltin postponed
+samebuiltin recurse
+samebuiltin state
+samebuiltin to
+samebuiltin value
+samebuiltin variable
+
+: [ false state ! ; immediate
+: ] true state ! ; immediate
+
+: ptr! ! ;
+: op! ! ;
+: xt! ! ;
+: embroptr! ! ;
+: cell-allot here 1 cells allot ;
+
+: ,             , ;
+: ptr,          cell-allot ptr! ;
+: op,           cell-allot op! ;
+: xt,           cell-allot xt! ;
+: embroptr,     cell-allot embroptr! ;

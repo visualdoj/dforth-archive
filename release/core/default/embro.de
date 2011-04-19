@@ -1,0 +1,10 @@
+// 2011.04.19 # Doj
+//     Команды по работе с шитым кодом.
+
+samebuiltin literal
+samebuiltin (literal)
+
+// scattered colons
+samebuiltin ...
+samebuiltin ..:
+samebuiltin ;..
