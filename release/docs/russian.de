@@ -154,9 +154,11 @@ help-group: statements
 " ;" "         I 
     Завершает определение функции, переводит машину в режим интерпретации и 
     добавляет новую команду в словарь
-        Пример использования: 
+        Пример использования:
+        <code>
                 : 195+ 195 + ;
-                5 195+ ." described
+                5 195+ .
+        </code>" described
 " immediate" " делает последнюю определённую команду командой немедленного исполнения" described
 " exit" " выходит из текущей функции" described
 " recurse" " I рекурсивный вызов определяемой функции" described
@@ -173,9 +175,11 @@ help-group: statements
     В режиме интерпретации поведение команды не определено.
 
   Пример
+  <code>
     : say if [str]' Hi!' else [str]' See you!' then str. ;
     true say
     false say
+  </code>
 
   См. else then" described
 " else" "        I
