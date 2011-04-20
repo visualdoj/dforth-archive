@@ -131,7 +131,7 @@ namespace GOOGLECODE
       dup *help-names bdyn# < 
     while 
       over over *help-group dyn[]@ = if 
-        " *" . dup *help-names bdyn[]@ . " * " . 
+        " *" . dup *help-names bdyn[]@ +" `" swap+" `" . " * " . 
         dup *help-articles bdyn[]@ 
         bdup str0 str= if 
                 bdrop dup *help-summary bdyn[]@ swap+" <inline>" +" </inline>"
