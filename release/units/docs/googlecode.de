@@ -133,7 +133,10 @@ namespace GOOGLECODE
       over over *help-group dyn[]@ = if 
         " *" . dup *help-names bdyn[]@ . " * " . 
         dup *help-articles bdyn[]@ 
-        bdup str0 str= if bdrop dup *help-summary bdyn[]@ then
+        bdup str0 str= if 
+                bdrop dup *help-summary bdyn[]@ swap+" <inline>" +" </inline>"
+        then
+        articlebody->body
         . " <br>" .
       then 1+ 
     repeat drop drop cr
