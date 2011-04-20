@@ -28,15 +28,15 @@ help-group: W
 //       lrot
 //       rrot
 //       pick" described
-" drop"         " ( a-) удаляет с вершины стека значение" described
-" nip"          " ( ab-b) удаляет второй по счёту элемент стека" described
-" dup"          " ( a-aa) дублирует верхний элемент стека" described
-" over"         " ( ab-aba) заталкивает второй элемент стека на вершину" described
-" tuck"         " ( ab-bab) заталкивает верхний элемент под второй" described
-" swap"         " ( ab-ba) меняет два верхних элемента местами" described
-" lrot"         " ( abc-bca) вращает три верхних элемента стека циклически влево" described
-" rrot"         " ( abc-cab) вращает три верхних элемента стека циклически вправо" described
-" pick"         " ( a1 a2 .. an n -- a1 a2 .. an a1) копирует n-ный по счёту элемент стека на вершину" described
+" drop"         " <inline>( a-)</inline> удаляет с вершины стека значение" described
+" nip"          " <inline>( ab-b)</inline> удаляет второй по счёту элемент стека" described
+" dup"          " <inline>( a-aa)</inline> дублирует верхний элемент стека" described
+" over"         " <inline>( ab-aba)</inline> заталкивает второй элемент стека на вершину" described
+" tuck"         " <inline>( ab-bab)</inline> заталкивает верхний элемент под второй" described
+" swap"         " <inline>( ab-ba)</inline> меняет два верхних элемента местами" described
+" lrot"         " <inline>( abc-bca)</inline> вращает три верхних элемента стека циклически влево" described
+" rrot"         " <inline>( abc-cab)</inline> вращает три верхних элемента стека циклически вправо" described
+" pick"         " <inline>( a1 a2 .. an n -- a1 a2 .. an a1)</inline> копирует n-ный по счёту элемент стека на вершину" described
 // }}}
 // {{{ arithmetic
 " Основные арифметические операции."
@@ -71,49 +71,49 @@ help-group: arithmetic
 " min" " <inline>( ab-a|b)</inline> из двух верхних элементов стека оставляет минимальный" described
 " minmax" " <inline>( ab-ab|ba)</inline> переставляет два верхних элемента так, чтобы на вершине оказался наибольший" described
 
-" div" " ( a b -- a div b) целая часть от деления двух целых чисел" described
-" mod" " ( a b -- a mod b) остаток от деления двух целых чисел" described
-" divmod" " ( a b -- a div b, a mod b) вычисляет целую часть и остаток от деления двух целых чисел" described
-" inc" " ( a -- a+1) увеличивает целое число на 1" described
-" dec" " ( a -- a-1) уменьшает целое число на 1" described
-" 1+" " ( a -- a+1) увеличивает int или uint на 1" described
-" 1-" " ( a -- a-1) уменьшает int или uint на 1" described
+" div" " <inline>( a b -- a div b)</inline> целая часть от деления двух целых чисел" described
+" mod" " <inline>( a b -- a mod b)</inline> остаток от деления двух целых чисел" described
+" divmod" " <inline>( a b -- a div b, a mod b)</inline> вычисляет целую часть и остаток от деления двух целых чисел" described
+" inc" " <inline>( a -- a+1)</inline> увеличивает целое число на 1" described
+" dec" " <inline>( a -- a-1)</inline> уменьшает целое число на 1" described
+" 1+" " <inline>( a -- a+1)</inline> увеличивает int или uint на 1" described
+" 1-" " <inline>( a -- a-1)</inline> уменьшает int или uint на 1" described
 
-" abs" " ( a -- |a|) вычисляет модуль знакового числа" described
-" neg" " ( a -- -a) обращает знак числа знакого типа" described
+" abs" " <inline>( a -- |a|)</inline> вычисляет модуль знакового числа" described
+" neg" " <inline>( a -- -a)</inline> обращает знак числа знакого типа" described
 
-" /" " ( ab -- a/b) делит два числа с плавающей точкой" described
-" cos" " ( a -- cos(a)) вычисляет косинус числа радиан с плавающей точкой" described
-" sin" " ( a -- sin(a)) вычисляет синус числа радиан с плавающей точкой" described
-" tan" " ( a -- tan(a)) вычисляет тангенс числа радиан с плавающей точкой" described
-" atan" " ( a -- atan(a)) вычисляет арктангенс числа радиан с плавающей точкой" described
-" atan2" " ( yx -- atan2(y, x)) см. в гугле atan2" described
+" /" " <inline>( ab -- a/b)</inline> делит два числа с плавающей точкой" described
+" cos" " <inline>( a -- cos(a))</inline> вычисляет косинус числа радиан с плавающей точкой" described
+" sin" " <inline>( a -- sin(a))</inline> вычисляет синус числа радиан с плавающей точкой" described
+" tan" " <inline>( a -- tan(a))</inline> вычисляет тангенс числа радиан с плавающей точкой" described
+" atan" " <inline>( a -- atan(a))</inline> вычисляет арктангенс числа радиан с плавающей точкой" described
+" atan2" " <inline>( yx -- atan2(y, x))</inline> см. в гугле atan2" described
 // }}}
 // {{{ bool & bits
 " Команды для работы с bool и flag, побитовые команды."
 help-group: bool&bits
 // " #bool&bits" " 
 //     false true not or and xor" described
-" false" " ( -- false) кладёт на стек ложь (ячейка со сброшенными всеми битами, т.е. 0)" described
-" true" " ( -- false) кладёт на стек ложь (ячейка с выставленными всеми битами)" described
-" not" " ( a -- not a) побитовое НЕ. Применённое к true и false даёт булевский вариант" described
-" or" " ( a b -- a or b) побитовое ИЛИ. Применённая к true и false даёт булевский вариант" described
-" and" " ( a b -- a and b) побитовое И. Применённая к true и false даёт булевский вариант" described
-" xor" " ( a b -- a xor b) побитовое исключающее ИЛИ. Применённая к true и false даёт булевский вариант" described
+" false" " <inline>( -- false)</inline> кладёт на стек ложь (ячейка со сброшенными всеми битами, т.е. 0)" described
+" true" " <inline>( -- false)</inline> кладёт на стек ложь (ячейка с выставленными всеми битами)" described
+" not" " <inline>( a -- not a)</inline> побитовое НЕ. Применённое к true и false даёт булевский вариант" described
+" or" " <inline>( a b -- a or b)</inline> побитовое ИЛИ. Применённая к true и false даёт булевский вариант" described
+" and" " <inline>( a b -- a and b)</inline> побитовое И. Применённая к true и false даёт булевский вариант" described
+" xor" " <inline>( a b -- a xor b)</inline> побитовое исключающее ИЛИ. Применённая к true и false даёт булевский вариант" described
 // }}}
 // {{{ createwords
 " Команды, создающие новые слова"
 help-group: createwords
 // " #createword" " 
 //     create allot here , to variable value constant does>" described
-" create" " ( 'name'-) создаёт новую команду с именем name" described
-" allot" " ( i-) выделяет i байт в шитом коде для последней созданной команды" described
-" here" " ( -p) текущий указатель на незанятую область шитого кода" described
-" ," " ( i-) выделяет ячейку в шитом коде, и записывает в неё ячейку со стека" described
-" to" " I ( i 'name'-) ( C:'name'-) ( R:i-) записывает значение i в переменную name" described
-" variable" " ( 'name'-) создаёт команду с именем name, выделяет для неё ячейку в шитом коде. name кладёт на стек указатель на свою область в шитом коде" described
-" value" " ( i 'name'-) создаёт команду с именем name, выделяет для неё ячейку в шитом коде, инициализирует её числом со стека. name кладёт на стек значение из шитого кода" described
-" constant" " ( i 'name'-) то же, что и value" described
+" create" " <inline>( 'name'-)</inline> создаёт новую команду с именем name" described
+" allot" " <inline>( i-)</inline> выделяет i байт в шитом коде для последней созданной команды" described
+" here" " <inline>( -p)</inline> текущий указатель на незанятую область шитого кода" described
+" ," " ( i-)</inline> выделяет ячейку в шитом коде, и записывает в неё ячейку со стека" described
+" to" " <inline>I ( i 'name'-) ( C:'name'-) ( R:i-)</inline> записывает значение i в переменную name" described
+" variable" " <inline>( 'name'-)</inline> создаёт команду с именем name, выделяет для неё ячейку в шитом коде. name кладёт на стек указатель на свою область в шитом коде" described
+" value" " <inline>( i 'name'-)</inline> создаёт команду с именем name, выделяет для неё ячейку в шитом коде, инициализирует её числом со стека. name кладёт на стек значение из шитого кода" described
+" constant" " <inline>( i 'name'-)</inline> то же, что и value" described
 " does>" " в режиме компиляции приостанавливает компиляцию текущего определения и включает компиляцию для последнего созданного слова" described
 // }}}
 // {{{ ptr
@@ -121,22 +121,22 @@ help-group: createwords
 help-group: ptr
 // " #ptr" " 
 //     @ ! 1+! 1-! cell+ cells malloc free move on off" described
-" @" " ( p-i) читает ячейку, на которую ссылается указатель" described
-" !" " ( ip-) записывает ячейку по заданному адресу" described
-" 1+!" " ( p-) увеличивает ячейку по заданному адресу на 1" described
-" 1-!" " ( p-) уменьшает ячейку по заданному адресу на 1" described
-" cell+" " ( p-p) увеличивает значение указателя на размер ячейки" described
-" cells" " ( i-i) считает сколько байт займёт определённое кол-во ячеек" described
-" malloc" " ( i-p) выделяет i байт в куче, кладёт указатель на область" described
-" free" " ( p-) освобождает выделенную ранее при помощи malloc область" described
-" move" " ( addr1 addr2 u -- ) 
+" @" " <inline>( p-i)</inline> читает ячейку, на которую ссылается указатель" described
+" !" " <inline>( ip-)</inline> записывает ячейку по заданному адресу" described
+" 1+!" " <inline>( p-)</inline> увеличивает ячейку по заданному адресу на 1" described
+" 1-!" " <inline>( p-)</inline> уменьшает ячейку по заданному адресу на 1" described
+" cell+" " <inline>( p-p)</inline> увеличивает значение указателя на размер ячейки" described
+" cells" " <inline>( i-i)</inline> считает сколько байт займёт определённое кол-во ячеек" described
+" malloc" " <inline>( i-p)</inline> выделяет i байт в куче, кладёт указатель на область" described
+" free" " <inline>( p-)</inline> освобождает выделенную ранее при помощи malloc область" described
+" move" " <inline>( addr1 addr2 u -- )</inline> 
     Копирует содержимое u последовательных байтов из addr1 в u 
     последовательных байтов в addr2. После завершения move, 
     u последовательных байтов в addr2 содержат то же, что 
     u последовательных байтов в addr1 содержали перед 
     перемещением." described
-" on" " ( ptr -- ) Выталкивает указатель, записывает true в него." described
-" off" " ( ptr -- ) Выталкивает указатель, записывает 0 в него." described
+" on" " <inline>( ptr -- )</inline> Выталкивает указатель, записывает true в него." described
+" off" " <inline>( ptr -- )</inline> Выталкивает указатель, записывает 0 в него." described
 // }}}
 // {{{ statements
 " Стандартные блочные операторы."
