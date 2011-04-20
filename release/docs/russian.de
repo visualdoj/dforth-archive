@@ -2,17 +2,17 @@
 // Встроенная помощь для русскоязычных пользователей
 
 // {{{ topics
-" topics" " 
-    Набирите 'help topic' без кавычек, где topic -- какое-то слово из списка
-      #stack        Базовые команды по работе со стеками
-      #arithmetic   Команды по работе с числами
-      #bool&bits    Команды для работы с битами и булевыми значениями
-      #createwords  Команды для создания своих слов
-      #ptr          Команды для работы с указателями
-      #statements   Команды для создания ветвлений в программе
-      #console      Команды для работы со стандартной консолью в файле
-      #dyn          Команды для работы с динамическими массивами
-" described
+// " topics" " 
+//     Набирите 'help topic' без кавычек, где topic -- какое-то слово из списка
+//       #stack        Базовые команды по работе со стеками
+//       #arithmetic   Команды по работе с числами
+//       #bool&bits    Команды для работы с битами и булевыми значениями
+//       #createwords  Команды для создания своих слов
+//       #ptr          Команды для работы с указателями
+//       #statements   Команды для создания ветвлений в программе
+//       #console      Команды для работы со стандартной консолью в файле
+//       #dyn          Команды для работы с динамическими массивами
+// " described
 // }}}
 // {{{ stack
 " Основные стековые операции."
@@ -41,15 +41,15 @@ help-group: W
 // {{{ arithmetic
 " Основные арифметические операции."
 help-group: arithmetic
-" #arithmetic" " 
-    Команды для всех чисел
-      + - * = <> < > <= >= 0= 0< 0> 0<= 0>= ?dup 0; max min minmax
-    Команды для целых чисел
-      div mod divmod inc dec 1+ 1-
-    Команды для знаковых чисел
-      abs neg
-    Команды для нецелых чисел
-      / cos sin tan atan atan2" described
+// " #arithmetic" " 
+//     Команды для всех чисел
+//       + - * = <> < > <= >= 0= 0< 0> 0<= 0>= ?dup 0; max min minmax
+//     Команды для целых чисел
+//       div mod divmod inc dec 1+ 1-
+//     Команды для знаковых чисел
+//       abs neg
+//     Команды для нецелых чисел
+//       / cos sin tan atan atan2" described
 " +" " <inline>( a b -- a+b)</inline> складывает два верхних элемента стека" described
 " -" " <inline>( a b -- a-b)</inline> вычитает из второго элемента первый" described
 " *" " <inline>( a b -- a*b)</inline> перемножает два верхних элемента стека" described
@@ -92,8 +92,8 @@ help-group: arithmetic
 // {{{ bool & bits
 " Команды для работы с bool и flag, побитовые команды."
 help-group: bool&bits
-" #bool&bits" " 
-    false true not or and xor" described
+// " #bool&bits" " 
+//     false true not or and xor" described
 " false" " ( -- false) кладёт на стек ложь (ячейка со сброшенными всеми битами, т.е. 0)" described
 " true" " ( -- false) кладёт на стек ложь (ячейка с выставленными всеми битами)" described
 " not" " ( a -- not a) побитовое НЕ. Применённое к true и false даёт булевский вариант" described
@@ -104,8 +104,8 @@ help-group: bool&bits
 // {{{ createwords
 " Команды, создающие новые слова"
 help-group: createwords
-" #createword" " 
-    create allot here , to variable value constant does>" described
+// " #createword" " 
+//     create allot here , to variable value constant does>" described
 " create" " ( 'name'-) создаёт новую команду с именем name" described
 " allot" " ( i-) выделяет i байт в шитом коде для последней созданной команды" described
 " here" " ( -p) текущий указатель на незанятую область шитого кода" described
@@ -119,8 +119,8 @@ help-group: createwords
 // {{{ ptr
 " Команды по работе с указателями"
 help-group: ptr
-" #ptr" " 
-    @ ! 1+! 1-! cell+ cells malloc free move on off" described
+// " #ptr" " 
+//     @ ! 1+! 1-! cell+ cells malloc free move on off" described
 " @" " ( p-i) читает ячейку, на которую ссылается указатель" described
 " !" " ( ip-) записывает ячейку по заданному адресу" described
 " 1+!" " ( p-) увеличивает ячейку по заданному адресу на 1" described
@@ -141,9 +141,9 @@ help-group: ptr
 // {{{ statements
 " Стандартные блочные операторы."
 help-group: statements
-" #statements" " 
-    branch ?branch >mark >resolve <mark <resolve : ; immediate exit recurse
-    if else then" described
+// " #statements" " 
+//     branch ?branch >mark >resolve <mark <resolve : ; immediate exit recurse
+//     if else then" described
 " branch" " совершает скачек на определённый адрес в коде. При этом адрес берётся из последующего после команды числа в шитом коде." described
 " ?branch" " ( i-) если i рано нулю, то действует как branch, в противном случае ничего не делает" described
 " >mark" " I ( C:-- embroptr) при исполнении ничего не делает, при компиляции кладёт текущий адрес на стек и выделяет в шитом коде место под запись адреса" described
@@ -211,15 +211,15 @@ help-group: statements
 // {{{ console
 " Команды по работе со стеком."
 help-group: console
-" #console" " 
-    ." described
+// " #console" " 
+//     ." described
 " ." " ( i-) выводит число с вершины стека на консоль" described
 // }}}
 // {{{ dyn
 " Команды по работе с динамическим массивом."
 help-group: dyn
-" #dyn" " 
-    dyn dyn# dyn[] dyn@ dyn! dyn+ high dyn.l@ dyn.l! dyn.last dyn-new dyn.free" described
+// " #dyn" " 
+//     dyn dyn# dyn[] dyn@ dyn! dyn+ high dyn.l@ dyn.l! dyn.last dyn-new dyn.free" described
 " dyn" " ( start-length `name` -- )
     Создаёт переменную динамический массив с именем name и изначально 
     выделенной памятью под start-length элементов. Начальная длина
@@ -301,8 +301,8 @@ help-group: dyn
 // {{{ file
 " Команды по работе с файлами и файловой системой"
 help-group: file
-" #file" " 
-    file-open file-close file-w file-r file-write file-read file-size" described
+// " #file" " 
+//     file-open file-close file-w file-r file-write file-read file-size" described
 " file-open" " ( filename:str mode:int -- file) 
     Открывает файл. mode можно получить вызовом file-w или file-r.
     file совместимо с обычной ячейкой, представляет из себя указатель на
@@ -344,8 +344,8 @@ help-group: file
 // {{{ system
 " Системные команды виртуальной машины"
 help-group: DEVM
-" #system" " 
-      _NOTFOUND_" described
+// " #system" " 
+//       _NOTFOUND_" described
 " _NOTFOUND_" " ( B: s -- ... true | false ) 
  Если текущее имя не найдено в словаре, то вызывается _NOTFOUND_.
  Оно должно выполнить s и если это удаётся, то вернуть true.
