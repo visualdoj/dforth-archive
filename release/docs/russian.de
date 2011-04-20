@@ -356,7 +356,9 @@ help-group: DEVM
  Оно должно выполнить s и если это удаётся, то вернуть true.
  В противном случае оно должно вернуть false.
  При добавлении своего _NOTFOUND_ поведения рекомендуется учитывать старое:
-  : _NOTFOUND_ bdup _NOTFOUND_ ?dup if; ... ;" described
+  <code>
+  : _NOTFOUND_ bdup _NOTFOUND_ ?dup if; ... ;
+  </code>" described
 // }}}
 
 help-group-misc
