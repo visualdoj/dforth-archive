@@ -137,7 +137,7 @@ namespace GOOGLECODE
                 bdrop dup *help-summary bdyn[]@ swap+" <inline>" +" </inline>"
         then
         articlebody->body
-        . " <br>" .
+        . " <br>" . cr
       then 1+ 
     repeat drop drop cr
   ;
