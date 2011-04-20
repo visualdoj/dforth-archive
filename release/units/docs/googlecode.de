@@ -31,7 +31,7 @@ namespace GOOGLECODE
     " ^^" \" _lid_"
     " ," \" _comma_"
   ;
-  : dembroname->articlename dembroname->simplename " article_" bswap str+ ;
+  : dembroname->articlename dembroname->simplename swap+" article_" ;
   : dembroname->articlename.wiki dembroname->articlename +" .wiki" ;
 
   : articlebody->body ( B: x - B: y)
@@ -45,11 +45,14 @@ namespace GOOGLECODE
 
   variable file
   bvariable folder
+  bvariable *prefix
+
+  : prefix+ ( B: x -- B: y) *prefix b@ bswap str+ ;
   : file@ file @ ;
   : open ( s) file-w file-open file ! ;
   // : open-article ( i) folder b@ " article" str+ int->str str+ " .wiki" str+ open ;
   : open-article ( i) folder b@ 
-                      *help-names bdyn[]@ dembroname->articlename.wiki 
+                      *help-names bdyn[]@ dembroname->articlename.wiki prefix+
                       str+ open ;
   : close file@ file-close ;
   : int. . ; 
@@ -69,7 +72,10 @@ namespace GOOGLECODE
     repeat drop
   ;
   : generate-group ( i)
-    folder b@ " group_" str+ dup *help-group-names bdyn[]@ str+ +" .wiki" open
+    folder b@ 
+    " group_" dup *help-group-names bdyn[]@ str+ 
+    +" .wiki" prefix+ str+ open
+
     " === " . dup *help-group-names bdyn[]@ . "  ===" . cr
     dup *help-group-descriptions bdyn[]@ articlebody->body . cr
     0 begin 
@@ -104,7 +110,7 @@ namespace GOOGLECODE
     repeat drop drop cr
   ;
   : generate-main
-    folder b@ " doc.wiki" str+ open
+    folder b@ " doc.wiki" prefix+ str+ open
     " = Документация =" . cr 
     0 begin 
       dup *help-group-names bdyn# < 
@@ -118,5 +124,31 @@ namespace GOOGLECODE
                         generate-articles 
                         generate-groups 
                         generate-main ;
+// {{{ one file
+  : generate-as-one-file-group
+    " ==== " . dup *help-group-names bdyn[]@ . "  ====" . cr
+    0 begin 
+      dup *help-names bdyn# < 
+    while 
+      over over *help-group dyn[]@ = if 
+        " *" . dup *help-names bdyn[]@ . " * " . 
+        dup *help-articles bdyn[]@ 
+        bdup str0 str= if bdrop dup *help-summary bdyn[]@ then
+        . cr
+      then 1+ 
+    repeat drop drop cr
+  ;
+  : generate-as-one-file ( s-)
+    " doc.wiki" prefix+ str+ open
+    0 begin 
+      dup *help-group-names bdyn# < 
+    while 
+      dup generate-as-one-file-group
+      1+ 
+    repeat drop
+    close
+  ;
+// }}}
+  : prefix! ( B: s) *prefix b! ;
   // : generate-docs ( s-) 0 begin dup 100 < while dup . 1+ repeat ;
 \namespace
