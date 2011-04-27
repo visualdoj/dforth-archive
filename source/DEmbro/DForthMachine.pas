@@ -83,6 +83,9 @@ const
 {$IFNDEF FLAG_FPC}{$REGION 'f_commands'}{$ENDIF}
 
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'vm_commands'}{$ENDIF}
+
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 const
   BOOL_FALSE: Integer   = 0;
@@ -663,12 +666,15 @@ OForthMachine = object
                        Builtin: Boolean = True);
   procedure OnUpdateCommand(Opcode: Integer); overload;
   procedure OnUpdateCommand(Command: PForthCommand); overload;
+  procedure AddToContext(Index: Integer);
+  procedure UpdateContext;
 
   procedure InterpretName(W: PChar); overload;
   procedure Interpret(const Line: PChar); overload;
   procedure InterpretFile(const FileName: TString);
   procedure CallCommand(Command: PForthCommand);
   procedure MainLoop;
+  procedure Step;
   procedure InterpretStep;
   procedure CompileStep;
   procedure RunStep;
@@ -2153,6 +2159,11 @@ end;
   
   
 
+  
+  procedure vm_step (Machine: TForthMachine; Command: PForthCommand);
+  
+  
+
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'misc commands'}{$ENDIF}
   procedure _nop(Machine: TForthMachine; Command: PForthCommand);
@@ -2161,6 +2172,7 @@ end;
   procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileLineComment(Machine: TForthMachine; Command: PForthCommand);
   procedure _vocabulary(Machine: TForthMachine; Command: PForthCommand);
+  procedure _voc_dot_share(Machine: TForthMachine; Command: PForthCommand);
   procedure _vLOCAL(Machine: TForthMachine; Command: PForthCommand);
   procedure _vGLOBAL(Machine: TForthMachine; Command: PForthCommand);
   procedure _vBUILTIN(Machine: TForthMachine; Command: PForthCommand);
@@ -4691,6 +4703,38 @@ begin
     end;
 end;
 
+procedure OForthMachine.AddToContext(Index: Integer);
+begin
+  if Context[High(Context)] = nil then begin
+    LogError('[OForthMachine.AddToContext] Incorrect context stack');
+    Exit;
+  end;
+  VocAdd(Context[High(Context)], Index);
+end;
+
+procedure OForthMachine.UpdateContext;
+var
+  I: PVocItem;
+begin
+  if Context[High(Context)] = nil then begin
+    LogError('[OForthMachine.UpdateContext] Incorrect context stack');
+    Exit;
+  end;
+  I := Context[High(Context)].Item;
+  while I <> nil do
+    if TString(C[I^.Index].Name) = '_NOTFOUND_' then begin
+      Context[High(Context)].sNOTFOUND := I^.Index;
+      Break;
+    end else
+      I := I^.Next;
+  while I <> nil do
+    if TString(C[I^.Index].Name) = '_FIND_' then begin
+      Context[High(Context)].sFIND := I^.Index;
+      Break;
+    end else
+      I := I^.Next;
+end;
+
 procedure OForthMachine.CompileSource(Source: PChar);
 var
   I: Integer;
@@ -4723,6 +4767,20 @@ begin
     V^.sNOTFOUND := -1;
     WUP(V);
   end;
+end;
+
+procedure _voc_dot_share(Machine: TForthMachine; Command: PForthCommand);
+var
+  V: PVoc;
+  I: PVocItem;
+begin
+  V := Machine.WOP;
+  I := V^.Item;
+  while I <> nil do begin
+    Machine.AddToContext(I^.Index);
+    I := I^.Next;
+  end;
+  Machine.UpdateContext;
 end;
 
 procedure _vLOCAL(Machine: TForthMachine; Command: PForthCommand);
@@ -5457,6 +5515,7 @@ begin
   AddCommand('builtedin', _builtedin);
   AddCommand('_NOTFOUND_', _NOTFOUND_);
   AddCommand('vocabulary-new', _vocabulary);
+  AddCommand('voc.share', _voc_dot_share);
   AddCommand('vLOCAL', _vLOCAL);
   AddCommand('vGLOBAL', _vGLOBAL);
   AddCommand('vBUILTIN', _vBUILTIN);
@@ -6945,7 +7004,10 @@ begin
      AddCommand('str->float!?',  _str_to_float_excl_ask);    
      AddCommand('str->double!?',  _str_to_double_excl_ask);    
      AddCommand('str->extended!?',  _str_to_extended_excl_ask);    
-   ;
+   
+    
+       AddCommand('vm-step', vm_step);
+    ;
   UnuseVoc;
 end;
 
@@ -6963,7 +7025,7 @@ var
   S_: TString;
   //Time: Integer;
 begin
-  // Writeln('INTERPRET ', W);
+  Writeln('INTERPRET ', W);
   (* for I := High(C) downto 0 do *)
   (*   if StrComp(C[I].Name, W) = 0 then begin *)
   (*     //Writeln('START ' + W); *)
@@ -7229,6 +7291,25 @@ begin
       end;
     // Writeln('Main Loop State="', State, '" FRunning="', FRunning, '"');
   end;
+end;
+
+procedure OForthMachine.Step;
+var
+  Running: Boolean;
+begin
+  if not FSession then
+    Exit;
+  Writeln('Step');
+  Running := FRunning;
+  FRunning := False;
+  case State of
+    FS_INTERPRET: InterpretStep;
+    FS_COMPILE:   CompileStep;
+  else
+    LogError('Illegal State');
+    FSession := False;
+  end;
+  FRunning := Running;
 end;
 
 procedure OForthMachine.InterpretStep;
@@ -12237,6 +12318,14 @@ end;
         end else
           Machine.WUI(BOOL_FALSE);
       end;
+    
+   
+    
+       procedure vm_step (Machine: TForthMachine; Command: PForthCommand);
+       begin
+         Writeln('vm-step');
+         Machine.Step;
+       end;
     
   
 

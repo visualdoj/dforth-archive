@@ -1,13 +1,19 @@
 // 2011.02.13 # Doj
 // Объектная подсистема
 
-include" units\core\voc.de"
+include" units\statements\voc.de"
 
-: fastnamespace ( "name") namespace 
-  does> ( "name") @ context< source-next-name dembro-steped context> drop ;
-: defclass ( parent "name") fastnamespace ;
-: /defclass /namespace ;
-: notfound ( B:s -- B: W:T|B:s W:F) notfound if true else
-  " ." str^? if str# 1- = if str# 1- 1 str-del 
-  ( тут получаем xt, связанное с именем на стеке, кладём на стек объект,
-    определяем его класс, читаем следующее слово, выполняем) then then then ;
+namespace CLASS
+\namespace
+
+: defclass ( parent "name") 
+  shortnamespace 
+  // call CLASS
+  // dup " *parent" constanted
+  // 0; voc.share
+;
+
+: \defclass 
+  // ^^^ 
+  \namespace 
+;

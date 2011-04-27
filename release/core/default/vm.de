@@ -2,3 +2,5 @@
 //     Системные команды виртуальной машины. 
 
 samebuiltin sys-version
+
+samebuiltin vm-step

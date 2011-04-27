@@ -165,12 +165,12 @@ begin
         Readln(S);
         SetLength(S, Length(S) + 1);
         S[Length(S)] := #0;
-        try
+        //try
           Machine.Interpret(@S[1]);
-        except
-          Writeln('Error');
-          continue;
-        end;
+        //except
+        //  Writeln('Error');
+        //  continue;
+        //end;
         Writeln(' ok');
       end;
     end else begin
