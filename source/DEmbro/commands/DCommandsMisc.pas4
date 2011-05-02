@@ -1,0 +1,196 @@
+unit DCommandsMisc;
+
+interface
+
+define(`body', `begin with Machine^ do begin $1 end; end;')
+define(`idle', `$*')
+define(`cmdhdr', `(Machine: TForthMachine; Command: PForthCommand)')
+define(`WVar', `(Pointer(TUInt(Machine.WP) + ($1))^)')
+define(`LVar', `(Pointer(TUInt(LB) + ($1))^)')
+
+uses
+  {$I units.inc},
+
+  DCommandsStrings,
+
+  DForthMachine;
+
+  procedure _timer cmdhdr;
+  procedure _DogwpTemp cmdhdr;
+  procedure _wp cmdhdr;
+  procedure _rp cmdhdr;
+  procedure _lp cmdhdr;
+  procedure _lb cmdhdr;
+  procedure _r_dog cmdhdr;
+  procedure _r_gt cmdhdr;
+  procedure _lt_r cmdhdr;
+  procedure _l_dog cmdhdr;
+  procedure _l_exclamation cmdhdr;
+  procedure _l_plus cmdhdr;
+  procedure version cmdhdr;
+  procedure _state cmdhdr;
+  procedure _time cmdhdr;
+  procedure _local cmdhdr;
+  procedure source_cut cmdhdr;
+  procedure source_next_char cmdhdr;
+  procedure source_next_name cmdhdr;
+  procedure source_next_name_passive cmdhdr;
+  procedure interpret_source_next_name_passive cmdhdr;
+  procedure compile_source_next_name_passive cmdhdr;
+  procedure run_source_next_name_passive cmdhdr;
+  procedure source_read_to_char cmdhdr;
+  procedure ptr_nil cmdhdr;
+  procedure interpret_start cmdhdr;
+  procedure compile_start cmdhdr;
+  procedure run_start cmdhdr;
+  //procedure allot cmdhdr
+  procedure opcode_to_command cmdhdr;
+  procedure literal cmdhdr;
+  procedure sq_ap_sq cmdhdr;
+  procedure interpret_sq_ap_sq cmdhdr;
+  procedure compile_sq_ap_sq cmdhdr;
+  procedure run_sq_ap_sq cmdhdr;
+  procedure _tick cmdhdr;
+  procedure execute cmdhdr;
+  procedure _does_gt cmdhdr;
+  procedure _sq_does_gt_sq cmdhdr;
+  procedure CallDoesGt cmdhdr;
+  procedure Cells cmdhdr;
+  procedure Cell_plus cmdhdr;
+  procedure _malloc cmdhdr;
+  procedure _free cmdhdr;
+  procedure _last cmdhdr;
+  procedure _xt_dot_n cmdhdr;
+  procedure _xt_dot_d cmdhdr;
+  procedure _move cmdhdr;
+
+procedure LoadCommands(Machine: TForthMachine);
+
+implementation
+
+      procedure _timer cmdhdr; body( WUI(GetTimer); )
+      procedure _DogwpTemp cmdhdr; body( Pointer(WP^) := @WP; Inc(WP, SizeOf(Pointer)); )
+      procedure _wp cmdhdr; body( Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); )
+      procedure _rp cmdhdr; body( Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); )
+      procedure _lp cmdhdr; body( Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer)); )
+      procedure _lb cmdhdr; body( Pointer(WP^) := LB; Inc(WP, SizeOf(Pointer)); )
+      procedure _r_dog cmdhdr; body( Pointer(WP^) := Pointer(Pointer(Cardinal(RP) - SizeOf(Pointer))^); Inc(WP, SizeOf(Pointer)); )
+      procedure _r_gt cmdhdr; body( Dec(RP, SizeOf(Pointer)); Pointer(WP^) := Pointer(RP^); Inc(WP, SizeOf(Pointer)); )
+      procedure _lt_r cmdhdr; body( Dec(WP, SizeOf(Pointer)); Pointer(RP^) := Pointer(WP^); Inc(RP, SizeOf(Pointer)); )
+      procedure _l_dog cmdhdr; body( Pointer(WVar(-SizeOf(Pointer))) := Pointer(LVar(Integer(WVar(-SizeOf(Pointer))))); )
+      procedure _l_exclamation cmdhdr; body( Pointer(LVar(Integer(WVar(-SizeOf(Pointer))))) := Pointer(WVar(-2*SizeOf(Pointer))); Dec(WP, 2*SizeOf(Pointer)); )
+      procedure _l_plus cmdhdr; body( Dec(WP, SizeOf(TInt)); Inc(LP, TInt(WP^)) )
+      procedure version cmdhdr; body( TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt)); )
+      procedure _state cmdhdr; body( Pointer(WP^) := @State; Inc(WP, SizeOf(Pointer)); )
+      procedure _time cmdhdr; body( Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt)); )
+      procedure _local cmdhdr; body( RunCommand(PForthCommand((@E[Integer(Command^.Data)])^)); )
+      procedure source_cut cmdhdr; label _Exit;
+        var _S: TStr; _C: TChar; _L: TString; J: Integer;
+        body( _S := str_pop(Machine); _L := ''; 
+          while not SE do begin 
+            J := SC;
+            _C := SNC;  
+            while J < Length(S) do begin
+              if J - SC + 1 >= _S.Len then begin
+                SC := J;
+                goto _Exit;
+              end else if StrSymbol(_S, J - SC + 1) = Ord(S[J]) then begin
+                Inc(J);
+              end else
+                Break;
+            end;
+            if _C = #13 then
+              _L := _L + #13#10
+            else
+              _L := _L + _C; 
+          end; 
+        _Exit:
+          DelRef(_S);
+          WUS(_L); )
+      procedure source_next_char cmdhdr; body( WUU8(Byte(NextChar)) )
+      procedure source_next_name cmdhdr; body( str_push(Machine, NextName) )
+      procedure source_next_name_passive cmdhdr; body( // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
+                                                                                                   interpret_source_next_name_passive(Machine, Command) )
+      procedure interpret_source_next_name_passive cmdhdr; body( str_push(Machine, NextNamePassive) )
+      procedure compile_source_next_name_passive cmdhdr; body( BuiltinEWO('(str)"'); EWStr(NextNamePassive); )
+      procedure run_source_next_name_passive cmdhdr; body( str_push(Machine, @E[EC]); )
+      procedure source_read_to_char cmdhdr; var I: Integer; body( I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); str_push(Machine, TString(Copy(S, SC + 1, I - SC))); SC := I; )
+      procedure ptr_nil cmdhdr; body( WUP(nil); )
+      procedure compile_start cmdhdr; body( State := FS_COMPILE )
+      procedure interpret_start cmdhdr; body( State := FS_INTERPRET )
+      procedure run_start cmdhdr; body( State := FS_INTERPRET )
+      procedure opcode_to_command cmdhdr; body( Pointer(WVar(-SizeOf(Integer))) := GetCommandByOpcode(Integer(WVar(-SizeOf(Integer)))) )
+      procedure literal cmdhdr; body( BuiltinEWO('(literal)'); EWI(WOI); )
+      procedure sq_ap_sq cmdhdr; body( {if State <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
+                WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
+                BuiltinEWO('opcode->command'); )
+      procedure interpret_sq_ap_sq cmdhdr; body( WUP(FindCommand(NextName)) )
+      procedure compile_sq_ap_sq cmdhdr; body( BuiltinEWO('run@['']'); EWO(NextName); )
+      procedure run_sq_ap_sq cmdhdr; body( WUP(C[ERO]); )
+      procedure _tick cmdhdr; body( Pointer(WP^) := FindCommand(NextName); Inc(WP, SizeOf(Pointer)); )
+      procedure execute cmdhdr; var P: PForthCommand; body( 
+                                             P := WOP; P.Code(Machine, P) )
+      procedure _does_gt cmdhdr; body( BuiltinEWO('(does>)'); BuiltinEWO('exit'); )
+      procedure _sq_does_gt_sq cmdhdr; body( Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; )
+      procedure CallDoesGt cmdhdr; body( Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); )
+      procedure Cells cmdhdr; body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt)))*SizeOf(Integer); )
+      procedure Cell_plus cmdhdr; body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); )
+      procedure _malloc cmdhdr; var P: Pointer; body( P := Pointer(WVar(-SizeOf(Integer))); GetMem(P, Integer(WVar(-SizeOf(Integer)))); Pointer(WVar(-SizeOf(Integer))) := P; )
+      procedure _free cmdhdr; var P: Pointer; body( Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P); )
+      procedure _last cmdhdr; var P: Pointer; body( Pointer(WP^) := C[FLastMnemonic]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer)); )
+      procedure _xt_dot_n cmdhdr; body( Pointer(WVar(-SizeOf(Pointer))) := @(PForthCommand(WVar(-SizeOf(Pointer))).Name[0]); )
+      procedure _xt_dot_d cmdhdr; body( Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Data )
+      procedure _move cmdhdr; body( Dec(WP, SizeOf(Pointer)*3); Move(Pointer(WVar(0))^, Pointer(WVar(SizeOf(Pointer)))^, TUint(WVar(2*SizeOf(Pointer)))); {Writeln(TUInt(WVar(0)), TUInt(WVar(SizeOf(Pointer))), TUint(WVar(2*SizeOf(Pointer))));} )
+
+procedure LoadCommands(Machine: TForthMachine);
+begin
+  Machine.AddCommand('timer', _timer);
+  Machine.AddCommand('wp', _wp);
+  Machine.AddCommand('@wp', _DogwpTemp);
+  Machine.AddCommand('rp', _rp);
+  Machine.AddCommand('lp', _lp);
+  Machine.AddCommand('lb', _lb);
+  Machine.AddCommand('r@', _r_dog);
+  Machine.AddCommand('r>', _r_gt);
+  Machine.AddCommand('>r', _lt_r);
+  Machine.AddCommand('l@', _l_dog);
+  Machine.AddCommand('l!', _l_exclamation);
+  Machine.AddCommand('l+', _l_plus);
+  Machine.AddCommand('sys-version', version);
+  Machine.AddCommand('state', _state);
+  Machine.AddCommand('time', _time);
+  Machine.AddCommand('local', _local);
+  Machine.AddCommand('source-cut', source_cut);
+  Machine.AddCommand('source-next-char', source_next_char);
+  Machine.AddCommand('source-next-name', source_next_name);
+  Machine.AddCommand('source-next-name-passive', source_next_name_passive);
+  Machine.AddCommand('interpret@source-next-name-passive', source_next_name_passive);
+  Machine.AddCommand('compile@source-next-name-passive', source_next_name_passive);
+  Machine.AddCommand('run@source-next-name-passive', source_next_name_passive);
+  Machine.AddCommand('source-read-to-char', source_read_to_char);
+  Machine.AddCommand('ptr-nil', ptr_nil);
+  Machine.AddCommand('interpret@', interpret_start);
+  Machine.AddCommand('compile@', compile_start);
+  Machine.AddCommand('run@', run_start);
+  //Machine.AddCommand('allot', allot);
+  //Machine.AddCommand('literal', literal, True);
+  Machine.AddCommand('['']', sq_ap_sq, True);
+  Machine.AddCommand('opcode->command', opcode_to_command);
+  //Machine.AddCommand('run@['']', run_sq_ap_sq);
+  //Machine.AddCommand('compile@['']', compile_sq_ap_sq);
+  //Machine.AddCommand('interpret@['']', interpret_sq_ap_sq);
+  Machine.AddCommand('''', _tick);
+  Machine.AddCommand('execute', execute);
+  Machine.AddCommand('does>', _does_gt, True);
+  Machine.AddCommand('(does>)', _sq_does_gt_sq);
+  Machine.AddCommand('cells', Cells);
+  Machine.AddCommand('cell+', Cell_plus);
+  Machine.AddCommand('malloc', _malloc);
+  Machine.AddCommand('free', _free);
+  Machine.AddCommand('last', _last);
+  Machine.AddCommand('xt.n@', _xt_dot_n);
+  Machine.AddCommand('xt.d@', _xt_dot_d);
+  Machine.AddCommand('move', _move);
+end;
+
+end.

@@ -1,0 +1,20 @@
+unit DEmbroChunk;
+
+interface
+
+type
+TEmbroSpace = object
+ private
+  FBytesPerBlock: Integer;
+  
+ public
+  constructor Init(BytesPerBlock: Integer);
+  procedure SetBytesPerBlock(Bytes: Integer);
+  function Allot(Bytes: Integer): Integer;
+  function Here: Pointer;
+  procedure Clear(Bytes: Integer);
+end;
+
+implementation
+
+end.

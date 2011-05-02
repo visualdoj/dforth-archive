@@ -1,0 +1,7 @@
+// 2011.04.26 # Doj
+// Вспомогательные команды для работы с пространствами имён и словарями.
+
+: context-drop context> drop ;
+
+: shortnamespace ( "name") namespace 
+  does> ( "...") @ context< vm-step context-drop ;

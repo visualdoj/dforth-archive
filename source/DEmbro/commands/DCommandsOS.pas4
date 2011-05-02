@@ -1,0 +1,28 @@
+unit DCommandsOS;
+
+interface
+
+uses
+  {$I units.inc},
+
+  DForthMachine;
+
+define(`cmdhdr', `(Machine: TForthMachine; Command: PForthCommand)')
+
+  procedure current_directory cmdhdr;  
+
+procedure LoadCommands(Machine: TForthMachine);
+
+implementation
+
+       procedure current_directory cmdhdr;
+       begin
+         Machine.WUS(GetCurrentDirectory);
+       end;
+
+procedure LoadCommands(Machine: TForthMachine);
+begin
+  Machine.AddCommand('current-directory', current_directory);  
+end;
+
+end.

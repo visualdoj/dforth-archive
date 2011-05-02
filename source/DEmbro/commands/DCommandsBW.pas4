@@ -1,0 +1,90 @@
+unit DCommandsBW;
+
+interface
+
+define(`cmdhdr', `(Machine: TForthMachine; Command: PForthCommand)')
+define(`WVar', `(Pointer(TUInt(Machine.WP) + ($1))^)')
+define(`LVar', `(Pointer(TUInt(LB) + ($1))^)')
+define(`WInc', `Inc(WP, $1)')
+define(`WDec', `Dec(TUInt(WP), $1)')
+define(`PSize', `(SizeOf(Pointer))')
+define(`CELL', `(SizeOf(Pointer))')
+define(`BInc', `Inc(BWP, CELL)')
+define(`BDec', `Dec(TUInt(BWP), CELL)')
+define(`BVar', `TBlock(Pointer(TUInt(Machine.BWP) + ($1)*CELL)^)')
+define(`binc', ` if $1 <> nil then begin
+                   if PInteger($1)^ <> -1 then Inc(PInteger($1)^); 
+                 end')
+define(`bdec', ` if $1 <> nil then begin
+                   if PInteger($1)^ > 1 then Dec(PInteger($1)^)
+                   else if PInteger($1)^ = 1 then FreeMem(Pointer($1)); 
+                 end')
+define(`genname', `ifelse($1, `', $2, len($1), `1', $2, $1-$2)')
+define(`body', `begin with Machine^ do begin $1 end; end;')
+
+uses
+  {$I units.inc},
+
+  DEmbroCore,
+  DForthMachine;
+
+    procedure bdog cmdhdr;
+    procedure bexclamation cmdhdr;
+    procedure _binc cmdhdr;
+    procedure _bdec cmdhdr;
+    procedure bdrop cmdhdr;
+    procedure bdup cmdhdr;
+    procedure bnip cmdhdr;
+    procedure bswap cmdhdr;
+    procedure bover cmdhdr;
+    procedure btuck cmdhdr;
+    procedure blrot cmdhdr;
+    procedure brrot cmdhdr;
+
+procedure LoadCommands(Machine: TForthMachine);
+
+implementation
+
+     procedure bdog cmdhdr; body( WDec(CELL); BVar(0) := TBlock(Pointer(WP^)^); 
+                                  binc(BVar(0)); BInc; )
+     procedure bexclamation cmdhdr; body( WDec(CELL); BDec; bdec(TBlock(Pointer(WP^)^));
+                                          TBlock(Pointer(WP^)^) := BVar(0);)
+     procedure _binc cmdhdr; body( WDec(CELL); binc(TBlock(Pointer(WP^))); )
+     procedure _bdec cmdhdr; body( WDec(CELL); bdec(TBlock(Pointer(WP^))); )
+     procedure bdrop cmdhdr; body( BDec; bdec(BVar(0)); )
+     procedure bdup cmdhdr; body( BVar(0) := BVar(-1); binc(BVar(0)); BInc; )
+     procedure bnip cmdhdr; body( BDec; bdec(BVar(-1)); BVar(-1) := BVar(0); )
+     procedure bswap cmdhdr; body( BVar(0) := BVar(-1); BVar(-1) := BVar(-2);
+                                   BVar(-2) := BVar(0); )
+     procedure bover cmdhdr; body( BVar(0) := BVar(-2); binc(BVar(0)); BInc; )
+     procedure btuck cmdhdr; body( BVar(0) := BVar(-1); BVar(-1) := BVar(-2);
+                                   BVar(-2) := BVar(0); BInc; binc(BVar(0)))
+     procedure blrot cmdhdr; 
+     body( 
+       BVar(0) := BVar(-3);  BVar(-3) := BVar(-2); 
+       BVar(-2) := BVar(-1); BVar(-1) := BVar(0);
+     )
+     procedure brrot cmdhdr;
+     body( 
+       BVar(0) := BVar(-1);  BVar(-1) := BVar(-2); 
+       BVar(-2) := BVar(-3); BVar(-3) := BVar(0);
+     )
+
+procedure LoadCommands(Machine: TForthMachine);
+begin
+  Machine.AddCommand('b@',           bdog);
+  Machine.AddCommand('b!',           bexclamation);
+  Machine.AddCommand('b' + 'inc',         _binc);
+  Machine.AddCommand('b' + 'dec',         _bdec);
+  Machine.AddCommand('bdup',         bdup);
+  Machine.AddCommand('bdrop',        bdrop);
+  Machine.AddCommand('bdup',         bdup);
+  Machine.AddCommand('bnip',         bnip);
+  Machine.AddCommand('bswap',        bswap);
+  Machine.AddCommand('bover',        bover);
+  Machine.AddCommand('btuck',        btuck);
+  Machine.AddCommand('blrot',        blrot);
+  Machine.AddCommand('brrot',        brrot);
+end;
+
+end.

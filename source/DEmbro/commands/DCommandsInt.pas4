@@ -1,0 +1,210 @@
+unit DCommandsInt;
+
+interface
+
+uses
+  {$I units.inc},
+
+  DEmbroCore,
+  DForthMachine;
+
+define(`cmdhdr', `(Machine: TForthMachine; Command: PForthCommand)')
+define(`WVar', `(Pointer(TUInt(Machine.WP) + ($1))^)')
+define(`LVar', `(Pointer(TUInt(LB) + ($1))^)')
+define(`WInc', `Inc(WP, $1)')
+define(`WDec', `Dec(TUInt(WP), $1)')
+define(`PSize', `(SizeOf(Pointer))')
+define(`CELL', `(SizeOf(Pointer))')
+define(`BInc', `Inc(BWP, CELL)')
+define(`BDec', `Dec(TUInt(BWP), CELL)')
+define(`BVar', `TBlock(Pointer(TUInt(Machine.BWP) + ($1)*CELL)^)')
+define(`binc', ` if $1 <> nil then begin
+                   if PInteger($1)^ <> -1 then Inc(PInteger($1)^); 
+                 end')
+define(`bdec', ` if $1 <> nil then begin
+                   if PInteger($1)^ > 1 then Dec(PInteger($1)^)
+                   else if PInteger($1)^ = 1 then FreeMem(Pointer($1)); 
+                 end')
+define(`genname', `ifelse($1, `', $2, len($1), `1', $2, $1-$2)')
+define(`body', `begin with Machine^ do begin $1 end; end;')
+
+    procedure drop_ cmdhdr;
+    procedure dup_ cmdhdr;
+    procedure nip_ cmdhdr;
+    procedure swap_ cmdhdr;
+    procedure over_ cmdhdr;
+    procedure tuck_ cmdhdr;
+    procedure lrot_ cmdhdr;
+    procedure rrot_ cmdhdr;
+    procedure lrotn_ cmdhdr;
+    procedure rrotn_ cmdhdr;
+    procedure pick_ cmdhdr;
+    procedure _comma_ cmdhdr;
+    procedure _dog_ cmdhdr;
+    procedure _exclamation_ cmdhdr;
+    procedure ptr_plus_ cmdhdr;
+    procedure _to_ cmdhdr;
+    procedure _compile_to_ cmdhdr;
+    procedure _run_to_ cmdhdr;
+    procedure _interpret_to_ cmdhdr;
+    procedure _value_ cmdhdr;
+    procedure _variable_ cmdhdr;
+    procedure RunValue_ cmdhdr;
+    procedure literal_ cmdhdr;
+    procedure run_literal_ cmdhdr;
+
+procedure LoadCommands(Machine: TForthMachine);
+
+implementation
+
+     ifdef(~_IA32|,
+       ~
+         procedure drop_ cmdhdr;
+         idle(asm
+           sub [eax], 4
+         end;)
+         {procedure dup_ cmdhdr;
+         idle(asm
+           mov ecx, [eax]
+           mov edx, [ecx-4]
+           mov [ecx], edx
+           add [eax], 4
+         end;)}
+         procedure dup_ cmdhdr; body(Move(WVar(-CELL_SIZE), WVar(0), CELL_SIZE); WInc(CELL_SIZE); )
+         procedure nip_ cmdhdr;
+         idle(asm
+           mov ecx, [eax]
+           lea ecx, [ecx-4]
+           mov edx, [ecx]
+           mov [ecx-4], edx
+           mov [eax], ecx
+         end;)
+         procedure swap_ cmdhdr;
+         idle(asm
+           mov ecx, [eax]
+           mov edx, [ecx-4]
+           xchg [ecx-8], edx
+           mov [ecx-4], edx
+         end;)
+         procedure over_ cmdhdr;
+         idle(asm
+           mov ecx, [eax]
+           mov edx, [ecx-8]
+           mov [ecx], edx
+           add [eax], 4
+         end;)
+         procedure tuck_ cmdhdr;
+         idle(asm // ab-bab  @wp=eax 
+           mov ecx, [eax]       // ecx := wp 
+           add [eax], 4         // @wp++
+           mov edx, [ecx-4]     // edx := b
+           mov [ecx], edx       // top := b
+           mov eax, [ecx-8]     // eax := a
+           mov [ecx-4], eax     // top[1] := a
+           mov [ecx-8], edx     // top[2] := b
+         end;)
+       |,
+       procedure drop_ cmdhdr; body(Dec(WP, CELL_SIZE))
+       procedure dup_ cmdhdr; body(Move(WVar(-CELL_SIZE), WVar(0), CELL_SIZE); WInc(CELL_SIZE))
+       procedure nip_ cmdhdr; body(Move(WVar(-1*CELL_SIZE), WVar(-2*CELL_SIZE), CELL_SIZE); Dec(WP, CELL_SIZE))
+       procedure swap_ cmdhdr; body(Move(WVar(-CELL_SIZE), WP^, CELL_SIZE); Move(WVar(-2*CELL_SIZE), WVar(-CELL_SIZE), CELL_SIZE); Move(WP^, WVar(-2*CELL_SIZE), CELL_SIZE);)
+       procedure over_ cmdhdr; body(Move(WVar(-2*CELL_SIZE), WVar(0), CELL_SIZE); Inc(WP, CELL_SIZE))
+       procedure tuck_ cmdhdr; body(Move(WVar(-2*CELL_SIZE), WVar(-1*CELL_SIZE), 2*CELL_SIZE); Move(WVar(0), WVar(-2*CELL_SIZE), CELL_SIZE); WInc(CELL_SIZE);body)
+     )
+     procedure lrot_ cmdhdr; 
+     body(
+       Move(WVar(-1*CELL_SIZE), WP^, CELL_SIZE);
+       Move(WVar(-3*CELL_SIZE), WVar(-1*CELL_SIZE), CELL_SIZE);
+       Move(WVar(-2*CELL_SIZE), WVar(-3*CELL_SIZE), CELL_SIZE);
+       Move(WP^, WVar(-2*CELL_SIZE), CELL_SIZE);
+     )
+     procedure rrot_ cmdhdr;
+     body( 
+       Move(WVar(-1*CELL_SIZE), WP^, CELL_SIZE);
+       Move(WVar(-2*CELL_SIZE), WVar(-1*CELL_SIZE), CELL_SIZE);
+       Move(WVar(-3*CELL_SIZE), WVar(-2*CELL_SIZE), CELL_SIZE);
+       Move(WP^, WVar(-3*CELL_SIZE), CELL_SIZE);
+     )
+     procedure lrotn_ cmdhdr; 
+     var
+       N: Integer;
+     body( 
+       Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       Move(WVar(-CELL_SIZE*N), WVar(0), CELL_SIZE);
+       while N > 0 do begin
+         Move(WVar(-CELL_SIZE*(N-1)), WVar(-CELL_SIZE*N), CELL_SIZE);
+         Dec(N);
+       end;
+       //Move(WVar(0), WVar(-CELL_SIZE), CELL_SIZE);
+     )
+     procedure rrotn_ cmdhdr;
+     var
+       I: Integer;
+       N: Integer;
+     body(
+       Dec(WP, SizeOf(TInt));
+       N := TInt(WP^);
+       //Move(WVar(-CELL_SIZE), WVar(0), CELL_SIZE);
+       for I := 0 to N - 1 do
+         Move(WVar(-CELL_SIZE*(I+1)), WVar(-CELL_SIZE*I), CELL_SIZE);
+       Move(WVar(0), WVar(-N*CELL_SIZE), CELL_SIZE);
+     )
+     procedure pick_ cmdhdr; 
+     body( 
+       Move(WVar(-SizeOf(TInt) -CELL_SIZE*TInt(WVar(-SizeOf(TInt)))), 
+            WVar(-SizeOf(TInt)),
+            CELL_SIZE);
+       WInc(CELL_SIZE - SizeOf(TInt));
+     )
+     procedure _comma_ cmdhdr; body( Dec(WP, CELL_SIZE); ifelse(~|,,
+                                                            EWI(Integer(WP^)),
+                                                            EWV(WP, CELL_SIZE); ) )
+     procedure _dog_ cmdhdr; body( Move(Pointer(WVar(-PSize))^, WVar(-PSize), CELL_SIZE); Inc(WP, CELL_SIZE - PSize) )
+     procedure _exclamation_ cmdhdr; body( Move(WVar(-PSize-CELL_SIZE), Pointer(WVar(-PSize))^, CELL_SIZE); Dec(WP, PSize + CELL_SIZE) )
+     procedure ptr_plus_ cmdhdr; body( PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + CELL_SIZE; )
+     procedure _to_ cmdhdr; body( if State <> FS_INTERPRET then _compile_to_(Machine, Command) else _interpret_to_(Machine, Command); )
+     procedure _compile_to_ cmdhdr; body( BuiltinEWO('run@genname(, ~to|)'); EWO(NextName); )
+     procedure _run_to_ cmdhdr; var O: TOpcode; body( O := ERO; Move(WVar(-CELL_SIZE), C[O].Data^, CELL_SIZE); Dec(WP, CELL_SIZE); )
+     procedure _interpret_to_ cmdhdr; var N: TString; Comm: PForthCommand; body( N := NextName; Comm := FindCommand(N);
+               if Comm = nil then begin LogError('unkown name after genname(, ~to|): ' + N); FSession := False; Exit; end; 
+               Move(WVar(-CELL_SIZE), Comm.Data^, CELL_SIZE); Dec(WP, CELL_SIZE);
+             )
+     procedure _value_ cmdhdr; body( with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_; Move(WVar(-CELL_SIZE), Here^, CELL_SIZE); Dec(WP, CELL_SIZE); EA(CELL_SIZE); Flags := Flags and not 1; end; )
+     procedure _variable_ cmdhdr; body( with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, CELL_SIZE); Move(WP^, Here^, CELL_SIZE);} EA(CELL_SIZE); end; )
+     procedure RunValue_ cmdhdr; body( Move(Command.Data^, WP^, CELL_SIZE); Inc(WP, CELL_SIZE); )
+    procedure literal_ cmdhdr; body( BuiltinEWO('genname(, (literal))'); Dec(WP, CELL_SIZE); 
+                                       ifelse(~|,,
+                                              EWI(Integer(WP^)), 
+                                              EWV(WP, CELL_SIZE);) )
+    procedure run_literal_ cmdhdr; body( ERV(WP, CELL_SIZE); Inc(WP, CELL_SIZE); )
+
+procedure LoadCommands(Machine: TForthMachine);
+begin
+  Machine.AddCommand('genname(, drop)', drop_);
+  Machine.AddCommand('genname(, dup)', dup_);
+  Machine.AddCommand('genname(, nip)', nip_);
+  Machine.AddCommand('genname(, swap)', swap_);
+  Machine.AddCommand('genname(, over)', over_);
+  Machine.AddCommand('genname(, tuck)', tuck_);
+  Machine.AddCommand('genname(, lrot)', lrot_);
+  Machine.AddCommand('genname(, rrot)', rrot_);
+  Machine.AddCommand('genname(, lrotn)', lrotn_);
+  Machine.AddCommand('genname(, rrotn)', rrotn_);
+  Machine.AddCommand('genname(, pick)', pick_);
+  Machine.AddCommand(',', _comma_);
+  Machine.AddCommand('@', _dog_);
+  Machine.AddCommand('!', _exclamation_);
+  Machine.AddCommand('ptr+', ptr_plus_);
+  Machine.AddCommand('genname(, to)', _to_, True);
+  Machine.AddCommand('compile@genname(, to)', _compile_to_);
+  Machine.AddCommand('run@genname(, to)', _run_to_);
+  Machine.AddCommand('interpret@genname(, to)', _interpret_to_);
+  Machine.AddCommand('genname(, value)', _value_);
+  Machine.AddCommand('genname(, constant)', _value_);
+  Machine.AddCommand('genname(, variable)', _variable_);
+  Machine.AddCommand('genname(, literal)', literal_, True);
+  Machine.AddCommand('genname(, (literal))', run_literal_);
+end;
+
+end.

@@ -10,6 +10,17 @@
 all: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
 	m4 id2.m4 DForthMachine.temp4 > DForthMachine.pas 
+	m4 DEmbroSpace.pas4 > DEmbroSpace.pas
+	m4 DEmbroCore.pas4 > DEmbroCore.pas
+	m4 DEmbroManager.pas4 > DEmbroManager.pas
+	m4 commands\DCommandsStrings.pas4 > commands\DCommandsStrings.pas
+	m4 commands\DCommandsFiles.pas4 > commands\DCommandsFiles.pas
+	m4 commands\DCommandsOS.pas4 > commands\DCommandsOS.pas
+	m4 commands\DCommandsF.pas4 > commands\DCommandsF.pas
+	m4 commands\DCommandsVM.pas4 > commands\DCommandsVM.pas
+	m4 commands\DCommandsMisc.pas4 > commands\DCommandsMisc.pas
+	m4 commands\DCommandsBW.pas4 > commands\DCommandsBW.pas
+	m4 commands\DCommandsInt.pas4 > commands\DCommandsInt.pas
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
