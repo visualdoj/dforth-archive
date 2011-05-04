@@ -1,3 +1,22 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 unit DCommandsMisc;
 
 interface
@@ -141,6 +160,32 @@ implementation
       procedure _xt_dot_d (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PForthCommand((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)).Data  end; end;
       procedure _move (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, SizeOf(Pointer)*3); Move(Pointer((Pointer(TUInt(Machine.WP) + (0))^))^, Pointer((Pointer(TUInt(Machine.WP) + (SizeOf(Pointer)))^))^, TUint((Pointer(TUInt(Machine.WP) + (2*SizeOf(Pointer)))^))); {Writeln(TUInt((Pointer(TUInt(Machine.WP) + (0))^)), TUInt((Pointer(TUInt(Machine.WP) + (SizeOf(Pointer)))^)), TUint((Pointer(TUInt(Machine.WP) + (2*SizeOf(Pointer)))^)));}  end; end;
 
+
+procedure _randomize (Machine: TForthMachine; Command: PForthCommand);
+begin
+  Randomize;
+end;
+
+procedure _random (Machine: TForthMachine; Command: PForthCommand);
+begin
+  Machine.WUI(Random(Machine.WOI));
+end;
+      
+procedure _align(Machine: TForthMachine; Command: PForthCommand);
+var
+  I: Integer;
+begin with Machine^ do begin I := WOI;
+  if I mod 4 = 0 then
+    WUI(I)
+  else
+    WUI(I + 4 - (I mod 4))
+ end; end;
+
+procedure _palign(Machine: TForthMachine; Command: PForthCommand);
+begin
+  _align(Machine, Command);
+end;
+
 procedure LoadCommands(Machine: TForthMachine);
 begin
   Machine.AddCommand('timer', _timer);
@@ -190,6 +235,12 @@ begin
   Machine.AddCommand('xt.n@', _xt_dot_n);
   Machine.AddCommand('xt.d@', _xt_dot_d);
   Machine.AddCommand('move', _move);
+
+  Machine.AddCommand('randomize', _randomize);
+  Machine.AddCommand('random', _random);
+
+  Machine.AddCommand('align', _align);
+  Machine.AddCommand('palign', _palign);
 end;
 
 end.

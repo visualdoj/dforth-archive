@@ -1,23 +1,4 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-unit DCommandsMem;
+unit DCommandsR;
 
 interface
 

@@ -58,5 +58,6 @@ str" core\default\files.de" evaluate-file
 str" core\default\os.de" evaluate-file
 str" core\default\vm.de" evaluate-file
 str" core\default\exceptions.de" evaluate-file
+str" core\default\misc.de" evaluate-file
 
 ." Loaded default system file"cr

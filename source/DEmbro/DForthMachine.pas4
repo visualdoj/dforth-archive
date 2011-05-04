@@ -18,6 +18,7 @@ uses
   strings,
   DAlien,
   DVocabulary,
+  DEmbroCore,
   DForthStack;
 
 const
@@ -47,187 +48,6 @@ define(~bdec|, ~ if $1 <> nil then begin
                  end|)
 define(~genname|, ~ifelse($1, ~|, $2, len($1), ~1|, $2, $1-$2)|)
 define(~body|, ~begin with Machine^ do begin $1 end; end;|)
-{$IFNDEF FLAG_FPC}{$REGION 'typed_commands'}{$ENDIF}
-define(~typed_commands|, 
-  ~
-    procedure drop_$1 cmdhdr;
-    procedure dup_$1 cmdhdr;
-    procedure nip_$1 cmdhdr;
-    procedure swap_$1 cmdhdr;
-    procedure over_$1 cmdhdr;
-    procedure tuck_$1 cmdhdr;
-    procedure lrot_$1 cmdhdr;
-    procedure rrot_$1 cmdhdr;
-    procedure lrotn_$1 cmdhdr;
-    procedure rrotn_$1 cmdhdr;
-    procedure pick_$1 cmdhdr;
-    procedure _comma_$1 cmdhdr;
-    procedure _dog_$1 cmdhdr;
-    procedure _exclamation_$1 cmdhdr;
-    procedure ptr_plus_$1 cmdhdr;
-    procedure _to_$1 cmdhdr;
-    procedure _compile_to_$1 cmdhdr;
-    procedure _run_to_$1 cmdhdr;
-    procedure _interpret_to_$1 cmdhdr;
-    procedure _value_$1 cmdhdr;
-    procedure _variable_$1 cmdhdr;
-    procedure RunValue_$1 cmdhdr;
-    procedure literal_$1 cmdhdr;
-    procedure run_literal_$1 cmdhdr
-  define(~all_implement|, all_implement 
-    ~
-     ifdef(~_IA32|,
-       ~
-         procedure drop_$1 cmdhdr;
-         idle(asm
-           sub [eax], 4
-         end;)
-         {procedure dup_$1 cmdhdr;
-         idle(asm
-           mov ecx, [eax]
-           mov edx, [ecx-4]
-           mov [ecx], edx
-           add [eax], 4
-         end;)}
-         procedure dup_$1 cmdhdr; body(Move(WVar(-$2), WVar(0), $2); WInc($2); )
-         procedure nip_$1 cmdhdr;
-         idle(asm
-           mov ecx, [eax]
-           lea ecx, [ecx-4]
-           mov edx, [ecx]
-           mov [ecx-4], edx
-           mov [eax], ecx
-         end;)
-         procedure swap_$1 cmdhdr;
-         idle(asm
-           mov ecx, [eax]
-           mov edx, [ecx-4]
-           xchg [ecx-8], edx
-           mov [ecx-4], edx
-         end;)
-         procedure over_$1 cmdhdr;
-         idle(asm
-           mov ecx, [eax]
-           mov edx, [ecx-8]
-           mov [ecx], edx
-           add [eax], 4
-         end;)
-         procedure tuck_$1 cmdhdr;
-         idle(asm // ab-bab  @wp=eax 
-           mov ecx, [eax]       // ecx := wp 
-           add [eax], 4         // @wp++
-           mov edx, [ecx-4]     // edx := b
-           mov [ecx], edx       // top := b
-           mov eax, [ecx-8]     // eax := a
-           mov [ecx-4], eax     // top[1] := a
-           mov [ecx-8], edx     // top[2] := b
-         end;)
-       |,
-       procedure drop_$1 cmdhdr; body(Dec(WP, $2))
-       procedure dup_$1 cmdhdr; body(Move(WVar(-$2), WVar(0), $2); WInc($2))
-       procedure nip_$1 cmdhdr; body(Move(WVar(-1*$2), WVar(-2*$2), $2); Dec(WP, $2))
-       procedure swap_$1 cmdhdr; body(Move(WVar(-$2), WP^, $2); Move(WVar(-2*$2), WVar(-$2), $2); Move(WP^, WVar(-2*$2), $2);)
-       procedure over_$1 cmdhdr; body(Move(WVar(-2*$2), WVar(0), $2); Inc(WP, $2))
-       procedure tuck_$1 cmdhdr; body(Move(WVar(-2*$2), WVar(-1*$2), 2*$2); Move(WVar(0), WVar(-2*$2), $2); WInc($2);body)
-     )
-     procedure lrot_$1 cmdhdr; 
-     body(
-       Move(WVar(-1*$2), WP^, $2);
-       Move(WVar(-3*$2), WVar(-1*$2), $2);
-       Move(WVar(-2*$2), WVar(-3*$2), $2);
-       Move(WP^, WVar(-2*$2), $2);
-     )
-     procedure rrot_$1 cmdhdr;
-     body( 
-       Move(WVar(-1*$2), WP^, $2);
-       Move(WVar(-2*$2), WVar(-1*$2), $2);
-       Move(WVar(-3*$2), WVar(-2*$2), $2);
-       Move(WP^, WVar(-3*$2), $2);
-     )
-     procedure lrotn_$1 cmdhdr; 
-     var
-       N: Integer;
-     body( 
-       Dec(WP, SizeOf(TInt));
-       N := TInt(WP^);
-       Move(WVar(-$2*N), WVar(0), $2);
-       while N > 0 do begin
-         Move(WVar(-$2*(N-1)), WVar(-$2*N), $2);
-         Dec(N);
-       end;
-       //Move(WVar(0), WVar(-$2), $2);
-     )
-     procedure rrotn_$1 cmdhdr;
-     var
-       I: Integer;
-       N: Integer;
-     body(
-       Dec(WP, SizeOf(TInt));
-       N := TInt(WP^);
-       //Move(WVar(-$2), WVar(0), $2);
-       for I := 0 to N - 1 do
-         Move(WVar(-$2*(I+1)), WVar(-$2*I), $2);
-       Move(WVar(0), WVar(-N*$2), $2);
-     )
-     procedure pick_$1 cmdhdr; 
-     body( 
-       Move(WVar(-SizeOf(TInt) -$2*TInt(WVar(-SizeOf(TInt)))), 
-            WVar(-SizeOf(TInt)),
-            $2);
-       WInc($2 - SizeOf(TInt));
-     )
-     procedure _comma_$1 cmdhdr; body( Dec(WP, $2); ifelse(~|,$1,
-                                                            EWI(Integer(WP^)),
-                                                            EWV(WP, $2); ) )
-     procedure _dog_$1 cmdhdr; body( Move(Pointer(WVar(-PSize))^, WVar(-PSize), $2); Inc(WP, $2 - PSize) )
-     procedure _exclamation_$1 cmdhdr; body( Move(WVar(-PSize-$2), Pointer(WVar(-PSize))^, $2); Dec(WP, PSize + $2) )
-     procedure ptr_plus_$1 cmdhdr; body( PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; )
-     procedure _to_$1 cmdhdr; body( if State <> FS_INTERPRET then _compile_to_$1(Machine, Command) else _interpret_to_$1(Machine, Command); )
-     procedure _compile_to_$1 cmdhdr; body( BuiltinEWO('run@genname($1, ~to|)'); EWO(NextName); )
-     procedure _run_to_$1 cmdhdr; var O: TOpcode; body( O := ERO; Move(WVar(-$2), C[O].Data^, $2); Dec(WP, $2); )
-     procedure _interpret_to_$1 cmdhdr; var N: TString; Comm: PForthCommand; body( N := NextName; Comm := FindCommand(N);
-               if Comm = nil then begin LogError('unkown name after genname($1, ~to|): ' + N); FSession := False; Exit; end; 
-               Move(WVar(-$2), Comm.Data^, $2); Dec(WP, $2);
-             )
-     procedure _value_$1 cmdhdr; body( with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_$1; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); Flags := Flags and not 1; end; )
-     procedure _variable_$1 cmdhdr; body( with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, $2); Move(WP^, Here^, $2);} EA($2); end; )
-     procedure RunValue_$1 cmdhdr; body( Move(Command.Data^, WP^, $2); Inc(WP, $2); )
-    procedure literal_$1 cmdhdr; body( BuiltinEWO('genname($1, (literal))'); Dec(WP, $2); 
-                                       ifelse(~|,$1,
-                                              EWI(Integer(WP^)), 
-                                              EWV(WP, $2);) )
-    procedure run_literal_$1 cmdhdr; body( ERV(WP, $2); Inc(WP, $2); )
-    |
-  )
-  define(~regist_all_commands|, regist_all_commands
-    ~
-     AddCommand('genname($1, drop)', drop_$1);
-     AddCommand('genname($1, dup)', dup_$1);
-     AddCommand('genname($1, nip)', nip_$1);
-     AddCommand('genname($1, swap)', swap_$1);
-     AddCommand('genname($1, over)', over_$1);
-     AddCommand('genname($1, tuck)', tuck_$1);
-     AddCommand('genname($1, lrot)', lrot_$1);
-     AddCommand('genname($1, rrot)', rrot_$1);
-     AddCommand('genname($1, lrotn)', lrotn_$1);
-     AddCommand('genname($1, rrotn)', rrotn_$1);
-     AddCommand('genname($1, pick)', pick_$1);
-     AddCommand('$1,', _comma_$1);
-     AddCommand('$1@', _dog_$1);
-     AddCommand('$1!', _exclamation_$1);
-     AddCommand('ptr+$1', ptr_plus_$1);
-     AddCommand('genname($1, to)', _to_$1, True);
-     AddCommand('compile@genname($1, to)', _compile_to_$1);
-     AddCommand('run@genname($1, to)', _run_to_$1);
-     AddCommand('interpret@genname($1, to)', _interpret_to_$1);
-     AddCommand('genname($1, value)', _value_$1);
-     AddCommand('genname($1, constant)', _value_$1);
-     AddCommand('genname($1, variable)', _variable_$1);
-     AddCommand('genname($1, literal)', literal_$1, True);
-     AddCommand('genname($1, (literal))', run_literal_$1);
-    |)
-|)
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'data_commands'}{$ENDIF}
 define(~data_commands|, 
   ~
@@ -291,256 +111,6 @@ define(~exception_commands|,
       AddCommand('sys-exceptions-execute', _sys_exceptions_execute);
       AddCommand('sys-exceptions-pop', _sys_exceptions_pop);
       AddCommand('throw', _throw);
-    |)
-|)
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'arithmetic_commands'}{$ENDIF}
-define(~arithmetic_commands|, 
-  ~
-  procedure $1_plus cmdhdr;
-  procedure $1_minus cmdhdr;
-  procedure $1_star cmdhdr;
-  procedure $1_equel cmdhdr;
-  procedure $1_nequel cmdhdr;
-  procedure $1_lt cmdhdr;
-  procedure $1_gt cmdhdr;
-  procedure $1_lte cmdhdr;
-  procedure $1_gte cmdhdr;  
-  procedure $1_0_equel cmdhdr;
-  procedure $1_0_nequel cmdhdr;
-  procedure $1_0_lt cmdhdr;
-  procedure $1_0_gt cmdhdr;
-  procedure $1_0_lte cmdhdr;
-  procedure $1_0_gte cmdhdr;
-  procedure $1_ask_dup cmdhdr;
-  procedure $1_0_exit cmdhdr;
-  procedure $1_if_exit cmdhdr;
-  procedure $1_max cmdhdr;
-  procedure $1_min cmdhdr;
-  procedure $1_minmax cmdhdr;
-  procedure $1_dot cmdhdr;
-  procedure $1_dollar cmdhdr;
-  procedure $1_ptr_plus_exclamation cmdhdr;
-  procedure $1_conv_to_str cmdhdr;
-  procedure $1_conv_from_str cmdhdr
-  define(~all_implement|, all_implement 
-    ~
-      procedure $1_plus  cmdhdr; body( $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) + $2(WVar(-SizeOf($2))); 
-                                                   Dec(WP, SizeOf($2)); )
-      procedure $1_minus cmdhdr; body( $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) - $2(WVar(-SizeOf($2))); 
-                                                   Dec(WP, SizeOf($2)); )
-      procedure $1_star  cmdhdr; body( $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) * $2(WVar(-SizeOf($2))); 
-                                                   Dec(WP, SizeOf($2)); )
-      procedure $1_equel cmdhdr; body( TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) = $2(WVar(-SizeOf($2)))); 
-                                                   Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); )
-      procedure $1_nequel cmdhdr; body( TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) <> $2(WVar(-SizeOf($2)))); 
-                                                   Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); )
-      procedure $1_lt cmdhdr;    body( TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) < $2(WVar(-SizeOf($2)))); 
-                                                   Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); )
-      procedure $1_gt cmdhdr;    body( TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) > $2(WVar(-SizeOf($2)))); 
-                                                   Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); )
-      procedure $1_lte cmdhdr;   body( TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) <= $2(WVar(-SizeOf($2)))); 
-                                                   Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); )
-      procedure $1_gte cmdhdr;   body( TInt(WVar(-2*SizeOf($2))) := BOOL_TRUE*Ord($2(WVar(-2*SizeOf($2))) >= $2(WVar(-SizeOf($2)))); 
-                                                   Dec(WP, 2*SizeOf($2) - SizeOf(TInt)); )
-      procedure $1_0_equel cmdhdr; body( TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) = 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) )
-      procedure $1_0_nequel cmdhdr; body( TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) <> 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) )
-      procedure $1_0_lt cmdhdr; body( TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) < 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) )
-      procedure $1_0_gt cmdhdr; body( TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) > 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) )
-      procedure $1_0_lte cmdhdr; body( TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) <= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) )
-      procedure $1_0_gte cmdhdr; body( TInt(WVar(-1*SizeOf($2))) := BOOL_TRUE*Ord(($2(WVar(-1*SizeOf($2)))) >= 0); Dec(WP, SizeOf($2) - SizeOf(TInt)) )
-      procedure $1_ask_dup cmdhdr; body( if ($2(WVar(-1*SizeOf($2)))) <> 0 then begin $2(WP^) := $2(WVar(-1*SizeOf($2))); Inc(WP, SizeOf($2)); end; )
-      procedure $1_0_exit cmdhdr; body( if $2(WVar(-SizeOf($2))) = 0 then begin Dec(WP, SizeOf($2)); _exit(Machine, Command); end )
-      procedure $1_if_exit cmdhdr; body( if $2(WVar(-SizeOf($2))) <> 0 then begin Dec(WP, SizeOf($2)); _exit(Machine, Command); end )
-      procedure $1_max cmdhdr;
-      body(
-        if $2(WVar(-2*SizeOf($2))) < $2(WVar(-1*SizeOf($2))) then
-          Move(WVar(-1*SizeOf($2)), WVar(-2*SizeOf($2)), SizeOf($2));
-        Dec(WP, SizeOf($2));
-      )
-      procedure $1_min cmdhdr;
-      body(
-        if $2(WVar(-2*SizeOf($2))) > $2(WVar(-1*SizeOf($2))) then
-          Move(WVar(-1*SizeOf($2)), WVar(-2*SizeOf($2)), SizeOf($2));
-        Dec(WP, SizeOf($2));
-      )
-      procedure $1_minmax cmdhdr;
-      body(
-        if $2(WVar(-2*SizeOf($2))) > $2(WVar(-1*SizeOf($2))) then begin
-          Move(WVar(-2*SizeOf($2)), WVar(-0*SizeOf($2)), SizeOf($2));
-          Move(WVar(-1*SizeOf($2)), WVar(-2*SizeOf($2)), SizeOf($2));
-          Move(WVar(-0*SizeOf($2)), WVar(-1*SizeOf($2)), SizeOf($2));
-        end;
-      )
-      procedure $1_dot cmdhdr;    body( Dec(WP, SizeOf($2)); Write($2(WP^), ' '); )
-      procedure $1_dollar cmdhdr; var Temp: $2; body( Read(Temp); Move(Temp, WP^, SizeOf($2)); Inc(WP, SizeOf($2)); )
-      procedure $1_ptr_plus_exclamation cmdhdr; body( $2(Pointer(WVar(-SizeOf(Pointer)))^) := $2(Pointer(WVar(-SizeOf(Pointer)))^) + $2(WVar(-SizeOf(Pointer)-SizeOf($2))); Dec(WP, SizeOf(Pointer) + SizeOf($2)); )
-      procedure $1_conv_to_str cmdhdr;
-      var
-        B: TString;
-      body(
-        Str($2(WVar(-SizeOf($2))), B);
-        Dec(WP, SizeOf($2));
-        str_push(Machine, B);
-      )
-      procedure $1_conv_from_str cmdhdr;
-      var
-        B: TStr;
-        Res: Word;
-      body(
-        B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), $2(WP^), Res);
-        Inc(WP, SizeOf($2));
-        DelRef(B);
-      )
-    |
-  )
-  define(~regist_all_commands|, regist_all_commands
-    ~
-     AddCommand('$1+', $1_plus);
-     AddCommand('$1-', $1_minus);
-     AddCommand('$1*', $1_star);
-     AddCommand('$1=', $1_equel);
-     AddCommand('$1<>', $1_nequel);
-     AddCommand('$1<', $1_lt);
-     AddCommand('$1>', $1_gt);
-     AddCommand('$1<=', $1_lte);
-     AddCommand('$1>=', $1_gte);
-     AddCommand('genname($1, 0=)', $1_0_equel);
-     AddCommand('genname($1, 0<>)', $1_0_nequel);
-     AddCommand('genname($1, 0<)', $1_0_lt);
-     AddCommand('genname($1, 0>)', $1_0_gt);
-     AddCommand('genname($1, 0<=)', $1_0_lte);
-     AddCommand('genname($1, 0>=)', $1_0_gte);
-     AddCommand('genname($1, ?dup)', $1_ask_dup);
-     addcommand('genname($1, 0;)', $1_0_exit);
-     addcommand('genname($1, if;)', $1_if_exit);
-     AddCommand('genname($1, min)', $1_min);
-     AddCommand('genname($1, max)', $1_max);
-     AddCommand('genname($1, minmax)', $1_minmax);
-     AddCommand('$1.', $1_dot);
-     AddCommand('$1$', $1_dollar);
-     AddCommand('$1+!', $1_ptr_plus_exclamation);
-     AddCommand('$1->str', $1_conv_to_str);
-     AddCommand('str->$1', $1_conv_from_str);
-    |)
-|)
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'signed_arithmetic_commands'}{$ENDIF}
-define(~signed_arithmetic_commands|, 
-  ~
-  procedure $1_abs cmdhdr;
-  procedure $1_neg cmdhdr
-  define(~all_implement|, all_implement 
-    ~procedure $1_abs cmdhdr; body( $2(WVar(-SizeOf($2))) := Abs($2(WVar(-SizeOf($2)))); )
-     procedure $1_neg cmdhdr; body( $2(WVar(-SizeOf($2))) := - $2(WVar(-SizeOf($2))); )
-    |
-  )
-  define(~regist_all_commands|, regist_all_commands
-    ~AddCommand('genname($1, abs)', $1_abs);
-     AddCommand('genname($1, neg)', $1_neg);
-    |)
-|)
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'number_arithmetic_commands'}{$ENDIF}
-define(~number_arithmetic_commands|, 
-  ~
-  procedure $1_push  cmdhdr;
-  procedure $1_interpret_push  cmdhdr;
-  procedure $1_compile_push  cmdhdr;
-  procedure $1_run_push  cmdhdr;
-  procedure $1_1_plus cmdhdr;
-  procedure $1_1_minus cmdhdr;
-  procedure $1_div cmdhdr;
-  procedure $1_mod cmdhdr;
-  procedure $1_divmod cmdhdr;
-  procedure $1_shl cmdhdr;
-  procedure $1_shr cmdhdr;
-  procedure $1_power cmdhdr;
-  procedure $1_ptr_inc cmdhdr;
-  procedure $1_ptr_dec cmdhdr
-  define(~all_implement|, all_implement 
-    ~
-     procedure $1_push  cmdhdr; body( if State = FS_COMPILE then $1_compile_push(Machine, Command) else $1_interpret_push(Machine, Command) )
-     procedure $1_interpret_push  cmdhdr; body( $2(WP^) := $2(StrToInt(NextName)); Inc(WP, SizeOf($2)); )
-     procedure $1_compile_push  cmdhdr; body( BuiltinEWO('run@$1-push'); EW_$1(StrToInt(NextName)); )
-     procedure $1_run_push  cmdhdr; body( $2(WP^) := ER_$1; Inc(WP, SizeOf($2)); )
-     procedure $1_1_plus cmdhdr;  body( Inc($2(WVar(-SizeOf($2)))) )
-     procedure $1_1_minus cmdhdr; body( Dec($2(WVar(-SizeOf($2)))) )
-     procedure $1_div cmdhdr; body( $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) div $2(WVar(-SizeOf($2))); 
-                                                   Dec(WP, SizeOf($2)); )
-     procedure $1_mod cmdhdr; body( $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) mod $2(WVar(-SizeOf($2))); 
-                                                   Dec(WP, SizeOf($2)); )
-     procedure $1_divmod cmdhdr; body( $2(WVar(0)) := $2(WVar(-2*SizeOf($2))) mod $2(WVar(-SizeOf($2))); 
-                                                     $2(WVar(-2*SizeOf($2))) := $2(WVar(-2*SizeOf($2))) div $2(WVar(-SizeOf($2)));
-                                                     $2(WVar(-  SizeOf($2))) := $2(WVar(0)); 
-                                               )
-     procedure $1_shl cmdhdr; body( Dec(WP, SizeOf($2));
-                    $2(WVar(-SizeOf($2))) := $2(WVar(-SizeOf($2))) shl $2(WVar(0)) )
-     procedure $1_shr cmdhdr; body( Dec(WP, SizeOf($2));
-                    $2(WVar(-SizeOf($2))) := $2(WVar(-SizeOf($2))) shr $2(WVar(0)) )
-     procedure $1_power cmdhdr; 
-     idle(var 
-       Power, Base, Value: Cardinal;) 
-     body(
-       Power := WOI;
-       Base := WOI;
-       Value := 1;
-       while Power > 0 do begin
-         if (Power mod 2) > 0 then
-           Value := Value * Base;
-         Base := Base * Base;
-         Power := Power div 2;
-       end;
-       WUI(Value);
-     )
-     procedure $1_ptr_inc cmdhdr;
-     body(
-       $2(Pointer(WVar(-SizeOf(Pointer)))^) := 
-                         $2(Pointer(WVar(-SizeOf(Pointer)))^) + 1; 
-       Dec(WP, SizeOf(Pointer));
-     )
-     procedure $1_ptr_dec cmdhdr;
-     body(
-       $2(Pointer(WVar(-SizeOf(Pointer)))^) := 
-                         $2(Pointer(WVar(-SizeOf(Pointer)))^) - 1; 
-       Dec(WP, SizeOf(Pointer));
-     )
-    |
-  )
-  define(~regist_all_commands|, regist_all_commands
-    ~
-     AddCommand('$1-push', $1_push, True);
-     AddCommand('run@$1-push', $1_run_push);
-     AddCommand('genname($1, inc)', $1_1_plus);
-     AddCommand('genname($1, dec)', $1_1_minus);
-     ifelse($1, ~|, AddCommand('1+', $1_1_plus);)
-     ifelse($1, ~|, AddCommand('1-', $1_1_minus);)
-     AddCommand('genname($1, inc!)', $1_ptr_inc);
-     AddCommand('genname($1, dec!)', $1_ptr_dec);
-     ifelse($1, ~|, AddCommand('1+!', $1_ptr_inc);)
-     ifelse($1, ~|, AddCommand('1-!', $1_ptr_dec);)
-     AddCommand('genname($1, div)', $1_div);
-     AddCommand('genname($1, mod)', $1_mod);
-     AddCommand('genname($1, divmod)', $1_divmod);
-     AddCommand('genname($1, shl)', $1_shl);
-     AddCommand('genname($1, shr)', $1_shr);
-     AddCommand('genname($1, **)', $1_power);
-    |)
-|)
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'convert_number_arithmetic_commands'}{$ENDIF}
-define(~convert_number_arithmetic_commands|, 
-  ~
-  procedure $1_convert_to_$3 cmdhdr
-  define(~all_implement|, all_implement 
-    ~
-     procedure $1_convert_to_$3 cmdhdr; body( $4(WVar(-SizeOf($2))) := $2(WVar(-SizeOf($2))); 
-                                                            Dec(WP, SizeOf($2) - SizeOf($4)); )
-    |
-  )
-  define(~regist_all_commands|, regist_all_commands
-    ~AddCommand('$1->$3', $1_convert_to_$3);
     |)
 |)
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -613,9 +183,6 @@ define(~pop_interface|, ~function $1: $2
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 const
-  BOOL_FALSE: Integer   = 0;
-  BOOL_TRUE: Integer    = -1;
-
   CONV_STDCALL: Integer = 100;
   CONV_CDECL: Integer   = 101;
 
@@ -1068,79 +635,6 @@ OForthMachine = object
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'all commands'}{$ENDIF}
-  typed_commands(ptr, 4);
-  typed_commands(int, 4);
-  typed_commands(int8, 1);
-  typed_commands(int16, 2);
-  typed_commands(int32, 4);
-  typed_commands(int64, 8);
-  typed_commands(uint, 4);
-  typed_commands(uint8, 1);
-  typed_commands(uint16, 2);
-  typed_commands(uint32, 4);
-  typed_commands(uint64, 8);
-  typed_commands(embro, 4);
-  typed_commands(float, 4);
-  typed_commands(double, 8);
-  typed_commands(extended, 10);
-  arithmetic_commands(, TInt);
-  arithmetic_commands(int, TInt);
-  arithmetic_commands(int8, TInt8);
-  arithmetic_commands(int16, TInt16);
-  arithmetic_commands(int32, TInt32);
-  arithmetic_commands(int64, TInt64);
-  arithmetic_commands(uint, TUInt);
-  arithmetic_commands(uint8, TUInt8);
-  arithmetic_commands(uint16, TUInt16);
-  arithmetic_commands(uint32, TUInt32);
-  arithmetic_commands(uint64, TUInt64);
-  arithmetic_commands(float, Single);
-  arithmetic_commands(double, Double);
-  arithmetic_commands(extended, Extended);
-  signed_arithmetic_commands(, TInt);
-  signed_arithmetic_commands(int, TInt);
-  signed_arithmetic_commands(int8, TInt8);
-  signed_arithmetic_commands(int16, TInt16);
-  signed_arithmetic_commands(int32, TInt32);
-  signed_arithmetic_commands(int64, TInt64);
-  signed_arithmetic_commands(float, Single);
-  signed_arithmetic_commands(double, Double);
-  number_arithmetic_commands(, TInt);
-  number_arithmetic_commands(int, TInt);
-  number_arithmetic_commands(int8, TInt8);
-  number_arithmetic_commands(int16, TInt16);
-  number_arithmetic_commands(int32, TInt32);
-  number_arithmetic_commands(int64, TInt64);
-  number_arithmetic_commands(uint, TUInt);
-  number_arithmetic_commands(uint8, TUInt8);
-  number_arithmetic_commands(uint16, TUInt16);
-  number_arithmetic_commands(uint32, TUInt32);
-  number_arithmetic_commands(uint64, TUInt64);
-  convert_number_arithmetic_commands(int,      TInt,     int8,     TInt8);
-  convert_number_arithmetic_commands(int,      TInt,     int16,    TInt16);
-  convert_number_arithmetic_commands(int,      TInt,     int32,    TInt32);
-  convert_number_arithmetic_commands(int,      TInt,     int64,    TInt64);
-  convert_number_arithmetic_commands(int8,     TInt8,    int,      TInt);
-  convert_number_arithmetic_commands(int16,    TInt16,   int,      TInt);
-  convert_number_arithmetic_commands(int32,    TInt32,   int,      TInt);
-  convert_number_arithmetic_commands(int64,    TInt64,   int,      TInt);
-  convert_number_arithmetic_commands(uint,     TUInt,    uint8,    TUInt8);
-  convert_number_arithmetic_commands(uint,     TUInt,    uint16,   TUInt16);
-  convert_number_arithmetic_commands(uint,     TUInt,    uint32,   TUInt32);
-  convert_number_arithmetic_commands(uint,     TUInt,    uint64,   TUInt64);
-  convert_number_arithmetic_commands(uint8,    TUInt8,   uint,     TUInt);
-  convert_number_arithmetic_commands(uint16,   TUInt16,  uint,     TUInt);
-  convert_number_arithmetic_commands(uint32,   TUInt32,  uint,     TUInt);
-  convert_number_arithmetic_commands(uint64,   TUInt64,  uint,     TUInt);
-  convert_number_arithmetic_commands(float,    Single,   double,   Double);
-  convert_number_arithmetic_commands(double,   Double,   float,   Single);
-  convert_number_arithmetic_commands(float,    Single,   extended, Extended);
-  convert_number_arithmetic_commands(double,   Double,   extended, Extended);
-  convert_number_arithmetic_commands(extended, Extended, double,   Double);
-  convert_number_arithmetic_commands(extended, Extended, float,   Single);
-  convert_number_arithmetic_commands(int,      TInt,     float,    Single);
-  convert_number_arithmetic_commands(int,      TInt,     double,   Double);
-  convert_number_arithmetic_commands(int,      TInt,     extended, Extended);
   exception_commands
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'misc commands'}{$ENDIF}
@@ -1150,77 +644,19 @@ end;
   procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileLineComment(Machine: TForthMachine; Command: PForthCommand);
   procedure _here(Machine: TForthMachine; Command: PForthCommand); overload;
-  procedure _BtoW(Machine: TForthMachine; Command: PForthCommand);
-  procedure _WtoB(Machine: TForthMachine; Command: PForthCommand);
-  procedure Evaluate(Machine: TForthMachine; Command: PForthCommand);
-  procedure EvaluateFile(Machine: TForthMachine; Command: PForthCommand);
   procedure _FIND_(Machine: TForthMachine; Command: PForthCommand);
   procedure _NOTFOUND_(Machine: TForthMachine; Command: PForthCommand);
-  procedure _align(Machine: TForthMachine; Command: PForthCommand);
-  procedure _palign(Machine: TForthMachine; Command: PForthCommand);
-  procedure _poststr cmdhdr;
-  procedure _postname cmdhdr;
-  procedure _raw_2_unicode cmdhdr;
-  procedure _utf8_2_unicode cmdhdr;
-  procedure _utf8_2_raw cmdhdr;
-  procedure _unicode_2_utf8 cmdhdr;
-  procedure _unicode_2_raw cmdhdr;
-  procedure _randomize cmdhdr;
-  procedure _random cmdhdr;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TControlCommands'}{$ENDIF}
-procedure branch(Machine: TForthMachine; Command: PForthCommand);
-procedure _ask_branch(Machine: TForthMachine; Command: PForthCommand);
-procedure _gt_mark(Machine: TForthMachine; Command: PForthCommand);
-procedure _gt_resolve(Machine: TForthMachine; Command: PForthCommand);
-procedure _lt_mark(Machine: TForthMachine; Command: PForthCommand);
-procedure _lt_resolve(Machine: TForthMachine; Command: PForthCommand);
-procedure _exit(Machine: TForthMachine; Command: PForthCommand);
-procedure recurse(Machine: TForthMachine; Command: PForthCommand);
 procedure call(Machine: TForthMachine; Command: PForthCommand);
-procedure compile_def(Machine: TForthMachine; Command: PForthCommand);
-procedure compile_noname(Machine: TForthMachine; Command: PForthCommand);
-procedure compile_skip_to_end(Machine: TForthMachine; Command: PForthCommand);
-procedure compile_enddef(Machine: TForthMachine; Command: PForthCommand);
-procedure compile_scattered_def(Machine: TForthMachine; Command: PForthCommand);
-procedure compile_scattered_enddef(Machine: TForthMachine; Command: PForthCommand); 
-procedure scattered_dots(Machine: TForthMachine; Command: PForthCommand); 
-procedure immediate(Machine: TForthMachine; Command: PForthCommand);
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'TEmbroCommands'}{$ENDIF}
-procedure compile(Machine: TForthMachine; Command: PForthCommand);
-procedure q_compile_q(Machine: TForthMachine; Command: PForthCommand);
-procedure _call(Machine: TForthMachine; Command: PForthCommand);
-procedure postpone(Machine: TForthMachine; Command: PForthCommand);
-procedure _compiled(Machine: TForthMachine; Command: PForthCommand);
-procedure _postponed(Machine: TForthMachine; Command: PForthCommand);
-procedure _called(Machine: TForthMachine; Command: PForthCommand);
-procedure _execute(Machine: TForthMachine; Command: PForthCommand);
+procedure _exit(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TDataCommands'}{$ENDIF}
-  procedure _nil(Machine: TForthMachine; Command: PForthCommand);
-  procedure ptr_comma(Machine: TForthMachine; Command: PForthCommand);
 
-  procedure _create(Machine: TForthMachine; Command: PForthCommand);
-  procedure _created(Machine: TForthMachine; Command: PForthCommand);
   procedure putdataptr(Machine: TForthMachine; Command: PForthCommand);
   procedure here(Machine: TForthMachine; Command: PForthCommand);
   procedure allot(Machine: TForthMachine; Command: PForthCommand);
 
-  procedure compile_to(Machine: TForthMachine; const Name: TString; Size: Integer);
-  procedure interpete_to(Machine: TForthMachine; const Name: TString; Size: Integer);
-
-  procedure to_int(Machine: TForthMachine; Command: PForthCommand);
-  procedure to_int8(Machine: TForthMachine; Command: PForthCommand);
-  procedure to_int16(Machine: TForthMachine; Command: PForthCommand);
-  procedure to_int32(Machine: TForthMachine; Command: PForthCommand);
-  procedure to_int64(Machine: TForthMachine; Command: PForthCommand);
-  procedure to_uint(Machine: TForthMachine; Command: PForthCommand);
-  procedure to_uint8(Machine: TForthMachine; Command: PForthCommand);
-  procedure to_uint16(Machine: TForthMachine; Command: PForthCommand);
-  procedure to_uint32(Machine: TForthMachine; Command: PForthCommand);
-  procedure to_uint64(Machine: TForthMachine; Command: PForthCommand);
-  procedure to_ptr(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TTypeCommands'}{$ENDIF}
   procedure typeof(Machine: TForthMachine; Command: PForthCommand);
@@ -1249,6 +685,9 @@ procedure _execute(Machine: TForthMachine; Command: PForthCommand);
   procedure _extended(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
+function GetFileName(FullPath: TString): TString;
+function GetDirectory(const FullPath: TString): TString;
+
 function IsImmediate(Command: PForthCommand): Boolean;
 procedure SetImmediate(Command: PForthCommand; I: Boolean);
 function IsBuiltin(Command: PForthCommand): Boolean;
@@ -1260,6 +699,10 @@ implementation
 uses
   DCommandsBool,
   DCommandsMisc,
+  DCommandsArithmetic,
+  DCommandsSignedArithmetic,
+  DCommandsNumberArithmetic,
+  DCommandsConvertNumber,
   DCommandsConsole,
   DCommandsStrings,
   DCommandsAlien,
@@ -1277,7 +720,8 @@ uses
   DCommandsVM,
   DCommandsVoc,
   DCommandsExtInt,
-  DCommandsEmbro;
+  DCommandsEmbro,
+  DCommandsControl;
 
 function GetFileName(FullPath: TString): TString;
 var
@@ -1351,69 +795,6 @@ begin
 end;
 
 {$IFNDEF FLAG_FPC}{$REGION 'TControlCommands'}{$ENDIF}
-procedure branch;
-begin
-  with Machine^ do begin
-    Machine.EC := Machine.ERU;
-  end;
-end;
-
-procedure _ask_branch;
-var
-  B: TInt;
-  Temp: Cardinal;
-begin
-  with Machine^ do begin
-    B := Machine.WOI;
-    Temp := Machine.ERU;
-    if B = BOOL_FALSE then
-      Machine.EC := Temp;
-  end;
-end;
-
-procedure _gt_mark;
-var
-  Temp: Cardinal;
-begin
-  with Machine^ do begin
-    Temp := Machine.EL;
-    Machine.WUU(Temp);
-    Machine.EWU(Temp);
-  end;
-end;
-
-procedure _gt_resolve;
-var
-  Temp: Cardinal;
-  PC: Cardinal;
-begin
-  with Machine^ do begin
-    Temp := Machine.WOU;
-    PC := Machine.EL;
-    Move(PC, Pointer(@Machine.E[Temp])^, SizeOf(PC));
-  end;
-end;
-
-procedure _lt_mark;
-var
-  Temp: Cardinal;
-begin
-  with Machine^ do begin
-    Temp := Machine.EL;
-    Machine.WUU(Temp);
-  end;
-end;
-
-procedure _lt_resolve;
-var
-  Temp: Cardinal;
-  PC: Cardinal;
-begin
-  with Machine^ do begin
-    Temp := Machine.WOU;
-    Machine.EWU(Temp);
-  end;
-end;
 
 procedure _exit;
 begin
@@ -1433,13 +814,6 @@ begin
     end;
     Machine.LP := Machine.LB;
     Machine.LB := Machine.ROP;
-  end;
-end;
-
-procedure recurse(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    Machine.EWO(Machine.FLastMnemonic);
   end;
 end;
 
@@ -1463,43 +837,6 @@ begin
   end;
 end;
 
-procedure compile_def(Machine: TForthMachine; Command: PForthCommand);
-var
-  Name: TString;
-  NewCommand: PForthCommand;
-  PName: PChar;
-begin
-  with Machine^ do begin
-    Name := Machine.NextName;
-    PName := CopyStrToPChar(Name);
-    NewCommand := Machine.ReserveName('');
-    NewCommand^.Code := call;
-    SetImmediate(NewCommand, False);
-    Integer(NewCommand^.Data) := Machine.EL;
-    Machine.State := FS_COMPILE;
-    Machine.LUI(Machine.FLastMnemonic);
-    Machine.LUP(PName);
-    Machine.LUI(101);
-  end;
-end;
-
-procedure compile_noname(Machine: TForthMachine; Command: PForthCommand);
-var
-  NewCommand: PForthCommand;
-begin
-  with Machine^ do begin
-    NewCommand := Machine.ReserveName('');
-    NewCommand^.Code := call;
-    SetImmediate(NewCommand, False);
-    Integer(NewCommand^.Data) := Machine.EL;
-    Machine.State := FS_COMPILE;
-    Machine.WUP(NewCommand);
-    Machine.LUI(Machine.FLastMnemonic);
-    Machine.LUP(Pointer(PChar('')));
-    Machine.LUI(101);
-  end;
-end;
-
 procedure compile_skip_to_end(Machine: TForthMachine; Command: PForthCommand);
 begin
   with Machine^ do begin
@@ -1512,190 +849,10 @@ begin
   end;
 end;
 
-procedure compile_enddef(Machine: TForthMachine; Command: PForthCommand);
-var
-  B: TString;
-  Index: TInt;
-  P: PChar;
-  ID: Integer;
-begin
-  with Machine^ do begin
-    //B := str_pop(Machine);
-    //Machine.C[Machine.WOI]^.Name := PChar(TString(PChar(@TStrRec(B^).Sym[0])));
-    //DelRef(B);
-    ID := Machine.LOI;
-    if ID = 201 then begin
-      _gt_resolve(Machine, nil);
-    end;
-    P := Machine.LOP;
-    Index := Machine.LOI;
-    Machine.C[Index]^.Name := P;
-    Machine.BuiltinEWO('exit');
-    Machine.State := FS_INTERPRET;
-    Machine.C[Index]^.Flags := Machine.C[Index]^.Flags and not 1;
-    Machine.OnUpdateCommand(Index);
-    Machine.FLastMnemonic := Index;
-    //Writeln('LAST COMMAND ', High(Machine.C), ' ' + Machine.C[High(Machine.C)].Name);
-  end;
-end;
-
-procedure compile_scattered_def(Machine: TForthMachine; Command: PForthCommand);
-var
-  Name: TString;
-  C: PForthCommand;
-begin
- // with Machine^ do begin
-    Machine.State := FS_COMPILE;
-    Name := Machine.NextName;
-    C := Machine.FindCommand(Name);
-    if C = nil then begin
-      Machine.LogError('Command not found: ' + Name);
-      Exit;
-    end;
-    Machine.WUU(Cardinal((@Machine.E[Cardinal(C^.Param)])^));
-    Cardinal((@Machine.E[Cardinal(C^.Param)])^) := Machine.EL;
-    Machine.WUP(C);
- // end;
-end;
-
-procedure compile_scattered_enddef(Machine: TForthMachine; Command: PForthCommand);
-var
-  C: PForthCommand;
-  P: Cardinal;
-begin
- // with Machine^ do begin
-    C := Machine.WOP;
-    P := Cardinal(C^.Param);
-    Machine.BuiltinEWO('branch');
-    Cardinal(C^.Param) := Machine.EL;
-    Machine.EWU(Machine.WOU);
-    Machine.State := FS_INTERPRET;
- // end;
-end;
-
-procedure scattered_dots(Machine: TForthMachine; Command: PForthCommand); 
-begin
-  with Machine^ do begin
-    Machine.BuiltinEWO('branch');
-    Cardinal(Machine.C[Machine.FLastMnemonic]^.Param) := Machine.EL;
-    Machine.EWU(Machine.EL + SizeOf(TUInt));
-  end;
-end;
-
-procedure immediate(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    SetImmediate(Machine.C[Machine.FLastMnemonic], True);
-  end;
-end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TEmbroCommands'}{$ENDIF}
-procedure compile(Machine: TForthMachine; Command: PForthCommand);
-var
-  U: TUInt;
-begin
-  with Machine^ do begin
-    //if Machine.State = FS_COMPILE then begin
-      Machine.BuiltinEWO('(compile)');
-      Machine.EWO(Machine.NextName);
-    //end else begin
-    //  Machine.EWO(Machine.C[Machine.ERU].Name);
-    //end;
-  end;
-end;
-
-procedure q_compile_q(Machine: TForthMachine; Command: PForthCommand);
-var
-  O: TOpcode;
-begin
-  with Machine^ do begin
-    O := Machine.ERU;
-    Machine.EWO(Machine.C[O].Name);
-  end;
-end;
-
-procedure _call(Machine: TForthMachine; Command: PForthCommand);
-begin
-  Machine.EWO(Machine.NextName);
-end;
-
-procedure postpone(Machine: TForthMachine; Command: PForthCommand);
-var
-  C: PForthCommand;
-  Opcode: TOpcode;
-begin
-  C := Machine.FindCommand(Machine.NextName, @Opcode);
-  // Writeln(C^.Name);
-  if not IsImmediate(C) then
-    Machine.BuiltinEWO('(compile)');
-  Machine.EWO(Opcode)
-end;
-
-procedure _compiled(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    //if Machine.State = FS_COMPILE then begin
-      Machine.BuiltinEWO('(compile)');
-      Machine.EWO(Machine.WOS);
-    //end else begin
-    //  Machine.EWO(Machine.C[Machine.ERU].Name);
-    //end;
-  end;
-end;
-
-procedure _postponed(Machine: TForthMachine; Command: PForthCommand);
-var
-  C: PForthCommand;
-  Opcode: TOpcode;
-begin
-  C := Machine.FindCommand(Machine.WOS, @Opcode);
-  // Writeln(C^.Name);
-  if not IsImmediate(C) then
-    Machine.BuiltinEWO('(compile)');
-  Machine.EWO(Opcode)
-end;
-
-procedure _called(Machine: TForthMachine; Command: PForthCommand);
-begin
-  Machine.EWO(Machine.WOS);
-end;
-
-procedure _execute(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    Machine.InterpretName(PChar(Machine.NextName));
-  end;
-end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TDataCommands'}{$ENDIF}
-procedure _create(Machine: TForthMachine; Command: PForthCommand);
-var
-  Name: TString;
-  NewCommand: PForthCommand;
-begin
-  with Machine^ do begin
-    Name := Machine.NextName;
-    NewCommand := Machine.ReserveName(Name);
-    NewCommand^.Code := putdataptr;
-    NewCommand^.Data := Machine.Here;
-    Machine.OnUpdateCommand(NewCommand);
-  end;
-end;
-
-procedure _created(Machine: TForthMachine; Command: PForthCommand);
-var
-  Name: TString;
-  NewCommand: PForthCommand;
-begin
-  with Machine^ do begin
-    Name := Machine.WOS;
-    NewCommand := Machine.ReserveName(Name);
-    NewCommand^.Code := putdataptr;
-    NewCommand^.Data := Machine.Here;
-    Machine.OnUpdateCommand(NewCommand);
-  end;
-end;
-
 procedure putdataptr(Machine: TForthMachine; Command: PForthCommand);
 var
   P: Pointer;
@@ -1724,171 +881,6 @@ begin
   with Machine^ do begin
     I := Machine.WOI;
     Machine.IncHere(I);
-  end;
-end;
-
-procedure to_int(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(TInt))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(TInt));
-  end;
-end;
-
-procedure to_int8(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(TInt8))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(TInt8));
-  end;
-end;
-
-procedure to_int16(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(TInt16))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(TInt16));
-  end;
-end;
-
-procedure to_int32(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(TInt32))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(TInt32));
-  end;
-end;
-
-procedure to_int64(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(TInt64))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(TInt64));
-  end;
-end;
-
-procedure to_uint(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(TUInt))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(TUInt));
-  end;
-end;
-
-procedure to_uint8(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(TUInt8))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(TUInt8));
-  end;
-end;
-
-procedure to_uint16(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(TUInt16))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(TUInt16));
-  end;
-end;
-
-procedure to_uint32(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(TUInt32))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(TUInt32));
-  end;
-end;
-
-procedure to_uint64(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(TUint64))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(TUint64));
-  end;
-end;
-
-procedure to_ptr(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    if Machine.State = FS_COMPILE then
-      compile_to(Machine, Machine.NextName, SizeOf(Pointer))
-    else
-      interpete_to(Machine, Machine.NextName, SizeOf(Pointer));
-  end;
-end;
-
-procedure compile_to;
-begin
-  with Machine^ do begin
-    case Size of
-      1: Machine.WriteMnemonicByName(' 8to');
-      2: Machine.WriteMnemonicByName(' 16to');
-      4: Machine.WriteMnemonicByName(' 32to');
-      8: Machine.WriteMnemonicByName(' 64to');
-    else
-      Machine.WriteMnemonicByName(' to');
-      Machine.WriteEmbroByte(Size);
-    end;
-    Machine.WriteMnemonicByName(Name);
-  end;
-end;
-
-procedure interpete_to;
-var
-  C: PForthCommand;
-  Temp: array of Byte;
-begin
- // with Machine^ do begin
-    C := Machine.FindCommand(Name);
-    if C = nil then begin
-      Machine.LogError('cannot find command ' + Name);
-      Exit;
-    end;
-    SetLength(Temp, Size);
-    // FIXME
-    //Machine.(@Temp[0], Size);
-    Move(Temp[0], C^.Data^, Size);
- // end;
-end;
-
-procedure _nil(Machine: TForthMachine; Command: PForthCommand);
-var
-  P: Pointer;
-begin
-  with Machine^ do begin
-    P := nil;
-    Machine.WUP(nil);
-  end;
-end;
-
-procedure ptr_comma(Machine: TForthMachine; Command: PForthCommand);
-var
-  P: Pointer;
-begin
-  with Machine^ do begin
-    P := Machine.WOP;
-    Move(P, Machine.Here^, SizeOf(Pointer));
-    Machine.IncHere(SizeOf(Pointer)); 
   end;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -2735,16 +1727,6 @@ begin
   Result := Pointer(BWP^);
 end;
 
-procedure _BtoW(Machine: TForthMachine; Command: PForthCommand);
-begin
-  Machine.WUP(Machine.BWO);
-end;
-
-procedure _WtoB(Machine: TForthMachine; Command: PForthCommand);
-begin
-  Machine.BWU(Machine.WOP);
-end;
-
 procedure OForthMachine.WUV(const P: Pointer; Size: Integer);
 begin
   if P <> nil then
@@ -2788,7 +1770,7 @@ begin
   Dec(LP, Size);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
+{$IFNDEF FLAG_FPC}{$REGION 'V'}{$ENDIF}
 function OForthMachine.HighTarget: PVoc;
 var
   I: Integer;
@@ -2932,20 +1914,6 @@ begin
   AddCommand('builtin', _builtin);
   AddCommand('builtedin', _builtedin);
   AddCommand('_NOTFOUND_', _NOTFOUND_);
-  AddCommand('align', _align);
-  AddCommand('palign', _palign);
-  AddCommand('*poststr', _poststr);
-  AddCommand('*postname', _postname);
-  AddCommand('utf8->unicode', _utf8_2_unicode);
-  AddCommand('utf8->raw', _utf8_2_raw);
-  AddCommand('raw->unicode', _raw_2_unicode);
-  AddCommand('unicode->utf8', _unicode_2_utf8);
-  AddCommand('unicode->raw', _unicode_2_raw);
-  AddCommand('randomize', _randomize);
-  AddCommand('random', _random);
-  
-  AddCommand('w>b', _WtoB);
-  AddCommand('b>w', _BtoW);
 
   SetLength(FTypes, 0);
   all_create;
@@ -2971,45 +1939,8 @@ begin
   AddType('extended', SizeOf(PType));
 
   AddCommand('exit', _exit);
-{$IFNDEF FLAG_FPC}{$REGION 'control commands'}{$ENDIF}
-  AddCommand(':', compile_def);
-  AddCommand(':noname', compile_noname);
-  AddCommand(';', compile_enddef, True);
-  AddCommand('skip-to;', compile_enddef, True);
-  AddCommand('...', scattered_dots, True);
-  AddCommand('..:', compile_scattered_def);
-  AddCommand(';..', compile_scattered_enddef, True);
-  AddCommand('branch', branch);
-  AddCommand('?branch', _ask_branch);
-  AddCommand('>mark', _gt_mark);
-  AddCommand('>resolve', _gt_resolve);
-  AddCommand('<mark', _lt_mark);
-  AddCommand('<resolve', _lt_resolve);
-  AddCommand('recurse', recurse, True);
-  AddCommand('immediate', immediate);
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'embro commands'}{$ENDIF}
-  AddCommand('compile', compile, True);
-  AddCommand('(compile)', q_compile_q, True);
-  AddCommand('call', _call, True);
-  AddCommand('postpone', postpone, True);
-  AddCommand('compiled', _compiled, False);
-  AddCommand('postponed', _postponed, False);
-  AddCommand('called', _called, False);
-  AddCommand('evaluate', Evaluate);
-  ~AddCommand('evaluate-file', EvaluateFile);|
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'data commands'}{$ENDIF}
-  AddCommand('nil', _nil);
-  AddCommand('ptr,', ptr_comma);
-
-  AddCommand('create', _create);
-  AddCommand('created', _created);
   DCommandsEmbro.LoadCommands(@Self);
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-{$IFNDEF FLAG_FPC}{$REGION 'bool'}{$ENDIF}
   DCommandsBool.LoadCommands(@Self);
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'type commands'}{$ENDIF}
   AddCommand('typeof', typeof, True);
   AddCommand('(typeof)', run_type);
@@ -3053,6 +1984,11 @@ begin
   DCommandsVoc.LoadCommands(@Self);
   DCommandsExtInt.LoadCommands(@Self);
   DCommandsMisc.LoadCommands(@Self);
+  DCommandsArithmetic.LoadCommands(@Self);
+  DCommandsSignedArithmetic.LoadCommands(@Self);
+  DCommandsNumberArithmetic.LoadCommands(@Self);
+  DCommandsConvertNumber.LoadCommands(@Self);
+  DCommandsControl.LoadCommands(@Self);
   regist_all_commands;
   UnuseVoc;
 end;
@@ -3061,7 +1997,6 @@ destructor OForthMachine.Destroy;
 begin
   all_free;
   FAlien.Free;
-  //FMemoryDebug.Free;
 end;
 
 procedure OForthMachine.InterpretName(W: PChar);
@@ -3201,92 +2136,6 @@ begin
   FCurrentPos := LOI;
   FCurrentLine := LOI;
   FCurrentFileName := WOS;
-end;
-
-procedure Evaluate(Machine: TForthMachine; Command: PForthCommand);
-var
-  S: TStr;
-begin
-  S := str_pop(Machine);
-  Machine.Interpret(PChar(@(PStrRec(S)^.Sym[0])));
-  DelRef(S);
-end;
-
-procedure EvaluateFile(Machine: TForthMachine; Command: PForthCommand);
-var
-  //F: File of Byte;
-  F: TextFile;
-  S: TStr;
-  //B: array of Byte;
-  B: TString;
-  T: TString;
-  FullPath: TString;
-  ShortPath: TString;
-begin
-  S := str_pop(Machine);
-  ShortPath := TString(PChar(@(PStrRec(S)^.Sym[0])));
-  FullPath := '';
-  while True do begin
-    if Length(Machine.Directories) > 0 then begin
-      FullPath := Machine.Directories[High(Machine.Directories)] + ShortPath;
-      if FileExists(FullPath) then 
-        Break;
-    end;
-    FullPath := PChar(GetCurrentDirectory) + '\' + ShortPath;
-    if FileExists(FullPath) then 
-      Break;
-    FullPath := PChar(GetExeDirectory) + '\' + ShortPath;
-    if FileExists(FullPath) then 
-      Break;
-    Exit;
-  end;
-  SetLength(Machine.Directories, Length(Machine.Directories) + 1);
-  Machine.Directories[High(Machine.Directories)] := GetDirectory(FullPath);
-  DelRef(S);
-  Machine.InterpretFile(FullPath);
-  SetLength(Machine.Directories, Length(Machine.Directories) - 1);
-  (* // Writeln('Evaluate file "', PChar(@(PStrRec(S)^.Sym[0])), '"'); *)
-  (* if Length(Machine.Directories) > 0 then begin *)
-  (*   FullPath := Machine.Directories[High(Machine.Directories)] + ShortPath;  *)
-  (*   Assign(F, FullPath); *)
-  (*   {$I-} *)
-  (*   Reset(F); *)
-  (*   {$I+} *)
-  (* end; *)
-  (* if (Length(Machine.Directories) = 0) or (IOResult <> 0) then begin *)
-  (*   FullPath := PChar(GetCurrentDirectory) + '\\' + ShortPath; *)
-  (*   Assign(F, FullPath); *)
-  (*   {$I-} *)
-  (*   Reset(F); *)
-  (*   {$I+} *)
-  (*   if IOResult <> 0 then begin *)
-  (*     FullPath := PChar(GetExeDirectory) + '\\' + ShortPath; *)
-  (*     Assign(F, FullPath); *)
-  (*     {$I-} *)
-  (*     Reset(F); *)
-  (*     {$I+} *)
-  (*     if IOResult <> 0 then begin *)
-  (*       Machine.LogError('cannot open file "' + ShortPath + '"'); *)
-  (*       Exit; *)
-  (*     end; *)
-  (*   end; *)
-  (* end; *)
-  (* B := TString(PChar(@(PStrRec(S)^.Sym[0]))); *)
-  (* while (Length(B) > 0) and (B[Length(B)] <> '\\') do begin *)
-  (*   SetLength(B, Length(B) - 1); *)
-  (* end; *)
-  (* SetLength(Machine.Directories, Length(Machine.Directories) + 1); *)
-  (* Machine.Directories[High(Machine.Directories)] := B; *)
-  (* B := ''; *)
-  (* while not EOF(F) do begin *)
-  (*   Readln(F, T); *)
-  (*   B := B + T + EOL; *)
-  (* end; *)
-  (* Close(F); *)
-  (* Machine.Interpret(PChar(B)); *)
-  (* DelRef(S); *)
-  (* SetLength(Machine.Directories, Length(Machine.Directories) - 1); *)
-  // Writeln('End of evaluate file "', PChar(@S^.Sym[0]), '"');
 end;
 
 procedure OForthMachine.CallCommand(Command: PForthCommand);
@@ -3667,88 +2516,6 @@ begin
   end;
 end;
 
-procedure _align(Machine: TForthMachine; Command: PForthCommand);
-var
-  I: Integer;
-body(
-  I := WOI;
-  if I mod 4 = 0 then
-    WUI(I)
-  else
-    WUI(I + 4 - (I mod 4))
-)
-
-procedure _palign(Machine: TForthMachine; Command: PForthCommand);
-begin
-  _align(Machine, Command);
-end;
-
-procedure _poststr cmdhdr; body(WUP(@ConvStr))
-procedure _postname cmdhdr; body(WUP(@ConvName))
-
-procedure _raw_2_unicode cmdhdr;
-var
-  B, C: TStr;
-begin
-  B := str_pop(Machine);
-  C := CreateStr(4, B^.Len);
-  MoveChars(@C^.Sym[0], @B^.Sym[0], B^.Len, 4, B^.Width);
-  DelRef(B);
-  str_push(Machine, C);
-end;
-
-procedure _utf8_2_unicode cmdhdr;
-var
-  B, C: TStr;
-  Len, U: Integer;
-  P: Pointer;
-begin
-  B := str_pop(Machine);
-  C := CreateStr(4, B^.Len);
-  Len := 0;
-  P := @B^.Sym[0];
-  while TUInt(P) < TUInt(@B^.Sym[B^.Len]) do
-    if not ReadUTF8Char(P, U) then
-      Break
-    else begin
-      PArrayOfCardinal(@C^.Sym[0])^[Len] := U;
-      Inc(Len);
-      // Write(Char(U));
-    end;
-  // Writeln;
-  C^.Len := Len;
-  DelRef(B);
-  str_push(Machine, C);
-end;
-
-procedure _utf8_2_raw cmdhdr;
-body(
-)
-
-procedure _unicode_2_utf8 cmdhdr;
-body(
-)
-
-procedure _unicode_2_raw cmdhdr;
-var
-  B, C: TStr;
-begin
-  B := str_pop(Machine);
-  C := CreateStr(1, B^.Len);
-  MoveChars(@C^.Sym[0], @B^.Sym[0], B^.Len, 1, B^.Width);
-  DelRef(B);
-  str_push(Machine, C);
-end;
-
-procedure _randomize cmdhdr;
-begin
-  Randomize;
-end;
-
-procedure _random cmdhdr;
-begin
-  Machine.WUI(Random(Machine.WOI));
-end;
 
 function OForthMachine.FindCommand(Voc: PVoc; const Name: TString; Index: PInteger = nil): PForthCommand;
 begin
@@ -3782,30 +2549,6 @@ begin
     if Result <> nil then
       Exit;
   end;
-  (* I := High(Context); *)
-  (* while I >= 0 do *)
-  (*   if Context[I] <> nil then begin *)
-  (*     if Context[I].sFIND = -1 then *)
-  (*       Dec(I) *)
-  (*     else *)
-  (*       Break; *)
-  (*   end else *)
-  (*     Dec(I); *)
-  (* // Writeln('I = ', I); *)
-  (* if I <> -1 then begin *)
-  (*   WUS(Name); *)
-  (*   CallCommand(C[Context[I].sFIND]); *)
-  (*   if WOI = 0 then begin *)
-  (*     if Index <> nil then begin *)
-  (*       Index^ := WOI; *)
-  (*       Result := C[Index^]; *)
-  (*     end else *)
-  (*       Result := C[WOI]; *)
-  (*   end else begin *)
-  (*     Result := nil; *)
-  (*   end; *)
-  (* end else *)
-  (*   Result := nil; *)
 end;
 
 function OForthMachine.ExtendedFindCommand(const Name: TString; Index: PInteger = nil): PForthCommand;

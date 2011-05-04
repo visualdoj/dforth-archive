@@ -1,3 +1,22 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 unit DCommandsBW;
 
 interface
@@ -35,6 +54,9 @@ uses
     procedure btuck (Machine: TForthMachine; Command: PForthCommand);
     procedure blrot (Machine: TForthMachine; Command: PForthCommand);
     procedure brrot (Machine: TForthMachine; Command: PForthCommand);
+
+    procedure _BtoW(Machine: TForthMachine; Command: PForthCommand);
+    procedure _WtoB(Machine: TForthMachine; Command: PForthCommand);
 
 procedure LoadCommands(Machine: TForthMachine);
 
@@ -85,6 +107,16 @@ implementation
        TBlock(Pointer(TUInt(Machine.BWP) + (-2)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(Machine.BWP) + (-3)*(SizeOf(Pointer)))^); TBlock(Pointer(TUInt(Machine.BWP) + (-3)*(SizeOf(Pointer)))^) := TBlock(Pointer(TUInt(Machine.BWP) + (0)*(SizeOf(Pointer)))^);
       end; end;
 
+    procedure _BtoW(Machine: TForthMachine; Command: PForthCommand);
+    begin
+      Machine.WUP(Machine.BWO);
+    end;
+
+    procedure _WtoB(Machine: TForthMachine; Command: PForthCommand);
+    begin
+      Machine.BWU(Machine.WOP);
+    end;
+
 procedure LoadCommands(Machine: TForthMachine);
 begin
   Machine.AddCommand('b@',           bdog);
@@ -100,6 +132,9 @@ begin
   Machine.AddCommand('btuck',        btuck);
   Machine.AddCommand('blrot',        blrot);
   Machine.AddCommand('brrot',        brrot);
+  
+  Machine.AddCommand('w>b', _WtoB);
+  Machine.AddCommand('b>w', _BtoW);
 end;
 
 end.

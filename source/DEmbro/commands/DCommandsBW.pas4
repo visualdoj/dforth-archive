@@ -41,6 +41,9 @@ uses
     procedure blrot cmdhdr;
     procedure brrot cmdhdr;
 
+    procedure _BtoW(Machine: TForthMachine; Command: PForthCommand);
+    procedure _WtoB(Machine: TForthMachine; Command: PForthCommand);
+
 procedure LoadCommands(Machine: TForthMachine);
 
 implementation
@@ -70,6 +73,16 @@ implementation
        BVar(-2) := BVar(-3); BVar(-3) := BVar(0);
      )
 
+    procedure _BtoW(Machine: TForthMachine; Command: PForthCommand);
+    begin
+      Machine.WUP(Machine.BWO);
+    end;
+
+    procedure _WtoB(Machine: TForthMachine; Command: PForthCommand);
+    begin
+      Machine.BWU(Machine.WOP);
+    end;
+
 procedure LoadCommands(Machine: TForthMachine);
 begin
   Machine.AddCommand('b@',           bdog);
@@ -85,6 +98,9 @@ begin
   Machine.AddCommand('btuck',        btuck);
   Machine.AddCommand('blrot',        blrot);
   Machine.AddCommand('brrot',        brrot);
+  
+  Machine.AddCommand('w>b', _WtoB);
+  Machine.AddCommand('b>w', _BtoW);
 end;
 
 end.

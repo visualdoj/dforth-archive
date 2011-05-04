@@ -36,6 +36,10 @@ uses
 
   DCommandsBool in 'commands\DCommandsBool.pas',
   DCommandsMisc in 'commands\DCommandsMisc.pas',
+  DCommandsArithmetic in 'commands\DCommandsArithmetic.pas',
+  DCommandsSignedArithmetic in 'commands\DCommandsSignedArithmetic.pas',
+  DCommandsNumberArithmetic in 'commands\DCommandsNumberArithmetic.pas',
+  DCommandsConvertNumber in 'commands\DCommandsConvertNumber.pas',
   DCommandsConsole in 'commands\DCommandsConsole',
   DCommandsStrings in 'commands\DCommandsStrings',
   DCommandsAlien in 'commands\DCommandsAlien',
@@ -54,6 +58,7 @@ uses
   DCommandsVoc in 'commands\DCommandsVoc',
   DCommandsExtInt in 'commands\DCommandsExtInt',
   DCommandsEmbro in 'commands\DCommandsEmbro.pas',
+  DCommandsControl in 'commands\DCommandsControl.pas',
 
   DAlien,
   //DForthStack,

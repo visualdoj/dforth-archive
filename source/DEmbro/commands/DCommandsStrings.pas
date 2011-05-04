@@ -1,3 +1,22 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 unit DCommandsStrings;
 
 interface
@@ -83,6 +102,9 @@ uses
   procedure MoveChars(Dst, Src: Pointer; Len, DSize, SSize: Integer);
   procedure SetStrSymbol(S: TStr; Index: Integer; C: Cardinal);
   function StrToString(S: TStr): TString;
+
+  procedure _poststr (Machine: TForthMachine; Command: PForthCommand);
+  procedure _postname (Machine: TForthMachine; Command: PForthCommand);
 
 procedure LoadCommands(Machine: TForthMachine);
 
@@ -999,6 +1021,62 @@ begin
   end;
 end;
 
+
+procedure _raw_2_unicode (Machine: TForthMachine; Command: PForthCommand);
+var
+  B, C: TStr;
+begin
+  B := str_pop(Machine);
+  C := CreateStr(4, B^.Len);
+  MoveChars(@C^.Sym[0], @B^.Sym[0], B^.Len, 4, B^.Width);
+  DelRef(B);
+  str_push(Machine, C);
+end;
+
+procedure _utf8_2_unicode (Machine: TForthMachine; Command: PForthCommand);
+var
+  B, C: TStr;
+  Len, U: Integer;
+  P: Pointer;
+begin
+  B := str_pop(Machine);
+  C := CreateStr(4, B^.Len);
+  Len := 0;
+  P := @B^.Sym[0];
+  while TUInt(P) < TUInt(@B^.Sym[B^.Len]) do
+    if not ReadUTF8Char(P, U) then
+      Break
+    else begin
+      PArrayOfCardinal(@C^.Sym[0])^[Len] := U;
+      Inc(Len);
+      // Write(Char(U));
+    end;
+  // Writeln;
+  C^.Len := Len;
+  DelRef(B);
+  str_push(Machine, C);
+end;
+
+procedure _utf8_2_raw (Machine: TForthMachine; Command: PForthCommand);
+begin with Machine^ do begin  end; end;
+
+procedure _unicode_2_utf8 (Machine: TForthMachine; Command: PForthCommand);
+begin with Machine^ do begin  end; end;
+
+procedure _unicode_2_raw (Machine: TForthMachine; Command: PForthCommand);
+var
+  B, C: TStr;
+begin
+  B := str_pop(Machine);
+  C := CreateStr(1, B^.Len);
+  MoveChars(@C^.Sym[0], @B^.Sym[0], B^.Len, 1, B^.Width);
+  DelRef(B);
+  str_push(Machine, C);
+end;
+
+procedure _poststr (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(@ConvStr) end; end;
+procedure _postname (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(@ConvName) end; end;
+
 procedure LoadCommands(Machine: TForthMachine);
 begin
   Machine.AddCommand('pchar"', pchar_dq, True);
@@ -1039,16 +1117,25 @@ begin
   Machine.AddCommand('str-literal', _str_literal, True);
   Machine.AddCommand('str.', str_dot);
   Machine.AddCommand('str$', str_dollar);
-  Machine.AddCommand('str-drop', bdrop);
-  Machine.AddCommand('str-dup', bdup);
-  Machine.AddCommand('str-swap', swap_ptr);
-  Machine.AddCommand('str-over', bover);
-  Machine.AddCommand('str-rot', lrot_ptr);
-  Machine.AddCommand('str-lrot', lrot_ptr);
-  Machine.AddCommand('str-rrot', rrot_ptr);
-  Machine.AddCommand('str-lrotn', lrotn_ptr);
-  Machine.AddCommand('str-rrotn', rrotn_ptr);
+  (* Machine.AddCommand('str-drop', bdrop); *)
+  (* Machine.AddCommand('str-dup', bdup); *)
+  (* Machine.AddCommand('str-swap', swap_ptr); *)
+  (* Machine.AddCommand('str-over', bover); *)
+  (* Machine.AddCommand('str-rot', lrot_ptr); *)
+  (* Machine.AddCommand('str-lrot', lrot_ptr); *)
+  (* Machine.AddCommand('str-rrot', rrot_ptr); *)
+  (* Machine.AddCommand('str-lrotn', lrotn_ptr); *)
+  (* Machine.AddCommand('str-rrotn', rrotn_ptr); *)
   Machine.AddCommand('pchar->str', pchar_to_str);  
+
+  Machine.AddCommand('utf8->unicode', _utf8_2_unicode);
+  Machine.AddCommand('utf8->raw', _utf8_2_raw);
+  Machine.AddCommand('raw->unicode', _raw_2_unicode);
+  Machine.AddCommand('unicode->utf8', _unicode_2_utf8);
+  Machine.AddCommand('unicode->raw', _unicode_2_raw);
+
+  Machine.AddCommand('*poststr', _poststr);
+  Machine.AddCommand('*postname', _postname);
 end;
 
 end.

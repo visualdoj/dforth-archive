@@ -142,6 +142,33 @@ implementation
       procedure _xt_dot_d cmdhdr; body( Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Data )
       procedure _move cmdhdr; body( Dec(WP, SizeOf(Pointer)*3); Move(Pointer(WVar(0))^, Pointer(WVar(SizeOf(Pointer)))^, TUint(WVar(2*SizeOf(Pointer)))); {Writeln(TUInt(WVar(0)), TUInt(WVar(SizeOf(Pointer))), TUint(WVar(2*SizeOf(Pointer))));} )
 
+
+procedure _randomize cmdhdr;
+begin
+  Randomize;
+end;
+
+procedure _random cmdhdr;
+begin
+  Machine.WUI(Random(Machine.WOI));
+end;
+      
+procedure _align(Machine: TForthMachine; Command: PForthCommand);
+var
+  I: Integer;
+body(
+  I := WOI;
+  if I mod 4 = 0 then
+    WUI(I)
+  else
+    WUI(I + 4 - (I mod 4))
+)
+
+procedure _palign(Machine: TForthMachine; Command: PForthCommand);
+begin
+  _align(Machine, Command);
+end;
+
 procedure LoadCommands(Machine: TForthMachine);
 begin
   Machine.AddCommand('timer', _timer);
@@ -191,6 +218,12 @@ begin
   Machine.AddCommand('xt.n@', _xt_dot_n);
   Machine.AddCommand('xt.d@', _xt_dot_d);
   Machine.AddCommand('move', _move);
+
+  Machine.AddCommand('randomize', _randomize);
+  Machine.AddCommand('random', _random);
+
+  Machine.AddCommand('align', _align);
+  Machine.AddCommand('palign', _palign);
 end;
 
 end.

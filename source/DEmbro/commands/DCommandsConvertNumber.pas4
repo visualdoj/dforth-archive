@@ -1,0 +1,68 @@
+unit DCommandsConvertNumber;
+
+interface
+
+uses
+  {$I units.inc},
+
+  DEmbroCore,
+  DCommandsStrings,
+  DForthMachine;
+
+changequote(~,|)
+define(~genname|, ~ifelse($1, ~|, $2, len($1), ~1|, $2, $1-$2)|)
+
+{$IFNDEF FLAG_FPC}{$REGION 'convert_number_arithmetic_commands'}{$ENDIF}
+define(~convert_number_arithmetic_commands|, 
+  ~
+  procedure $1_convert_to_$3 cmdhdr
+  define(~all_implement|, all_implement 
+    ~
+     procedure $1_convert_to_$3 cmdhdr; body( $4(WVar(-SizeOf($2))) := $2(WVar(-SizeOf($2))); 
+                                                            Dec(WP, SizeOf($2) - SizeOf($4)); )
+    |
+  )
+  define(~regist_all_commands|, regist_all_commands
+    ~Machine.AddCommand('$1->$3', $1_convert_to_$3);
+    |)
+|)
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+
+  convert_number_arithmetic_commands(int,      TInt,     int8,     TInt8);
+  convert_number_arithmetic_commands(int,      TInt,     int16,    TInt16);
+  convert_number_arithmetic_commands(int,      TInt,     int32,    TInt32);
+  convert_number_arithmetic_commands(int,      TInt,     int64,    TInt64);
+  convert_number_arithmetic_commands(int8,     TInt8,    int,      TInt);
+  convert_number_arithmetic_commands(int16,    TInt16,   int,      TInt);
+  convert_number_arithmetic_commands(int32,    TInt32,   int,      TInt);
+  convert_number_arithmetic_commands(int64,    TInt64,   int,      TInt);
+  convert_number_arithmetic_commands(uint,     TUInt,    uint8,    TUInt8);
+  convert_number_arithmetic_commands(uint,     TUInt,    uint16,   TUInt16);
+  convert_number_arithmetic_commands(uint,     TUInt,    uint32,   TUInt32);
+  convert_number_arithmetic_commands(uint,     TUInt,    uint64,   TUInt64);
+  convert_number_arithmetic_commands(uint8,    TUInt8,   uint,     TUInt);
+  convert_number_arithmetic_commands(uint16,   TUInt16,  uint,     TUInt);
+  convert_number_arithmetic_commands(uint32,   TUInt32,  uint,     TUInt);
+  convert_number_arithmetic_commands(uint64,   TUInt64,  uint,     TUInt);
+  convert_number_arithmetic_commands(float,    Single,   double,   Double);
+  convert_number_arithmetic_commands(double,   Double,   float,   Single);
+  convert_number_arithmetic_commands(float,    Single,   extended, Extended);
+  convert_number_arithmetic_commands(double,   Double,   extended, Extended);
+  convert_number_arithmetic_commands(extended, Extended, double,   Double);
+  convert_number_arithmetic_commands(extended, Extended, float,   Single);
+  convert_number_arithmetic_commands(int,      TInt,     float,    Single);
+  convert_number_arithmetic_commands(int,      TInt,     double,   Double);
+  convert_number_arithmetic_commands(int,      TInt,     extended, Extended);
+
+procedure LoadCommands(Machine: TForthMachine);
+
+implementation
+
+all_implement
+
+procedure LoadCommands(Machine: TForthMachine);
+begin
+  regist_all_commands;
+end;
+
+end.
