@@ -7,11 +7,16 @@ uses
 
 type
 TLineReader = object;
+PLineReader = ^TLineReader;
 
 TSource = object
 end;
+PSource = ^TSource;
 
 TSourcePChar = object(TSource)
+end;
+
+TSourceFile = object(TSource)
 end;
 
 TSourceFunc = object(TSource)
