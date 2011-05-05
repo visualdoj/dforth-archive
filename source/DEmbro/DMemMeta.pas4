@@ -1,0 +1,99 @@
+unit DMemMeta;
+
+interface
+
+uses
+  DEmbroCore;
+
+type
+PMemMeta = ^TMemMeta;
+TMemMeta = object
+ private
+  FSize: TUint;
+  FOffset: TUint;
+  FIndexes: TUint;
+ public
+  constructor Create(Size: TUint; Offset: TUint = 0; Indexes: TUint = 1);
+  procedure Resize(NewSize: TUint);
+  procedure SetIndexes(Indexes: TUint);
+  function SetMetaIndex(Index, Pos, Size, _Type: TUint): Boolean;
+  function SetMetaIndex(Index, Pos, _Type: TUint): Boolean;
+  function SetMetaIndex(Index, _Type: TUint): Boolean;
+  function SetMeta(Pos, Size, _Type: TUint): Boolean;
+  function SetMeta(Pos, _Type: TUint): Boolean;
+  function SetMeta(_Type: TUint): Boolean;
+  function GetMetaIndex(Index, Pos: TUInt; var Meta: TUInt): Boolean;
+  function GetMeta(Pos: TUInt; var Meta: TUInt): Boolean;
+  function GetSize(Pos: TUInt; var Size: TUInt): Boolean;
+end;
+
+implementation
+
+constructor TMemMeta.Create;
+begin
+  if Offset = 0 then
+    FOffset := CELL_SIZE
+  else
+    FOffset := Offset;
+  FSize := Align(Size, FOffset);
+  FIndexes := Indexes;
+end;
+
+procedure TMemMeta.Resize(NewSize: TUint);
+begin
+  // TODO
+end;
+
+procedure SetIndexes(Indexes: TUint);
+begin
+  // TODO
+end;
+
+function TMemMeta.SetMetaIndex(Index, Pos, Size, _Type: TUint): Boolean;
+begin
+  // TODO
+  Result := True;
+end;
+
+function TMemMeta.SetMetaIndex(Index, Pos, _Type: TUint): Boolean;
+begin
+  Result := SetMetaIndex(Index, Pos, CELL_SIZE, _Type);
+end;
+
+function TMemMeta.SetMetaIndex(Index, _Type: TUint): Boolean;
+begin
+  Result := SetMetaIndex(Index, 0, FSize, _Type);
+end;
+
+function TMemMeta.SetMeta(Pos, Size, _Type: TUint): Boolean;
+begin
+  Result := SetMetaIndex(0, Pos, Size, _Type);
+end;
+
+function TMemMeta.SetMeta(Pos, _Type: TUint): Boolean;
+begin
+  Result := SetMetaIndex(0, Pos, _Type);
+end;
+
+function TMemMeta.SetMeta(_Type: TUint): Boolean;
+begin
+  Result := SetMetaIndex(0, _Type);
+end;
+
+function TMemMeta.GetMetaIndex(Index, Pos: TUInt; var Meta: TUInt): Boolean;
+begin
+  // TODO
+  Result := True;
+end;
+
+function TMemMeta.GetMeta(Pos: TUInt; var Meta: TUInt): Boolean;
+begin
+  Result := GetMetaIndex(0, Pos, Meta);
+end;
+
+function TMemMeta.GetSize(Pos: TUInt; var Size: TUInt): Boolean;
+begin
+  // TODO
+end;
+
+end.

@@ -1,0 +1,37 @@
+unit DEmbroSource;
+
+interface
+
+uses
+  DEmbroCore;
+
+type
+TLineReader = object;
+
+TSource = object
+end;
+
+TSourcePChar = object(TSource)
+end;
+
+TSourceFunc = object(TSource)
+end;
+
+TLineReader = object
+end;
+
+TSimpleLineReader = object(TLineReader)
+end;
+
+TWindowsLineReader = object(TSimpleLineReader)
+end;
+
+TLinuxLineReader = object(TSimpleLineReader)
+end;
+
+TMacLineReader = object(TSimpleLineReader)
+end;
+
+implementation
+
+end.

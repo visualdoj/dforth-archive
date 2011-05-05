@@ -33,6 +33,8 @@ uses
   DEmbroCore,
   DEmbroSpace,
   DEmbroManager,
+  DMemMeta,
+  DEmbroSource,
 
   DCommandsBool in 'commands\DCommandsBool.pas',
   DCommandsMisc in 'commands\DCommandsMisc.pas',

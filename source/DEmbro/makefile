@@ -13,6 +13,8 @@ all: clean
 	m4 DEmbroSpace.pas4 > DEmbroSpace.pas
 	m4 DEmbroCore.pas4 > DEmbroCore.pas
 	m4 DEmbroManager.pas4 > DEmbroManager.pas
+	m4 DMemMeta.pas4 > DMemMeta.pas
+	m4 DEmbroSource.pas4 > DEmbroSource.pas
 	m4 commands.m4 commands\DCommandsAlien.pas4 > commands\DCommandsAlien.pas
 	m4 commands.m4 commands\DCommandsBool.pas4 > commands\DCommandsBool.pas
 	m4 commands.m4 commands\DCommandsBW.pas4 > commands\DCommandsBW.pas
