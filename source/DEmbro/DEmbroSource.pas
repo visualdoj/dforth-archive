@@ -282,10 +282,10 @@ var
   I: Integer;
 begin
   while Source.Buffer(Buffer, BufferSize) do begin
-    (* Write('Buffer: '); *)
-    (* for I := 0 to BufferSize - 1 do *)
-    (*   Write(Buffer[I]); *)
-    (* Readln; *)
+    Write('Buffer: ');
+    for I := 0 to BufferSize - 1 do
+      Write(Buffer[I]);
+    Readln;
     if ReadLineFromBuffer(Buffer, BufferSize, P, Size) then
       Exit;
   end;

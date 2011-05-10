@@ -1,4 +1,5 @@
 .PHONY: all
+.PHONY: pas4
 .PHONY: release
 .PHONY: doc
 .PHONY: dll
@@ -7,7 +8,15 @@
 .PHONY: DArm
 .PHONY: asm
 
-all: clean
+all: clean pas4
+	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
+#	fpc dforth32.dpr -dFLAG_FPC -Sd
+#	fpc example.dpr -dFLAG_FPC -Sd
+
+test: clean pas4
+	fpc -vb test.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE.\temp\ -FU.\temp
+
+pas4:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
 	m4 id2.m4 DForthMachine.temp4 > DForthMachine.pas 
 	m4 DEmbroSpace.pas4 > DEmbroSpace.pas
@@ -43,9 +52,6 @@ all: clean
 	m4 commands.m4 commands\DCommandsConvertNumber.pas4 > commands\DCommandsConvertNumber.temp
 	m4 id2.m4 commands\DCommandsConvertNumber.temp > commands\DCommandsConvertNumber.pas
 	m4 commands\DCommandsControl.pas4 > commands\DCommandsControl.pas
-	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
-#	fpc dforth32.dpr -dFLAG_FPC -Sd
-#	fpc example.dpr -dFLAG_FPC -Sd
 
 DMachineCode: Dx86 DArm
 
