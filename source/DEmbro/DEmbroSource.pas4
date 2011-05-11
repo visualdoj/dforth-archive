@@ -101,7 +101,8 @@ TLineReader = object
   // строку, вернуть P -- её начало, и Size -- её конец.
   // Допустимо возвращать значения внутри данных, которые вернул последний
   // вызов Buffer.
-  procedure ReadLine(Source: PSource; out P: PChar; out Size: Integer);
+  // Возвращаемое число -- число прочитанных символов
+  procedure ReadLine(Source: PSource; out P: PChar; out Size: Integer): Integer;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSimpleLineReader'}{$ENDIF}
@@ -275,7 +276,7 @@ constructor TLineReader.Create;
 begin
 end;
 
-procedure TLineReader.ReadLine(Source: PSource; out P: PChar; out Size: Integer);
+function TLineReader.ReadLine;
 var
   Buffer: PChar;
   BufferSize: Integer;
