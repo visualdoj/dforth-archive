@@ -25,6 +25,10 @@ TSource = object
     Start: PChar;
     Size: Integer;
   end;
+  FBuffer: record
+    P: PChar;
+    Size: Integer;
+  end;
  protected
   // считывает в некий внутренний буфер данные оптимального размера
   //   P -- указатель на начало буфера
@@ -33,11 +37,16 @@ TSource = object
   //   
   //   При повторном вызове Buffer, данные должны "нараститься": 
   //   начало буфера должно остаться таким же, но должен увеличиться его размер.
-  function Buffer(out P: Pointer; out Size: Integer): Boolean; virtual;
+  //function Buffer(out P: Pointer; out Size: Integer): Boolean; virtual;
   // закончились ли данные буфера
   function EndOfStreamData: Boolean; virtual;
   // определяет границы строки исходника
   procedure ReadLine;
+  // буфер
+  function Buffer: Pointer;
+  function BufferSize: Integer;
+  function UpdateBuffer: Boolean; virtual;
+  procedure SkipBuffer(Bytes: Integer); virtual;
  public
   constructor Create(const Name: TString; LineReader: PLineReader);
   // закончился ли исходный код
@@ -68,7 +77,7 @@ TSourcePChar = object(TSource)
   FEnd: PChar;
   FPos: PChar;
  protected
-  function Buffer(out P: Pointer; out Size: Integer): Boolean; virtual;
+  function UpdateBuffer: Boolean; virtual;
   function EndOfStreamData: Boolean; virtual;
  public
   constructor Create(const Name: TString; 
@@ -102,7 +111,7 @@ TLineReader = object
   // Допустимо возвращать значения внутри данных, которые вернул последний
   // вызов Buffer.
   // Возвращаемое число -- число прочитанных символов
-  procedure ReadLine(Source: PSource; out P: PChar; out Size: Integer): Integer;
+  function ReadLine(Source: PSource; out P: PChar; out Size: Integer): Integer;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSimpleLineReader'}{$ENDIF}
@@ -137,17 +146,14 @@ constructor TSource.Create(const Name: TString; LineReader: PLineReader);
 begin
   FLineReader := LineReader;
   FName := Name;
+  FBuffer.P := nil;
+  FBuffer.Size := 0;
   FLast.Line := 0;
   FLast.Col := 0;
   FLine.Index := 0;
   FLine.Col := 0;
   FLine.Start := nil;
   FLine.Size := 0;
-end;
-
-function TSource.Buffer(out P: Pointer; out Size: Integer): Boolean;
-begin
-  Result := False;
 end;
 
 function TSource.EndOfStreamData: Boolean;
@@ -168,6 +174,29 @@ begin
     Write(FLine.Start[I]);
   Writeln;
   Write('Press enter...'); Readln;
+end;
+
+function TSource.Buffer: Pointer;
+begin
+  Result := FBuffer.P;
+end;
+
+function TSource.BufferSize: Integer;
+begin
+  Result := FBuffer.Size;
+end;
+
+function TSource.UpdateBuffer;
+begin
+  Result := False;
+end;
+
+procedure TSource.SkipBuffer(Bytes: Integer);
+begin
+  FBuffer.P := @FBuffer.P[Bytes];
+  Dec(FBuffer.Size, Bytes);
+  if FBuffer.Size < 0 then
+    FBuffer.Size := 0;
 end;
 
 function TSource.EOS: Boolean;
@@ -250,6 +279,12 @@ begin
     while FEnd^ <> #0 do
       Inc(FEnd);
   FPos := FStart;
+  FBuffer.P := FStart;
+  FBuffer.Size := Cardinal(FEnd) - Cardinal(FStart);
+end;
+
+function TSourcePChar.UpdateBuffer;
+begin
 end;
 
 function TSourcePChar.EndOfStreamData: Boolean;
@@ -257,12 +292,12 @@ begin
   Result := FPos = FEnd;
 end;
 
-function TSourcePChar.Buffer(out P: Pointer; out Size: Integer): Boolean;
-begin
-  P := FPos;
-  Size := Cardinal(FEnd) - Cardinal(FPos);
-  Result := Size <> 0;
-end;
+(* function TSourcePChar.Buffer(out P: Pointer; out Size: Integer): Boolean; *)
+(* begin *)
+(*   P := FPos; *)
+(*   Size := Cardinal(FEnd) - Cardinal(FPos); *)
+(*   Result := Size <> 0; *)
+(* end; *)
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TLineReader'}{$ENDIF}
 function TLineReader.ReadLineFromBuffer;
@@ -278,18 +313,14 @@ end;
 
 function TLineReader.ReadLine;
 var
-  Buffer: PChar;
-  BufferSize: Integer;
   I: Integer;
 begin
-  while Source.Buffer(Buffer, BufferSize) do begin
-    (* Write('Buffer: '); *)
-    (* for I := 0 to BufferSize - 1 do *)
-    (*   Write(Buffer[I]); *)
-    (* Readln; *)
-    if ReadLineFromBuffer(Buffer, BufferSize, P, Size) then
+  repeat
+    if ReadLineFromBuffer(Source.Buffer, Source.BufferSize, P, Size) then begin
+      Result := Size;
       Exit;
-  end;
+    end;
+  until not Source.UpdateBuffer;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSimpleLineReader'}{$ENDIF}
