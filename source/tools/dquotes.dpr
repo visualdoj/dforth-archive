@@ -185,7 +185,10 @@ begin
     if Action(I, '-u', '--usage', PrintUsage) then Exit;
     if Action(I, '-hc', '--help-common', PrintCommonConversions) then Exit;
     if Opt(I, '-i', '--ignore') then continue;
-    if Opt1(I, '-r', '--recursively', Folder) then Recursively := True;
+    if Opt1(I, '-r', '--recursively', Folder) then begin 
+      Recursively := True;
+      continue;
+    end;
     if MagicTable(I, '-qa', QUO, APO) then continue;
     if MagicTable(I, '-aq', APO, QUO) then continue;
     if MagicTable(I, '-qi', QUO, ITA) then continue;
