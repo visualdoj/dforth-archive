@@ -33,11 +33,10 @@ function ParseFormat(const S, T, W: TString): TString;
 //   \ экранирует последующий символ
 //
 //  Примеры:
-//  MatchPattern('Lost Sector is the best!', '*Sector*') = True
+//  MatchPattern('My Sector is the best!', '*Sector*') = True
 //  MatchPattern('This is one symbol: 5 isn''t it?', '*symbol: ? isn''t it\?') = True
 //  MatchPattern('Hard string', 'Hard string|Simple string') = True
 //  MatchPattern('Simple string', 'Hard string|Simple string') = True
-//  MatchPattern('cork fluer', '*f*u*&*c*k*') = True
 function MatchPattern(const S, P{attern}: String): Boolean;
 function IsTrivialPattern(P{attern}: String): Boolean;
 
