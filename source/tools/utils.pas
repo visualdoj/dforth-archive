@@ -42,6 +42,9 @@ function IsTrivialPattern(P{attern}: String): Boolean;
 
 function RemoveExtension(const FileName: String): String;
 function ChangeExtension(const FileName, Ext: String): String;
+function ExtractExtension(const FileName: String): String;
+
+function ChangeSub(const S, Sub, NewSub: String): String;
 
 type
   TOnFile = procedure (const Folder: String; const Search: TSearchRec);
@@ -203,25 +206,54 @@ begin
             (Pos('?', P) = 0);
 end;
 
-function RemoveExtension(const FileName: String): String;
+procedure SplitExtension(const FileName: String; out Without, Ext: String);
 var
   I: Integer;
 begin
-  Result := FileName;
-  I := Length(Result);
+  Without := FileName;
+  Ext := '';
+  I := Length(Without);
   while I > 0 do
-    if Result[I] in ['\', '/'] then
+    if Without[I] in ['\', '/'] then
       Exit
-    else if Result[I] = '.' then begin
-      Delete(Result, I, Length(Result) - I + 1);
+    else if Without[I] = '.' then begin
+      Ext := Copy(Without, I+1, Length(Without) - 1);
+      Delete(Without, I, Length(Without) - I + 1);
       Exit;
     end else
       Dec(I);
 end;
 
+function RemoveExtension(const FileName: String): String;
+var
+  Temp: String;
+begin
+  SplitExtension(FileName, Result, Temp);
+end;
+
 function ChangeExtension(const FileName, Ext: String): String;
 begin
   Result := RemoveExtension(FileName) + Ext;
+end;
+
+function ExtractExtension(const FileName: String): String;
+var
+  Temp: String;
+begin
+  SplitExtension(FileName, Temp, Result);
+end;
+
+function ChangeSub(const S, Sub, NewSub: String): String;
+var
+  P: Integer;
+begin
+  Result := S;
+  P := Pos(Sub, S);
+  while P <> 0 do begin
+    Result := Copy(Result, 1, P - 1) + NewSub + 
+              Copy(Result, P + 2, Length(Result) - P - 1);
+    P := Pos(Sub, Result);
+  end;
 end;
 
 {procedure ProcessFiles;
