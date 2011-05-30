@@ -53,6 +53,9 @@ procedure ProcessFiles(Folder: String;
                        Recursive: Boolean; 
                        OnFile: TOnFile);
 
+function memncmp(P1, P2: PChar; N: Integer): Integer;
+function memnfill(P: PChar; N: Integer; B: Byte): Integer;
+
 implementation
 
 uses
@@ -299,6 +302,29 @@ begin
       end;
   until not FindNextFile(fh, @fd);
   FindClose(fh);
+end;
+
+function memncmp(P1, P2: PChar; N: Integer): Integer;
+var
+  I: Integer;
+begin
+  for I := 0 to N - 1 do
+    if P1[I] < P2[I] then begin
+      Result := -1;
+      Exit;
+    end else if P1[I] > P2[I] then begin
+      Result := 1;
+      Exit;
+    end;
+  Result := 0;
+end;
+
+function memnfill(P: PChar; N: Integer; B: Byte): Integer;
+var
+  I: Integer;
+begin
+  for I := 0 to N - 1 do
+    P[I] := Char(B);
 end;
 
 end.

@@ -112,7 +112,7 @@ implementation
       procedure source_next_name_passive cmdhdr; body( // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
                                                                                                    interpret_source_next_name_passive(Machine, Command) )
       procedure interpret_source_next_name_passive cmdhdr; body( str_push(Machine, NextNamePassive) )
-      procedure compile_source_next_name_passive cmdhdr; body( BuiltinEWO('(str)"'); EWStr(NextNamePassive); )
+      procedure compile_source_next_name_passive cmdhdr; body( BuiltinEWO('(str)' + Char(34)); EWStr(NextNamePassive); )
       procedure run_source_next_name_passive cmdhdr; body( str_push(Machine, @E[EC]); )
       procedure source_read_to_char cmdhdr; var I: Integer; body( I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); str_push(Machine, TString(Copy(S, SC + 1, I - SC))); SC := I; )
       procedure ptr_nil cmdhdr; body( WUP(nil); )

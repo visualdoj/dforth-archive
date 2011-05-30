@@ -1,4 +1,5 @@
 .PHONY: all
+.PHONY: debug
 
 all: dquotes.exe drecursive.exe
 
@@ -10,3 +11,5 @@ drecursive.exe: drecursive.dpr utils.pas
 	fpc drecursive.dpr -dFLAG_FPC -Sd
 	upx drecursive.exe
 	
+debug:
+	fpc testcmdline.dpr -gl -dFLAG_FPC -Sd

@@ -35,7 +35,7 @@ TSource = object
   //   Size -- размер буфера
   //   Возвращает True, если данные ещё не закончились. 
   //   
-  //   При повторном вызове Buffer, данные должны "нараститься": 
+  //   При повторном вызове Buffer, данные должны 'нараститься': 
   //   начало буфера должно остаться таким же, но должен увеличиться его размер.
   //function Buffer(out P: Pointer; out Size: Integer): Boolean; virtual;
   // закончились ли данные буфера
@@ -158,7 +158,7 @@ end;
 
 function TSource.EndOfStreamData: Boolean;
 begin
-  Result := True;
+  begin Result := True; Exit; end;
 end;
 
 procedure TSource.ReadLine;
@@ -178,17 +178,17 @@ end;
 
 function TSource.Buffer: Pointer;
 begin
-  Result := FBuffer.P;
+  begin Result := FBuffer.P; Exit; end;
 end;
 
 function TSource.BufferSize: Integer;
 begin
-  Result := FBuffer.Size;
+  begin Result := FBuffer.Size; Exit; end;
 end;
 
 function TSource.UpdateBuffer;
 begin
-  Result := False;
+  begin Result := False; Exit; end;
 end;
 
 procedure TSource.SkipBuffer(Bytes: Integer);
@@ -206,10 +206,8 @@ end;
 
 function TSource.ReadChar: Byte;
 begin
-  if EOS then begin
-    Result := 0;
-    Exit;
-  end;
+  if EOS then 
+    begin Result := 0; Exit; end;
   if FLine.Col = FLine.Size then
     ReadLine;
   Result := Ord(FLine.Start[FLine.Col]);
@@ -316,7 +314,7 @@ var
   I: Integer;
 begin
   repeat
-    if ReadLineFromBuffer(Source.Buffer, Source.BufferSize, P, Size) then begin
+    if ReadLineFromBuffer(Source.Buffer, Size, P, Size) then begin
       Result := Size;
       Exit;
     end;
@@ -333,12 +331,11 @@ function TWindowsLineReader.ReadLineFromBuffer(
       out Size: Integer): Boolean;
 begin
   P := Buffer;
-  Result := True;
   Size := 1;
   while Size < BufferSize do begin
     Inc(Size);
     if (P[Size - 2] = #13) and (P[Size - 1] = #10) then
-      Exit;
+      begin Result := True; Exit; end;
   end;
   Result := False;
 end;

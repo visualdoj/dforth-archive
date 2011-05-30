@@ -185,7 +185,7 @@ begin
       SetLength(Machine.FPChars, Length(Machine.FPChars) + 1);
       SetLength(Machine.FPChars[High(Machine.FPChars)], 0); 
       C := Machine.NextChar;
-      while C <> '"' do begin
+      while C <> Char(34) do begin
         SetLength(Machine.FPChars[High(Machine.FPChars)], Length(Machine.FPChars[High(Machine.FPChars)]) + 1); 
         Machine.FPChars[High(Machine.FPChars)][High(Machine.FPChars[High(Machine.FPChars)])] := C; 
         C := Machine.NextChar;
@@ -202,9 +202,9 @@ var
   C: TChar;
 begin
  // with Machine^ do begin
-    Machine.BuiltinEWO('(pchar)"');
+    Machine.BuiltinEWO('(pchar)' + Char(34));
     C := Machine.NextChar;
-    while C <> '"' do begin
+    while C <> Char(34) do begin
       Machine.EWC(C);
       C := Machine.NextChar;
     end;
@@ -237,7 +237,7 @@ begin
       SetLength(Machine.FPChars, Length(Machine.FPChars) + 1);
       SetLength(Machine.FPChars[High(Machine.FPChars)], 0); 
       C := WideChar(Machine.NextChar);
-      while C <> '"' do begin
+      while C <> Char(34) do begin
         SetLength(Machine.FPChars[High(Machine.FPChars)], Length(Machine.FPChars[High(Machine.FPChars)]) + SizeOf(C)); 
         Move(C, Machine.FPChars[High(Machine.FPChars)][Length(Machine.FPChars[High(Machine.FPChars)]) - SizeOf(C)], SizeOf(C)); 
         C := WideChar(Machine.NextChar);
@@ -254,9 +254,9 @@ var
   C: WideChar;
 begin
  // with Machine^ do begin
-    Machine.BuiltinEWO('(pwidechar)"');
+    Machine.BuiltinEWO('(pwidechar)' + Char(34));
     C := WideChar(Machine.NextChar);
-    while C <> '"' do begin
+    while C <> Char(34) do begin
       Machine.EWV(@C, SizeOf(C));
       C := WideChar(Machine.NextChar);
     end;
@@ -408,7 +408,7 @@ begin
   if B = nil then 
     Exit;
   Inc(PStrRec(B)^.Ref);
-  //Machine.FMemoryDebug.Log(ToStr([' + str" ', PChar(@B^.Sym[0]), '" ', B^.Ref]));
+  //Machine.FMemoryDebug.Log(ToStr([' + str' ', PChar(@B^.Sym[0]), '' ', B^.Ref]));
 end;
 
 procedure DelRef(B: TStr);
@@ -417,11 +417,11 @@ begin
     Exit;
   //Dec(PStrRec(B)^.Ref);
   if PStrRec(B)^.Ref < 1 then begin
-    // Writeln('Free string "', PChar(@(PStrRec(B)^.Sym[0])), '"');
+    // Writeln('Free string '', PChar(@(PStrRec(B)^.Sym[0])), ''');
     FreeMem(B);
-    //Machine.FMemoryDebug.Log(ToStr([' - str" ', PChar(@B^.Sym[0]), '" (free)']));
+    //Machine.FMemoryDebug.Log(ToStr([' - str' ', PChar(@B^.Sym[0]), '' (free)']));
   end;// else
-    //Machine.FMemoryDebug.Log(ToStr([' - str" ', PChar(@B^.Sym[0]), '" ', B^.Ref]));
+    //Machine.FMemoryDebug.Log(ToStr([' - str' ', PChar(@B^.Sym[0]), '' ', B^.Ref]));
 end;
 
 procedure _char(Machine: TForthMachine; Command: PForthCommand);
@@ -722,7 +722,7 @@ begin
     //end else begin
       SetLength(Temp, 0); 
       C := Machine.NextChar;
-      while C <> '"' do begin
+      while C <> Char(34) do begin
         SetLength(Temp, Length(Temp) + 1); 
         if C = '^' then begin
           C := Machine.NextChar;
@@ -733,7 +733,7 @@ begin
                 for I := 0 to High(CR_windows) do
                   Temp[High(Temp) - I] := Char(CR_windows[High(CR_windows) - I]);
               end;
-            '"': Temp[High(Temp)] := '"';
+            Char(34): Temp[High(Temp)] := Char(34);
           else
             Temp[High(Temp)] := C; 
           end
@@ -763,14 +763,14 @@ var
 begin
  // with Machine^ do begin
     if Machine.ConvStr = Machine.nop then begin
-      Machine.BuiltinEWO('(str)"');
+      Machine.BuiltinEWO('(str)' + Char(34));
       Machine.EWI(1);
       E := Machine.EL;
       Machine.EWI(0);
       Machine.EWI(1);
       C := Machine.NextChar;
       L := 0;
-      while C <> '"' do begin
+      while C <> Char(34) do begin
         if C = '^' then begin
           C := Machine.NextChar;
           case C of
@@ -789,7 +789,7 @@ begin
     end else begin
       str_dq(Machine, Command);
       S := PStrRec(TBlock(Pointer(TUInt(Machine.BWP) + (-1)*(SizeOf(Pointer)))^));
-      Machine.BuiltinEWO('(str)"');
+      Machine.BuiltinEWO('(str)' + Char(34));
       E := Machine.EL;
       Machine.EWV(S, SizeOf(Integer)*3 + S^.Len*S^.Width + 1);
       Integer(Pointer(@Machine.E[E])^) := 1;
@@ -1079,11 +1079,11 @@ procedure _postname (Machine: TForthMachine; Command: PForthCommand); begin with
 
 procedure LoadCommands(Machine: TForthMachine);
 begin
-  Machine.AddCommand('pchar"', pchar_dq, True);
-  Machine.AddCommand('(pchar)"', run_pchar_dq);
-  Machine.AddCommand('pwidechar"', pwidechar_dq, True);
-  Machine.AddCommand('[pwidechar]"', compile_pwidechar_dq, True);
-  Machine.AddCommand('(pwidechar)"', run_pwidechar_dq);
+  Machine.AddCommand('pchar' + Char(34), pchar_dq, True);
+  Machine.AddCommand('(pchar)' + Char(34), run_pchar_dq);
+  Machine.AddCommand('pwidechar' + Char(34), pwidechar_dq, True);
+  Machine.AddCommand('[pwidechar]' + Char(34), compile_pwidechar_dq, True);
+  Machine.AddCommand('(pwidechar)' + Char(34), run_pwidechar_dq);
   Machine.AddCommand('pchar.', pchar_dot);
   Machine.AddCommand('pchar-alloc', pchar_alloc);
   Machine.AddCommand('pchar-free', pchar_free);
@@ -1110,9 +1110,9 @@ begin
   Machine.AddCommand('str-cut', str_cut);
   Machine.AddCommand('str-split', str_split);
   Machine.AddCommand('str-sub', str_sub);
-  Machine.AddCommand('str"', str_dq);
-  Machine.AddCommand('[str]"', compile_str_dq, True);
-  Machine.AddCommand('(str)"', run_str_dq);
+  Machine.AddCommand('str' + Char(34), str_dq);
+  Machine.AddCommand('[str]' + Char(34), compile_str_dq, True);
+  Machine.AddCommand('(str)' + Char(34), run_str_dq);
   Machine.AddCommand('(str-literal)', run_str_dq);
   Machine.AddCommand('str-literal', _str_literal, True);
   Machine.AddCommand('str.', str_dot);

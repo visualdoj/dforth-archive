@@ -8,7 +8,7 @@
 .PHONY: DArm
 .PHONY: asm
 
-all: clean pas4
+all: clean pas4 pasq
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
@@ -23,7 +23,7 @@ pas4:
 	m4 DEmbroCore.pas4 > DEmbroCore.pas
 	m4 DEmbroManager.pas4 > DEmbroManager.pas
 	m4 DMemMeta.pas4 > DMemMeta.pas
-	m4 DEmbroSource.pas4 > DEmbroSource.pas
+	m4 ..\m4\metapascal.m4 DEmbroSource.pas4 > DEmbroSource.pasq
 	m4 commands.m4 commands\DCommandsAlien.pas4 > commands\DCommandsAlien.pasq
 	m4 commands.m4 commands\DCommandsBool.pas4 > commands\DCommandsBool.pasq
 	m4 commands.m4 commands\DCommandsBW.pas4 > commands\DCommandsBW.pasq
@@ -54,7 +54,7 @@ pas4:
 	m4 commands\DCommandsControl.pas4 > commands\DCommandsControl.pasq
 
 pasq:
-	#dquotes -r .\ *.pasq *.pas
+	dquotes -r .\ *.pasq *.pas
 
 DMachineCode: Dx86 DArm
 
