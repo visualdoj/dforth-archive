@@ -1,5 +1,6 @@
 divert(`-1')
 
+
 dnl Перевести строку
 define(`BR', `<br>')
 dnl Параграф
@@ -11,11 +12,11 @@ dnl Менее большой заголовок
 define(`SUBHEADER', `<h2>$*</h2>')
 
 dnl Жирный текст
-define(`BOLD', `<b>$*</b>')
+define(`BOLD', `<strong>$*</strong>')
 dnl Наклонный текст
-define(`ITALIC', `<i>$*</i>')
+define(`ITALIC', `<em>$*</em>')
 dnl Подчёркивание
-define(`UNDERLINE', `<u>$*</u>')
+define(`UNDERLINE', `<span style="text-decoration: underline;">$*</span>')
 
 dnl Нумерованный список
 define(`LIST', `<OL>$*</OL>')
@@ -39,7 +40,7 @@ define(`TIRET', `—')
 dnl Знаки < и >
 define(`LT', `&lt;')
 define(`GT', `&gt;')
-dnl Амперсант
+dnl Амперсанд
 define(`AMP', `&amp;')
 
 divert
