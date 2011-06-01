@@ -1,4 +1,4 @@
-dnl(
+divert(`-1')
 dnl Если первый параметр не пуст, подставляет второй
 define(`IFFAT',`ifelse($1,`',,$2)')
 
@@ -73,3 +73,4 @@ SETNULL(OBJECT_PRIVATE) dnl
 SETNULL(OBJECT_PROTECTED) dnl
 SETNULL(OBJECT_PUBLIC) dnl
 )
+divert
