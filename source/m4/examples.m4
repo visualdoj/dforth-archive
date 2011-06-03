@@ -5,6 +5,11 @@ BOLD(Жир) BR
 UNDERLINE(Подчёркивание) BR
 STRIKE(Вычёркивание) BR
 LINK(google.com, Ссылка, которая содержит запятые) BR
+SUBHEADER(Цвета)
+COLOR(`#'ff0000, Тест) BR
+RED(Красный текст)
+GREEN(Зелёный текст)
+BLUE(Синий текст)
 SUBHEADER(Списки)
 LIST(
   ITEM(Ананас)
