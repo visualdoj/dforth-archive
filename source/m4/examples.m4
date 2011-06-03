@@ -9,7 +9,7 @@ SUBHEADER(Списки)
 LIST(
   ITEM(Ананас)
   ITEM(Банан)
-  ITEM(Какос)
+  ITEM(Кокос)
 )
 SUBHEADER(Таблицы)
 TABLE
