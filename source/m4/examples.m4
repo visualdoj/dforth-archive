@@ -6,10 +6,9 @@ UNDERLINE(Подчёркивание) BR
 STRIKE(Вычёркивание) BR
 LINK(google.com, Ссылка, которая содержит запятые) BR
 SUBHEADER(Цвета)
-COLOR(`#'ff0000, Тест) BR
-RED(Красный текст)
-GREEN(Зелёный текст)
-BLUE(Синий текст)
+RED(Красный текст) BR
+GREEN(Зелёный текст) BR
+BLUE(Синий текст) BR
 SUBHEADER(Списки)
 LIST(
   ITEM(Ананас)

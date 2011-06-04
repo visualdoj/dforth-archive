@@ -1,5 +1,5 @@
 divert(`-1')
-
+changecom(`//')
 
 dnl Перевести строку
 define(`BR', `<br>')
