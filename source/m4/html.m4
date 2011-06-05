@@ -7,6 +7,8 @@ define(`M4LAMBDA',
 `pushdef(`$0', patsubst(``$1'',`\$_\([0-9]*\)',`$\1'))$0(popdef(`$0')_$0')dnl
 define(`_M4LAMBDA', `$@)')
 
+dnl Добавление пробелов после каждой запятой в переданной строке
+dnl Необходимо для $* парметров, в которых m4 все пробелы после запятых удаляет
 define(`CS', `patsubst(`$*',`[,]',`, ')')
 
 dnl Перевести строку
@@ -34,11 +36,15 @@ dnl Вычёркивание
 define(`STRIKE', `<strike>CS($*)</strike>')
 
 dnl Нумерованный список
-define(`LIST', `pushdef(`ITEM', `<LI>'CONCAT($,*))<OL>')
-define(`_LIST', `popdef(`ITEM')</OL>')
+define(`LIST', `divert(`-1')
+    pushdef(`ITEM', `<LI>'CS(CONCAT($,*)))
+    pushdef(`_LIST', `popdef(`ITEM')popdef(`_LIST')</OL>')
+divert(`0')<OL>')
 dnl Список с кружочками
-define(`OLIST', `pushdef(`ITEM', `<LI>'CONCAT($,*))<UL>')
-define(`_OLIST', `popdef(`ITEM')</UL>')
+define(`OLIST', `divert(`-1')
+    pushdef(`ITEM', `<LI>'CS(CONCAT($,*)))
+    pushdef(`_LIST', `popdef(`ITEM')popdef(`_LIST')</UL>')
+divert(`0')<UL>')
 
 dnl Ссылка
 define(`LINK', `<a href="$1">CS(shift($*))</a>')
@@ -52,13 +58,13 @@ define(`QUOTE', `&#171;CS($*)&#187;')
 dnl Цитата в кавычках-лапках
 define(`SUBQUOTE', `&#8222;CS($*)&#8221;')
 dnl Тире
-define(`TIRET', `—')
+define(`sTIRET', `&#151;')
 
 dnl Знаки < и >
-define(`LT', `&lt;')
-define(`GT', `&gt;')
+define(`sLT', `&lt;')
+define(`sGT', `&gt;')
 dnl Амперсанд
-define(`AMP', `&amp;')
+define(`sAMP', `&amp;')
 
 define(`TABLE', `<table>')
 define(`_TABLE', `</table>')
@@ -79,4 +85,4 @@ define(`RED', `COLOR(cRED,CS($*))')
 define(`GREEN', `COLOR(cGREEN,CS($*))')
 define(`BLUE', `COLOR(cBLUE,CS($*))')
 
-divert
+divert(`0')dnl

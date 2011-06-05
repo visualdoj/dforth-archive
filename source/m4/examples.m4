@@ -10,6 +10,7 @@ RED(Красный) GREEN(Зелёный) BLUE(Синий) COLOR(cYELLOW, Жёлтый)
 COLOR(cTURQUOISE, Бирюзовый) COLOR(cPINK, Розовый)
 SUBHEADER(Оформление текста)
 QUOTE(Цитата, в которой SUBQUOTE(цитируется) что-то внутри) BR
+Это sTIRET предложение с тире
 SUBHEADER(Списки)
 LIST
   ITEM(Ананас)
@@ -18,10 +19,11 @@ LIST
     ITEM(Несозревший)
     ITEM(Созревший)
     ITEM(Перезревший)
-    LIST
+    OLIST
       ITEM(Слабо перезревший)
       ITEM(Сильно перезревший)
     _LIST
+    ITEM(Сгнивший)
   _LIST
   ITEM(Кокос)
 _LIST
@@ -29,7 +31,7 @@ OLIST
   ITEM(Лапсанг Сушонг)
   ITEM(Оолонг)
   ITEM(Мате)
-_OLIST
+_LIST
 LIST
   ITEM(Раз)
   ITEM(Раз)
