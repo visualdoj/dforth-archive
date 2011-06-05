@@ -4,17 +4,36 @@ ITALIC(Курсив) BR
 BOLD(Жир) BR
 UNDERLINE(Подчёркивание) BR
 STRIKE(Вычёркивание) BR
-LINK(google.com, Ссылка, которая содержит запятые) BR
+LINK(http://google.com/, Ссылка, которая содержит запятые) BR
 SUBHEADER(Цвета)
-RED(Красный текст) BR
-GREEN(Зелёный текст) BR
-BLUE(Синий текст) BR
+RED(Красный) GREEN(Зелёный) BLUE(Синий) COLOR(cYELLOW, Жёлтый) 
+COLOR(cTURQUOISE, Бирюзовый) COLOR(cPINK, Розовый)
+SUBHEADER(Оформление текста)
+QUOTE(Цитата, в которой SUBQUOTE(цитируется) что-то внутри) BR
 SUBHEADER(Списки)
-LIST(
+LIST
   ITEM(Ананас)
   ITEM(Банан)
+  LIST
+    ITEM(Несозревший)
+    ITEM(Созревший)
+    ITEM(Перезревший)
+    LIST
+      ITEM(Слабо перезревший)
+      ITEM(Сильно перезревший)
+    _LIST
+  _LIST
   ITEM(Кокос)
-)
+_LIST
+OLIST
+  ITEM(Лапсанг Сушонг)
+  ITEM(Оолонг)
+  ITEM(Мате)
+_OLIST
+LIST
+  ITEM(Раз)
+  ITEM(Раз)
+_LIST
 SUBHEADER(Таблицы)
 TABLE
   ROW CELL(Столбец 1) CELL(Столбец 2) CELL(Столбец 3) _ROW
