@@ -1,15 +1,6 @@
 divert(`-1')
 changecom(`###')
-
-define(`CONCAT',`$1$2')
-
-define(`M4LAMBDA',
-`pushdef(`$0', patsubst(``$1'',`\$_\([0-9]*\)',`$\1'))$0(popdef(`$0')_$0')dnl
-define(`_M4LAMBDA', `$@)')
-
-dnl Добавление пробелов после каждой запятой в переданной строке
-dnl Необходимо для $* парметров, в которых m4 все пробелы после запятых удаляет
-define(`CS', `patsubst(`$*',`[,]',`, ')')
+include(`util.m4')
 
 dnl Перевести строку
 define(`BR', `<br>')
