@@ -1,12 +1,8 @@
 divert(`-1')
 changecom(`###')
+include(`util.m4')
 
-define(`CONCAT',`$1$2')
-
-define(`NUMERATOR',`define(`$1_VALUE',`$2')define(`$1',`$1_VALUE`'define(`$1_VALUE',incr($1_VALUE))')')
 NUMERATOR(`DIVERT',1)
-
-define(`CS', `patsubst(`$*',`[,]',`, ')')
 
 define(`BR', `\\')
 define(`PAR', `
@@ -15,21 +11,59 @@ CS($*)
 
 ')
 
-define(`HEADER', `\Large{CS($*)}')
-define(`SUBHEADER', `\subsection{CS($*)}')
+define(`HEADER', `{\huge CS($*)}')
+define(`SUBHEADER', `{\Large CS($*)}')
 
 define(`CENTER', `\begin{center} CS($*) \end{center}')
+define(`LEFT', `\begin{left} CS($*) \end{left}')
+define(`RIGHT', `\begin{right} CS($*) \end{right}')
 
 define(`BOLD', `\textbf{CS($*)}')
 define(`ITALIC', `\textit{CS($*)}')
-define(`UNDERLINE', `CS($*)')
+define(`UNDERLINE', `\textsl{CS($*)}')
+define(`STRIKE', `CS($*)')
 
 define(`LIST', `\begin{enumerate}CS($*)\end{enumerate}')
 define(`OLIST', `')
 define(`ITEM', `\item CS($*)')
 
-define(`LINK', `\href{CS(shift($*))}{$1}')
-define(`ANCHOR', `')
+define(`LIST', `divert(`-1')
+    pushdef(`ITEM', `\item 'CS(CONCAT($,*)))
+    pushdef(`_LIST', `popdef(`ITEM')popdef(`_LIST')\end{enumerate}')
+divert(`0')\begin{enumerate}')
+define(`OLIST', `divert(`-1')
+    pushdef(`ITEM', `\item 'CS(CONCAT($,*)))
+    pushdef(`_LIST', `popdef(`ITEM')popdef(`_LIST')\end{enumerate}')
+divert(`0')\begin{enumerate}')
+
+define(`LINK', `CS(shift($*))') dnl `\href{CS(shift($*))}{$1}')
+define(`ANCHOR', `CS(shift($*))')
+define(`ALINK', `CS(shift($*))')
+
+define(`QUOTE', `«CS($*)»')
+define(`SUBQUOTE', `„CS($*)”')
+define(`sTIRET', `--')
+define(`sLT', `<')
+define(`sGT', `>')
+define(`sAMP', `\&')
+
+define(`TABLE', `\begin{tabular}{l c r}')
+define(`_TABLE', `\end{tabular}')
+define(`ROW', `define(`IS_ROW', 1)')
+define(`_ROW', `\\')
+define(`CELL', `CS($*) ifelse(IS_ROW,`0',`&',`define(`IS_ROW',`0')')')
+
+define(`COLOR', `shift(CS($*))')
+define(`cRED', `#ff0000')
+define(`cGREEN', `#00ff00')
+define(`cBLUE', `#0000ff')
+define(`cYELLOW', `#ffff00')
+define(`cPINK', `#ff00ff')
+define(`cTURQUOISE', `#00ffff')
+define(`RED', `COLOR(cRED,CS($*))')
+define(`GREEN', `COLOR(cGREEN,CS($*))')
+define(`BLUE', `COLOR(cBLUE,CS($*))')
+define(`')
 
 define(`DIVERT_REFERENCES', DIVERT)
 NUMERATOR(`REFERENCES_COUNT', 0)

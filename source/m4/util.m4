@@ -1,5 +1,4 @@
-
-define(`CONCAT',`$1$2')
+define(`CONCAT', `$1$2')
 
 define(`M4LAMBDA',
 `pushdef(`$0', patsubst(``$1'',`\$_\([0-9]*\)',`$\1'))$0(popdef(`$0')_$0')dnl
