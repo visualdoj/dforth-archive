@@ -14,7 +14,7 @@ all: clean pas4 pasq
 #	fpc example.dpr -dFLAG_FPC -Sd
 
 test: clean pas4 pasq
-	fpc -vb test.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE.\temp\ -FU.\temp
+	fpc -vb test.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FEtemp -FUtemp
 
 pas4:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
@@ -71,8 +71,8 @@ dll:
 
 release: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
-	fpc dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -FE..\..\release\ -FU.\temp
-	fpc dembro32lib.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -O3 -FE..\..\release\ -FU.\temp
+	fpc dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -FE ..\..\release\ -FU .\temp
+	fpc dembro32lib.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -O3 -FE..\..\release\ -FU .\temp
 	upx ..\..\release\dembro32.exe
 	upx ..\..\release\dembro32lib.dll
 
