@@ -71,18 +71,35 @@ uses
   DPlugin,
   DCompiler;
 
+const
+  TEST_LINE: PChar = '{ dup swap over 1 + // / source-next-name' + #10#13 +
+                     '45 4.5f glOpen Такие дела, привет }';
 var
+  I: Integer;
   Source: PSource;
 
 begin
   Source := New(PSourcePChar, 
         Create(
-              'pchar', 
-              New(PWindowsLineReader, Create),
-              'word + - some other               long spaces   blabla...' + #1310 +
-              'word2   gg  dfsfg df  ggg   :)'              
+                New(PCommonNameReader, Create),
+                New(PSimpleSpaceSkipper, Create),
+                New(PWindowsLineReader, Create),
+                TEST_LINE
               ));
   Writeln('Source created');
   while not Source.EOS do
-    Writeln(Source.ReadName);
+    Write(Source^.NextChar);
+  Writeln;
+  Dispose(Source);
+
+  Source := New(PSourcePChar, 
+        Create(
+                New(PCommonNameReader, Create),
+                New(PSimpleSpaceSkipper, Create),
+                New(PWindowsLineReader, Create),
+                TEST_LINE
+              ));
+  while not Source.EOS do
+    Writeln(Source.NextName);
+  Dispose(Source);
 end.

@@ -1,6 +1,8 @@
 
 unit DEmbroSource;
 
+
+
 interface
 
 uses
@@ -18,7 +20,7 @@ TSourceDecorator = object
  protected
   FSource: PSource;
  public
-  constructor Create(Source: PSource);
+  constructor Create;
   // вызывается после того, как в конец добавлены новые данные
   procedure OnBufferUpdate(AddedBytes: Integer); virtual;
   // вызывается перед тем, как сдвинуть буфер в начало
@@ -34,6 +36,8 @@ TSource = object
   FNameReader: PNameReader;
   FSpaceSkipper: PSpaceSkipper;
   FLineReader: PLineReader;
+  FEOS: Boolean;
+ protected
   FBuffer: record
     Start: PArrayOfByte;
     Pos: PArrayOfByte;
@@ -46,18 +50,33 @@ TSource = object
   // обновить буфер, вернёт False, если исходник достиг конца
   function UpdateBuffer: Boolean;
  public
+  constructor Create(NameReader: PNameReader; 
+                     SpaceSkipper: PSpaceSkipper;
+                     LineReader: PLineReader);
   procedure OnBufferUpdate(AddedBytes: Integer); virtual;
   procedure OnBufferMove(Delta: Integer); virtual;
   procedure OnIncPos(Delta: Integer); virtual;
 
+  function NextName: TString;
+  function NextNamePassive: TString;
+  function NextChar: TChar;
+
   property NameReader: PNameReader read FNameReader;
   property SpaceSkipper: PSpaceSkipper read FSpaceSkipper;
   property LineReader: PLineReader read FLineReader;
+  property EOS: Boolean read FEOS;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSourcePChar'}{$ENDIF}
 PSourcePChar = ^TSourcePChar;
 TSourcePChar = object(TSource)
+ private
+  FP: PAnsiChar;
+ public
+  constructor Create(NameReader: PNameReader; 
+                     SpaceSkipper: PSpaceSkipper;
+                     LineReader: PLineReader;
+                     P: PChar);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSourceFile'}{$ENDIF}
@@ -77,6 +96,7 @@ TSpaceSkipper = object(TSourceDecorator)
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSimpleSpaceSkipper'}{$ENDIF}
+PSimpleSpaceSkipper = ^TSimpleSpaceSkipper;
 TSimpleSpaceSkipper = object(TSpaceSkipper)
  public
   procedure SkipSpaces; virtual;
@@ -100,6 +120,7 @@ TNameReader = object(TSourceDecorator)
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TCommonNameReader'}{$ENDIF}
+PCommonNameReader = ^TCommonNameReader;
 TCommonNameReader = object(TNameReader)
  public
   function ReadName: Boolean; virtual;
@@ -157,9 +178,9 @@ end;
 implementation
 
 {$IFNDEF FLAG_FPC}{$REGION 'TSourceDecorator'}{$ENDIF}
-constructor TSourceDecorator.Create(Source: PSource);
+constructor TSourceDecorator.Create;
 begin
-  FSource := Source;
+  FSource := Nil;
 end;
 
 procedure TSourceDecorator.OnBufferUpdate(AddedBytes: Integer);
@@ -175,17 +196,35 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSource'}{$ENDIF}
+constructor TSource.Create(NameReader: PNameReader; 
+                   SpaceSkipper: PSpaceSkipper;
+                   LineReader: PLineReader);
+begin
+  FNameReader := NameReader;
+  FSpaceSkipper := SpaceSkipper;
+  FLineReader := LineReader;
+  FNameReader^.FSource := @Self;
+  FSpaceSkipper^.FSource := @Self;
+  FLineReader^.FSource := @Self;
+  FEOS := True;
+  FBuffer.Start := nil;
+  FBuffer.Pos := nil;
+  FBuffer.Size := 0;
+  FBuffer.Finish := nil;
+end;
+
 procedure TSource.IncPos(Count: Integer);
 begin
   if PtrInt(FBuffer.Finish) - PtrInt(FBuffer.Pos) <= Count then
     FBuffer.Pos := FBuffer.Finish
   else
-    Inc(FBuffer.Pos, Count);
+    Inc(PByte(FBuffer.Pos),Count);
 end;
 
 function TSource.UpdateBuffer: Boolean;
 begin
   Result := False;
+  FEOS := FBuffer.Pos = FBuffer.Finish;
 end;
 
 procedure TSource.OnBufferUpdate(AddedBytes: Integer);
@@ -207,9 +246,62 @@ begin
   FLineReader.OnIncPos(Delta);
   FNameReader.OnIncPos(Delta);
   FSpaceSkipper.OnIncPos(Delta);
+  if FBuffer.Pos = FBuffer.Finish then
+    FEOS := not UpdateBuffer;
+end;
+
+function TSource.NextName: TString;
+begin
+  FSpaceSkipper.SkipSpaces;
+  if EOS then begin
+    Result := '';
+  end else begin
+    if FNameReader.ReadName then
+      Result := FNameReader.GetLastName
+    else
+      Result := '';
+  end;
+end;
+
+function TSource.NextNamePassive: TString;
+begin
+  FSpaceSkipper.SkipSpaces;
+  if EOS then begin
+    Result := '';
+  end else begin
+    if FNameReader.ReadNamePassive then
+      Result := FNameReader.GetLastName
+    else
+      Result := '';
+  end;
+end;
+
+function TSource.NextChar: TChar;
+begin
+  with FBuffer do
+    if EOS then
+      Result := #0
+    else begin 
+      if Pos = Finish then
+        if not UpdateBuffer then
+          begin Result := #0; Exit; end;
+      Result := Char(Pos[0]);
+      Inc(PByte(Pos));
+      OnIncPos(1);
+    end;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSourcePChar'}{$ENDIF}
+constructor TSourcePChar.Create;
+begin
+  inherited Create(NameReader, SpaceSkipper, LineReader);
+  FP := P;
+  FEOS := False;
+  FBuffer.Start := @FP[0];
+  FBuffer.Size := StrLen(FP);
+  FBuffer.Pos := FBuffer.Start;
+  FBuffer.Finish := @FBuffer.Start[FBuffer.Size];
+end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSpaceSkipper'}{$ENDIF}
 procedure TSpaceSkipper.SkipSpaces;
@@ -223,7 +315,7 @@ begin
     while Pos[0] in [0..32] do begin
       while Pos <> Finish do
         if Pos[0] in [0..32] then
-          Inc(Pos)
+          Inc(PByte(Pos))
         else
           Exit;
       if not Source.UpdateBuffer then
@@ -264,6 +356,8 @@ end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TCommonNameReader'}{$ENDIF}
 function TCommonNameReader.ReadName: Boolean;
+label
+  DONE_;
 begin
   FInBuffer := False;
   FLast := '';
@@ -271,15 +365,18 @@ begin
     while not (Pos[0] in [0..32]) do begin
       while Pos <> Finish do
         if Pos[0] in [0..32] then
-          begin Result := Length(FLast) <> 0; Exit; end
+          goto DONE_
         else begin
           FLast := FLast + Char(Pos[0]);
-          Inc(Pos);
+          Inc(PByte(Pos));
         end;
       if not Source^.UpdateBuffer then
-        begin Result := Length(FLast) <> 0; Exit; end;
+        goto DONE_
     end;
-  begin Result := Length(FLast) <> 0; Exit; end;
+DONE_:
+  Result := Length(FLast) <> 0;
+  if Result then
+    Source^.OnIncPos(Length(FLast));
 end;
 
 function TCommonNameReader.ReadNamePassive: Boolean;
