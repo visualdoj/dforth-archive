@@ -355,10 +355,10 @@ end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TCommonNameReader'}{$ENDIF}
 function TCommonNameReader.ReadName: Boolean;
-label
-  DONE_;
+//label
+//  DONE_;
 begin
-  FInBuffer := False;
+  {FInBuffer := False;
   FLast := '';
   with Source^.FBuffer do
     while not (Pos[0] in [0..32]) do begin
@@ -375,13 +375,37 @@ begin
 DONE_:
   Result := Length(FLast) <> 0;
   if Result then
+    Source^.OnIncPos(Length(FLast));}
+  Result := ReadNamePassive;   
+  if Result then begin
+    IncPos(Source^.Buffer.Pos, Length(FLast));
     Source^.OnIncPos(Length(FLast));
+  end;
 end;
 
 function TCommonNameReader.ReadNamePassive: Boolean;
+label
+  DONE_;
+var
+  PassivePos: PArrayOfByte;
 begin
   FInBuffer := False;
-  Result := True;
+  FLast := '';
+  PassivePos := Source^.FBuffer.Pos;
+  with Source^.FBuffer do
+    while not (PassivePos[0] in [0..32]) do begin
+      while PassivePos <> Finish do
+        if PassivePos[0] in [0..32] then
+          goto DONE_
+        else begin
+          FLast := FLast + Char(PassivePos[0]);
+          INCPOS(PassivePos);
+        end;
+      if not Source^.UpdateBuffer then
+        goto DONE_
+    end;
+DONE_:
+  Result := Length(FLast) <> 0;
 end;
 
 procedure TCommonNameReader.OnBufferUpdate(AddedBytes: Integer);

@@ -72,8 +72,8 @@ uses
   DCompiler;
 
 const
-  TEST_LINE: PChar = '{ dup swap over 1 + // / source-next-name' + #10#13 +
-                     '45 4.5f glOpen Такие дела, привет }';
+  TEST_LINE: PChar = '{ dup swap print over 1 + // / source-next-name' + #10#13 +
+                     '45 4.5f print glOpen Такие дела, привет }';
 var
   I: Integer;
   Source: PSource;
@@ -101,5 +101,19 @@ begin
               ));
   while not Source.EOS do
     Writeln(Source.NextName);
+  Dispose(Source);
+
+  Source := New(PSourcePChar, 
+        Create(
+                New(PCommonNameReader, Create),
+                New(PSimpleSpaceSkipper, Create),
+                New(PWindowsLineReader, Create),
+                TEST_LINE
+              ));
+  while not Source.EOS do begin
+    if Source.NextNamePassive = 'print' then
+      Writeln;
+    Write(Source.NextName, ' ');
+  end;
   Dispose(Source);
 end.
