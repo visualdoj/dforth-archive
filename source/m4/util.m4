@@ -1,5 +1,16 @@
 define(`CONCAT', `$1$2')
 
+define(`_DS', `CONCAT($,*)')
+define(`_D1', `CONCAT($,1)')
+define(`_D2', `CONCAT($,2)')
+define(`_D3', `CONCAT($,3)')
+define(`_D4', `CONCAT($,4)')
+define(`_D5', `CONCAT($,5)')
+define(`_D6', `CONCAT($,6)')
+define(`_D7', `CONCAT($,7)')
+define(`_D8', `CONCAT($,8)')
+define(`_D9', `CONCAT($,9)')
+
 define(`M4LAMBDA',
 `pushdef(`$0', patsubst(``$1'',`\$_\([0-9]*\)',`$\1'))$0(popdef(`$0')_$0')dnl
 define(`_M4LAMBDA', `$@)')

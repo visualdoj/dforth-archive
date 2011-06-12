@@ -28,12 +28,12 @@ define(`STRIKE', `<strike>CS($*)</strike>')
 
 dnl Нумерованный список
 define(`LIST', `divert(`-1')
-    pushdef(`ITEM', `<LI>'CS(CONCAT($,*)))
+    pushdef(`ITEM', `<LI>'CS(_DS))
     pushdef(`_LIST', `popdef(`ITEM')popdef(`_LIST')</OL>')
 divert(`0')<OL>')
 dnl Список с кружочками
 define(`OLIST', `divert(`-1')
-    pushdef(`ITEM', `<LI>'CS(CONCAT($,*)))
+    pushdef(`ITEM', `<LI>'CS(_DS))
     pushdef(`_LIST', `popdef(`ITEM')popdef(`_LIST')</UL>')
 divert(`0')<UL>')
 
