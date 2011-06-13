@@ -378,7 +378,7 @@ DONE_:
     Source^.OnIncPos(Length(FLast));}
   Result := ReadNamePassive;   
   if Result then begin
-    IncPos(Source^.Buffer.Pos, Length(FLast));
+    Source^.IncPos({Source^.FBuffer.Pos,} Length(FLast));
     Source^.OnIncPos(Length(FLast));
   end;
 end;

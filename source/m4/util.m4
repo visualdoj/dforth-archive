@@ -1,3 +1,4 @@
+define(`COMMENT',`dnl')
 define(`CONCAT', `$1$2')
 
 define(`_DS', `CONCAT($,*)')

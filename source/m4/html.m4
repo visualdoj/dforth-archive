@@ -1,4 +1,4 @@
-divert(`-1')
+divert(-1)
 changecom(`###')
 include(`util.m4')
 

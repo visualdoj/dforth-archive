@@ -12,7 +12,7 @@ interface
 
 
 uses
-  {$I units.inc},Math,strings,DAlien,DVocabulary,DEmbroCore,DForthStack;
+  {$I units.inc},Math,strings,DAlien,DVocabulary,DEmbroCore,DEmbroSource,DForthStack;
 
 const
   DFORTHMACHINE_VERSION = 11;
@@ -245,7 +245,7 @@ OForthMachine = object
   //FHere: Integer;
   FCompilation: Boolean;
   FRunning: Boolean;
-  FSource: PChar;
+  FSource: PSource;
   FCurrentChar: Integer;
   //FPC: Cardinal;
   FCurrentName: TString;
@@ -1243,7 +1243,6 @@ procedure OForthMachine.CompileSource(Source: PChar);
 var
   I: Integer;
 begin
-  FSource := Source;
   FCompilation := True;
   State := FS_COMPILE;
   FCurrentChar := 0;
@@ -2314,29 +2313,11 @@ end;
 function OForthMachine.NextChar: TChar;
 begin
   Result := SNC;
-  {if EOS then
-    Result := #0
-  else begin
-    Result := FSource[FCurrentChar];
-    Inc(FCurrentChar);
-  end;}
 end;
 
 function OForthMachine.NextName: TString;
 begin
   Result := SNN;
-  {Result := '';
-  repeat
-    C := NextChar;
-  until (not (C in [#0..#32])) or EOS;
-  repeat
-    Result := Result + C;
-    if EOS then
-      Exit;
-    C := NextChar;
-  until (C in [#0..#32]) or EOS;
-  if not (C in [#0..#32]) then
-    Result := Result + C;}
 end;
 
 function OForthMachine.NextName(S: PChar; var I: Integer): TString;
@@ -2372,7 +2353,6 @@ end;
 function OForthMachine.EOS: Boolean; // end of source
 begin
   Result := SE;
-  //Result := FSource[FCurrentChar] = #0;
 end;
 
 procedure OForthMachine.WriteEmbro(P: Pointer; Size: Integer);
