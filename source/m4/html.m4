@@ -29,12 +29,12 @@ define(`STRIKE', `<strike>CS($*)</strike>')
 dnl Нумерованный список
 define(`LIST', `divert(`-1')
     pushdef(`ITEM', `<LI>'CS(_DS))
-    pushdef(`_LIST', `popdef(`ITEM')popdef(`_LIST')</OL>')
+    pushdef(`END', `popdef(`ITEM')popdef(`END')</OL>')
 divert(`0')<OL>')
 dnl Список с кружочками
 define(`OLIST', `divert(`-1')
     pushdef(`ITEM', `<LI>'CS(_DS))
-    pushdef(`_LIST', `popdef(`ITEM')popdef(`_LIST')</UL>')
+    pushdef(`END', `popdef(`ITEM')popdef(`END')</UL>')
 divert(`0')<UL>')
 
 dnl Ссылка
@@ -57,10 +57,8 @@ define(`sGT', `&gt;')
 dnl Амперсанд
 define(`sAMP', `&amp;')
 
-define(`TABLE', `<table>')
-define(`_TABLE', `</table>')
-define(`ROW', `<tr>')
-define(`_ROW', `</tr>')
+define(`TABLE', `<table>pushdef(`END', `popdef(`END')</table>')')
+define(`ROW', `<tr>pushdef(`END', `popdef(`END')</tr>')')
 define(`CELL', `<td>CS($*)</td>')
 
 dnl Цвета
