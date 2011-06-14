@@ -16,6 +16,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
+  DFORTHMACHINE_DATE: TString = '';
 
 
 
@@ -182,8 +183,8 @@ OForthMachine = object
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'S'}{$ENDIF}
   // doesn't work in run state
-  S: PChar; // Source
-  SC: Integer; // Source Counter
+  // S: PChar; // Source
+  // SC: Integer; // Source Counter
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'L'}{$ENDIF}
   L: array of Byte; // Local stack
@@ -268,8 +269,8 @@ OForthMachine = object
   procedure Run(Index: Integer);
   procedure RunMnemonic(M: Cardinal);
   procedure RunCommand(Command: PForthCommand);
-  procedure RunError(const S: TString);
-  procedure RunWarring(const S: TString);
+  procedure RunError(const Message: TString);
+  procedure RunWarring(const Message: TString);
   procedure IncHere(Count: Integer);
   procedure AddType(const Name: TString; Size: Integer);
   
@@ -640,9 +641,9 @@ OForthMachine = object
   procedure RunStep;
   
   // команды времени компиляции
-  procedure CompileError(const S: TString);
-  procedure CompileWarring(const S: TString);
-  procedure LogError(const S: TString);
+  procedure CompileError(const Message: TString);
+  procedure CompileWarring(const Message: TString);
+  procedure LogError(const Message: TString);
   function NextChar: TChar;
   function NextName: TString; overload;
   function NextName(S: PChar; var I: Integer): TString; overload;
@@ -669,6 +670,7 @@ OForthMachine = object
   function FindCommand(Voc: PVoc; const Name: TString; Index: PInteger = nil): PForthCommand; overload;
   function FindCommand(const Name: TString; Index: PInteger = nil): PForthCommand; overload;
   function ExtendedFindCommand(const Name: TString; Index: PInteger = nil): PForthCommand; overload;
+  property Source: PSource read FSource;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'all commands'}{$ENDIF}
@@ -1344,17 +1346,17 @@ begin
   Command^.Code(@Self, Command);
 end;
 
-procedure OForthMachine.RunError(const S: TString);
+procedure OForthMachine.RunError(const Message: TString);
 begin
   Error('Runtime(' + InternalFileName(FCurrentFileName) + ', ' +
                      IntToStr(FCurrentLine) + ', ' +
-                     IntToStr(FCurrentPos) + '): ' + S);
+                     IntToStr(FCurrentPos) + '): ' + Message);
   // FRunning := False;
 end;
 
-procedure OForthMachine.RunWarring(const S: TString);
+procedure OForthMachine.RunWarring(const Message: TString);
 begin
-  Warrning('Runtime warring: ' + S);
+  Warrning('Runtime warring: ' + Message);
 end;
 
 procedure OForthMachine.IncHere(Count: Integer);
@@ -1678,12 +1680,14 @@ end;}
 {$IFNDEF FLAG_FPC}{$REGION 'S'}{$ENDIF}
 function OForthMachine.SE: Boolean;
 begin
-  Result := S[SC] = #0;
+  Result := FSource^.EOS;
+  //Result := S[SC] = #0;
 end;
 
 function OForthMachine.SNC: TChar;
 begin
-  Result := S[SC];
+  Result := FSource^.NextChar;
+  {Result := S[SC];
   if not SE then begin
     Inc(SC);
     if Result = EOL then begin
@@ -1691,7 +1695,7 @@ begin
       FCurrentPos := 1
     end else
       Inc(FCurrentPos);
-  end;
+  end;}
 end;
 
 function OForthMachine.SNN: TString;
@@ -1714,8 +1718,9 @@ end;
 
 procedure OForthMachine.SSS;
 begin
-  while (not SE) and (S[SC] in [#1..#32]) do
-    SNC;
+  FSource^.SkipSpaces;
+  //while (not SE) and (S[SC] in [#1..#32]) do
+  //  SNC;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'R'}{$ENDIF}
@@ -1886,8 +1891,9 @@ begin
   LB := @L[0];
   LP := LB;
   LS := Length(L);
-  S  := nil;
-  SC := 0;
+  //S  := nil;
+  //SC := 0;
+  FSource := GetEmptySource;
   UserData := nil;
   State := FS_INTERPRET;
   SetLength(FData, 2048);
@@ -2135,12 +2141,14 @@ begin
   RUI(Ord(FSession) * BOOL_TRUE);
   RUI(Ord(FRunning) * BOOL_TRUE);
   RUI(EC);
-  RUP(Self.S);
-  RUI(SC);
+    RUP(Self.FSource);
+    //RUP(Self.S);
+    //RUI(SC);
   RUP(RB);
-  Self.S := Line;
-  //Self.SB := Line;
-  Self.SC := 0;
+    FSource := CreateSourcePChar(Line);
+    //Self.S := Line;
+    //Self.SB := Line;
+    //Self.SC := 0;
   State := FS_INTERPRET;
   FSession := True;
   FRunning := False;
@@ -2152,8 +2160,9 @@ begin
   FCurrentPos := ROI;
   FCurrentLine := ROI;
   RB := ROP; 
-  SC := ROI;
-  Self.S  := ROP;
+    Self.FSource := ROP;
+    //SC := ROI;
+    //Self.S  := ROP;
   EC := ROI;
   FRunning := ROI <> BOOL_FALSE;
   FSession := ROI <> BOOL_FALSE;
@@ -2203,12 +2212,14 @@ begin
   RUI(Ord(FSession) * BOOL_TRUE);
   RUI(Ord(FRunning) * BOOL_TRUE);
   RUI(EC);
-  RUP(S);
-  RUI(SC);
+    RUP(Self.FSource);
+    // RUP(S);
+    // RUI(SC);
   RUP(RB);
   RUP(RP);
-  S := '';
-  SC := 0;
+    FSource := GetEmptySource;
+    // S := '';
+    // SC := 0;
   RB := RP;
   FSession := True;
   FRunning := False;
@@ -2219,8 +2230,9 @@ begin
   end;
   RP := ROP;
   RB := ROP; 
-  SC := ROI;
-  S := ROP;
+    FSource := ROP;
+    //SC := ROI;
+    //S := ROP;
   EC := ROI;
   FRunning := ROI <> BOOL_FALSE;
   FSession := ROI <> BOOL_FALSE;
@@ -2289,25 +2301,25 @@ begin
   RunMnemonic(ERO);
 end;
 
-procedure OForthMachine.CompileError(const S: TString);
+procedure OForthMachine.CompileError(const Message: TString);
 begin
   Error('Compile(' + InternalFileName(FCurrentFileName) + ', ' +
                      IntToStr(FCurrentLine) + ', ' +
-                     IntToStr(FCurrentPos) + '): ' + S);
+                     IntToStr(FCurrentPos) + '): ' + Message);
   FCompilation := False;
 end;
 
-procedure OForthMachine.CompileWarring(const S: TString);
+procedure OForthMachine.CompileWarring(const Message: TString);
 begin
-  Warrning(' Compilation: "' + S + '"');
+  Warrning(' Compilation: "' + Message + '"');
 end;
 
-procedure OForthMachine.LogError(const S: TString);
+procedure OForthMachine.LogError(const Message: TString);
 begin
   if State = FS_COMPILE then
-    CompileError(S)
+    CompileError(Message)
   else
-    RunError(S);
+    RunError(Message);
 end;
 
 function OForthMachine.NextChar: TChar;
@@ -2346,8 +2358,9 @@ function OForthMachine.NextNamePassive: TString;
 var
   Temp: Integer;
 begin
-  Temp := SC;
-  Result := NextName(S, Temp);
+  //Temp := SC;
+  //Result := NextName(S, Temp);
+  Result := FSource^.NextNamePassive;
 end;
 
 function OForthMachine.EOS: Boolean; // end of source

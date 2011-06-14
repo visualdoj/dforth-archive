@@ -51,7 +51,7 @@ uses
   procedure _compile_char(Machine: TForthMachine; Command: PForthCommand);
 
   // стековые команды над строками отличаются
-  procedure str_push(Machine: TForthMachine; B: TString); overload;
+  procedure str_push(Machine: TForthMachine; const B: TString); overload;
   procedure str_push(Machine: TForthMachine; B: TStr); overload;
   function str_pop(Machine: TForthMachine): TStr;
   function str_top(Machine: TForthMachine): TStr; overload;
@@ -285,6 +285,7 @@ end;
 
 function CreateStr(Width, Len: Integer): TStr; overload;
 begin
+  //Writeln('CREATEING STRING ', Len);
   GetMem(Result, SizeOf(Integer)*3 + Len*Width + 1);
   PStrRec(Result)^.Ref := 0;
   PStrRec(Result)^.Len := Len;
@@ -435,7 +436,7 @@ begin
   Machine.EWI(Ord(Machine.SNC));
 end;
 
-procedure str_push(Machine: TForthMachine; B: TString);
+procedure str_push(Machine: TForthMachine; const B: TString);
 var
   FS: TStr;
 begin

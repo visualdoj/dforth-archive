@@ -189,7 +189,8 @@ begin
       Machine.Interpret(PChar('str" ' + FileNames[I] + '" evaluate-file'));
     if Repl then begin
       Writeln('DEmbro v' + IntToStr(DFORTHMACHINE_VERSION div 100) + '.' + 
-                           IntToStr(DFORTHMACHINE_VERSION mod 100) + 
+                           IntToStr(DFORTHMACHINE_VERSION mod 100) + ' ' +
+              DFORTHMACHINE_DATE +
               ' (commands available: ', Length(Machine.C), ')');
       Writeln('Type "quit" to exit');
       while not Done do begin

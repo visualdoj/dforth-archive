@@ -56,6 +56,8 @@ TSource = object
   procedure OnBufferMove(Delta: Integer); virtual;
   procedure OnIncPos(Delta: Integer); virtual;
 
+  procedure SkipSpaces;
+  function SourceCut(const S: TString): TString;
   function NextName: TString;
   function NextNamePassive: TString;
   function NextChar: TChar;
@@ -174,6 +176,9 @@ end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
+function GetEmptySource: PSourcePChar;
+function CreateSourcePChar(P: PChar): PSourcePChar;
+
 implementation
 
 {$IFNDEF FLAG_FPC}{$REGION 'TSourceDecorator'}{$ENDIF}
@@ -247,6 +252,38 @@ begin
   FSpaceSkipper.OnIncPos(Delta);
   if FBuffer.Pos = FBuffer.Finish then
     FEOS := not UpdateBuffer;
+end;
+
+procedure TSource.SkipSpaces;
+begin
+  FSpaceSkipper.SkipSpaces;
+end;
+
+function TSource.SourceCut(const S: TString): TString;
+type
+  PtrInt = Cardinal;
+var
+  L: Integer;
+  P: PArrayOfByte;
+begin
+  Result := '';
+  with FBuffer do
+    while not EOS do begin
+      P := Pos;
+      while PtrInt(Finish) - PtrInt(P) >= Length(S) do
+        if CompareByte(S[1], P[0], Length(S)) = 0 then begin
+          L := Length(Result);
+          //Writeln('L, P-Pos: ', L, ' ', PtrInt(P) - PtrInt(Pos));
+          SetLength(Result, Length(Result) + PtrInt(P) - PtrInt(Pos));
+          Move(P[0], Result[1+L], PtrInt(P) - PtrInt(Pos));
+          IncPos(PtrInt(P) - PtrInt(Pos) + Length(S));
+          //Writeln('SourceCut: ', Length(Result));
+          Exit;
+        end else
+          INCPOS(P, 1);
+      //Writeln('WAR: UpdateBuffer underdeveloped');
+      UpdateBuffer;
+    end;
 end;
 
 function TSource.NextName: TString;
@@ -463,4 +500,27 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
+var
+  EmptySource: PSourcePChar;
+
+function GetEmptySource: PSourcePChar;
+begin
+  Result := EmptySource;
+end;
+
+function CreateSourcePChar(P: PChar): PSourcePChar;
+begin
+  Result := New(PSourcePChar, 
+        Create(
+                New(PCommonNameReader, Create),
+                New(PSimpleSpaceSkipper, Create),
+                New(PWindowsLineReader, Create),
+                P
+              ));
+end;
+
+initialization
+  EmptySource := CreateSourcePChar('');
+finalization
+  Dispose(EmptySource);
 end.

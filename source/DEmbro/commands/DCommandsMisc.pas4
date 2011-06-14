@@ -86,7 +86,12 @@ implementation
       procedure _local cmdhdr; body( RunCommand(PForthCommand((@E[Integer(Command^.Data)])^)); )
       procedure source_cut cmdhdr; label _Exit;
         var _S: TStr; _C: TChar; _L: TString; J: Integer;
-        body( _S := str_pop(Machine); _L := ''; 
+        body( 
+          _S := str_pop(Machine); 
+          _L := StrToString(_S);
+          WUS(Source^.SourceCut(_L));
+          DelRef(_S)
+          {_L := ''; 
           while not SE do begin 
             J := SC;
             _C := SNC;  
@@ -106,7 +111,7 @@ implementation
           end; 
         _Exit:
           DelRef(_S);
-          WUS(_L); )
+          WUS(_L); })
       procedure source_next_char cmdhdr; body( WUU8(Byte(NextChar)) )
       procedure source_next_name cmdhdr; body( str_push(Machine, NextName) )
       procedure source_next_name_passive cmdhdr; body( // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
@@ -114,7 +119,11 @@ implementation
       procedure interpret_source_next_name_passive cmdhdr; body( str_push(Machine, NextNamePassive) )
       procedure compile_source_next_name_passive cmdhdr; body( BuiltinEWO('(str)' + Char(34)); EWStr(NextNamePassive); )
       procedure run_source_next_name_passive cmdhdr; body( str_push(Machine, @E[EC]); )
-      procedure source_read_to_char cmdhdr; var I: Integer; body( I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); str_push(Machine, TString(Copy(S, SC + 1, I - SC))); SC := I; )
+      procedure source_read_to_char cmdhdr; var I: Integer; body( {I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); str_push(Machine, TString(Copy(S, SC + 1, I - SC))); SC := I;} 
+        Dec(WP, 1);
+        while not Source^.EOS do
+          if Source^.NextChar = TChar(WP^) then
+             break; )
       procedure ptr_nil cmdhdr; body( WUP(nil); )
       procedure compile_start cmdhdr; body( State := FS_COMPILE )
       procedure interpret_start cmdhdr; body( State := FS_INTERPRET )

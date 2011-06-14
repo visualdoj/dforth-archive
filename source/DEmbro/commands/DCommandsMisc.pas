@@ -105,7 +105,11 @@ implementation
       procedure _local (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin RunCommand(PForthCommand((@E[Integer(Command^.Data)])^));  end; end;
       procedure source_cut (Machine: TForthMachine; Command: PForthCommand); label _Exit;
         var _S: TStr; _C: TChar; _L: TString; J: Integer;
-        begin with Machine^ do begin _S := str_pop(Machine); _L := ''; 
+        begin with Machine^ do begin _S := str_pop(Machine); 
+          _L := StrToString(_S);
+          WUS(Source^.SourceCut(_L));
+          DelRef(_S)
+          {_L := ''; 
           while not SE do begin 
             J := SC;
             _C := SNC;  
@@ -125,7 +129,7 @@ implementation
           end; 
         _Exit:
           DelRef(_S);
-          WUS(_L);  end; end;
+          WUS(_L); } end; end;
       procedure source_next_char (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUU8(Byte(NextChar))  end; end;
       procedure source_next_name (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, NextName)  end; end;
       procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
@@ -133,7 +137,11 @@ implementation
       procedure interpret_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, NextNamePassive)  end; end;
       procedure compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin BuiltinEWO('(str)' + Char(34)); EWStr(NextNamePassive);  end; end;
       procedure run_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, @E[EC]);  end; end;
-      procedure source_read_to_char (Machine: TForthMachine; Command: PForthCommand); var I: Integer; begin with Machine^ do begin I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); str_push(Machine, TString(Copy(S, SC + 1, I - SC))); SC := I;  end; end;
+      procedure source_read_to_char (Machine: TForthMachine; Command: PForthCommand); var I: Integer; begin with Machine^ do begin {I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); str_push(Machine, TString(Copy(S, SC + 1, I - SC))); SC := I;} 
+        Dec(WP, 1);
+        while not Source^.EOS do
+          if Source^.NextChar = TChar(WP^) then
+             break;  end; end;
       procedure ptr_nil (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(nil);  end; end;
       procedure compile_start (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin State := FS_COMPILE  end; end;
       procedure interpret_start (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin State := FS_INTERPRET  end; end;
