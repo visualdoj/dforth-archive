@@ -11,6 +11,9 @@ define(~_IA32|)
 ifdef(_IA32,,define(~N_IA32|))
 ifdef(_X86,,define(~N_X86|))
 
+ifdef(~__windows__|, ~define(~_DATE_|,~esyscmd(~dtime "ddd mmm dd hh:nn yyyy"|)|)|, 
+                     ~define(~_DATE_|,~|)|)
+
 uses
   {$I units.inc},
 
@@ -24,7 +27,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '';
+  DFORTHMACHINE_DATE: TString = '_DATE_';
 
 dnl define(~_comma|, ~~,||)
 define(~all_implement|, ~|)

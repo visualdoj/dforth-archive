@@ -11,12 +11,14 @@ interface
 
 
 
+
+
 uses
   {$I units.inc},Math,strings,DAlien,DVocabulary,DEmbroCore,DEmbroSource,DForthStack;
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '';
+  DFORTHMACHINE_DATE: TString = '\Fri Jul 15 20:55 2011\';
 
 
 

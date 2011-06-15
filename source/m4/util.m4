@@ -25,3 +25,6 @@ define(`DEFAULT',`ifelse($1,`',$2,$1)')
 define(`NUMERATOR',`define(`$1_VALUE',DEFAULT(`$2',`0'))define(`$1',`$1_VALUE`'define(`$1_VALUE',incr($1_VALUE))')')
 
 define(`DUP',`define(`$1',`$2')$1')
+
+ifdef(`__windows__', `define(`_DATE_',`esyscmd(`dtime "ddd mmm dd h:n:s yyyy"')')', 
+                     `define(`_DATE_',`')')

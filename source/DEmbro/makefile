@@ -9,7 +9,7 @@
 .PHONY: asm
 
 all: clean pas4 pasq
-	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
+	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FUtemp
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
 
