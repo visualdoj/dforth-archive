@@ -101,7 +101,7 @@ implementation
       begin with Machine^ do begin F := WOP;
         I := WOI;
         Src := WOP;
-        F^.Data.WriteVar(WOP, I);
+        F^.Data.WriteVar(Src, I);
        end; end;
       procedure file_read (Machine: TForthMachine; Command: PForthCommand);
       var
@@ -111,7 +111,7 @@ implementation
       begin with Machine^ do begin F := WOP;
         I := WOI;
         Src := WOP;
-        F^.Data.WriteVar(WOP, I);
+        F^.Data.WriteVar(Src, I);
        end; end;
       procedure file_str_write (Machine: TForthMachine; Command: PForthCommand); 
       var

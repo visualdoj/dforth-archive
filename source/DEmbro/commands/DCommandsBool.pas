@@ -51,8 +51,6 @@ begin
 end;
 
 procedure _or(Machine: TForthMachine; Command: PForthCommand);
-var
-  a, b: TInt;
 begin
   with Machine^ do begin
     Machine.WUI(Machine.WOI or Machine.WOI);

@@ -14,11 +14,11 @@ interface
 
 
 uses
-  {$I units.inc},Math,strings,DAlien,DVocabulary,DEmbroCore,DEmbroSource,DForthStack;
+  {$I units.inc},Math,strings,DAlien,DVocabulary,DEmbroCore,DEmbroSource,DCommandsTable,DForthStack;
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '\Fri Jul 15 20:55 2011\';
+  DFORTHMACHINE_DATE: TString = '';
 
 
 
@@ -75,11 +75,7 @@ type
   TForthMachine = ^OForthMachine;
 
   PForthCommand = ^TForthCommand;
-
-  // Machine размещается в EAX
-  // Command размещается в EDX
   TCode = procedure (Machine: TForthMachine; Command: PForthCommand); register;
-
   TForthCommand = record 
           Code: TCode;
           Data: Pointer;
@@ -87,6 +83,10 @@ type
           Name: PAnsiChar; 
           Param: Pointer;
         end;
+  TXt = PForthCommand;
+
+  // Machine размещается в EAX
+  // Command размещается в EDX
 
   TCallback = procedure (machine: Pointer); stdcall;
   TForthRuntimeProc = procedure (machine: TForthMachine; Command: PForthCommand) 
@@ -944,7 +944,6 @@ end;
 procedure compile_type(Machine: TForthMachine; Name: PChar);
 var
   I: Integer;
-  P: PType;
 begin
   with Machine^ do begin
     for I := 0 to High(Machine.FTypes) do
@@ -960,7 +959,6 @@ end;
 procedure interpete_type(Machine: TForthMachine; Name: PChar);
 var
   I: Integer;
-  P: PType;
 begin
   with Machine^ do begin
     for I := 0 to High(Machine.FTypes) do
@@ -1244,8 +1242,6 @@ begin
 end;
 
 procedure OForthMachine.CompileSource(Source: PChar);
-var
-  I: Integer;
 begin
   FCompilation := True;
   State := FS_COMPILE;
@@ -1322,9 +1318,6 @@ begin
 end;
 
 procedure OForthMachine.Run(Index: Integer);
-var
-  M: Cardinal;
-  SavedState: Integer;
 begin
   // Writeln('Deprecated code');
   LogError('Deprecated code');
@@ -2357,11 +2350,7 @@ begin
 end;
 
 function OForthMachine.NextNamePassive: TString;
-var
-  Temp: Integer;
 begin
-  //Temp := SC;
-  //Result := NextName(S, Temp);
   Result := FSource^.NextNamePassive;
 end;
 
@@ -2463,16 +2452,8 @@ begin
 end;
 
 function OForthMachine.ReserveName(const Name: TString): PForthCommand;
-var
-  I: Integer;
 begin
   FLastMnemonic := -1;
-  {{for I := 0 to High(C) do
-    if TString(C[I].Name) = Name then begin
-      Result := C[I];
-      FLastMnemonic := I;
-      Break;
-    end;}
   if FLastMnemonic = -1 then begin
     SetLength(C, Length(C) + 1);
     New(C[High(C)]);

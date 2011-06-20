@@ -64,16 +64,10 @@ begin
 end;
 
 procedure compile(Machine: TForthMachine; Command: PForthCommand);
-var
-  U: TUInt;
 begin
   with Machine^ do begin
-    //if Machine.State = FS_COMPILE then begin
       Machine.BuiltinEWO('(compile)');
       Machine.EWO(Machine.NextName);
-    //end else begin
-    //  Machine.EWO(Machine.C[Machine.ERU].Name);
-    //end;
   end;
 end;
 
@@ -151,10 +145,7 @@ end;
 
 procedure EvaluateFile(Machine: TForthMachine; Command: PForthCommand);
 var
-  F: TextFile;
   S: TStr;
-  B: TString;
-  T: TString;
   FullPath: TString;
   ShortPath: TString;
 begin

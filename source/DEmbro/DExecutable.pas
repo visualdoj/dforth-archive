@@ -409,8 +409,6 @@ begin
 end;
 
 function TExeBuilder.GetSecPos(Index: Integer): Integer;
-var
-  I: Integer;
 begin
   if Index = 0 then
     Result := AlFi(GetHeaderSize)
@@ -545,7 +543,6 @@ end;
 procedure TExeBuilder.WriteSectionHeader;
 var
   S: String;
-  StrPos: AWord;
 begin
   FSections[Index].Name := Name;
   FSections[Index].IsData := IsData;

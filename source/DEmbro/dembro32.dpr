@@ -133,10 +133,10 @@ type
   TProc = procedure (A, B, C, D: Integer); stdcall;
   
 var
-  Buffer: array[0..64*1024] of Byte;
+  //Buffer: array[0..64*1024] of Byte;
+  //F: File of Byte;
   Stack: array[0..64*1024] of Byte;
-  WP: Pointer;
-  F: File of Byte;
+  WP: Pointer = nil;
 
 procedure __Test(Machine: Pointer; Command: Pointer); stdcall;
 begin
@@ -210,7 +210,7 @@ begin
     end;
   end;
   Machine^.Destroy;
-  //Compiler.Free;
+  Compiler.Free;
   Dispose(Machine);
   // Writeln('dembro32 out');
 end.

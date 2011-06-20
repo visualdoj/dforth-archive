@@ -85,7 +85,7 @@ implementation
         F := WOP;
         I := WOI;
         Src := WOP;
-        F^.Data.WriteVar(WOP, I);
+        F^.Data.WriteVar(Src, I);
       )
       procedure file_read cmdhdr;
       var
@@ -96,7 +96,7 @@ implementation
         F := WOP;
         I := WOI;
         Src := WOP;
-        F^.Data.WriteVar(WOP, I);
+        F^.Data.WriteVar(Src, I);
       )
       procedure file_str_write cmdhdr; 
       var

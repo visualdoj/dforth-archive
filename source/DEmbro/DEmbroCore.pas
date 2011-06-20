@@ -23,6 +23,17 @@ type
   TUInt                                 = Cardinal;
   TPtr                                  = Pointer;
 
+  PForthCommand = ^TForthCommand;
+  TCode = procedure (Machine: Pointer; Command: PForthCommand); register;
+  TForthCommand = record 
+          Code: TCode;
+          Data: Pointer;
+          Flags: Byte;
+          Name: PAnsiChar; 
+          Param: Pointer;
+        end;
+  TXt = PForthCommand;
+
 function Align(Value: Cardinal; _Unit: Cardinal = CELL_SIZE): Cardinal;
 
 implementation

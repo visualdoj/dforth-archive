@@ -11,8 +11,6 @@ type
 TCompiler = class
 private
   FMachine: TForthMachine;
-  FAppType: Integer;
-  FOutput: TString;
 public
   constructor Create(Machine: TForthMachine);
   destructor Destroy; override;

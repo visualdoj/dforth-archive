@@ -2,6 +2,11 @@ unit DVocabulary;
 
 interface
 
+uses
+  {$I units.inc},
+  DEmbroCore,
+  DCommandsTable;
+
 {
         vocabulary xxx                  создать новый словарь
         xxx                             положить в стек созданный ранее словарь
@@ -37,77 +42,43 @@ type
     Item: PVocItem;
     Time: Integer;
   end;
-(*  *)
-(*   TVocabulary = class *)
-(*   private *)
-(*     FCommands: array of PForthCommand;   *)
-(*   public *)
-(*   end; *)
-(*  *)
-(*   TVocabularySpace = class *)
-(*   private *)
-(*     FStack: array of TVocabulary; *)
-(*     FCount: Integer; *)
-(*     FTarget: array of TVocabulary; *)
-(*     FTargets: Integer; *)
-(*     FGlobals: TVocabulary; *)
-(*     FLocals: TVocabulary; *)
-(*   public *)
-(*     procedure TargetPush(V: TVocabulary); *)
-(*     function TargetPop: TVocabulary; *)
-(*     function TargetTop: TVocabulary; *)
-(*     procedure Push(V: TVocabulary); *)
-(*     function Pop: TVocabulary; *)
-(*     function Top: TVocabulary; *)
-(*   end; *)
-(*  *)
+
   function VocAdd(V: PVocItem; Index: Integer): PVocItem; overload;
   function VocDel(V: PVocItem; Marker: PVocItem): PVocItem; overload;
   procedure VocAdd(V: PVoc; Index: Integer); overload;
   procedure VocDel(V: PVoc; Marker: PVocItem); overload;
+ 
+const
+  DUPLICATE_ACTION_IGNORE       = 0;
+  DUPLICATE_ACTION_EXCEPTION    = 1;
+  DUPLICATE_ACTION_REWRITE      = 2;
+  DUPLICATE_ACTION_CUSTOM       = 3;
+
+type
+  PVocabulary = ^TVocabulary;
+  TVocabulary = object
+   public
+    FTable: PCommandsTable;
+    FBlock: Pointer;
+   private
+    constructor Create(Table: PCommandsTable; EmbroBlock: Pointer);
+    destructor Destroy;
+    procedure DeclareForward(const Name: TString);
+    function AddCommand(const Name: TString): TXt;
+    function StartCommand(const Name: TString): TXt;
+    procedure UpdateCommand(Xt: TXt);
+    procedure DoneCommand(Xt: TXt);
+    procedure SetMarker;
+    procedure ForgetToMarker;
+    procedure Forget(const Name: TString);
+    function Find(const Name: TString): TXt;
+    procedure Allot(Count: Integer);
+    function Here: Pointer;
+    procedure ClearCurrent(Count: Integer);
+  end;
 
 implementation
-(*  *)
-(* procedure TVocabularySpace.TargetPush(V: TVocabulary); *)
-(* begin *)
-(*   if FTargets = Length(FTarget) then *)
-(*     SetLength(FTarget, Length(FTarget) + 10); *)
-(*   Inc(FTargets); *)
-(*   FTarget[FTargets - 1] := V; *)
-(* end; *)
-(*  *)
-(* function TVocabularySpace.TargetPop: TVocabulary; *)
-(* begin *)
-(*   if FTargets > 0 then *)
-(*     Dec(FTargets); *)
-(*   Result := FTarget[FTargets]; *)
-(* end; *)
-(*  *)
-(* function TVocabularySpace.TargetTop: TVocabulary; *)
-(* begin *)
-(*   Result := FTarget[FTargets - 1]; *)
-(* end; *)
-(*  *)
-(* procedure TVocabularySpace.Push(V: TVocabulary); *)
-(* begin *)
-(*   if FCount = Length(FStack) then *)
-(*     SetLength(FStack, Length(FStack) + 10); *)
-(*   Inc(FTargets); *)
-(*   FTarget[FTargets - 1] := V; *)
-(* end; *)
-(*  *)
-(* function TVocabularySpace.Pop: TVocabulary; *)
-(* begin *)
-(*   if FCount > 0 then *)
-(*     Dec(FCount); *)
-(*   Result := FStack[FCount]; *)
-(* end; *)
-(*  *)
-(* function TVocabularySpace.Top: TVocabulary; *)
-(* begin *)
-(*   Result := FStack[FCount - 1]; *)
-(* end; *)
-(*  *)
+
 function VocAdd(V: PVocItem; Index: Integer): PVocItem;
 begin
   New(Result);
@@ -134,5 +105,69 @@ procedure VocDel(V: PVoc; Marker: PVocItem);
 begin
   V^.Item := VocDel(V^.Item, Marker);
 end;
+
+{$IFNDEF FLAG_FPC}{$REGION 'TVocabulary'}{$ENDIF}
+constructor TVocabulary.Create(Table: PCommandsTable; EmbroBlock: Pointer);
+begin
+  FTable := Table;
+  FBlock := EmbroBlock;
+end;
+
+destructor TVocabulary.Destroy;
+begin
+end;
+
+procedure TVocabulary.DeclareForward(const Name: TString);
+begin
+end;
+
+function TVocabulary.AddCommand(const Name: TString): TXt;
+begin
+  Result := FTable.AddXt;
+  Result^.Name := PAnsiChar(Name);
+  // ....
+end;
+
+function TVocabulary.StartCommand(const Name: TString): TXt;
+begin
+  Result := FTable.AddXt;
+end;
+
+procedure TVocabulary.UpdateCommand(Xt: TXt);
+begin
+end;
+
+procedure TVocabulary.DoneCommand(Xt: TXt);
+begin
+end;
+
+procedure TVocabulary.SetMarker;
+begin
+end;
+
+procedure TVocabulary.ForgetToMarker;
+begin
+end;
+
+procedure TVocabulary.Forget(const Name: TString);
+begin
+end;
+
+function TVocabulary.Find(const Name: TString): TXt;
+begin
+end;
+
+procedure TVocabulary.Allot(Count: Integer);
+begin
+end;
+
+function TVocabulary.Here: Pointer;
+begin
+end;
+
+procedure TVocabulary.ClearCurrent(Count: Integer);
+begin
+end;
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 end.

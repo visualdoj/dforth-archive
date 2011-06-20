@@ -476,8 +476,6 @@ begin
 end;
 
 function TLineReader.ReadLine;
-var
-  I: Integer;
 begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}

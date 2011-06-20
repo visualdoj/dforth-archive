@@ -114,11 +114,11 @@ end;
 procedure compile_scattered_enddef(Machine: TForthMachine; Command: PForthCommand);
 var
   C: PForthCommand;
-  P: Cardinal;
+  //P: Cardinal;
 begin
  // with Machine^ do begin
     C := Machine.WOP;
-    P := Cardinal(C^.Param);
+    //P := Cardinal(C^.Param);
     Machine.BuiltinEWO('branch');
     Cardinal(C^.Param) := Machine.EL;
     Machine.EWU(Machine.WOU);
@@ -191,7 +191,6 @@ end;
 procedure _lt_resolve(Machine: TForthMachine; Command: PForthCommand);
 var
   Temp: Cardinal;
-  PC: Cardinal;
 begin
   with Machine^ do begin
     Temp := Machine.WOU;

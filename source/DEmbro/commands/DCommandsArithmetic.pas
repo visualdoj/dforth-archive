@@ -518,9 +518,8 @@ implementation
       procedure _conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TInt(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TInt(WP^));
         Inc(WP, SizeOf(TInt));
         DelRef(B);
        end; end;
@@ -584,9 +583,8 @@ implementation
       procedure int_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TInt(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TInt(WP^));
         Inc(WP, SizeOf(TInt));
         DelRef(B);
        end; end;
@@ -650,9 +648,8 @@ implementation
       procedure int8_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TInt8(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TInt8(WP^));
         Inc(WP, SizeOf(TInt8));
         DelRef(B);
        end; end;
@@ -716,9 +713,8 @@ implementation
       procedure int16_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TInt16(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TInt16(WP^));
         Inc(WP, SizeOf(TInt16));
         DelRef(B);
        end; end;
@@ -782,9 +778,8 @@ implementation
       procedure int32_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TInt32(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TInt32(WP^));
         Inc(WP, SizeOf(TInt32));
         DelRef(B);
        end; end;
@@ -848,9 +843,8 @@ implementation
       procedure int64_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TInt64(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TInt64(WP^));
         Inc(WP, SizeOf(TInt64));
         DelRef(B);
        end; end;
@@ -914,9 +908,8 @@ implementation
       procedure uint_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TUInt(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TUInt(WP^));
         Inc(WP, SizeOf(TUInt));
         DelRef(B);
        end; end;
@@ -980,9 +973,8 @@ implementation
       procedure uint8_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TUInt8(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TUInt8(WP^));
         Inc(WP, SizeOf(TUInt8));
         DelRef(B);
        end; end;
@@ -1046,9 +1038,8 @@ implementation
       procedure uint16_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TUInt16(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TUInt16(WP^));
         Inc(WP, SizeOf(TUInt16));
         DelRef(B);
        end; end;
@@ -1112,9 +1103,8 @@ implementation
       procedure uint32_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TUInt32(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TUInt32(WP^));
         Inc(WP, SizeOf(TUInt32));
         DelRef(B);
        end; end;
@@ -1178,9 +1168,8 @@ implementation
       procedure uint64_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), TUInt64(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), TUInt64(WP^));
         Inc(WP, SizeOf(TUInt64));
         DelRef(B);
        end; end;
@@ -1244,9 +1233,8 @@ implementation
       procedure float_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), Single(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), Single(WP^));
         Inc(WP, SizeOf(Single));
         DelRef(B);
        end; end;
@@ -1310,9 +1298,8 @@ implementation
       procedure double_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), Double(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), Double(WP^));
         Inc(WP, SizeOf(Double));
         DelRef(B);
        end; end;
@@ -1376,9 +1363,8 @@ implementation
       procedure extended_conv_from_str (Machine: TForthMachine; Command: PForthCommand);
       var
         B: TStr;
-        Res: Word;
       begin with Machine^ do begin B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), Extended(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), Extended(WP^));
         Inc(WP, SizeOf(Extended));
         DelRef(B);
        end; end;

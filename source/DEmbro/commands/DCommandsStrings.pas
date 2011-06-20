@@ -175,7 +175,6 @@ end;
 
 procedure pchar_dq(Machine: TForthMachine; Command: PForthCommand);
 var
-  P: Pointer;
   C: TChar;
 begin
  // with Machine^ do begin
@@ -228,7 +227,6 @@ end;
 
 procedure pwidechar_dq(Machine: TForthMachine; Command: PForthCommand);
 var
-  P: Pointer;
   C: WideChar;
 begin
     (* if Machine.State = FS_COMPILE then begin *)
@@ -478,10 +476,10 @@ var
   B: TStr;
 begin
   with Machine^ do begin
-    //B := str_pop(Machine);
-    //str_push(Machine, B);
-    //str_push(Machine, B);
-    //DelRef(B);
+    B := str_pop(Machine);
+    str_push(Machine, B);
+    str_push(Machine, B);
+    DelRef(B);
   end;
 end;
 
@@ -864,7 +862,7 @@ end;
 
 procedure str_concat(Machine: TForthMachine; Command: PForthCommand);
 var
-  Width, I: Integer;
+  Width: Integer;
   A, B, C: TStr;
 begin
  // with Machine^ do begin
@@ -963,9 +961,6 @@ begin
 end;
 
 procedure str_index_dog(Machine: TForthMachine; Command: PForthCommand);
-var
-  B, C: TStr;
-  Index: Integer;
 begin
  // B := str_pop(Machine);
  // WUI(StrSymbol(B, Machine.WOI));
@@ -976,27 +971,21 @@ begin
 end;
 
 procedure pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
-var
-  P: PAnsiChar;
 begin
   with Machine^ do begin
-    // Writeln('IN pchar->str');
     Dec(Machine.WP, SizeOf(Pointer));
-    // Writeln('DONE Dec ', Cardinal(Machine.WP^));
-    P := PAnsiChar(Machine.WP^);
-    // Writeln(P[0], P[1], P[2]);
+    //P := PAnsiChar(Machine.WP^);
     Machine.WUS(TString(PAnsiChar(Machine.WP^)));
-    // Writeln('OUT pchar->str');
   end;
 end;
 
 procedure Format(Machine: TForthMachine; Command: PForthCommand);
 var
-  P: PChar;
   I, J: Integer;
   Sub: array of string;
   STemp: TStr;
 begin
+  SetLength(Sub, 0);
   with Machine^ do begin
     STemp := str_pop(Machine);
     I := STemp^.Len;

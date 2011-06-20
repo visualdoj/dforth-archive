@@ -103,10 +103,9 @@ define(~arithmetic_commands|,
       procedure $1_conv_from_str cmdhdr;
       var
         B: TStr;
-        Res: Word;
       body(
         B := str_pop(Machine);
-        Val(PChar(@(TStrRec(B^).Sym[0])), $2(WP^), Res);
+        Val(PChar(@(TStrRec(B^).Sym[0])), $2(WP^));
         Inc(WP, SizeOf($2));
         DelRef(B);
       )

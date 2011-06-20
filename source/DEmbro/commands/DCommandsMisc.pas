@@ -103,33 +103,12 @@ implementation
       procedure _state (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := @State; Inc(WP, SizeOf(Pointer));  end; end;
       procedure _time (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt));  end; end;
       procedure _local (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin RunCommand(PForthCommand((@E[Integer(Command^.Data)])^));  end; end;
-      procedure source_cut (Machine: TForthMachine; Command: PForthCommand); label _Exit;
-        var _S: TStr; _C: TChar; _L: TString; J: Integer;
+      procedure source_cut (Machine: TForthMachine; Command: PForthCommand);
+        var _S: TStr; _L: TString;
         begin with Machine^ do begin _S := str_pop(Machine); 
           _L := StrToString(_S);
           WUS(Source^.SourceCut(_L));
-          DelRef(_S)
-          {_L := ''; 
-          while not SE do begin 
-            J := SC;
-            _C := SNC;  
-            while J < Length(S) do begin
-              if J - SC + 1 >= _S.Len then begin
-                SC := J;
-                goto _Exit;
-              end else if StrSymbol(_S, J - SC + 1) = Ord(S[J]) then begin
-                Inc(J);
-              end else
-                Break;
-            end;
-            if _C = #13 then
-              _L := _L + #13#10
-            else
-              _L := _L + _C; 
-          end; 
-        _Exit:
-          DelRef(_S);
-          WUS(_L); } end; end;
+          DelRef(_S) end; end;
       procedure source_next_char (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUU8(Byte(NextChar))  end; end;
       procedure source_next_name (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, NextName)  end; end;
       procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
@@ -137,8 +116,7 @@ implementation
       procedure interpret_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, NextNamePassive)  end; end;
       procedure compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin BuiltinEWO('(str)' + Char(34)); EWStr(NextNamePassive);  end; end;
       procedure run_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, @E[EC]);  end; end;
-      procedure source_read_to_char (Machine: TForthMachine; Command: PForthCommand); var I: Integer; begin with Machine^ do begin {I := SC; Dec(WP, 1); while (S[I] <> TChar(0))and(S[I] <> TChar(WP^)) do Inc(I); str_push(Machine, TString(Copy(S, SC + 1, I - SC))); SC := I;} 
-        Dec(WP, 1);
+      procedure source_read_to_char (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, 1);
         while not Source^.EOS do
           if Source^.NextChar = TChar(WP^) then
              break;  end; end;
@@ -163,7 +141,7 @@ implementation
       procedure Cell_plus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) + SizeOf(TInt);  end; end;
       procedure _malloc (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin P := Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^)); GetMem(P, Integer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^))); Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^)) := P;  end; end;
       procedure _free (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P);  end; end;
-      procedure _last (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin Pointer(WP^) := C[FLastMnemonic]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer));  end; end;
+      procedure _last (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := C[FLastMnemonic]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer));  end; end;
       procedure _xt_dot_n (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := @(PForthCommand((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)).Name[0]);  end; end;
       procedure _xt_dot_d (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PForthCommand((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)).Data  end; end;
       procedure _move (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, SizeOf(Pointer)*3); Move(Pointer((Pointer(TUInt(Machine.WP) + (0))^))^, Pointer((Pointer(TUInt(Machine.WP) + (SizeOf(Pointer)))^))^, TUint((Pointer(TUInt(Machine.WP) + (2*SizeOf(Pointer)))^))); {Writeln(TUInt((Pointer(TUInt(Machine.WP) + (0))^)), TUInt((Pointer(TUInt(Machine.WP) + (SizeOf(Pointer)))^)), TUint((Pointer(TUInt(Machine.WP) + (2*SizeOf(Pointer)))^)));}  end; end;
