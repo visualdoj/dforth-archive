@@ -1,0 +1,29 @@
+// 2011.06.20 # Doj
+// ћодуль дл€ упрощени€ написани€ модульных тестов.
+
+variable test-group-flag
+variable test-group-name
+
+0 test-group-name !
+
+: test-group ( s-)
+  test-group-flag off
+  bdup str. ." :" test-group-name b!
+;
+
+: test-group" ( "name") " ^"" source-cut test-group ;
+
+: test ( b-)
+  not if
+    test-group-flag on
+    cr ( source-current-line-before str.) ."  failed"
+  then
+;
+
+: \test-group
+  test-group-flag @ if
+    cr ( quit exit?)
+  else
+    ."  checked" cr
+  then
+;

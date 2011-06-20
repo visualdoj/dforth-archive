@@ -143,16 +143,20 @@ TLineReader = object(TSourceDecorator)
         out Size: Integer): Boolean; virtual;
  public
   constructor Create;
-  // Используя метод Source.Buffer функция должна выделить в исходном коде
-  // строку, вернуть P -- её начало, и Size -- её конец.
-  // Допустимо возвращать значения внутри данных, которые вернул последний
-  // вызов Buffer.
-  // Возвращаемое число -- число прочитанных символов
-  function ReadLine(Source: PSource; out P: PChar; out Size: Integer): Integer;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSimpleLineReader'}{$ENDIF}
 TSimpleLineReader = object(TLineReader)
+ private
+  FullLeft: Boolean;
+  FullRight: Boolean;
+  FCurrentLine: TString;
+  FCurrentLineBefore: TString;
+  FCurrentLineAfter: TString;
+ public
+  procedure OnBufferUpdate(AddedBytes: Integer); virtual;
+  procedure OnBufferMove(Delta: Integer); virtual;
+  procedure OnIncPos(Delta: Integer); virtual;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TWindowsLineReader'}{$ENDIF}
@@ -275,7 +279,7 @@ begin
           L := Length(Result);
           //Writeln('L, P-Pos: ', L, ' ', PtrInt(P) - PtrInt(Pos));
           SetLength(Result, Length(Result) + PtrInt(P) - PtrInt(Pos));
-          Move(P[0], Result[1+L], PtrInt(P) - PtrInt(Pos));
+          Move(Pos[0], Result[1+L], PtrInt(P) - PtrInt(Pos));
           IncPos(PtrInt(P) - PtrInt(Pos) + Length(S));
           //Writeln('SourceCut: ', Length(Result));
           Exit;
@@ -473,12 +477,19 @@ end;
 constructor TLineReader.Create;
 begin
 end;
-
-function TLineReader.ReadLine;
-begin
-end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSimpleLineReader'}{$ENDIF}
+procedure TSimpleLineReader.OnBufferUpdate(AddedBytes: Integer);
+begin
+end;
+
+procedure TSimpleLineReader.OnBufferMove(Delta: Integer);
+begin
+end;
+
+procedure TSimpleLineReader.OnIncPos(Delta: Integer);
+begin
+end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TWindowsLineReader'}{$ENDIF}
 function TWindowsLineReader.ReadLineFromBuffer(
