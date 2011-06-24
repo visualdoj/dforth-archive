@@ -33,7 +33,7 @@ begin
     Writeln('  /      insert date seperator');
     Writeln('  :      insert time seperator');
     Writeln('  "xx"   literal text');
-    Writeln('  ''xx'' literal text');
+    Writeln('  ''xx''   literal text');
     Writeln('  z      milliseconds');     
   end else begin
     with FormatSettings do begin
