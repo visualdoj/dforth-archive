@@ -34,11 +34,11 @@ samebuiltin [str]"
 samebuiltin (str)"
 samebuiltin str.
 samebuiltin str$
-samebuiltin str-new
-samebuiltin str[]@
-samebuiltin str[]!
+// samebuiltin str-new
+// samebuiltin str[]@
+// samebuiltin str[]!
 
-samebuiltin str->pchar
+// samebuiltin str->pchar
 samebuiltin pchar->str
 samebuiltin pchar"
 // samebuiltin [pchar]"
