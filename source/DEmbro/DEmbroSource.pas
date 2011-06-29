@@ -149,6 +149,8 @@ end;
 {$IFNDEF FLAG_FPC}{$REGION 'TSimpleLineReader'}{$ENDIF}
 TSimpleLineReader = object(TLineReader)
  private
+  FullLeft: Boolean;
+  FullRight: Boolean;
   FCurrentLine: TString;
   FCurrentLineBefore: TString;
   FCurrentLineAfter: TString;
