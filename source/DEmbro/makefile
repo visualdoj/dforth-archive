@@ -72,10 +72,10 @@ dll:
 
 release: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
-	fpc dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -FE ..\..\release\ -FU .\temp
-	fpc dembro32lib.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -O3 -FE..\..\release\ -FU .\temp
+	fpc dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -FE"..\..\release\" -FU".\temp"
+#	fpc dembro32lib.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -O3 -FE"..\..\release\" -FU".\temp"
 	upx ..\..\release\dembro32.exe
-	upx ..\..\release\dembro32lib.dll
+#	upx ..\..\release\dembro32lib.dll
 
 doc:
 	m4 ..\m4\googlecode.m4 DForthMachine.pas4 > ..\..\wiki\DForthMachine

@@ -1,4 +1,3 @@
-
 unit DForthMachine;
 
 interface
@@ -18,7 +17,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '\Sat Jul 30 14:46 2011\';
+  DFORTHMACHINE_DATE: TString = '\Sat Jul 30 19:06 2011\';
 
 
 
