@@ -4,6 +4,8 @@
 // {{{ Встроенное
 samebuiltin source-cut
 samebuiltin source-next-char
+samebuiltin source-next-line
+samebuiltin source-next-line-passive
 // }}}
 
 // : source-char ( "c"-8) source-next-char uint8-drop source-next-char ; immediate

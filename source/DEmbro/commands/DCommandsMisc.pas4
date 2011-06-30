@@ -35,6 +35,8 @@ uses
   procedure source_next_char cmdhdr;
   procedure source_next_name cmdhdr;
   procedure source_next_name_passive cmdhdr;
+  procedure source_next_line cmdhdr;
+  procedure source_next_line_passive cmdhdr;
   procedure interpret_source_next_name_passive cmdhdr;
   procedure compile_source_next_name_passive cmdhdr;
   procedure run_source_next_name_passive cmdhdr;
@@ -95,6 +97,9 @@ implementation
       procedure source_next_name cmdhdr; body( str_push(Machine, NextName) )
       procedure source_next_name_passive cmdhdr; body( // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
                                                                                                    interpret_source_next_name_passive(Machine, Command) )
+      procedure source_next_line cmdhdr; body( 
+            str_push(Machine, Machine.Source^.NextLine) )
+      procedure source_next_line_passive cmdhdr; body(                                            str_push(Machine, Machine.Source^.NextLinePassive) )
       procedure interpret_source_next_name_passive cmdhdr; body( str_push(Machine, NextNamePassive) )
       procedure compile_source_next_name_passive cmdhdr; body( BuiltinEWO('(str)' + Char(34)); EWStr(NextNamePassive); )
       procedure run_source_next_name_passive cmdhdr; body( str_push(Machine, @E[EC]); )
@@ -117,7 +122,8 @@ implementation
       procedure run_sq_ap_sq cmdhdr; body( WUP(C[ERO]); )
       procedure _tick cmdhdr; body( Pointer(WP^) := FindCommand(NextName); Inc(WP, SizeOf(Pointer)); )
       procedure execute cmdhdr; var P: PForthCommand; body( 
-                                             P := WOP; P.Code(Machine, P) )
+                                             P := WOP;
+                                             P.Code(Machine, P) )
       procedure _does_gt cmdhdr; body( BuiltinEWO('(does>)'); BuiltinEWO('exit'); )
       procedure _sq_does_gt_sq cmdhdr; body( Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; )
       procedure CallDoesGt cmdhdr; body( Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); )
@@ -179,6 +185,8 @@ begin
   Machine.AddCommand('source-next-char', source_next_char);
   Machine.AddCommand('source-next-name', source_next_name);
   Machine.AddCommand('source-next-name-passive', source_next_name_passive);
+  Machine.AddCommand('source-next-line', source_next_line);
+  Machine.AddCommand('source-next-line-passive', source_next_line_passive);
   Machine.AddCommand('interpret@source-next-name-passive', source_next_name_passive);
   Machine.AddCommand('compile@source-next-name-passive', source_next_name_passive);
   Machine.AddCommand('run@source-next-name-passive', source_next_name_passive);

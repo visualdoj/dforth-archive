@@ -52,3 +52,5 @@ detail ( B: str1 sub -- B: str2)
       str"  " str-trim
     </code>
 \detail
+
+: parse-space-trim ( B: x -- B: y) "  " parse-trim ; 

@@ -67,6 +67,9 @@ uses
   procedure str_concat(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dog(Machine: TForthMachine; Command: PForthCommand);
   procedure str_exclamation(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_symbol_dog(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_symbol_exclamation(Machine: TForthMachine; Command: PForthCommand);
+  procedure str_new(Machine: TForthMachine; Command: PForthCommand);
   procedure str_equel(Machine: TForthMachine; Command: PForthCommand);
   procedure str_pos(Machine: TForthMachine; Command: PForthCommand);
   procedure str_pos_ask(Machine: TForthMachine; Command: PForthCommand);
@@ -83,7 +86,7 @@ uses
   procedure _str_literal(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dot(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dollar(Machine: TForthMachine; Command: PForthCommand);
-  procedure str_new(Machine: TForthMachine; Command: PForthCommand);
+  // procedure str_new(Machine: TForthMachine; Command: PForthCommand);
   procedure str_index_dog(Machine: TForthMachine; Command: PForthCommand);
   procedure str_index_exclamation(Machine: TForthMachine; Command: PForthCommand);
   procedure pchar_to_str(Machine: TForthMachine; Command: PForthCommand);
@@ -295,6 +298,12 @@ function CreateStr(const S: TString): TStr; overload;
 begin
   Result := CreateStr(1, Length(S));
   Move(S[1], PStrRec(Result)^.Sym[0], Length(S));
+end;
+
+function CreateStr(const S: TStr): TStr; overload;
+begin
+  Result := CreateStr(S^.Width, S^.Len);
+  Move(S^.Sym[0], PStrRec(Result)^.Sym[0], S^.Width * S^.Len);
 end;
 
 function StrSymbol(S: TStr; Index: Integer): Cardinal;
@@ -946,7 +955,41 @@ begin
   end;
 end;
 
+procedure str_symbol_dog(Machine: TForthMachine; Command: PForthCommand);
+var
+  B: TStr;
+begin
+  with Machine^ do begin
+    Cardinal((Pointer(TUInt(Machine.WP) + (-SizeOf(Cardinal)))^)) := StrSymbol(str_top(Machine), Integer((Pointer(TUInt(Machine.WP) + (-SizeOf(Cardinal)))^)));
+  end;
+end;
+
+procedure str_symbol_exclamation(Machine: TForthMachine; Command: PForthCommand);
+var
+  B: TStr;
+begin
+  with Machine^ do begin
+    B := str_top(Machine);
+    if B^.Ref <> 1 then begin
+      B := CreateStr(B);
+      DelRef(str_pop(Machine));
+      str_push(Machine, B);
+    end;
+    SetStrSymbol(B, Integer((Pointer(TUInt(Machine.WP) + (-SizeOf(Cardinal)))^)), Cardinal((Pointer(TUInt(Machine.WP) + (-2*SizeOf(Cardinal)))^)));
+    Dec(Machine.WP, 2*SizeOf(Integer));
+  end;
+end;
+
 procedure str_new(Machine: TForthMachine; Command: PForthCommand);
+var
+  B: TStr;
+begin
+  B := str_pop(Machine);
+  str_push(Machine, CreateStr(B));
+  DelRef(B);
+end;
+
+{ procedure str_new(Machine: TForthMachine; Command: PForthCommand);
 var
   B: TStr;
   Len, C, Width, I: Integer;
@@ -958,7 +1001,7 @@ begin
   for I := 0 to Len - 1 do
     B^.Sym[I*Width] := C;
   str_push(Machine, B);
-end;
+end;}
 
 procedure str_index_dog(Machine: TForthMachine; Command: PForthCommand);
 begin
@@ -1090,6 +1133,9 @@ begin
   Machine.AddCommand('str+', str_concat);
   Machine.AddCommand('str@', str_dog);
   Machine.AddCommand('str!', str_exclamation);
+  Machine.AddCommand('str[]@', str_symbol_dog);
+  Machine.AddCommand('str[]!', str_symbol_exclamation);
+  Machine.AddCommand('str-new', str_new);
   Machine.AddCommand('str=', str_equel);
   Machine.AddCommand('str^', str_pos);
   Machine.AddCommand('str^?', str_pos_ask);

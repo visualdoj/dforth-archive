@@ -1333,7 +1333,8 @@ stdcall declare-header OpenGL32.dll
 :a glNormalPointer ( atype) GLenum ( stride) GLsizei ( pointer) GLvoid* 
                    GLvoid extdecl;
 :a glOrtho ( left right bottom top zNear zFar) 
-           GLdouble dup dup dup dup dup GLvoid extdecl;
+           ( GLdouble dup dup dup dup dup GLvoid)
+           t_int dup dup dup dup dup dup dup dup dup dup dup GLvoid extdecl;
 :a glPassThrough ( token) GLfloat GLvoid extdecl;
 :a glPixelMapfv ( map) GLenum ( mapsize) GLsizei ( values) GLfloat* GLvoid extdecl;
 :a glPixelMapuiv ( map) GLenum ( mapsize) GLsizei ( values) GLuint* GLvoid extdecl;

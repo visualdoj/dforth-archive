@@ -54,6 +54,8 @@ uses
   procedure source_next_char (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name (Machine: TForthMachine; Command: PForthCommand);
   procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand);
+  procedure source_next_line (Machine: TForthMachine; Command: PForthCommand);
+  procedure source_next_line_passive (Machine: TForthMachine; Command: PForthCommand);
   procedure interpret_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand);
   procedure compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand);
   procedure run_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand);
@@ -113,6 +115,8 @@ implementation
       procedure source_next_name (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, NextName)  end; end;
       procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
                                                                                                    interpret_source_next_name_passive(Machine, Command)  end; end;
+      procedure source_next_line (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, Machine.Source^.NextLine)  end; end;
+      procedure source_next_line_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, Machine.Source^.NextLinePassive)  end; end;
       procedure interpret_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, NextNamePassive)  end; end;
       procedure compile_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin BuiltinEWO('(str)' + Char(34)); EWStr(NextNamePassive);  end; end;
       procedure run_source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, @E[EC]);  end; end;
@@ -133,7 +137,8 @@ implementation
       procedure compile_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin BuiltinEWO('run@['']'); EWO(NextName);  end; end;
       procedure run_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(C[ERO]);  end; end;
       procedure _tick (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := FindCommand(NextName); Inc(WP, SizeOf(Pointer));  end; end;
-      procedure execute (Machine: TForthMachine; Command: PForthCommand); var P: PForthCommand; begin with Machine^ do begin P := WOP; P.Code(Machine, P)  end; end;
+      procedure execute (Machine: TForthMachine; Command: PForthCommand); var P: PForthCommand; begin with Machine^ do begin P := WOP;
+                                             P.Code(Machine, P)  end; end;
       procedure _does_gt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin BuiltinEWO('(does>)'); BuiltinEWO('exit');  end; end;
       procedure _sq_does_gt_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt;  end; end;
       procedure CallDoesGt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer));  end; end;
@@ -194,6 +199,8 @@ begin
   Machine.AddCommand('source-next-char', source_next_char);
   Machine.AddCommand('source-next-name', source_next_name);
   Machine.AddCommand('source-next-name-passive', source_next_name_passive);
+  Machine.AddCommand('source-next-line', source_next_line);
+  Machine.AddCommand('source-next-line-passive', source_next_line_passive);
   Machine.AddCommand('interpret@source-next-name-passive', source_next_name_passive);
   Machine.AddCommand('compile@source-next-name-passive', source_next_name_passive);
   Machine.AddCommand('run@source-next-name-passive', source_next_name_passive);

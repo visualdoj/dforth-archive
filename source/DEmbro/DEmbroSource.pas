@@ -62,6 +62,8 @@ TSource = object
   function NextName: TString;
   function NextNamePassive: TString;
   function NextChar: TChar;
+  function NextLine: TString;
+  function NextLinePassive: TString;
 
   property NameReader: PNameReader read FNameReader;
   property SpaceSkipper: PSpaceSkipper read FSpaceSkipper;
@@ -137,6 +139,7 @@ end;
 {$IFNDEF FLAG_FPC}{$REGION 'TLineReader'}{$ENDIF}
 TLineReader = object(TSourceDecorator)
  protected
+  FLast: TString;
   function ReadLineFromBuffer(
         Buffer: PChar; 
         BufferSize: Integer;
@@ -144,11 +147,15 @@ TLineReader = object(TSourceDecorator)
         out Size: Integer): Boolean; virtual;
  public
   constructor Create;
+  function GetLast: TString;
+  function ReadLine: Boolean; virtual;
+  function ReadLinePassive: Boolean; virtual;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSimpleLineReader'}{$ENDIF}
 TSimpleLineReader = object(TLineReader)
  private
+  FDelta: Integer;
   FullLeft: Boolean;
   FullRight: Boolean;
   FCurrentLine: TString;
@@ -158,6 +165,8 @@ TSimpleLineReader = object(TLineReader)
   procedure OnBufferUpdate(AddedBytes: Integer); virtual;
   procedure OnBufferMove(Delta: Integer); virtual;
   procedure OnIncPos(Delta: Integer); virtual;
+  function ReadLine: Boolean; virtual;
+  function ReadLinePassive: Boolean; virtual;
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TWindowsLineReader'}{$ENDIF}
@@ -331,6 +340,30 @@ begin
       OnIncPos(1);
     end;
 end;
+
+function TSource.NextLine: TString;
+begin
+  if EOS then begin
+    Result := '';
+  end else begin
+    if FLineReader.ReadLine then
+      Result := FLineReader.GetLast
+    else
+      Result := '';
+  end;
+end;
+
+function TSource.NextLinePassive: TString;
+begin
+  if EOS then begin
+    Result := '';
+  end else begin
+    if FLineReader.ReadLinePassive then
+      Result := FLineReader.GetLast
+    else
+      Result := '';
+  end;
+end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSourcePChar'}{$ENDIF}
 constructor TSourcePChar.Create;
@@ -478,6 +511,21 @@ end;
 constructor TLineReader.Create;
 begin
 end;
+
+function TLineReader.GetLast: TString;
+begin
+  Result := FLast;
+end;
+
+function TLineReader.ReadLine: Boolean;
+begin
+  Result := False;
+end;
+
+function TLineReader.ReadLinePassive: Boolean;
+begin
+  Result := False;
+end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TSimpleLineReader'}{$ENDIF}
 procedure TSimpleLineReader.OnBufferUpdate(AddedBytes: Integer);
@@ -490,6 +538,44 @@ end;
 
 procedure TSimpleLineReader.OnIncPos(Delta: Integer);
 begin
+end;
+
+function TSimpleLineReader.ReadLine: Boolean;
+begin
+  Result := ReadLinePassive;   
+  if Result then begin
+    Source^.IncPos(FDelta);
+    Source^.OnIncPos(FDelta);
+  end;
+end;
+
+function TSimpleLineReader.ReadLinePassive: Boolean;
+label
+  DONE_;
+var
+  LineStart, PassivePos: PArrayOfByte;
+begin
+  FLast := '';
+  LineStart := Source^.FBuffer.Pos;
+  PassivePos := Source^.FBuffer.Pos;
+  with Source^.FBuffer do begin
+    // while not (PassivePos[0] = 13) do Inc(PByte(PassivePos));
+    Inc(PByte(PassivePos));
+    while not (PassivePos[0] = 13) do begin
+      while PassivePos <> Finish do
+        if PassivePos[0] = 13 then
+          goto DONE_
+        else begin
+          FLast := FLast + Char(PassivePos[0]);
+          Inc(PByte(PassivePos));
+        end;
+      if not Source^.UpdateBuffer then
+        goto DONE_
+    end;
+  end;
+DONE_:
+  Result := Length(FLast) <> 0;
+  FDelta := PtrInt(PassivePos) - PtrInt(LineStart);
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'TWindowsLineReader'}{$ENDIF}
