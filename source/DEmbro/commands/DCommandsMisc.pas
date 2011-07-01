@@ -111,7 +111,7 @@ implementation
           _L := StrToString(_S);
           WUS(Source^.SourceCut(_L));
           DelRef(_S) end; end;
-      procedure source_next_char (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUU8(Byte(NextChar))  end; end;
+      procedure source_next_char (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUI(Integer(NextChar))  end; end;
       procedure source_next_name (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin str_push(Machine, NextName)  end; end;
       procedure source_next_name_passive (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
                                                                                                    interpret_source_next_name_passive(Machine, Command)  end; end;

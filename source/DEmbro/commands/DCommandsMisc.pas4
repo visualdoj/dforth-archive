@@ -93,7 +93,7 @@ implementation
           _L := StrToString(_S);
           WUS(Source^.SourceCut(_L));
           DelRef(_S))
-      procedure source_next_char cmdhdr; body( WUU8(Byte(NextChar)) )
+      procedure source_next_char cmdhdr; body( WUI(Integer(NextChar)) )
       procedure source_next_name cmdhdr; body( str_push(Machine, NextName) )
       procedure source_next_name_passive cmdhdr; body( // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
                                                                                                    interpret_source_next_name_passive(Machine, Command) )
