@@ -209,8 +209,11 @@ begin
     end else begin
     end;
   end;
+  Writeln('Destroying machine');
   Machine^.Destroy;
+  Writeln('Compiler.Free');
   Compiler.Free;
+  Writeln('Dispose Machine');
   Dispose(Machine);
   // Writeln('dembro32 out');
 end.
