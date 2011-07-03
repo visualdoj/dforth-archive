@@ -127,5 +127,4 @@ end;
 
 initialization
   LoadPlugins;
-finalization
 end.
