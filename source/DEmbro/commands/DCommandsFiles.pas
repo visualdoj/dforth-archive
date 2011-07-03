@@ -40,6 +40,7 @@ uses
   procedure file_r (Machine: TForthMachine; Command: PForthCommand);
   procedure file_write (Machine: TForthMachine; Command: PForthCommand);
   procedure file_read (Machine: TForthMachine; Command: PForthCommand);
+  procedure file_byte_read (Machine: TForthMachine; Command: PForthCommand);
   procedure file_str_write (Machine: TForthMachine; Command: PForthCommand); 
   procedure file_str_read (Machine: TForthMachine; Command: PForthCommand); 
   procedure file_size (Machine: TForthMachine; Command: PForthCommand);
@@ -113,6 +114,12 @@ implementation
         Src := WOP;
         F^.Data.WriteVar(Src, I);
        end; end;
+      procedure file_byte_read (Machine: TForthMachine; Command: PForthCommand);
+      var
+        F: PdfFile;
+      begin with Machine^ do begin F := WOP;
+        WUI(F^.Data.ReadByte);
+       end; end;
       procedure file_str_write (Machine: TForthMachine; Command: PForthCommand); 
       var
         B: TStr;
@@ -154,7 +161,7 @@ implementation
 
 procedure LoadCommands(Machine: TForthMachine);
 begin
-  Machine.AddCommand('file-exists', file_open);
+  Machine.AddCommand('file-exists', file_exists);
   Machine.AddCommand('file-open', file_open);
   Machine.AddCommand('file-close', file_close);
   Machine.AddCommand('file-w', file_w);
@@ -163,6 +170,7 @@ begin
   Machine.AddCommand('file-str-read', file_str_read);
   Machine.AddCommand('file-write', file_write);
   Machine.AddCommand('file-read', file_read);
+  Machine.AddCommand('byte-file-read', file_byte_read);
   Machine.AddCommand('file-size', file_size);
   Machine.AddCommand('*cr', star_cr);
   Machine.AddCommand('*cr', star_cr_hash);

@@ -21,6 +21,7 @@ uses
   procedure file_r cmdhdr;
   procedure file_write cmdhdr;
   procedure file_read cmdhdr;
+  procedure file_byte_read cmdhdr;
   procedure file_str_write cmdhdr; 
   procedure file_str_read cmdhdr; 
   procedure file_size cmdhdr;
@@ -98,6 +99,13 @@ implementation
         Src := WOP;
         F^.Data.WriteVar(Src, I);
       )
+      procedure file_byte_read cmdhdr;
+      var
+        F: PdfFile;
+      body( 
+        F := WOP;
+        WUI(F^.Data.ReadByte);
+      )
       procedure file_str_write cmdhdr; 
       var
         B: TStr;
@@ -142,7 +150,7 @@ implementation
 
 procedure LoadCommands(Machine: TForthMachine);
 begin
-  Machine.AddCommand('file-exists', file_open);
+  Machine.AddCommand('file-exists', file_exists);
   Machine.AddCommand('file-open', file_open);
   Machine.AddCommand('file-close', file_close);
   Machine.AddCommand('file-w', file_w);
@@ -151,6 +159,7 @@ begin
   Machine.AddCommand('file-str-read', file_str_read);
   Machine.AddCommand('file-write', file_write);
   Machine.AddCommand('file-read', file_read);
+  Machine.AddCommand('byte-file-read', file_byte_read);
   Machine.AddCommand('file-size', file_size);
   Machine.AddCommand('*cr', star_cr);
   Machine.AddCommand('*cr', star_cr_hash);

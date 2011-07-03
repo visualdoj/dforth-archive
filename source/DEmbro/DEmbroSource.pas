@@ -618,5 +618,5 @@ end;
 initialization
   EmptySource := CreateSourcePChar('');
 finalization
-  //Dispose(EmptySource);
+  Dispose(EmptySource);
 end.
