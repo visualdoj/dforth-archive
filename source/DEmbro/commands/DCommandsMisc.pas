@@ -130,9 +130,10 @@ implementation
       procedure run_start (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin State := FS_INTERPRET  end; end;
       procedure opcode_to_command (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^)) := GetCommandByOpcode(Integer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^)))  end; end;
       procedure literal (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin BuiltinEWO('(literal)'); EWI(WOI);  end; end;
-      procedure sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin {if State <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
-                WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
-                BuiltinEWO('opcode->command');  end; end;
+      //procedure sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin {if State <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
+      //          WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
+      //          BuiltinEWO('opcode->command');  end; end; 
+      procedure sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(FindCommand(NextName)); literal(Machine, Command);  end; end;
       procedure interpret_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(FindCommand(NextName))  end; end;
       procedure compile_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin BuiltinEWO('run@['']'); EWO(NextName);  end; end;
       procedure run_sq_ap_sq (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUP(C[ERO]);  end; end;
@@ -213,7 +214,7 @@ begin
   //Machine.AddCommand('literal', literal, True);
   Machine.AddCommand('['']', sq_ap_sq, True);
   Machine.AddCommand('opcode->command', opcode_to_command);
-  //Machine.AddCommand('run@['']', run_sq_ap_sq);
+  Machine.AddCommand('run@['']', run_sq_ap_sq);
   //Machine.AddCommand('compile@['']', compile_sq_ap_sq);
   //Machine.AddCommand('interpret@['']', interpret_sq_ap_sq);
   Machine.AddCommand('''', _tick);

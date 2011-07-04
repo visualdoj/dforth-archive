@@ -9,6 +9,8 @@
 .PHONY: asm
 
 all: clean pas4 pasq
+	dquotes -r .\ *.pasq *.pas
+	dquotes commands\DCommandsMisc.pasq commands\DCommandsMisc.pas
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FUtemp
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
@@ -53,6 +55,7 @@ pas4:
 	m4 id2.m4 commands\DCommandsConvertNumber.temp > commands\DCommandsConvertNumber.pasq
 	m4 commands\DCommandsControl.pas4 > commands\DCommandsControl.pasq
 	m4 DCommandsTable.pas4 > DCommandsTable.pasq
+	dquotes -r .\ *.pasq *.pas
 
 pasq:
 	dquotes -r .\ *.pasq *.pas

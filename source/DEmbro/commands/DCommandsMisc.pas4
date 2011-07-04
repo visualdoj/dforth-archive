@@ -114,9 +114,10 @@ implementation
       procedure run_start cmdhdr; body( State := FS_INTERPRET )
       procedure opcode_to_command cmdhdr; body( Pointer(WVar(-SizeOf(Integer))) := GetCommandByOpcode(Integer(WVar(-SizeOf(Integer)))) )
       procedure literal cmdhdr; body( BuiltinEWO('(literal)'); EWI(WOI); )
-      procedure sq_ap_sq cmdhdr; body( {if State <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
-                WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
-                BuiltinEWO('opcode->command'); )
+      //procedure sq_ap_sq cmdhdr; body( {if State <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
+      //          WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
+      //          BuiltinEWO('opcode->command'); ) 
+      procedure sq_ap_sq cmdhdr; body( WUP(FindCommand(NextName)); literal(Machine, Command); )
       procedure interpret_sq_ap_sq cmdhdr; body( WUP(FindCommand(NextName)) )
       procedure compile_sq_ap_sq cmdhdr; body( BuiltinEWO('run@['']'); EWO(NextName); )
       procedure run_sq_ap_sq cmdhdr; body( WUP(C[ERO]); )
@@ -199,7 +200,7 @@ begin
   //Machine.AddCommand('literal', literal, True);
   Machine.AddCommand('['']', sq_ap_sq, True);
   Machine.AddCommand('opcode->command', opcode_to_command);
-  //Machine.AddCommand('run@['']', run_sq_ap_sq);
+  Machine.AddCommand('run@['']', run_sq_ap_sq);
   //Machine.AddCommand('compile@['']', compile_sq_ap_sq);
   //Machine.AddCommand('interpret@['']', interpret_sq_ap_sq);
   Machine.AddCommand('''', _tick);
