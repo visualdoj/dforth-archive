@@ -1,6 +1,5 @@
+include(`util.m4')dnl
 divert(-1)
-changecom(`###')
-include(`util.m4')
 
 dnl Перевести строку
 define(`BR', `<br>')
@@ -74,4 +73,4 @@ define(`RED', `COLOR(cRED,CS($*))')
 define(`GREEN', `COLOR(cGREEN,CS($*))')
 define(`BLUE', `COLOR(cBLUE,CS($*))')
 
-divert(`0')dnl
+divert(0)dnl
