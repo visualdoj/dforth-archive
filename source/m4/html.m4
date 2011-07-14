@@ -24,6 +24,11 @@ dnl Подчёркивание
 define(`UNDERLINE', `<span style="text-decoration: underline;">CS($*)</span>')
 dnl Вычёркивание
 define(`STRIKE', `<strike>CS($*)</strike>')
+dnl Для вставки кода
+define(`CODE', `<font face="monospace">$1</font>')
+define(`CODE', `divert(`-1')
+    pushdef(`END', `popdef(`END')</font>')
+divert(`0')<font face="monospace">')
 
 dnl Нумерованный список
 define(`LIST', `divert(`-1')
@@ -42,6 +47,8 @@ dnl Якорь в тексте
 define(`ANCHOR', `<a name="$1">CS(shift($*))</a>')
 dnl Ссылка на якорь
 define(`ALINK', `<a href="`#'$1">CS(shift($*))</a>')
+dnl Картинка в тексте
+define(`IMG', `<img src="$1">')
 
 dnl Цитата в кавычках-ёлочках
 define(`QUOTE', `&#171;CS($*)&#187;')
