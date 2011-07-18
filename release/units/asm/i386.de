@@ -1,0 +1,44 @@
+// 2011.18.07 # Doj
+// ћодуль с объ€влени€ми, касающимис€ i386 ассемблера
+// —одержит трансл€тор
+
+namespace I386
+  // текуща€ позици€ в ассемблерном коде (дл€ вычислени€ адресов меток)
+  : pos@ ( -p) ;
+  // записать в ассемблерный код байт
+  : byte<< drop ;
+
+  // таблица, сопоставл€юща€ имене метки адрес в пам€ти, 
+  // по которому она используетс€
+  // ....
+  // : marks[]@ ( i -- p B: s) ... ;
+  // : 
+  // таблица, сопоставл€юща€ имене метки адрес в коде, 
+  // на который метка должна ссылатьс€
+  // ....
+  // : label->pos ( B: s -- p) ... ;
+
+  // создаЄт метку с именем name
+  : @@ ( "name") source-next-name bdrop ; 
+
+  : 0op ( опкод) create , does> @ byte<< ;
+
+  : enum8 0 begin dup 8 < while dup constant 1+ repeat drop ;
+  enum8 EAX ECX EDX EBX ESP EBP ESI EDI
+  enum8 AX CX DX BX SP BP SI DI
+  enum8 AL CL DL BL AH CH DH BH
+  enum8 MM0 MM1 MM2 MM3 MM4 MM5 MM6 MM7
+  enum8 XMM0 XMM1 XMM2 XMM3 XMM4 XMM5 XMM6 XMM7
+  0 constant ES
+  1 constant CS
+  2 constant SS
+  3 constant DS
+  4 constant FS
+  5 constant GS
+
+  namespace TRANSLATOR
+    h12 0op NOP
+    h3A 0op ABX
+    h3D 0op MUL
+  \namespace
+\namespace

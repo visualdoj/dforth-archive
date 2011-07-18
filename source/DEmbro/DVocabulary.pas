@@ -63,17 +63,30 @@ type
    private
     constructor Create(Table: PCommandsTable; EmbroBlock: Pointer);
     destructor Destroy;
+    // Объявить команду без тела. В будущем при определении команды
+    // с таким же именем, тело будет подставлено в эту команду
     procedure DeclareForward(const Name: TString);
+    // Добавить команду, сразу будет видна
     function AddCommand(const Name: TString): TXt;
+    // Начать создание команды, извне сразу не видна
     function StartCommand(const Name: TString): TXt;
+    // Обновить команду, вызывать нужно при любом изменении Xt
     procedure UpdateCommand(Xt: TXt);
+    // Завершить объявление команды, созданной раньше командой StartCommand
     procedure DoneCommand(Xt: TXt);
+    // Установить маркер
     procedure SetMarker;
+    // Стереть все команды, созданные после маркера, с удалением их шитого кода
     procedure ForgetToMarker;
+    // Удалить команду без удаления шитого кода
     procedure Forget(const Name: TString);
+    // Найти последнюю созданную команду с заданным именем
     function Find(const Name: TString): TXt;
+    // Выделить Count данных
     procedure Allot(Count: Integer);
+    // Возвращает указатель вершины шитого кода
     function Here: Pointer;
+    // Удалить Count байт текущего слова
     procedure ClearCurrent(Count: Integer);
   end;
 

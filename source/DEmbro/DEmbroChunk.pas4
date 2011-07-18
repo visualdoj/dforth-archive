@@ -6,8 +6,9 @@ type
 TEmbroSpace = object
  private
   FBytesPerBlock: Integer;
-  
  public
+  // Проинициализировать пространство. 
+  // BytesPerBlock -- максимальное число байт, которое может занимать блок
   constructor Init(BytesPerBlock: Integer);
   procedure SetBytesPerBlock(Bytes: Integer);
   function Allot(Bytes: Integer): Integer;
