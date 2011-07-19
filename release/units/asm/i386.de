@@ -6,7 +6,8 @@ namespace I386
   // текуща€ позици€ в ассемблерном коде (дл€ вычислени€ адресов меток)
   : pos@ ( -p) ;
   // записать в ассемблерный код байт
-  : byte<< drop ;
+  : byte<< uint->uint8 uint8, ;
+  : word<< uint->uint16 uint16, ;
 
   // таблица, сопоставл€юща€ имени метки адрес в пам€ти, 
   // по которому она используетс€
@@ -21,7 +22,22 @@ namespace I386
   // создаЄт метку с именем name
   : @@ ( "name") source-next-name bdrop ; 
 
+  0 enum OPERAND_TYPE
+  OPERAND_TYPE OT_IMM // константа
+  OPERAND_TYPE OT_WIMM // константа word
+  OPERAND_TYPE OT_REG // регистр
+
+  variable *operands#
+  : operands# *operands# @ ;
+
+  variable *operand-type
+  variable *operand-value
+
+  : operand+ ( type:int) *operands# 1+! *operand-type ! ;
+  : w-imm ( int) OT_WIMM operand+ *operand-value ! ;
+
   : 0op ( опкод) create , does> @ byte<< ;
+  : w-op ( опкод) create , does> @ byte<< *operand-value @ word<< ;
 
   : enum8 0 begin dup 8 < while dup constant 1+ repeat drop ;
   enum8 EAX ECX EDX EBX ESP EBP ESI EDI
@@ -40,5 +56,8 @@ namespace I386
     h12 0op NOP
     h3A 0op ABX
     h3D 0op MUL
+    hC2 w-op RET
+    hC3 0op RET
+    195 0op RET
   \namespace
 \namespace
