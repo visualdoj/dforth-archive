@@ -1,0 +1,15 @@
+// 2011.19.07 # Doj
+//     Команды для работы с xt
+
+// {{{ Встроенный функционал
+samebuiltin xt.name@
+samebuiltin xt.asm@
+samebuiltin xt.code@
+samebuiltin xt.flags@
+samebuiltin xt.param@
+samebuiltin xt.name!
+samebuiltin xt.asm!
+samebuiltin xt.code!
+samebuiltin xt.flags!
+samebuiltin xt.param!
+// }}}

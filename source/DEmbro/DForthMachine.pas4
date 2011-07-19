@@ -728,7 +728,8 @@ uses
   DCommandsVoc,
   DCommandsExtInt,
   DCommandsEmbro,
-  DCommandsControl;
+  DCommandsControl,
+  DCommandsXT;
 
 function GetFileName(FullPath: TString): TString;
 var
@@ -1992,6 +1993,7 @@ begin
   DCommandsNumberArithmetic.LoadCommands(@Self);
   DCommandsConvertNumber.LoadCommands(@Self);
   DCommandsControl.LoadCommands(@Self);
+  DCommandsXT.LoadCommands(@Self);
   regist_all_commands;
   UnuseVoc;
 end;

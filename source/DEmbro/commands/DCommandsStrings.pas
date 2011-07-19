@@ -106,6 +106,9 @@ uses
   procedure SetStrSymbol(S: TStr; Index: Integer; C: Cardinal);
   function StrToString(S: TStr): TString;
 
+  function CreatePChar(const S: TString): PAnsiChar; overload;
+  function CreatePChar(const P: PAnsiChar): PAnsiChar; overload;
+
   procedure _poststr (Machine: TForthMachine; Command: PForthCommand);
   procedure _postname (Machine: TForthMachine; Command: PForthCommand);
 
@@ -409,6 +412,18 @@ begin
     4: for I := 0 to S^.Len do 
          Result[I] := Char(char4to1(Word(Pointer(@S^.Sym[I*4])^)));
   end;
+end;
+
+function CreatePChar(const S: TString): PAnsiChar;
+begin
+  Result := StrAlloc(Length(S)+1);
+  StrLCopy(Result, @S[1], Length(S));
+end;
+
+function CreatePChar(const P: PAnsiChar): PAnsiChar;
+begin
+  Result := StrAlloc(StrLen(P)+1);
+  StrCopy(Result, P);
 end;
 
 procedure AddRef(B: TStr);

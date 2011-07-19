@@ -54,6 +54,7 @@ pas4:
 	m4 commands.m4 commands\DCommandsConvertNumber.pas4 > commands\DCommandsConvertNumber.temp
 	m4 id2.m4 commands\DCommandsConvertNumber.temp > commands\DCommandsConvertNumber.pasq
 	m4 commands\DCommandsControl.pas4 > commands\DCommandsControl.pasq
+	m4 commands\DCommandsXT.pas4 > commands\DCommandsXT.pasq
 	m4 DCommandsTable.pas4 > DCommandsTable.pasq
 	dquotes -r .\ *.pasq *.pas
 

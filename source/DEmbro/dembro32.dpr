@@ -61,6 +61,7 @@ uses
   DCommandsExtInt in 'commands\DCommandsExtInt',
   DCommandsEmbro in 'commands\DCommandsEmbro.pas',
   DCommandsControl in 'commands\DCommandsControl.pas',
+  DCommandsXT in 'commands\DCommandsXT.pas',
 
   DAlien,
   //DForthStack,

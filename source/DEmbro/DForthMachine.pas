@@ -18,7 +18,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '\Wed Aug 04 22:41 2011\';
+  DFORTHMACHINE_DATE: TString = '\Thu Aug 19 19:28 2011\';
 
 
 
@@ -745,7 +745,7 @@ function CopyStrToPChar(const B: TString): PChar;
 implementation
 
 uses
-  DCommandsBool,DCommandsMisc,DCommandsArithmetic,DCommandsSignedArithmetic,DCommandsNumberArithmetic,DCommandsConvertNumber,DCommandsConsole,DCommandsStrings,DCommandsAlien,DCommandsF,DCommandsBW,DCommandsCompile,DCommandsCreatewords,DCommandsFiles,DCommandsInt,DCommandsMem,DCommandsOS,DCommandsPtr,DCommandsR,DCommandsSource,DCommandsVM,DCommandsVoc,DCommandsExtInt,DCommandsEmbro,DCommandsControl;
+  DCommandsBool,DCommandsMisc,DCommandsArithmetic,DCommandsSignedArithmetic,DCommandsNumberArithmetic,DCommandsConvertNumber,DCommandsConsole,DCommandsStrings,DCommandsAlien,DCommandsF,DCommandsBW,DCommandsCompile,DCommandsCreatewords,DCommandsFiles,DCommandsInt,DCommandsMem,DCommandsOS,DCommandsPtr,DCommandsR,DCommandsSource,DCommandsVM,DCommandsVoc,DCommandsExtInt,DCommandsEmbro,DCommandsControl,DCommandsXT;
 
 function GetFileName(FullPath: TString): TString;
 var
@@ -2014,6 +2014,7 @@ begin
   DCommandsNumberArithmetic.LoadCommands(@Self);
   DCommandsConvertNumber.LoadCommands(@Self);
   DCommandsControl.LoadCommands(@Self);
+  DCommandsXT.LoadCommands(@Self);
   
     
     
