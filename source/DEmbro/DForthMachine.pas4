@@ -135,7 +135,7 @@ define(~sysar_commands|,
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;

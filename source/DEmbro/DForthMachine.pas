@@ -18,7 +18,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '\Thu Aug 19 19:28 2011\';
+  DFORTHMACHINE_DATE: TString = '\Sat Aug 21 18:00 2011\';
 
 
 
@@ -2676,7 +2676,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;
@@ -2710,7 +2710,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;
@@ -2744,7 +2744,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;
@@ -2778,7 +2778,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;
@@ -2812,7 +2812,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;
@@ -2846,7 +2846,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;
@@ -2880,7 +2880,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;
@@ -2914,7 +2914,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;
@@ -2948,7 +2948,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;
@@ -2982,7 +2982,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;
@@ -3016,7 +3016,7 @@ end;
                case C of
                  '0'..'9': D := Ord(C) - Ord('0');
                  'a'..'f': D := Ord(C) - Ord('a') + 10;
-                 'A'..'F': D := Ord(C) - Ord('F') + 10;
+                 'A'..'F': D := Ord(C) - Ord('A') + 10;
                else
                  Result := False;
                end;

@@ -43,10 +43,24 @@ begin
   end;
 end;
 
+procedure _create_noname(Machine: TForthMachine; Command: PForthCommand);
+var
+  Name: TString;
+  NewCommand: PForthCommand;
+begin
+  with Machine^ do begin
+    NewCommand := Machine.ReserveName('');
+    NewCommand^.Code := putdataptr;
+    NewCommand^.Data := Machine.Here;
+    Machine.OnUpdateCommand(NewCommand);
+  end;
+end;
+
 procedure LoadCommands(Machine: TForthMachine);
 begin
   Machine.AddCommand('create', _create);
   Machine.AddCommand('created', _created);
+  Machine.AddCommand('create-noname', _create_noname);
 end;
 
 end.

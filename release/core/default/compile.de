@@ -31,6 +31,7 @@ samebuiltin compiled
 samebuiltin constant
 samebuiltin create
 samebuiltin created
+samebuiltin create-noname
 samebuiltin does>
 samebuiltin (does>)
 samebuiltin here

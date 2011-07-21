@@ -58,6 +58,6 @@ namespace I386
     h3D 0op MUL
     hC2 w-op RET
     hC3 0op RET
-    195 0op RET
+    // 195 0op RET
   \namespace
 \namespace

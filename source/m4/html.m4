@@ -27,8 +27,8 @@ define(`STRIKE', `<strike>CS($*)</strike>')
 dnl Для вставки кода
 define(`CODE', `<font face="monospace">$1</font>')
 define(`CODE', `divert(`-1')
-    pushdef(`END', `popdef(`END')</font>')
-divert(`0')<font face="monospace">')
+    pushdef(`END', `popdef(`END')</font>dnl')
+divert(`0')<font face="monospace">dnl')
 
 dnl Нумерованный список
 define(`LIST', `divert(`-1')
