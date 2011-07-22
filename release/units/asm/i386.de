@@ -53,7 +53,7 @@ namespace I386
   5 constant GS
 
   namespace TRANSLATOR
-    h12 0op NOP
+    h90 0op NOP
     h3A 0op ABX
     h3D 0op MUL
     hC2 w-op RET
