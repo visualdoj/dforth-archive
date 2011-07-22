@@ -2,20 +2,83 @@ unit DEmbroChunk;
 
 interface
 
+uses
+  DEmbroCore;
+
+type
+// Непрерывный кусок шитого кода, свободное место которого достаточно для
+// хранения одной команды
+PEmbroChunk = ^TEmbroChunk;
+TEmbroChunk = packed record
+  Next: PEmbroChunk; 
+  Size: Integer;
+  Data: array[0..1] of Byte;
+end;
+
+function CreateChunk(Size: Integer; Next: PEmbroChunk): PEmbroChunk;
+procedure FreeChunk(Chunk: PEmbroChunk);
+
 type
 TEmbroSpace = object
  private
+  // число предполагаемых команд
+  FCommandsCapacity: Integer;
+  // число байт, требующееся на команду
   FBytesPerBlock: Integer;
+  // текущий кусок
+  FChunk: PEmbroChunk;
+  // позиция в текущем куске
+  FPos: Pointer;
+  // число оставшихся байт в текущем куске
+  FRest: Integer;
  public
   // Проинициализировать пространство. 
   // BytesPerBlock -- максимальное число байт, которое может занимать блок
-  constructor Init(BytesPerBlock: Integer);
-  procedure SetBytesPerBlock(Bytes: Integer);
-  function Allot(Bytes: Integer): Integer;
+  // CommandsCapacity -- на сколько команд делать запас
+  constructor Init(CommandsCapacity, BytesPerBlock: Integer);
+  //
   function Here: Pointer;
-  procedure Clear(Bytes: Integer);
+  //
+  procedure StartBlock;
+  //
+  procedure Allot(Bytes: Integer);
+  //
+  procedure ClearTo(Pos: Pointer);
+  //
 end;
 
 implementation
+
+function CreateChunk(Size: Integer; Next: PEmbroChunk): PEmbroChunk;
+begin
+  GetMem(Result, SizeOf(Next) + SizeOf(Size) + Size);
+  Result^.Size := Size;
+  Result^.Next := Next;
+end;
+
+procedure FreeChunk(Chunk: PEmbroChunk);
+begin
+  FreeMem(Chunk);
+end;
+
+constructor TEmbroSpace.Init(CommandsCapacity, BytesPerBlock: Integer);
+begin
+end;
+
+function TEmbroSpace.Here: Pointer;
+begin
+end;
+
+procedure TEmbroSpace.StartBlock;
+begin
+end;
+
+procedure TEmbroSpace.Allot(Bytes: Integer);
+begin
+end;
+
+procedure TEmbroSpace.ClearTo(Pos: Pointer);
+begin
+end;
 
 end.
