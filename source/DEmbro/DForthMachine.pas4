@@ -286,12 +286,6 @@ OForthMachine = object
   EC: Integer; // Embro Counter (E[EC])
   EL: Integer; // Embro Last compiled
   ES: Integer; // Embro Size (Length(E))
-  Embro: array of Cardinal;
-  EmbroB: Pointer;
-  EmbroP: Integer;
-  EmbroL: Integer;
-  EmbroS: Integer;
-  EmbroI: array of TEmbroItemInfo;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'R'}{$ENDIF}
   R: array of Byte; // Return stack
