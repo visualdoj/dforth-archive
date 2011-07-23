@@ -26,6 +26,7 @@ pas4:
 	m4 DEmbroManager.pas4 > DEmbroManager.pas
 	m4 DMemMeta.pas4 > DMemMeta.pas
 	m4 ..\m4\metapascal.m4 DEmbroSource.pas4 > DEmbroSource.pasq
+	m4 ..\m4\metapascal.m4 DEmbroChunk.pas4 > DEmbroChunk.pasq
 	m4 commands.m4 commands\DCommandsAlien.pas4 > commands\DCommandsAlien.pasq
 	m4 commands.m4 commands\DCommandsBool.pas4 > commands\DCommandsBool.pasq
 	m4 commands.m4 commands\DCommandsBW.pas4 > commands\DCommandsBW.pasq

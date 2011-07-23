@@ -31,7 +31,7 @@ uses
   Dx86 in '..\DMachineCode\Dx86.pas',
 
   DEmbroCore,
-  DEmbroSpace,
+  DEmbroChunk,
   DEmbroManager,
   DMemMeta,
   DEmbroSource,
