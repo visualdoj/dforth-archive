@@ -304,14 +304,14 @@ namespace I386
     namespace PREFIX
       variable *xt
       : \PREFIX ^^^ *xt @ execute ;
-      : short-opcode ( p "name") create , does> @ *xt dup @ execute ! ;
-      ' PUSH short-opcode push
-      ' POP short-opcode pop
-      ' NOP short-opcode nop
-      ' RET short-opcode ret
-      ' INC short-opcode inc
-      ' DEC short-opcode dec
-      ' NEG short-opcode neg
+      : prefix-mnemonic ( p "name") create , does> @ *xt dup @ execute ! ;
+      ' PUSH prefix-mnemonic push
+      ' POP prefix-mnemonic pop
+      ' NOP prefix-mnemonic nop
+      ' RET prefix-mnemonic ret
+      ' INC prefix-mnemonic inc
+      ' DEC prefix-mnemonic dec
+      ' NEG prefix-mnemonic neg
     \namespace
     : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
   \namespace

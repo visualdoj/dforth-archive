@@ -17,7 +17,8 @@ simple
   NOP
   NOP
   RET
-asm-noname; execute
+
+\uses asm-noname; execute
 
 1 2 3
 :asm-noname  uses I386 TRANSLATOR  
@@ -69,18 +70,22 @@ asm-noname; execute
   eax POP
   eax POP
   RET 
-asm-noname; execute . . cr
+\uses asm-noname; execute . . cr
 
-I386 TRANSLATOR
-EBP reg
-666 imm
-d[ EAX base 2 factor EBX index 45 disp ]
-first operand. cr 
-second operand. cr 
-third operand. cr
-clear-operands
-d[ EAX base EBP index 45 disp ] first operand. cr 
-GS seg second operand. cr 
-clear-operands
-d[ eax ebp ] last-operand operand. cr 
-d[ eax 3* ebp ] last-operand operand. cr 
+uses I386 TRANSLATOR
+  EBP reg
+  666 imm
+  d[ EAX base 2 factor EBX index 45 disp ]
+  first operand. cr 
+  second operand. cr 
+  third operand. cr
+  clear-operands
+
+  d[ EAX base EBP index 45 disp ] first operand. cr 
+  GS seg second operand. cr 
+  clear-operands
+
+  d[ eax ebp ] last-operand operand. cr 
+  d[ eax 3* ebp ] last-operand operand. cr 
+  clear-operands
+\uses
