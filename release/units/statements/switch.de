@@ -12,7 +12,6 @@ include" units\statements\locals.de"
 
 : switch ( C: -di) ( R: i-)
   8 dyn-new // *switch-marks dyn+
-  dup dyn# .
   // добавляем адрес смещения в массив *switch-offsets
   *local-offset @ // *switch-offsets dyn+
   // увеличиваем переменную *local-offset
