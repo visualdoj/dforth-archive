@@ -11,6 +11,10 @@ namespace I386
   : byte<< uint->uint8 uint8, ;
   : word<< uint->uint16 uint16, ;
   : dword<< uint->uint32 uint32, ;
+  // перехват сообщений об ошибках
+  : error ( B: s) ." Error: " str. cr ;
+  : unknown-operand-type " unknown operand type" error ;
+  : underconstruction " underconstruction" error ;
 
   // таблица, сопоставляющая имени метки адрес в памяти, 
   // по которому она используется
@@ -37,6 +41,16 @@ namespace I386
   DATA_TYPE DT_DWORD
   DATA_TYPE DT_QWORD
 
+  0 enum REG_TYPE
+  REG_TYPE RT_32
+  REG_TYPE RT_16
+  REG_TYPE RT_8
+
+  0 6 shl constant Mod_MODE_SIMPLE
+  1 6 shl constant Mod_MODE_8
+  2 6 shl constant Mod_MODE_32
+  3 6 shl constant Mod_MODE_REG
+
   0
     t_int -- .type
     // value = immediate value for .type = OT_IMM
@@ -44,6 +58,8 @@ namespace I386
     // value = segment register for .type = OT_REG
     // value = data type (see DT_*)
     t_int -- .value
+    // for .type = OT_REG
+    t_int -- .regtype // see RT_*
     // for .type = OT_MEM; [base + factor*index + disp]
     t_int -- .base?
     t_int -- .disp?
@@ -56,12 +72,20 @@ namespace I386
   variable *operands#
   : operands# *operands# @ ;
   : clear-operands 0 *operands# ! ;
+  // проверка на число операндов, *operands-read хранит число операндов, 
+  // съедаемых командой
+  variable *operands-read
+  : ?operands ( i) dup *operands-read ! dup operands# >
+                   if int->str "  operands need, but " str+ 
+                      operands# int->str str+ 
+                      "  found" str+ error 
+                   else drop then ;
 
   create *operands 4 s_operand * allot
-  : first *operands ;
-  : second *operands s_operand + ;
-  : third *operands s_operand dup + + ;
   : last-operand *operands operands# 1- s_operand * + ;
+  : first last-operand ;
+  : second *operands operands# 2 - s_operand * + ;
+  : third *operands operands# 3 - s_operand * + ;
 
   : operand+ ( type:int) *operands# 1+! last-operand .type ! ;
 
@@ -85,8 +109,16 @@ namespace I386
   3 constant DS
   4 constant FS
   5 constant GS
+  EBP constant special-register
+  ESP constant trouble-register
 
-  : reg ( reg) OT_REG operand+ last-operand .value ! ; 
+  : reg32 ( i) OT_REG operand+ last-operand .value ! 
+                         RT_32 last-operand .regtype ! ; 
+  : reg16 ( i) OT_REG operand+ last-operand .value ! 
+                         RT_16 last-operand .regtype ! ; 
+  : reg8  ( i) OT_REG operand+ last-operand .value ! 
+                          RT_8 last-operand .regtype ! ; 
+  : reg reg32 ;
   // : w-imm ( int) OT_WIMM operand+ *operand-value ! ;
   : imm ( int) OT_IMM operand+ last-operand .value ! ;
   : seg ( seg) OT_SEG operand+ last-operand .value ! ;
@@ -166,53 +198,55 @@ namespace I386
 
   namespace TRANSLATOR
     // список кратких регистров
-    : short-reg create , does> @ reg ;
-    EAX short-reg eax
-    ECX short-reg ecx
-    EDX short-reg edx
-    EBX short-reg ebx
-    ESP short-reg esp
-    EBP short-reg ebp
-    ESI short-reg esi
-    EDI short-reg edi
-    AX short-reg ax
-    CX short-reg cx
-    DX short-reg dx
-    BX short-reg bx
-    SP short-reg sp
-    BP short-reg bp
-    SI short-reg si
-    DI short-reg di
-    AL short-reg al
-    CL short-reg cl
-    DL short-reg dl
-    BL short-reg bl
-    AH short-reg ah
-    CH short-reg ch
-    DH short-reg dh
-    BH short-reg bh
+    : short-reg32 create , does> @ reg32 ;
+    EAX short-reg32 eax
+    ECX short-reg32 ecx
+    EDX short-reg32 edx
+    EBX short-reg32 ebx
+    ESP short-reg32 esp
+    EBP short-reg32 ebp
+    ESI short-reg32 esi
+    EDI short-reg32 edi
+    : short-reg16 create , does> @ reg16 ;
+    AX short-reg16 ax
+    CX short-reg16 cx
+    DX short-reg16 dx
+    BX short-reg16 bx
+    SP short-reg16 sp
+    BP short-reg16 bp
+    SI short-reg16 si
+    DI short-reg16 di
+    : short-reg8 create , does> @ reg8 ;
+    AL short-reg8 al
+    CL short-reg8 cl
+    DL short-reg8 dl
+    BL short-reg8 bl
+    AH short-reg8 ah
+    CH short-reg8 ch
+    DH short-reg8 dh
+    BH short-reg8 bh
     // список кратких сегментных регистров
     : short-seg create , does> @ seg ;
-    ES short-reg es
-    CS short-reg cs
-    SS short-reg ss
-    DS short-reg ds
-    FS short-reg fs
-    GS short-reg gs
+    ES short-seg es
+    CS short-seg cs
+    SS short-seg ss
+    DS short-seg ds
+    FS short-seg fs
+    GS short-seg gs
 
     : ModR/M ( iii-b) swap 3 shl or swap 6 shl or ;
     : mem<< ( rp-) 0 rrot .base @ ModR/M byte<< ;
 
+// {{{ unary-op (INC, DEC)
     0
       t_int -- .reg
       t_int -- .ex
       t_int -- .r/m32
       t_int -- .r/m8
     struct s_unary
-
     : unary-op
       create , , , , does>
-      // operands# 1 check-operands-count
+      1 ?operands
       first .type @ switch
         OT_MEM of 
                  first .value @ switch
@@ -226,13 +260,14 @@ namespace I386
       \switch
       clear-operands
     ;
-   
+   // }}}
     hFE hFF 0 h40 unary-op INC
     hFE hFF 1 h48 unary-op DEC
 
+// {{{ NEG
     : unary-op
-      create , , , does>
-      // operands# 1 check-operands-count
+      create , , , , does>
+      1 ?operands
       first .type @ switch
         OT_MEM of 
                  first .value @ switch
@@ -247,22 +282,13 @@ namespace I386
       clear-operands
     ;
     hF6 hF7 3 0 unary-op NEG
- 
+ // }}}
     h90 0op NOP
-    h3A 0op ABX
-    h3D 0op MUL
     hC2 w-op RET
     hC3 0op RET
-    // 195 0op RET
-    
-    // h40 r-op INC
-    // h48 r-op DEC
-
-    h50 r-op PUSH
-    h58 r-op POP
-
+// {{{ POP
     : POP
-      // operands# 2 check-operands-count
+      1 ?operands
       first .type @ switch
         OT_REG of h58 first .value @ + byte<< \of
         OT_MEM of h8F byte<< 0 first mem<< \of
@@ -279,8 +305,10 @@ namespace I386
         ( error)
       \switch clear-operands
     ;
+// }}}
+// {{{ PUSH
     : PUSH
-      // operands# 2 check-operands-count
+      1 ?operands
       first .type @ switch
         OT_IMM of
                  first .value @ dup 256 < 
@@ -301,6 +329,92 @@ namespace I386
                \of
       \switch clear-operands
     ;
+// }}}
+// {{{ MOV
+// {{{ MOV reg
+// {{{ MOV reg imm
+    : MOV_reg_imm
+      second .regtype @ switch
+        RT_8 of hB0 second .value @ + byte<< first .value @ byte<< \of
+        RT_16 of underconstruction \of
+        RT_32 of hB8 second .value @ + byte<< first .value @ dword<< \of
+      \switch
+    ;
+// }}}
+// {{{ MOV reg reg
+    : reg_reg<< Mod_MODE_REG second .value @ first .value @ ModR/M byte<< ;
+    : MOV_reg_reg
+      first .regtype @ second .regtype @ <> 
+      if " both operands of MOV must have the same type" error then
+      second .regtype @ switch
+        RT_8 of h8A byte<< reg_reg<< \of
+        RT_16 of underconstruction \of
+        RT_32 of h8B byte<< reg_reg<< \of
+      \switch
+    ;
+// }}}
+// {{{ MOV reg mem
+    : ?regsize=memsize first .value @ <> 
+        if " both operand of MOV must have the same bit size" error then ;
+    : reg_[r+f*i+...]<<
+                first disp? if
+                  first .disp @ 1 8 shl < 
+                  if Mod_MODE_8 second .value @ first .base @ ModR/M byte<<
+                    first .disp @ byte<<
+                  else Mod_MODE_32 second .value @ first .base @ ModR/M byte<<
+                    first .disp @ dword<< then                 
+                else 
+                  Mod_MODE_SIMPLE second .value @ first .base @ ModR/M byte<<
+                then ;
+    : reg_[esp+...]<< ;
+    : reg_[r+...]<<
+                first factor? if reg_[r+f*i+...]<< exit then    
+                first .base @ trouble-register = if reg_[esp+...]<< exit then    
+                first disp? if
+                  first .disp @ 1 8 shl < 
+                  if Mod_MODE_8 second .value @ first .base @ ModR/M byte<<
+                    first .disp @ byte<<
+                  else Mod_MODE_32 second .value @ first .base @ ModR/M byte<<
+                    first .disp @ dword<< then                 
+                else 
+                  Mod_MODE_SIMPLE second .value @ first .base @ ModR/M byte<<
+                then ;
+    : MOV_reg_mem
+      second .regtype @ switch
+        RT_8 of DT_BYTE ?regsize=memsize h8A byte<< reg_[r+...]<< \of
+        RT_16 of underconstruction \of
+        RT_32 of DT_DWORD ?regsize=memsize h8B byte<< reg_[r+...]<< \of
+      \switch
+    ;
+// }}}
+    : MOV_reg_seg ;
+    : MOV_reg
+      first .type @ switch
+        OT_IMM of MOV_reg_imm \of
+        OT_REG of MOV_reg_reg \of
+        OT_MEM of MOV_reg_mem \of
+        OT_SEG of MOV_reg_seg \of
+      \switch
+    ;
+// }}}
+// {{{ MOV mem
+    : MOV_mem underconstruction ;
+// }}}
+// {{{ MOV seg
+    : MOV_seg underconstruction ;
+// }}}
+    : MOV
+      2 ?operands
+      second .type @ switch
+        OT_IMM of " dst operand of MOV cannot be immediate " error \of
+        OT_REG of MOV_reg \of
+        OT_MEM of MOV_mem \of
+        OT_SEG of MOV_seg \of
+        unknown-operand-type
+      \switch clear-operands
+    ;
+// }}}
+
     namespace PREFIX
       variable *xt
       : \PREFIX ^^^ *xt @ execute ;
@@ -312,6 +426,7 @@ namespace I386
       ' INC prefix-mnemonic inc
       ' DEC prefix-mnemonic dec
       ' NEG prefix-mnemonic neg
+      ' MOV prefix-mnemonic mov
     \namespace
     : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
   \namespace

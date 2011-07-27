@@ -556,7 +556,7 @@ define(~mnerkmo32|, ~AsmCode($1, ~(Dst: Tx86Reg$3; K(Reg1, Tx86Reg$3); K(Reg2, T
 // OPCODE reg, int
 // OPCODE [...], int
 define(~mnekdib|, ~AsmCode($1, ~(Dst: Tx86Reg$3; Imm: Byte)|,  WriteB($2);
-  ModRM(3, $4, Dst);
+  ModRM(3, Dst, $4);
   WriteB(Imm);)|)
 
 mnekdib(ADD,  Hex(83), , 0)

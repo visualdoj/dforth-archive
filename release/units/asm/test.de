@@ -23,6 +23,8 @@ simple
 1 2 3
 :asm-noname  uses I386 TRANSLATOR  
   PREFIX
+    mov edx eax
+    mov edx 100 imm
     dec d[ eax ]
     dec d[ eax ]
     dec d[ eax ]
@@ -61,6 +63,7 @@ simple
     pop eax 
     pop eax 
     pop eax 
+    mov eax 5 imm
     ret
   \PREFIX
 
