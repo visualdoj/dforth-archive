@@ -22,7 +22,16 @@ asm-noname; execute
 :asm-noname  uses I386 TRANSLATOR  
   EAX reg INC
   EAX reg PUSH
+  700 imm PUSH
+  FS seg PUSH
+  GS seg PUSH
+  d[ eax ] PUSH
+
   EBX reg POP
+  ebx POP
+  eax POP
+  eax POP
+  eax POP
   RET 
 asm-noname; execute
 
@@ -35,3 +44,7 @@ second operand. cr
 third operand. cr
 clear-operands
 d[ EAX base EBP index 45 disp ] first operand. cr 
+GS seg second operand. cr 
+clear-operands
+d[ eax ebp ] last-operand operand. cr 
+d[ eax 3* ebp ] last-operand operand. cr 

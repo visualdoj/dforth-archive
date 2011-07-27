@@ -10,6 +10,7 @@ namespace I386
   // записать в ассемблерный код байт
   : byte<< uint->uint8 uint8, ;
   : word<< uint->uint16 uint16, ;
+  : dword<< uint->uint32 uint32, ;
 
   // таблица, сопоставл€юща€ имени метки адрес в пам€ти, 
   // по которому она используетс€
@@ -60,20 +61,6 @@ namespace I386
   : factor? ( op) .factor @ 0<> ;
   : disp? ( op) .disp @ 0<> ;
  
-  : reg ( reg) OT_REG operand+ last-operand .value ! ; 
-  // : w-imm ( int) OT_WIMM operand+ *operand-value ! ;
-  : imm ( int) OT_IMM operand+ last-operand .value ! ;
-  // d[ ... ]d
-  namespace d[
-    : base last-operand .base ! ;
-    : factor last-operand .factor ! ;
-    : index last-operand .index ! last-operand .factor @ 
-            0= if 1 last-operand .factor ! then ;
-    : disp last-operand .disp ! ;
-    : ] ^^^ ;
-  \namespace
-  : d[ call d[ OT_MEM operand+ last-operand .factor off last-operand .disp off ;
-
   : 0op ( опкод) create , does> @ byte<< clear-operands ;
   : w-op ( опкод) create , does> @ byte<< first .value @ word<< clear-operands ;
   : r-op ( опкод) create , does> @ first .value @ + byte<< clear-operands ;
@@ -91,6 +78,39 @@ namespace I386
   4 constant FS
   5 constant GS
 
+  : reg ( reg) OT_REG operand+ last-operand .value ! ; 
+  // : w-imm ( int) OT_WIMM operand+ *operand-value ! ;
+  : imm ( int) OT_IMM operand+ last-operand .value ! ;
+  : seg ( seg) OT_SEG operand+ last-operand .value ! ;
+  // d[ ... ]d
+  namespace d[
+    : base last-operand .base ! ;
+    : factor last-operand .factor ! ;
+    : index last-operand .index ! last-operand .factor @ 
+            0= if 1 last-operand .factor ! then ;
+    : disp last-operand .disp ! ;
+    : ] ^^^ ;
+
+    : 1* 1 factor ;
+    : 2* 2 factor ;
+    : 3* 3 factor ;
+    : 4* 4 factor ;
+
+    : short-reg create , does> @ last-operand .base @ -1 = if base else index then ;
+    EAX short-reg eax
+    ECX short-reg ecx
+    EDX short-reg edx
+    EBX short-reg ebx
+    ESP short-reg esp
+    EBP short-reg ebp
+    ESI short-reg esi
+    EDI short-reg edi
+  \namespace
+  : d[ call d[ OT_MEM operand+ 
+       last-operand .factor off 
+       last-operand .disp off 
+       -1 last-operand .base ! ;
+
   : reg32. ( reg)
     switch
       EAX of ." EAX " \of
@@ -101,6 +121,17 @@ namespace I386
       EBP of ." EBP " \of
       ESI of ." ESI " \of
       EDI of ." EDI " \of
+      ." (UNKNOWN) "
+    \switch
+  ;
+  : seg. ( reg)
+    switch
+      ES of ." ES " \of
+      CS of ." CS " \of
+      SS of ." SS " \of
+      DS of ." DS " \of
+      FS of ." FS " \of
+      GS of ." GS " \of
       ." (UNKNOWN) "
     \switch
   ;
@@ -115,11 +146,32 @@ namespace I386
                dup disp? if ." + " dup .disp @ . then
                ." ]" drop
              \of
+      OT_SEG of .value @ seg. \of
     \switch
   ;
 
 
   namespace TRANSLATOR
+    : short-reg create , does> @ reg ;
+    EAX short-reg eax
+    ECX short-reg ecx
+    EDX short-reg edx
+    EBX short-reg ebx
+    ESP short-reg esp
+    EBP short-reg ebp
+    ESI short-reg esi
+    EDI short-reg edi
+    : short-seg create , does> @ seg ;
+    ES short-reg es
+    CS short-reg cs
+    SS short-reg ss
+    DS short-reg ds
+    FS short-reg fs
+    GS short-reg gs
+
+    : ModR/M ( iii-b) swap 3 shl or swap 6 shl or ;
+    : mem<< ( rp-) 0 rrot .base @ ModR/M byte<< ;
+ 
     h90 0op NOP
     h3A 0op ABX
     h3D 0op MUL
@@ -132,5 +184,28 @@ namespace I386
 
     h50 r-op PUSH
     h58 r-op POP
+
+    : PUSH
+      // operands# 2 check-operands-count
+      first .type @ switch
+        OT_IMM of
+                 first .value @ dup 256 < 
+                 if h6A byte<< byte<<
+                 else h68 byte<< dword<< then 
+               \of
+        OT_REG of h50 first .value @ + byte<< \of
+        OT_MEM of hFF byte<< 6 first mem<< \of
+        OT_SEG of
+                 first .value @ switch 
+                   ES of \of
+                   CS of h0E byte<< \of
+                   SS of h16 byte<< \of
+                   DS of h1E byte<< \of
+                   FS of h0F byte<< hA0 byte<< \of
+                   GS of h0F byte<< hA8 byte<< \of
+                 \switch
+               \of
+      \switch clear-operands
+    ;
   \namespace
 \namespace
