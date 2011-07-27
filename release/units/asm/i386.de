@@ -34,10 +34,12 @@ namespace I386
   variable *operand-value
 
   : operand+ ( type:int) *operands# 1+! *operand-type ! ;
+  : reg ( reg) OT_REG operand+ *operand-value ! ; 
   : w-imm ( int) OT_WIMM operand+ *operand-value ! ;
 
   : 0op ( опкод) create , does> @ byte<< ;
   : w-op ( опкод) create , does> @ byte<< *operand-value @ word<< ;
+  : r-op ( опкод) create , does> @ *operand-value @ + byte<< ;
 
   : enum8 0 begin dup 8 < while dup constant 1+ repeat drop ;
   enum8 EAX ECX EDX EBX ESP EBP ESI EDI
@@ -59,5 +61,11 @@ namespace I386
     hC2 w-op RET
     hC3 0op RET
     // 195 0op RET
+    
+    h40 r-op INC
+    h48 r-op DEC
+
+    h50 r-op PUSH
+    h58 r-op POP
   \namespace
 \namespace

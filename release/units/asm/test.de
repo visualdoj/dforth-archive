@@ -19,3 +19,10 @@ simple
   RET
 asm-noname;
 execute
+
+:asm-noname  uses I386 TRANSLATOR  
+  EAX reg INC
+  EAX reg PUSH
+  EBX reg POP
+  RET 
+asm-noname; execute
