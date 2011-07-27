@@ -23,8 +23,8 @@ asm-noname; execute
   EAX reg INC
   EAX reg PUSH
   700 imm PUSH
-  FS seg PUSH
-  GS seg PUSH
+  fs PUSH
+  gs PUSH
   d[ eax ] PUSH
 
   EBX reg POP

@@ -207,5 +207,9 @@ namespace I386
                \of
       \switch clear-operands
     ;
+    namespace PREFIX
+      : \PREFIX ^^^ ;
+    \namespace
+    : PREFIX call PREFIX ['] nop PREFIX *opcode ^ ! ;
   \namespace
 \namespace

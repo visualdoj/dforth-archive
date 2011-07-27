@@ -89,6 +89,7 @@ procedure LoadCommands(Machine: TForthMachine);
 
 implementation
 
+      procedure _nop (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin  end; end;
       procedure _timer (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin WUI(GetTimer);  end; end;
       procedure _DogwpTemp (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := @WP; Inc(WP, SizeOf(Pointer));  end; end;
       procedure _wp (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer));  end; end;
@@ -180,6 +181,7 @@ end;
 
 procedure LoadCommands(Machine: TForthMachine);
 begin
+  Machine.AddCommand('nop', _nop);
   Machine.AddCommand('timer', _timer);
   Machine.AddCommand('wp', _wp);
   Machine.AddCommand('@wp', _DogwpTemp);

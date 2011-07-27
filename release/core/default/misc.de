@@ -1,5 +1,6 @@
 // 2011.04.19 # Doj
 //   Разношорстные команды. 
 
+samebuiltin nop
 samebuiltin randomize
 samebuiltin random
