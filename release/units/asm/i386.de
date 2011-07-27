@@ -31,11 +31,18 @@ namespace I386
   OPERAND_TYPE OT_SEG // сегментный регистр
   OPERAND_TYPE OT_MEM // память
 
+  0 enum DATA_TYPE
+  DATA_TYPE DT_BYTE
+  DATA_TYPE DT_WORD
+  DATA_TYPE DT_DWORD
+  DATA_TYPE DT_QWORD
+
   0
     t_int -- .type
     // value = immediate value for .type = OT_IMM
     // value = register for .type = OT_REG
     // value = segment register for .type = OT_REG
+    // value = data type (see DT_*)
     t_int -- .value
     // for .type = OT_MEM; [base + factor*index + disp]
     t_int -- .base?
@@ -58,8 +65,9 @@ namespace I386
 
   : operand+ ( type:int) *operands# 1+! last-operand .type ! ;
 
-  : factor? ( op) .factor @ 0<> ;
-  : disp? ( op) .disp @ 0<> ;
+  : factor? ( o) .factor @ 0<> ;
+  : disp? ( o) .disp @ 0<> ;
+  : base? ( o) .base @ -1 = ;
  
   : 0op ( опкод) create , does> @ byte<< clear-operands ;
   : w-op ( опкод) create , does> @ byte<< first .value @ word<< clear-operands ;
@@ -83,7 +91,7 @@ namespace I386
   : imm ( int) OT_IMM operand+ last-operand .value ! ;
   : seg ( seg) OT_SEG operand+ last-operand .value ! ;
   // d[ ... ]d
-  namespace d[
+  namespace MEM
     : base last-operand .base ! ;
     : factor last-operand .factor ! ;
     : index last-operand .index ! last-operand .factor @ 
@@ -106,10 +114,15 @@ namespace I386
     ESI short-reg esi
     EDI short-reg edi
   \namespace
-  : d[ call d[ OT_MEM operand+ 
+
+  : MEM call MEM OT_MEM operand+ 
        last-operand .factor off 
        last-operand .disp off 
        -1 last-operand .base ! ;
+  : b[ MEM DT_BYTE last-operand .value ! ;
+  : w[ MEM DT_WORD last-operand .value ! ;
+  : d[ MEM DT_DWORD last-operand .value ! ;
+  : q[ MEM DT_QWORD last-operand .value ! ;
 
   : reg32. ( reg)
     switch
@@ -152,6 +165,7 @@ namespace I386
 
 
   namespace TRANSLATOR
+    // список кратких регистров
     : short-reg create , does> @ reg ;
     EAX short-reg eax
     ECX short-reg ecx
@@ -161,6 +175,23 @@ namespace I386
     EBP short-reg ebp
     ESI short-reg esi
     EDI short-reg edi
+    AX short-reg ax
+    CX short-reg cx
+    DX short-reg dx
+    BX short-reg bx
+    SP short-reg sp
+    BP short-reg bp
+    SI short-reg si
+    DI short-reg di
+    AL short-reg al
+    CL short-reg cl
+    DL short-reg dl
+    BL short-reg bl
+    AH short-reg ah
+    CH short-reg ch
+    DH short-reg dh
+    BH short-reg bh
+    // список кратких сегментных регистров
     : short-seg create , does> @ seg ;
     ES short-reg es
     CS short-reg cs
@@ -171,6 +202,51 @@ namespace I386
 
     : ModR/M ( iii-b) swap 3 shl or swap 6 shl or ;
     : mem<< ( rp-) 0 rrot .base @ ModR/M byte<< ;
+
+    0
+      t_int -- .reg
+      t_int -- .ex
+      t_int -- .r/m32
+      t_int -- .r/m8
+    struct s_unary
+
+    : unary-op
+      create , , , , does>
+      // operands# 1 check-operands-count
+      first .type @ switch
+        OT_MEM of 
+                 first .value @ switch
+                   DT_BYTE of dup .r/m8 @ byte<< .ex @ first mem<< \of
+                   DT_DWORD of dup .r/m32 @ byte<< .ex @ first mem<< \of
+                   ( error)
+                 \switch
+               \of
+        OT_REG of .reg @ first .value @ + byte<< \of
+        ( error)
+      \switch
+      clear-operands
+    ;
+   
+    hFE hFF 0 h40 unary-op INC
+    hFE hFF 1 h48 unary-op DEC
+
+    : unary-op
+      create , , , does>
+      // operands# 1 check-operands-count
+      first .type @ switch
+        OT_MEM of 
+                 first .value @ switch
+                   DT_BYTE of dup .r/m8 @ byte<< .ex @ first mem<< \of
+                   DT_DWORD of dup .r/m32 @ byte<< .ex @ first mem<< \of
+                   ( error)
+                 \switch
+               \of
+        OT_REG of dup .r/m32 @ byte<< .ex @ first mem<< \of
+        ( error)
+      \switch
+      clear-operands
+    ;
+    hF6 hF7 3 0 unary-op NEG
  
     h90 0op NOP
     h3A 0op ABX
@@ -179,12 +255,30 @@ namespace I386
     hC3 0op RET
     // 195 0op RET
     
-    h40 r-op INC
-    h48 r-op DEC
+    // h40 r-op INC
+    // h48 r-op DEC
 
     h50 r-op PUSH
     h58 r-op POP
 
+    : POP
+      // operands# 2 check-operands-count
+      first .type @ switch
+        OT_REG of h58 first .value @ + byte<< \of
+        OT_MEM of h8F byte<< 0 first mem<< \of
+        OT_SEG of
+                 first .value @ switch 
+                   ES of h07 byte<< \of
+                   CS of ( error) \of
+                   SS of h17 byte<< \of
+                   DS of h1F byte<< \of
+                   FS of h0f byte<< hA1 byte<< \of
+                   GS of h0F byte<< hA9 byte<< \of
+                 \switch
+               \of
+        ( error)
+      \switch clear-operands
+    ;
     : PUSH
       // operands# 2 check-operands-count
       first .type @ switch
@@ -197,7 +291,7 @@ namespace I386
         OT_MEM of hFF byte<< 6 first mem<< \of
         OT_SEG of
                  first .value @ switch 
-                   ES of \of
+                   ES of h06 byte<< \of
                    CS of h0E byte<< \of
                    SS of h16 byte<< \of
                    DS of h1E byte<< \of
@@ -208,8 +302,17 @@ namespace I386
       \switch clear-operands
     ;
     namespace PREFIX
-      : \PREFIX ^^^ ;
+      variable *xt
+      : \PREFIX ^^^ *xt @ execute ;
+      : short-opcode ( p "name") create , does> @ *xt dup @ execute ! ;
+      ' PUSH short-opcode push
+      ' POP short-opcode pop
+      ' NOP short-opcode nop
+      ' RET short-opcode ret
+      ' INC short-opcode inc
+      ' DEC short-opcode dec
+      ' NEG short-opcode neg
     \namespace
-    : PREFIX call PREFIX ['] nop PREFIX *opcode ^ ! ;
+    : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
   \namespace
 \namespace

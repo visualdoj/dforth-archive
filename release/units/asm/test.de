@@ -19,13 +19,49 @@ simple
   RET
 asm-noname; execute
 
+1 2 3
 :asm-noname  uses I386 TRANSLATOR  
+  PREFIX
+    dec d[ eax ]
+    dec d[ eax ]
+    dec d[ eax ]
+    dec d[ eax ]
+    neg d[ eax ]
+    neg d[ eax ]
+  \PREFIX
+
   EAX reg INC
   EAX reg PUSH
   700 imm PUSH
   fs PUSH
   gs PUSH
   d[ eax ] PUSH
+   
+  PREFIX
+    push eax
+    push ebx
+    pop edx
+    pop edx
+
+    inc esp
+    inc d[ eax ]
+    inc b[ eax ]
+    dec b[ eax ]
+    dec d[ eax ]
+    dec esp
+
+    push d[ eax ]
+    push ds
+    pop ds
+    pop d[ eax ]
+
+    pop ebx 
+    pop eax 
+    pop eax 
+    pop eax 
+    pop eax 
+    ret
+  \PREFIX
 
   EBX reg POP
   ebx POP
@@ -33,7 +69,7 @@ asm-noname; execute
   eax POP
   eax POP
   RET 
-asm-noname; execute
+asm-noname; execute . . cr
 
 I386 TRANSLATOR
 EBP reg
