@@ -17,8 +17,7 @@ simple
   NOP
   NOP
   RET
-asm-noname;
-execute
+asm-noname; execute
 
 :asm-noname  uses I386 TRANSLATOR  
   EAX reg INC
@@ -26,3 +25,13 @@ execute
   EBX reg POP
   RET 
 asm-noname; execute
+
+I386 TRANSLATOR
+EBP reg
+666 imm
+d[ EAX base 2 factor EBX index 45 disp ]
+first operand. cr 
+second operand. cr 
+third operand. cr
+clear-operands
+d[ EAX base EBP index 45 disp ] first operand. cr 
