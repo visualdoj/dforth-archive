@@ -1,0 +1,9 @@
+// 2011.07.21 # Doj
+// Команды для упрощения работы с асмом
+
+: asm-invoker ( ptr "name") create last xt.asm! ;
+
+: asm ( "name") create here last xt.asm! ;
+
+: :asm-noname create-noname here last xt.asm! ;
+: asm-noname; last ;

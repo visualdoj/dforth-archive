@@ -1,0 +1,21 @@
+// 2011.07.21 # Doj
+// Ёксперименты с ассемблером
+
+include" units\asm\asm.de"
+include" units\asm\i386.de"
+
+asm simple
+uses I386 TRANSLATOR
+  NOP
+  NOP
+  RET
+\uses
+
+simple
+
+:asm-noname  uses I386 TRANSLATOR
+  NOP
+  NOP
+  RET
+asm-noname;
+execute
