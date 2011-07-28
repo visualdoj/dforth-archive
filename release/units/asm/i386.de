@@ -196,6 +196,60 @@ namespace I386
   ;
 
 
+  namespace COMMAND_DESCRIPTION
+    0
+      t_ptr -- .opcode
+
+      t_bool -- .ModR/M?
+      t_ptr -- .mod
+      t_ptr -- .reg
+      t_ptr -- .r/m
+
+      t_ptr -- .factor
+      t_ptr -- .base
+      t_ptr -- .index
+
+      t_int -- .moffset#
+      t_ptr -- .moffset
+
+      t_int -- .imm#
+      t_ptr -- .imm
+    struct s_variant-description
+
+    // xt команды, которая кладёт значение параметра reg в ModR/M
+    variable *reg
+    : /r *reg ! ;
+    // хитрый хак :)
+    enum8 0 1 2 3 4 5 6 7
+    : /0 ['] 0 /r ;
+    : /1 ['] 1 /r ;
+    : /2 ['] 2 /r ;
+    : /3 ['] 3 /r ;
+    : /4 ['] 4 /r ;
+    : /5 ['] 5 /r ;
+    : /6 ['] 6 /r ;
+    : /7 ['] 7 /r ;
+
+    // xt команды, кладующеe r/m значение
+    variable *r/m
+
+    // включение генерации imm данных
+    variable *imm#
+    variable *imm
+    : imm8 1 *imm# ! *imm ! ;
+    : imm16 2 *imm# ! *imm ! ;
+    : imm32 4 *imm# ! *imm ! ;
+    : clear-imm *imm# off ;
+
+    // включение генерации moffset данных
+    variable *moffset#
+    variable *moffset
+    : moffset8 1 *moffset# ! *moffset ! ;
+    : moffset16 2 *moffset# ! *moffset ! ;
+    : moffset32 4 *moffset# ! *moffset ! ;
+    : clear-moffset *moffset# off ;
+  \namespace
+
   namespace TRANSLATOR
     // список кратких регистров
     : short-reg32 create , does> @ reg32 ;

@@ -237,10 +237,11 @@ syn match dembroDefine "\[']"
 syn match dembroDefine '\[compile]'
 
 " i386 assembler
-syn keyword dembroI386mnemonics NOP MOV PUSH POP ADD SUB INC DEC
-syn keyword dembroI386mnemonics nop mov push pop add sub inc dec
+syn keyword dembroI386mnemonics NOP MOV PUSH POP ADD SUB INC DEC RET NEG
+syn keyword dembroI386mnemonics nop mov push pop add sub inc dec ret neg
 syn keyword dembroI386registers EAX ECX EDX EBX ESP EBP ESI EDI
-syn keyword dembroI386registers eax ecx edx ebx esp ebp esi edi
+syn keyword dembroI386operands eax ecx edx ebx esp ebp esi edi
+syn keyword dembroI386operands imm reg reg8 reg16 reg32
 syn match dembroI386spec 'b\['
 syn match dembroI386spec 'w\['
 syn match dembroI386spec 'd\['
@@ -295,9 +296,10 @@ if version >= 508 || !exists("did_dembro_syn_inits")
     HiLink dembroFileWords Statement
     HiLink dembroBlocks Statement
     HiLink dembroSpaceError Error
-    HiLink dembroI386mnemonics String
-    HiLink dembroI386registers Function
+    HiLink dembroI386mnemonics Statement
+    HiLink dembroI386registers Number
     HiLink dembroI386spec Define
+    HiLink dembroI386operands Function
 
     delcommand HiLink
 endif
