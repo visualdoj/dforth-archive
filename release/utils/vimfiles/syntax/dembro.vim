@@ -236,6 +236,15 @@ syn match dembroDefine '\<\[\>'
 syn match dembroDefine "\[']"
 syn match dembroDefine '\[compile]'
 
+" i386 assembler
+syn keyword dembroI386mnemonics NOP MOV PUSH POP ADD SUB INC DEC
+syn keyword dembroI386mnemonics nop mov push pop add sub inc dec
+syn keyword dembroI386registers EAX ECX EDX EBX ESP EBP ESI EDI
+syn keyword dembroI386registers eax ecx edx ebx esp ebp esi edi
+syn match dembroI386spec 'b\['
+syn match dembroI386spec 'w\['
+syn match dembroI386spec 'd\['
+
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
 " For version 5.8 and later: only when an item doesn't have highlighting yet
@@ -286,6 +295,9 @@ if version >= 508 || !exists("did_dembro_syn_inits")
     HiLink dembroFileWords Statement
     HiLink dembroBlocks Statement
     HiLink dembroSpaceError Error
+    HiLink dembroI386mnemonics String
+    HiLink dembroI386registers Function
+    HiLink dembroI386spec Define
 
     delcommand HiLink
 endif
