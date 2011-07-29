@@ -48,6 +48,7 @@ wp
 : dyn@ ( id-i) dyn[] @ ;
 : dyn! ( iid-) dyn[] ! ;
 : 0dyn+ ( d-) 0 swap dyn+ ;
+: dyn-off ( d-) 0 swap dyn.l! ;
 
 : dyn[]! ( nid-) dyn[] ! ;
 : dyn[]@ ( id-n) dyn[] @ ;
