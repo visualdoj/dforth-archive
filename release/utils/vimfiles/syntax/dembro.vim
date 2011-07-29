@@ -245,6 +245,7 @@ syn keyword dembroI386operands imm reg reg8 reg16 reg32
 syn match dembroI386spec 'b\['
 syn match dembroI386spec 'w\['
 syn match dembroI386spec 'd\['
+syn keyword dembroI386spec base factor 1* 2* 3* 4* index disp
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
