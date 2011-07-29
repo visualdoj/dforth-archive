@@ -51,6 +51,14 @@ namespace I386
   2 6 shl constant Mod_MODE_32
   3 6 shl constant Mod_MODE_REG
 
+  variable *use-mode
+  : use16 16 *use-mode ! ;
+  : use32 32 *use-mode ! ;
+  // на входе -- 16 или 32
+  : switch<< ( i) *use-mode @ <> if h66 byte<< then ;
+  // по умолчанию -- 32
+  use32
+
   0
     t_int -- .type
     // value = immediate value for .type = OT_IMM
@@ -148,6 +156,7 @@ namespace I386
   \namespace
 
   : MEM call MEM OT_MEM operand+ 
+       last-operand .base? off
        last-operand .factor off 
        last-operand .disp off 
        -1 last-operand .base ! ;
@@ -195,10 +204,15 @@ namespace I386
     \switch
   ;
 
-
+  : ModR/M ( iii-b) swap 3 shl or swap 6 shl or ;
+  : SIB ModR/M ;
+// {{{ COMMAND_DESCRIPTION
   namespace COMMAND_DESCRIPTION
+    // убер структура для описания одной разновидности команды
     0
+      t_str -- .mnemonic
       t_ptr -- .opcode
+      t_ptr -- .+r
 
       t_bool -- .ModR/M?
       t_ptr -- .mod
@@ -208,6 +222,7 @@ namespace I386
       t_ptr -- .factor
       t_ptr -- .base
       t_ptr -- .index
+      t_ptr -- .offset
 
       t_int -- .moffset#
       t_ptr -- .moffset
@@ -216,40 +231,120 @@ namespace I386
       t_ptr -- .imm
     struct s_variant-description
 
-    // xt команды, которая кладёт значение параметра reg в ModR/M
-    variable *reg
-    : /r *reg ! ;
     // хитрый хак :)
-    enum8 0 1 2 3 4 5 6 7
-    : /0 ['] 0 /r ;
-    : /1 ['] 1 /r ;
-    : /2 ['] 2 /r ;
-    : /3 ['] 3 /r ;
-    : /4 ['] 4 /r ;
-    : /5 ['] 5 /r ;
-    : /6 ['] 6 /r ;
-    : /7 ['] 7 /r ;
+    enum8 '0 '1 '2 '3 '4 '5 '6 '7
 
-    // xt команды, кладующеe r/m значение
-    variable *r/m
+    // убер команда, компилирующая по данным убер структуры
+    : variant<< ( p) cr
+      dup .opcode @ over .+r @ execute + dup . byte<<
+      dup .ModR/M? @ dup . if
+        dup .mod @ execute
+        over dup .reg @ execute
+        swap .r/m @ execute
+        ModR/M byte<<
+        dup .r/m @ execute ESP = if
+          dup .factor @ execute
+          over dup .index @ execute
+          swap .base @ execute
+          SIB byte<<
+        then
+      then
+      dup dup .moffset @ execute swap .moffset# @ dup . switch
+        1 of byte<< \of
+        2 of word<< \of
+        4 of dword<< \of
+        drop
+      \switch
+      dup dup .imm @ execute swap .imm# @ execute dup . switch
+        1 of byte<< \of
+        2 of word<< \of
+        4 of dword<< \of
+        drop
+      \switch
+      drop
+    ;
 
-    // включение генерации imm данных
-    variable *imm#
-    variable *imm
-    : imm8 1 *imm# ! *imm ! ;
-    : imm16 2 *imm# ! *imm ! ;
-    : imm32 4 *imm# ! *imm ! ;
-    : clear-imm *imm# off ;
+    variable *last-multi-mnemonic
+    : last-multi-mnemonic *last-multi-mnemonic @ ;
+    : variant create here *last-multi-mnemonic ! 
+                     s_variant-description allot
+                     last-multi-mnemonic .mnemonic off
+                     // source-next-name last-multi-mnemonic .mnemonic b! 
+                     // last-multi-mnemonic .
+        last-multi-mnemonic .opcode !
+        ['] '0 last-multi-mnemonic .+r !
 
+        last-multi-mnemonic .ModR/M? off
+        ['] '0 last-multi-mnemonic .mod !
+        ['] '0 last-multi-mnemonic .reg !
+        ['] '0 last-multi-mnemonic .r/m !
+
+        ['] '0 last-multi-mnemonic .factor !
+        ['] '0 last-multi-mnemonic .base !
+        ['] '0 last-multi-mnemonic .index !
+
+        last-multi-mnemonic .moffset# off
+        ['] '0 last-multi-mnemonic .moffset !
+
+        ['] '0 last-multi-mnemonic .imm# !
+        ['] '0 last-multi-mnemonic .imm !
+    does> variant<<
+    ;
+
+    // xt команды, которая кладёт значение параметра reg в ModR/M
+    : /r ( x) last-multi-mnemonic .reg ! ;
+    : /0 ['] '0 /r ;
+    : /1 ['] '1 /r ;
+    : /2 ['] '2 /r ;
+    : /3 ['] '3 /r ;
+    : /4 ['] '4 /r ;
+    : /5 ['] '5 /r ;
+    : /6 ['] '6 /r ;
+    : /7 ['] '7 /r ;
+ 
+    // +r
+    : +r last-multi-mnemonic .+r ! ;
+    // ModR/M
+    : mod! last-multi-mnemonic .mod ! last-multi-mnemonic .ModR/M? on ;
+    : reg! last-multi-mnemonic .reg ! last-multi-mnemonic .ModR/M? on ;
+    : r/m! last-multi-mnemonic .r/m ! last-multi-mnemonic .ModR/M? on ;
+    // imm
+    : imm8! last-multi-mnemonic .imm ! ['] '1 last-multi-mnemonic .imm# ! ;
+    : imm16! last-multi-mnemonic .imm ! ['] '2 last-multi-mnemonic .imm# ! ;
+    : imm32! last-multi-mnemonic .imm ! ['] '4 last-multi-mnemonic .imm# ! ;
     // включение генерации moffset данных
-    variable *moffset#
-    variable *moffset
-    : moffset8 1 *moffset# ! *moffset ! ;
-    : moffset16 2 *moffset# ! *moffset ! ;
-    : moffset32 4 *moffset# ! *moffset ! ;
-    : clear-moffset *moffset# off ;
-  \namespace
+    : moffset8 1 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
+    : moffset16 2 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
+    : moffset32 4 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
 
+    : first.value first .value @ ;
+    : second.value second .value @ ;
+    : third.value third .value @ ;
+    : first.disp first .disp @ ;
+    : second.disp second .disp @ ;
+    : third.disp third .disp @ ;
+
+    : second_reg_first_reg ['] '3 mod!  
+                           ['] second.value reg! 
+                           ['] first.value r/m! ;
+    : first_reg_second_reg ['] '3 mod!  
+                           ['] first.value reg! 
+                           ['] second.value r/m! ;
+
+    h8A variant MOV8_reg_reg second_reg_first_reg
+    h8B variant MOV16_reg_reg second_reg_first_reg
+    h8B variant MOV32_reg_reg second_reg_first_reg
+    hB0 variant MOV8_reg_imm ' second.value +r ' first.value imm8!
+    hB8 variant MOV16_reg_imm ' second.value +r ' first.value imm16!
+    hB8 variant MOV32_reg_imm ' second.value +r ' first.value imm32!
+    hA0 variant MOV8_al_moffset ' first.disp moffset8
+    hA1 variant MOV16_ax_moffset ' first.disp moffset16
+    hA1 variant MOV32_eax_moffset ' first.disp moffset32
+    hA2 variant MOV8_moffset_al ' second.disp moffset8
+    hA3 variant MOV16_moffset_ax ' second.disp moffset16
+    hA3 variant MOV32_moffset_eax ' second.disp moffset32
+  \namespace
+// }}}
   namespace TRANSLATOR
     // список кратких регистров
     : short-reg32 create , does> @ reg32 ;
@@ -288,7 +383,6 @@ namespace I386
     FS short-seg fs
     GS short-seg gs
 
-    : ModR/M ( iii-b) swap 3 shl or swap 6 shl or ;
     : mem<< ( rp-) 0 rrot .base @ ModR/M byte<< ;
 
 // {{{ unary-op (INC, DEC)
@@ -389,25 +483,24 @@ namespace I386
 // {{{ MOV reg imm
     : MOV_reg_imm
       second .regtype @ switch
-        RT_8 of hB0 second .value @ + byte<< first .value @ byte<< \of
-        RT_16 of underconstruction \of
-        RT_32 of hB8 second .value @ + byte<< first .value @ dword<< \of
+        RT_8 of COMMAND_DESCRIPTION MOV8_reg_imm ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV32_reg_imm ^ \of
+        RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_reg_imm ^ \of
       \switch
     ;
 // }}}
 // {{{ MOV reg reg
-    : reg_reg<< Mod_MODE_REG second .value @ first .value @ ModR/M byte<< ;
     : MOV_reg_reg
       first .regtype @ second .regtype @ <> 
       if " both operands of MOV must have the same type" error then
       second .regtype @ switch
-        RT_8 of h8A byte<< reg_reg<< \of
-        RT_16 of underconstruction \of
-        RT_32 of h8B byte<< reg_reg<< \of
+        RT_8 of COMMAND_DESCRIPTION MOV8_reg_reg ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV32_reg_reg ^ \of
+        RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_reg_reg ^ \of
       \switch
     ;
 // }}}
-// {{{ MOV reg mem
+// {{{ MOV reg mem (todo)
     : ?regsize=memsize first .value @ <> 
         if " both operand of MOV must have the same bit size" error then ;
     : reg_[r+f*i+...]<<
@@ -434,6 +527,16 @@ namespace I386
                   Mod_MODE_SIMPLE second .value @ first .base @ ModR/M byte<<
                 then ;
     : MOV_reg_mem
+      second .value @ EAX = first .base? @ not and first .factor @ 0= and if
+        // особый случай
+        second .regtype @ switch
+          RT_8 of COMMAND_DESCRIPTION MOV8_al_moffset ^ \of
+          RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_ax_moffset ^ \of
+          RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_eax_moffset ^ \of
+        \switch
+        exit
+      then
+      ." blablabla" cr
       second .regtype @ switch
         RT_8 of DT_BYTE ?regsize=memsize h8A byte<< reg_[r+...]<< \of
         RT_16 of underconstruction \of
@@ -452,7 +555,29 @@ namespace I386
     ;
 // }}}
 // {{{ MOV mem
-    : MOV_mem underconstruction ;
+    : MOV_mem_imm underconstruction ;
+    : MOV_mem_reg 
+      first .value @ EAX = second .base? @ not and second .factor @ 0= and if
+        // особый случай
+        first .regtype @ switch
+          RT_8 of COMMAND_DESCRIPTION MOV8_moffset_al ^ \of
+          RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_moffset_ax ^ \of
+          RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_moffset_eax ^ \of
+        \switch
+        exit
+      then
+      underconstruction 
+    ;
+    : MOV_mem_mem underconstruction ;
+    : MOV_mem_seg underconstruction ;
+    : MOV_mem 
+      first .type @ switch
+        OT_IMM of MOV_mem_imm \of
+        OT_REG of MOV_mem_reg \of
+        OT_MEM of MOV_mem_mem \of
+        OT_SEG of MOV_mem_seg \of
+      \switch
+    ;
 // }}}
 // {{{ MOV seg
     : MOV_seg underconstruction ;

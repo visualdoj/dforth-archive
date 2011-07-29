@@ -20,11 +20,19 @@ simple
 
 \uses asm-noname; execute
 
+variable *test
+666 *test !
+
 1 2 3
 :asm-noname  uses I386 TRANSLATOR  
   PREFIX
     mov edx eax
     mov edx 100 imm
+    mov edx eax
+    mov eax d[ *test disp ]
+    inc eax
+    mov d[ *test disp ] eax
+    mov eax edx
     dec d[ eax ]
     dec d[ eax ]
     dec d[ eax ]
@@ -74,6 +82,7 @@ simple
   eax POP
   RET 
 \uses asm-noname; execute . . cr
+." *test = " *test @ . 
 
 uses I386 TRANSLATOR
   EBP reg
