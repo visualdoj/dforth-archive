@@ -1,0 +1,8 @@
+// 2011.07.31 # Doj
+// Подключение всех модулей поддержки i386 ассемблера
+
+include" units\asm\i386\core.de"
+include" units\asm\i386\description.de"
+include" units\asm\i386\tables\ia32.de"
+include" units\asm\i386\translator.de"
+include" units\asm\i386\dembro.de"
