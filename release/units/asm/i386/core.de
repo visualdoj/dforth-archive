@@ -1,6 +1,8 @@
 // 2011.07.31 # Doj
 // ќсновные объ€влени€
 
+include" units\statements\switch.de"
+
 namespace I386
   // текуща€ позици€ в ассемблерном коде (дл€ вычислени€ адресов меток)
   : pos@ ( -p) ;
@@ -21,6 +23,22 @@ namespace I386
   // по умолчанию -- 32
   use32
 
+// {{{ registers
+  : enum8 0 begin dup 8 < while dup constant 1+ repeat drop ;
+  enum8 EAX ECX EDX EBX ESP EBP ESI EDI
+  enum8 AX CX DX BX SP BP SI DI
+  enum8 AL CL DL BL AH CH DH BH
+  enum8 MM0 MM1 MM2 MM3 MM4 MM5 MM6 MM7
+  enum8 XMM0 XMM1 XMM2 XMM3 XMM4 XMM5 XMM6 XMM7
+  0 constant ES
+  1 constant CS
+  2 constant SS
+  3 constant DS
+  4 constant FS
+  5 constant GS
+  EBP constant special-register
+  ESP constant trouble-register
+// }}}
 // {{{ operands
   0 enum OPERAND_TYPE
   OPERAND_TYPE OT_IMM // константа
@@ -80,21 +98,93 @@ namespace I386
   : factor? ( o) .factor @ 0<> ;
   : disp? ( o) .disp @ 0<> ;
   : base? ( o) .base @ -1 = ;
+
+  : reg32 ( i) OT_REG operand+ last-operand .value ! 
+                         RT_32 last-operand .regtype ! ; 
+  : reg16 ( i) OT_REG operand+ last-operand .value ! 
+                         RT_16 last-operand .regtype ! ; 
+  : reg8  ( i) OT_REG operand+ last-operand .value ! 
+                          RT_8 last-operand .regtype ! ; 
+  : reg reg32 ;
+  // : w-imm ( int) OT_WIMM operand+ *operand-value ! ;
+  : imm ( int) OT_IMM operand+ last-operand .value ! ;
+  : seg ( seg) OT_SEG operand+ last-operand .value ! ;
+  // d[ ... ]d
+  namespace MEM
+    : base last-operand .base ! ;
+    : factor last-operand .factor ! ;
+    : index last-operand .index ! last-operand .factor @ 
+            0= if 1 last-operand .factor ! then ;
+    : disp last-operand .disp ! ;
+    : ] ^^^ ;
+
+    : 1* 1 factor ;
+    : 2* 2 factor ;
+    : 3* 3 factor ;
+    : 4* 4 factor ;
+
+    : short-reg create , does> @ last-operand .base @ -1 = if base else index then ;
+    EAX short-reg eax
+    ECX short-reg ecx
+    EDX short-reg edx
+    EBX short-reg ebx
+    ESP short-reg esp
+    EBP short-reg ebp
+    ESI short-reg esi
+    EDI short-reg edi
+  \namespace
+
+  : MEM call MEM OT_MEM operand+ 
+       last-operand .base? off
+       last-operand .factor off 
+       last-operand .disp off 
+       -1 last-operand .base ! ;
+  : b[ MEM DT_BYTE last-operand .value ! ;
+  : w[ MEM DT_WORD last-operand .value ! ;
+  : d[ MEM DT_DWORD last-operand .value ! ;
+  : q[ MEM DT_QWORD last-operand .value ! ;
+
+  : reg32. ( reg)
+    switch
+      EAX of ." EAX " \of
+      ECX of ." ECX " \of
+      EDX of ." EDX " \of
+      EBX of ." EBX " \of
+      ESP of ." ESP " \of
+      EBP of ." EBP " \of
+      ESI of ." ESI " \of
+      EDI of ." EDI " \of
+      ." (UNKNOWN) "
+    \switch
+  ;
+  : seg. ( reg)
+    switch
+      ES of ." ES " \of
+      CS of ." CS " \of
+      SS of ." SS " \of
+      DS of ." DS " \of
+      FS of ." FS " \of
+      GS of ." GS " \of
+      ." (UNKNOWN) "
+    \switch
+  ;
+  : operand. ( p)
+    dup .type @ switch
+      OT_REG of .value @ reg32. \of
+      OT_IMM of .value @ . \of
+      OT_MEM of 
+               ." ["
+               dup .base @ reg32.
+               dup factor? if ." + " dup .factor @ . ." *" dup .index @ reg32. then
+               dup disp? if ." + " dup .disp @ . then
+               ." ]" drop
+             \of
+      OT_SEG of .value @ seg. \of
+    \switch
+  ;
 // }}}
-// {{{ registers
-  : enum8 0 begin dup 8 < while dup constant 1+ repeat drop ;
-  enum8 EAX ECX EDX EBX ESP EBP ESI EDI
-  enum8 AX CX DX BX SP BP SI DI
-  enum8 AL CL DL BL AH CH DH BH
-  enum8 MM0 MM1 MM2 MM3 MM4 MM5 MM6 MM7
-  enum8 XMM0 XMM1 XMM2 XMM3 XMM4 XMM5 XMM6 XMM7
-  0 constant ES
-  1 constant CS
-  2 constant SS
-  3 constant DS
-  4 constant FS
-  5 constant GS
-  EBP constant special-register
-  ESP constant trouble-register
-// }}}
+
+  : ModR/M ( iii-b) swap 3 shl or swap 6 shl or ;
+  : SIB ModR/M ;
+
 \namespace

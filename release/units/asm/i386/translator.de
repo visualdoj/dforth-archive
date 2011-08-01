@@ -1,3 +1,278 @@
 // 2011.07.31 # Doj
 // Транслятор
 
+I386 extend-namespace 
+  namespace TRANSLATOR
+    : 0op ( опкод) create , does> @ byte<< clear-operands ;
+    : w-op ( опкод) create , does> @ byte<< first .value @ word<< clear-operands ;
+    : r-op ( опкод) create , does> @ first .value @ + byte<< clear-operands ;
+
+    0 6 shl constant Mod_MODE_SIMPLE
+    1 6 shl constant Mod_MODE_8
+    2 6 shl constant Mod_MODE_32
+    3 6 shl constant Mod_MODE_REG
+
+    // список кратких регистров
+    : short-reg32 create , does> @ reg32 ;
+    EAX short-reg32 eax
+    ECX short-reg32 ecx
+    EDX short-reg32 edx
+    EBX short-reg32 ebx
+    ESP short-reg32 esp
+    EBP short-reg32 ebp
+    ESI short-reg32 esi
+    EDI short-reg32 edi
+    : short-reg16 create , does> @ reg16 ;
+    AX short-reg16 ax
+    CX short-reg16 cx
+    DX short-reg16 dx
+    BX short-reg16 bx
+    SP short-reg16 sp
+    BP short-reg16 bp
+    SI short-reg16 si
+    DI short-reg16 di
+    : short-reg8 create , does> @ reg8 ;
+    AL short-reg8 al
+    CL short-reg8 cl
+    DL short-reg8 dl
+    BL short-reg8 bl
+    AH short-reg8 ah
+    CH short-reg8 ch
+    DH short-reg8 dh
+    BH short-reg8 bh
+    // список кратких сегментных регистров
+    : short-seg create , does> @ seg ;
+    ES short-seg es
+    CS short-seg cs
+    SS short-seg ss
+    DS short-seg ds
+    FS short-seg fs
+    GS short-seg gs
+
+    : mem<< ( rp-) 0 rrot .base @ ModR/M byte<< ;
+
+// {{{ unary-op (INC, DEC)
+    0
+      t_int -- .reg
+      t_int -- .ex
+      t_int -- .r/m32
+      t_int -- .r/m8
+    struct s_unary
+    : unary-op
+      create , , , , does>
+      1 ?operands
+      first .type @ switch
+        OT_MEM of 
+                 first .value @ switch
+                   DT_BYTE of dup .r/m8 @ byte<< .ex @ first mem<< \of
+                   DT_DWORD of dup .r/m32 @ byte<< .ex @ first mem<< \of
+                   ( error)
+                 \switch
+               \of
+        OT_REG of .reg @ first .value @ + byte<< \of
+        ( error)
+      \switch
+      clear-operands
+    ;
+   // }}}
+    hFE hFF 0 h40 unary-op INC
+    hFE hFF 1 h48 unary-op DEC
+
+// {{{ NEG
+    : unary-op
+      create , , , , does>
+      1 ?operands
+      first .type @ switch
+        OT_MEM of 
+                 first .value @ switch
+                   DT_BYTE of dup .r/m8 @ byte<< .ex @ first mem<< \of
+                   DT_DWORD of dup .r/m32 @ byte<< .ex @ first mem<< \of
+                   ( error)
+                 \switch
+               \of
+        OT_REG of dup .r/m32 @ byte<< .ex @ first mem<< \of
+        ( error)
+      \switch
+      clear-operands
+    ;
+    hF6 hF7 3 0 unary-op NEG
+ // }}}
+    h90 0op NOP
+    hC2 w-op RET
+    hC3 0op RET
+// {{{ POP
+    : POP
+      1 ?operands
+      first .type @ switch
+        OT_REG of h58 first .value @ + byte<< \of
+        OT_MEM of h8F byte<< 0 first mem<< \of
+        OT_SEG of
+                 first .value @ switch 
+                   ES of h07 byte<< \of
+                   CS of ( error) \of
+                   SS of h17 byte<< \of
+                   DS of h1F byte<< \of
+                   FS of h0f byte<< hA1 byte<< \of
+                   GS of h0F byte<< hA9 byte<< \of
+                 \switch
+               \of
+        ( error)
+      \switch clear-operands
+    ;
+// }}}
+// {{{ PUSH
+    : PUSH
+      1 ?operands
+      first .type @ switch
+        OT_IMM of
+                 first .value @ dup 256 < 
+                 if h6A byte<< byte<<
+                 else h68 byte<< dword<< then 
+               \of
+        OT_REG of h50 first .value @ + byte<< \of
+        OT_MEM of hFF byte<< 6 first mem<< \of
+        OT_SEG of
+                 first .value @ switch 
+                   ES of h06 byte<< \of
+                   CS of h0E byte<< \of
+                   SS of h16 byte<< \of
+                   DS of h1E byte<< \of
+                   FS of h0F byte<< hA0 byte<< \of
+                   GS of h0F byte<< hA8 byte<< \of
+                 \switch
+               \of
+      \switch clear-operands
+    ;
+// }}}
+// {{{ MOV
+// {{{ MOV reg
+// {{{ MOV reg imm
+    : MOV_reg_imm
+      second .regtype @ switch
+        RT_8 of COMMAND_DESCRIPTION MOV8_reg_imm ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV32_reg_imm ^ \of
+        RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_reg_imm ^ \of
+      \switch
+    ;
+// }}}
+// {{{ MOV reg reg
+    : MOV_reg_reg
+      first .regtype @ second .regtype @ <> 
+      if " both operands of MOV must have the same type" error then
+      second .regtype @ switch
+        RT_8 of COMMAND_DESCRIPTION MOV8_reg_reg ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV32_reg_reg ^ \of
+        RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_reg_reg ^ \of
+      \switch
+    ;
+// }}}
+// {{{ MOV reg mem (todo)
+    : ?regsize=memsize first .value @ <> 
+        if " both operand of MOV must have the same bit size" error then ;
+    : reg_[r+f*i+...]<<
+                first disp? if
+                  first .disp @ 1 8 shl < 
+                  if Mod_MODE_8 second .value @ first .base @ ModR/M byte<<
+                    first .disp @ byte<<
+                  else Mod_MODE_32 second .value @ first .base @ ModR/M byte<<
+                    first .disp @ dword<< then                 
+                else 
+                  Mod_MODE_SIMPLE second .value @ first .base @ ModR/M byte<<
+                then ;
+    : reg_[esp+...]<< ;
+    : reg_[r+...]<<
+                first factor? if reg_[r+f*i+...]<< exit then    
+                first .base @ trouble-register = if reg_[esp+...]<< exit then    
+                first disp? if
+                  first .disp @ 1 8 shl < 
+                  if Mod_MODE_8 second .value @ first .base @ ModR/M byte<<
+                    first .disp @ byte<<
+                  else Mod_MODE_32 second .value @ first .base @ ModR/M byte<<
+                    first .disp @ dword<< then                 
+                else 
+                  Mod_MODE_SIMPLE second .value @ first .base @ ModR/M byte<<
+                then ;
+    : MOV_reg_mem
+      second .value @ EAX = first .base? @ not and first .factor @ 0= and if
+        // особый случай
+        second .regtype @ switch
+          RT_8 of COMMAND_DESCRIPTION MOV8_al_moffset ^ \of
+          RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_ax_moffset ^ \of
+          RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_eax_moffset ^ \of
+        \switch
+        exit
+      then
+      ." blablabla" cr
+      second .regtype @ switch
+        RT_8 of DT_BYTE ?regsize=memsize h8A byte<< reg_[r+...]<< \of
+        RT_16 of underconstruction \of
+        RT_32 of DT_DWORD ?regsize=memsize h8B byte<< reg_[r+...]<< \of
+      \switch
+    ;
+// }}}
+    : MOV_reg_seg ;
+    : MOV_reg
+      first .type @ switch
+        OT_IMM of MOV_reg_imm \of
+        OT_REG of MOV_reg_reg \of
+        OT_MEM of MOV_reg_mem \of
+        OT_SEG of MOV_reg_seg \of
+      \switch
+    ;
+// }}}
+// {{{ MOV mem
+    : MOV_mem_imm underconstruction ;
+    : MOV_mem_reg 
+      first .value @ EAX = second .base? @ not and second .factor @ 0= and if
+        // особый случай
+        first .regtype @ switch
+          RT_8 of COMMAND_DESCRIPTION MOV8_moffset_al ^ \of
+          RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_moffset_ax ^ \of
+          RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_moffset_eax ^ \of
+        \switch
+        exit
+      then
+      underconstruction 
+    ;
+    : MOV_mem_mem underconstruction ;
+    : MOV_mem_seg underconstruction ;
+    : MOV_mem 
+      first .type @ switch
+        OT_IMM of MOV_mem_imm \of
+        OT_REG of MOV_mem_reg \of
+        OT_MEM of MOV_mem_mem \of
+        OT_SEG of MOV_mem_seg \of
+      \switch
+    ;
+// }}}
+// {{{ MOV seg
+    : MOV_seg underconstruction ;
+// }}}
+    : MOV
+      2 ?operands
+      second .type @ switch
+        OT_IMM of " dst operand of MOV cannot be immediate " error \of
+        OT_REG of MOV_reg \of
+        OT_MEM of MOV_mem \of
+        OT_SEG of MOV_seg \of
+        unknown-operand-type
+      \switch clear-operands
+    ;
+// }}}
+
+    namespace PREFIX
+      variable *xt
+      : \PREFIX ^^^ *xt @ execute ;
+      : prefix-mnemonic ( p "name") create , does> @ *xt dup @ execute ! ;
+      ' PUSH prefix-mnemonic push
+      ' POP prefix-mnemonic pop
+      ' NOP prefix-mnemonic nop
+      ' RET prefix-mnemonic ret
+      ' INC prefix-mnemonic inc
+      ' DEC prefix-mnemonic dec
+      ' NEG prefix-mnemonic neg
+      ' MOV prefix-mnemonic mov
+    \namespace
+    : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
+  \namespace
+\namespace
