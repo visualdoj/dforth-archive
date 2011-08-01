@@ -6,6 +6,8 @@ include" units\asm\i386\tables\ia32.de"
 I386 extend-namespace 
 uses COMMAND_DESCRIPTION COMMANDS
   namespace TRANSLATOR
+    variable *auto-integers
+
     0 6 shl constant Mod_MODE_SIMPLE
     1 6 shl constant Mod_MODE_8
     2 6 shl constant Mod_MODE_32
@@ -273,6 +275,11 @@ uses COMMAND_DESCRIPTION COMMANDS
       ' MOV prefix-mnemonic mov
     \namespace
     : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
+    
+    : _NOTFOUND_
+        // str-nospace if true exit then
+        false
+    ;    
   \namespace
 \uses
 \namespace
