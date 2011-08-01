@@ -1,3 +1,23 @@
 // 2011.07.31 # Doj
 // Команды множества IA-32
 
+include" units\asm\i386\description.de"
+
+I386 extend-namespace 
+  namespace COMMANDS
+    uses COMMAND_DESCRIPTION
+      h8A variant MOV8_reg_reg second_reg_first_reg
+      h8B variant MOV16_reg_reg second_reg_first_reg
+      h8B variant MOV32_reg_reg second_reg_first_reg
+      hB0 variant MOV8_reg_imm ' second.value +r ' first.value imm8!
+      hB8 variant MOV16_reg_imm ' second.value +r ' first.value imm16!
+      hB8 variant MOV32_reg_imm ' second.value +r ' first.value imm32!
+      hA0 variant MOV8_al_moffset ' first.disp moffset8
+      hA1 variant MOV16_ax_moffset ' first.disp moffset16
+      hA1 variant MOV32_eax_moffset ' first.disp moffset32
+      hA2 variant MOV8_moffset_al ' second.disp moffset8
+      hA3 variant MOV16_moffset_ax ' second.disp moffset16
+      hA3 variant MOV32_moffset_eax ' second.disp moffset32
+    \uses
+  \namespace
+\namespace

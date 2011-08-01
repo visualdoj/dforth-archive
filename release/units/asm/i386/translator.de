@@ -1,12 +1,11 @@
 // 2011.07.31 # Doj
 // Транслятор
 
-I386 extend-namespace 
-  namespace TRANSLATOR
-    : 0op ( опкод) create , does> @ byte<< clear-operands ;
-    : w-op ( опкод) create , does> @ byte<< first .value @ word<< clear-operands ;
-    : r-op ( опкод) create , does> @ first .value @ + byte<< clear-operands ;
+include" units\asm\i386\tables\ia32.de"
 
+I386 extend-namespace 
+uses COMMAND_DESCRIPTION COMMANDS
+  namespace TRANSLATOR
     0 6 shl constant Mod_MODE_SIMPLE
     1 6 shl constant Mod_MODE_8
     2 6 shl constant Mod_MODE_32
@@ -275,4 +274,5 @@ I386 extend-namespace
     \namespace
     : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
   \namespace
+\uses
 \namespace
