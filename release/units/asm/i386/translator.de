@@ -58,6 +58,7 @@ uses COMMAND_DESCRIPTION COMMANDS
       : \PREFIX ^^^ *xt @ execute ;
       : prefix-mnemonic ( p "name") create , does> @ PREFIX *xt ^ dup @ execute ! ;
     \namespace
+    : prefix-reset PREFIX *xt ^ dup @ execute ['] nop swap ! ;
 // }}}
 // {{{ directives
     namespace db
@@ -65,7 +66,7 @@ uses COMMAND_DESCRIPTION COMMANDS
       : _COMPILE_NOTFOUND_ str->int postpone literal postpone byte<< true ;
       : _NOTFOUND_ str->int byte<< true ;
     \namespace
-    : db call db PREFIX *xt ^ dup @ execute ['] nop swap ! ; immediate
+    : db call db prefix-reset ;
     namespace dw
       : \dw ^^^ ;
       : _COMPILE_NOTFOUND_ str->int postpone literal postpone word<< true ;
