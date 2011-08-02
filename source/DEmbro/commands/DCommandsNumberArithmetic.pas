@@ -283,6 +283,14 @@ implementation
                          TInt(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
+     procedure _from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrTo(StrToString(S), TInt((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TInt));
+       DelRef(S);
+      end; end;
     
    
     
@@ -327,6 +335,14 @@ implementation
      begin with Machine^ do begin TInt(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
+      end; end;
+     procedure int_from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrToint(StrToString(S), TInt((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TInt));
+       DelRef(S);
       end; end;
     
    
@@ -373,6 +389,14 @@ implementation
                          TInt8(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
+     procedure int8_from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrToint8(StrToString(S), TInt8((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TInt8));
+       DelRef(S);
+      end; end;
     
    
     
@@ -417,6 +441,14 @@ implementation
      begin with Machine^ do begin TInt16(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt16(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
+      end; end;
+     procedure int16_from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrToint16(StrToString(S), TInt16((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TInt16));
+       DelRef(S);
       end; end;
     
    
@@ -463,6 +495,14 @@ implementation
                          TInt32(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
+     procedure int32_from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrToint32(StrToString(S), TInt32((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TInt32));
+       DelRef(S);
+      end; end;
     
    
     
@@ -507,6 +547,14 @@ implementation
      begin with Machine^ do begin TInt64(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) := 
                          TInt64(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
+      end; end;
+     procedure int64_from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrToint64(StrToString(S), TInt64((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TInt64));
+       DelRef(S);
       end; end;
     
    
@@ -553,6 +601,14 @@ implementation
                          TUInt(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
+     procedure uint_from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrTouint(StrToString(S), TUInt((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TUInt));
+       DelRef(S);
+      end; end;
     
    
     
@@ -597,6 +653,14 @@ implementation
      begin with Machine^ do begin TUInt8(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt8(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
+      end; end;
+     procedure uint8_from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrTouint8(StrToString(S), TUInt8((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TUInt8));
+       DelRef(S);
       end; end;
     
    
@@ -643,6 +707,14 @@ implementation
                          TUInt16(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
+     procedure uint16_from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrTouint16(StrToString(S), TUInt16((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TUInt16));
+       DelRef(S);
+      end; end;
     
    
     
@@ -687,6 +759,14 @@ implementation
      begin with Machine^ do begin TUInt32(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) := 
                          TUInt32(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
+      end; end;
+     procedure uint32_from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrTouint32(StrToString(S), TUInt32((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TUInt32));
+       DelRef(S);
       end; end;
     
    
@@ -733,6 +813,14 @@ implementation
                          TUInt64(Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^))^) - 1; 
        Dec(WP, SizeOf(Pointer));
       end; end;
+     procedure uint64_from_str (Machine: TForthMachine; Command: PForthCommand);
+     var
+       S: TStr;
+     begin with Machine^ do begin S := str_pop(Machine);
+       ConvertStrTouint64(StrToString(S), TUInt64((Pointer(TUInt(Machine.WP) + (0))^)));
+       Inc(WP, SizeOf(TUInt64));
+       DelRef(S);
+      end; end;
     
   
 
@@ -756,6 +844,7 @@ begin
      Machine.AddCommand('shl', _shl);
      Machine.AddCommand('shr', _shr);
      Machine.AddCommand('**', _power);
+     Machine.AddCommand('str->', _from_str);
     
     
      Machine.AddCommand('int-push', int_push, True);
@@ -774,6 +863,7 @@ begin
      Machine.AddCommand('int-shl', int_shl);
      Machine.AddCommand('int-shr', int_shr);
      Machine.AddCommand('int-**', int_power);
+     Machine.AddCommand('str->int', int_from_str);
     
     
      Machine.AddCommand('int8-push', int8_push, True);
@@ -792,6 +882,7 @@ begin
      Machine.AddCommand('int8-shl', int8_shl);
      Machine.AddCommand('int8-shr', int8_shr);
      Machine.AddCommand('int8-**', int8_power);
+     Machine.AddCommand('str->int8', int8_from_str);
     
     
      Machine.AddCommand('int16-push', int16_push, True);
@@ -810,6 +901,7 @@ begin
      Machine.AddCommand('int16-shl', int16_shl);
      Machine.AddCommand('int16-shr', int16_shr);
      Machine.AddCommand('int16-**', int16_power);
+     Machine.AddCommand('str->int16', int16_from_str);
     
     
      Machine.AddCommand('int32-push', int32_push, True);
@@ -828,6 +920,7 @@ begin
      Machine.AddCommand('int32-shl', int32_shl);
      Machine.AddCommand('int32-shr', int32_shr);
      Machine.AddCommand('int32-**', int32_power);
+     Machine.AddCommand('str->int32', int32_from_str);
     
     
      Machine.AddCommand('int64-push', int64_push, True);
@@ -846,6 +939,7 @@ begin
      Machine.AddCommand('int64-shl', int64_shl);
      Machine.AddCommand('int64-shr', int64_shr);
      Machine.AddCommand('int64-**', int64_power);
+     Machine.AddCommand('str->int64', int64_from_str);
     
     
      Machine.AddCommand('uint-push', uint_push, True);
@@ -864,6 +958,7 @@ begin
      Machine.AddCommand('uint-shl', uint_shl);
      Machine.AddCommand('uint-shr', uint_shr);
      Machine.AddCommand('uint-**', uint_power);
+     Machine.AddCommand('str->uint', uint_from_str);
     
     
      Machine.AddCommand('uint8-push', uint8_push, True);
@@ -882,6 +977,7 @@ begin
      Machine.AddCommand('uint8-shl', uint8_shl);
      Machine.AddCommand('uint8-shr', uint8_shr);
      Machine.AddCommand('uint8-**', uint8_power);
+     Machine.AddCommand('str->uint8', uint8_from_str);
     
     
      Machine.AddCommand('uint16-push', uint16_push, True);
@@ -900,6 +996,7 @@ begin
      Machine.AddCommand('uint16-shl', uint16_shl);
      Machine.AddCommand('uint16-shr', uint16_shr);
      Machine.AddCommand('uint16-**', uint16_power);
+     Machine.AddCommand('str->uint16', uint16_from_str);
     
     
      Machine.AddCommand('uint32-push', uint32_push, True);
@@ -918,6 +1015,7 @@ begin
      Machine.AddCommand('uint32-shl', uint32_shl);
      Machine.AddCommand('uint32-shr', uint32_shr);
      Machine.AddCommand('uint32-**', uint32_power);
+     Machine.AddCommand('str->uint32', uint32_from_str);
     
     
      Machine.AddCommand('uint64-push', uint64_push, True);
@@ -936,6 +1034,7 @@ begin
      Machine.AddCommand('uint64-shl', uint64_shl);
      Machine.AddCommand('uint64-shr', uint64_shr);
      Machine.AddCommand('uint64-**', uint64_power);
+     Machine.AddCommand('str->uint64', uint64_from_str);
     ;
 end;
 

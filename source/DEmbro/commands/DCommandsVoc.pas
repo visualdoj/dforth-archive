@@ -48,6 +48,7 @@ begin
     V^.Item := nil;
     V^.sFIND := -1;
     V^.sNOTFOUND := -1;
+    V^.sCOMPILE_NOTFOUND := -1;
     WUP(V);
   end;
 end;

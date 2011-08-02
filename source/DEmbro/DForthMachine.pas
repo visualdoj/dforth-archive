@@ -1,3 +1,4 @@
+
 unit DForthMachine;
 
 interface
@@ -17,7 +18,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '';
+  DFORTHMACHINE_DATE: TString = '\Thu Sep 02 10:38 2011\';
 
 
 
@@ -1187,7 +1188,9 @@ begin
   if TString(C[Opcode]^.Name) = '_FIND_' then
     HighTarget.sFIND := Opcode
   else if TString(C[Opcode]^.Name) = '_NOTFOUND_' then
-    HighTarget.sNOTFOUND := Opcode;
+    HighTarget.sNOTFOUND := Opcode
+  else if TString(C[Opcode]^.Name) = '_COMPILE_NOTFOUND_' then
+    HighTarget.sCOMPILE_NOTFOUND := Opcode;
   FLastMnemonic := Opcode;
 end;
 
@@ -1221,11 +1224,19 @@ begin
   end;
   I := Context[High(Context)].Item;
   while I <> nil do
+    if TString(C[I^.Index].Name) = '_COMPILE_NOTFOUND_' then begin
+      Context[High(Context)].sCOMPILE_NOTFOUND := I^.Index;
+      Break;
+    end else
+      I := I^.Next;
+  I := Context[High(Context)].Item;
+  while I <> nil do
     if TString(C[I^.Index].Name) = '_NOTFOUND_' then begin
       Context[High(Context)].sNOTFOUND := I^.Index;
       Break;
     end else
       I := I^.Next;
+  I := Context[High(Context)].Item;
   while I <> nil do
     if TString(C[I^.Index].Name) = '_FIND_' then begin
       Context[High(Context)].sFIND := I^.Index;
@@ -1899,10 +1910,13 @@ begin
   vBUILTIN^.Item := nil;
   vGLOBAL^.sFIND := -1;
   vGLOBAL^.sNOTFOUND := -1;
+  vGLOBAL^.sCOMPILE_NOTFOUND := -1;
   vLOCAL^.sFIND := -1;
   vLOCAL^.sNOTFOUND := -1;
+  vLOCAL^.sCOMPILE_NOTFOUND := -1;
   vBUILTIN^.sFIND := -1;
   vBUILTIN^.sNOTFOUND := -1;
+  vBUILTIN^.sCOMPILE_NOTFOUND := -1;
   UseVoc(vGLOBAL);
   ContextPush(vLOCAL);
   // it must have zero opcode
@@ -2106,6 +2120,12 @@ begin
   for I := High(Context) downto 0 do begin
     if Context[I] = nil then
       continue;
+    if Context[I]^.sCOMPILE_NOTFOUND <> -1 then begin
+      WUS(S_);
+      CallCommand(C[Context[I]^.sCOMPILE_NOTFOUND]);
+      if WOI <> 0 then
+        Exit;
+    end;
     if Context[I]^.sNOTFOUND = -1 then
       continue;
     WUS(S_);

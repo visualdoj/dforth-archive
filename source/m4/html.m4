@@ -24,6 +24,8 @@ dnl Подчёркивание
 define(`UNDERLINE', `<span style="text-decoration: underline;">CS($*)</span>')
 dnl Вычёркивание
 define(`STRIKE', `<strike>CS($*)</strike>')
+dnl Моноширно
+define(`MONO', `<font face="monospace">CS($*)</font>')
 dnl Для вставки кода
 define(`CODE', `<font face="monospace">$1</font>')
 define(`CODE', `divert(`-1')

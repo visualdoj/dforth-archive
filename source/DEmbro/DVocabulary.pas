@@ -39,6 +39,7 @@ type
   TVoc = packed record
     sFIND: Integer;
     sNOTFOUND: Integer;
+    sCOMPILE_NOTFOUND: Integer;
     Item: PVocItem;
     Time: Integer;
   end;

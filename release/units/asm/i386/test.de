@@ -4,6 +4,7 @@
 include" units\asm\asm.de"
 include" units\asm\i386\all.de"
 
+." first" cr
 asm simple
 uses I386 TRANSLATOR
   NOP
@@ -13,6 +14,7 @@ uses I386 TRANSLATOR
 
 simple
 
+." second" cr
 :asm-noname  uses I386 TRANSLATOR
   NOP
   NOP
@@ -23,12 +25,23 @@ simple
 variable *test
 666 *test !
 
+// : 3ebx
+// I386 TRANSLATOR
+    // mov ebx 100
+    // mov ebx 100
+    // mov ebx 100
+// ^ ^ 
+// ;
+
+." third" cr
 1 2 3
 :asm-noname  uses I386 TRANSLATOR  
   PREFIX
     mov edx eax
+    ." fourth" cr
     *auto-integers? on
     mov edx 100
+    // 3ebx
     *auto-integers? off
     mov edx eax
     mov eax d[ *test disp ]

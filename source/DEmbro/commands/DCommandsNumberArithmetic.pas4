@@ -76,6 +76,15 @@ define(~number_arithmetic_commands|,
                          $2(Pointer(WVar(-SizeOf(Pointer)))^) - 1; 
        Dec(WP, SizeOf(Pointer));
      )
+     procedure $1_from_str cmdhdr;
+     var
+       S: TStr;
+     body(
+       S := str_pop(Machine);
+       ConvertStrTo$1(StrToString(S), $2(WVar(0)));
+       Inc(WP, SizeOf($2));
+       DelRef(S);
+     )
     |
   )
   define(~regist_all_commands|, regist_all_commands
@@ -96,6 +105,7 @@ define(~number_arithmetic_commands|,
      Machine.AddCommand('genname($1, shl)', $1_shl);
      Machine.AddCommand('genname($1, shr)', $1_shr);
      Machine.AddCommand('genname($1, **)', $1_power);
+     Machine.AddCommand('str->$1', $1_from_str);
     |)
 |)
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}

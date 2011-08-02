@@ -266,7 +266,7 @@ uses COMMAND_DESCRIPTION COMMANDS
     namespace PREFIX
       variable *xt
       : \PREFIX ^^^ *xt @ execute ;
-      : prefix-mnemonic ( p "name") create , does> @ *xt dup @ execute ! ;
+      : prefix-mnemonic ( p "name") create , does> @ PREFIX *xt ^ dup @ execute ! ;
       ' PUSH prefix-mnemonic push
       ' POP prefix-mnemonic pop
       ' NOP prefix-mnemonic nop
@@ -276,12 +276,18 @@ uses COMMAND_DESCRIPTION COMMANDS
       ' NEG prefix-mnemonic neg
       ' MOV prefix-mnemonic mov
     \namespace
-    : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
     
+    : _COMPILE_NOTFOUND_
+        *auto-integers? @ dup if str->int postpone literal postpone imm 
+                              else bdrop then
+    ;
     : _NOTFOUND_ // false bdrop exit
         // str-nospace if true exit then
         *auto-integers? @ dup if str->int imm else bdrop then
     ;    
+
+    
+    : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
   \namespace
 \uses
 \namespace
