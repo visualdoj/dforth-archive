@@ -52,6 +52,33 @@ uses COMMAND_DESCRIPTION COMMANDS
     FS short-seg fs
     GS short-seg gs
 
+// {{{ PREFIX
+    namespace PREFIX
+      variable *xt
+      : \PREFIX ^^^ *xt @ execute ;
+      : prefix-mnemonic ( p "name") create , does> @ PREFIX *xt ^ dup @ execute ! ;
+    \namespace
+// }}}
+// {{{ directives
+    namespace db
+      : \db ^^^ ;
+      : _COMPILE_NOTFOUND_ str->int postpone literal postpone byte<< true ;
+      : _NOTFOUND_ str->int byte<< true ;
+    \namespace
+    : db call db PREFIX *xt ^ dup @ execute ['] nop swap ! ; immediate
+    namespace dw
+      : \dw ^^^ ;
+      : _COMPILE_NOTFOUND_ str->int postpone literal postpone word<< true ;
+      : _NOTFOUND_ str->int byte<< true ;
+    \namespace
+    namespace dd
+      : \dd ^^^ ;
+      : _COMPILE_NOTFOUND_ str->int postpone literal postpone dword<< true ;
+      : _NOTFOUND_ str->int byte<< true ;
+    \namespace
+// }}}
+
+
     : mem<< ( rp-) 0 rrot .base @ ModR/M byte<< ;
 
 // {{{ unary-op (INC, DEC)
@@ -262,20 +289,6 @@ uses COMMAND_DESCRIPTION COMMANDS
       \switch clear-operands
     ;
 // }}}
-
-    namespace PREFIX
-      variable *xt
-      : \PREFIX ^^^ *xt @ execute ;
-      : prefix-mnemonic ( p "name") create , does> @ PREFIX *xt ^ dup @ execute ! ;
-      ' PUSH prefix-mnemonic push
-      ' POP prefix-mnemonic pop
-      ' NOP prefix-mnemonic nop
-      ' RET prefix-mnemonic ret
-      ' INC prefix-mnemonic inc
-      ' DEC prefix-mnemonic dec
-      ' NEG prefix-mnemonic neg
-      ' MOV prefix-mnemonic mov
-    \namespace
     
     : _COMPILE_NOTFOUND_
         *auto-integers? @ dup if str->int postpone literal postpone imm 
@@ -287,7 +300,17 @@ uses COMMAND_DESCRIPTION COMMANDS
     ;    
 
     
-    : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
+    PREFIX 
+      : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
+      ' DEC prefix-mnemonic dec
+      ' INC prefix-mnemonic inc
+      ' MOV prefix-mnemonic mov
+      ' NEG prefix-mnemonic neg
+      ' NOP prefix-mnemonic nop
+      ' POP prefix-mnemonic pop
+      ' PUSH prefix-mnemonic push
+      ' RET prefix-mnemonic ret
+    ^
   \namespace
 \uses
 \namespace
