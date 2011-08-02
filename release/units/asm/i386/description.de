@@ -36,8 +36,8 @@ I386 extend-namespace
 
     // убер команда, компилирующая по данным убер структуры
     : variant<< ( p) cr
-      dup .opcode @ over .+r @ execute + dup . byte<<
-      dup .ModR/M? @ dup . if
+      dup .opcode @ over .+r @ execute + byte<<
+      dup .ModR/M? @ if
         dup .mod @ execute
         over dup .reg @ execute
         swap .r/m @ execute
@@ -49,13 +49,13 @@ I386 extend-namespace
           SIB byte<<
         then
       then
-      dup dup .moffset @ execute swap .moffset# @ dup . switch
+      dup dup .moffset @ execute swap .moffset# @ switch
         1 of byte<< \of
         2 of word<< \of
         4 of dword<< \of
         drop
       \switch
-      dup dup .imm @ execute swap .imm# @ execute dup . switch
+      dup dup .imm @ execute swap .imm# @ execute switch
         1 of byte<< \of
         2 of word<< \of
         4 of dword<< \of

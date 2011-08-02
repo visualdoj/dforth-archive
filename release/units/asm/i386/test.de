@@ -95,6 +95,10 @@ variable *test
 \uses asm-noname; execute . . cr
 ." *test = " *test @ . cr 
 
+uses I386 TRANSLATOR
+: lea_eax_[eax_4*edx] db h8d h04 h90 \db ;
+\uses
+
 variable *a 505 *a !
 variable *b 343 *b !
 :asm-noname  uses I386 TRANSLATOR  
@@ -104,6 +108,7 @@ variable *b 343 *b !
     mov eax d[ *a disp ]
     inc eax
     db h8d h04 h90 \db
+    // lea_eax_[eax_4*edx]
     mov d[ *a disp ] eax
     ret
   \PREFIX

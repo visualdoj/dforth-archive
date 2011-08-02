@@ -48,6 +48,9 @@ samebuiltin variable
 : [ false state ! ; immediate
 : ] true state ! ; immediate
 
+: compile? state @ ;
+: interpret? state @ not ;
+
 : ptr! ! ;
 : op! ! ;
 : xt! ! ;

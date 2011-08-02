@@ -15,6 +15,9 @@ namespace I386
   : unknown-operand-type " unknown operand type" error ;
   : underconstruction " underconstruction" error ;
 
+  // автоматически вызывать imm и disp у чисел
+  variable *auto-integers?
+
   variable *use-mode
   : use16 16 *use-mode ! ;
   : use32 32 *use-mode ! ;
@@ -132,6 +135,11 @@ namespace I386
     EBP short-reg ebp
     ESI short-reg esi
     EDI short-reg edi
+    : _COMPILE_NOTFOUND_
+        *auto-integers? @ dup if str->int postpone literal postpone disp
+                              else bdrop then
+    ;
+    : _NOTFOUND_ *auto-integers? @ dup if str->int disp else bdrop then ;    
   \namespace
 
   : MEM call MEM OT_MEM operand+ 

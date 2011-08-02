@@ -6,7 +6,6 @@ include" units\asm\i386\tables\ia32.de"
 I386 extend-namespace 
 uses COMMAND_DESCRIPTION COMMANDS
   namespace TRANSLATOR
-    variable *auto-integers?
     // default
     *auto-integers? off
 
@@ -59,24 +58,27 @@ uses COMMAND_DESCRIPTION COMMANDS
       : prefix-mnemonic ( p "name") create , does> @ PREFIX *xt ^ dup @ execute ! ;
     \namespace
     : prefix-reset PREFIX *xt ^ dup @ execute ['] nop swap ! ;
+    : step-prefix-reset compile? if postpone prefix-reset else prefix-reset then ;
 // }}}
 // {{{ directives
-    namespace db
-      : \db ^^^ ;
+    namespace DB
+      : \db ^^^ ; immediate
       : _COMPILE_NOTFOUND_ str->int postpone literal postpone byte<< true ;
       : _NOTFOUND_ str->int byte<< true ;
     \namespace
-    : db call db prefix-reset ;
-    namespace dw
-      : \dw ^^^ ;
+    : db call DB step-prefix-reset ; immediate
+    namespace DW
+      : \dw ^^^ ; immediate
       : _COMPILE_NOTFOUND_ str->int postpone literal postpone word<< true ;
       : _NOTFOUND_ str->int byte<< true ;
     \namespace
-    namespace dd
-      : \dd ^^^ ;
+    : dw call DW step-prefix-reset ; immediate
+    namespace DD
+      : \dd ^^^ ; immediate
       : _COMPILE_NOTFOUND_ str->int postpone literal postpone dword<< true ;
       : _NOTFOUND_ str->int byte<< true ;
     \namespace
+    : dd call DD step-prefix-reset ; immediate
 // }}}
 
 
