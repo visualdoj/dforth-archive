@@ -1,6 +1,8 @@
 // 2011.07.31 # Doj
 // Команды для удобного описания ассемблерных команд (таблиц)
 
+include" units\statements\switch.de"
+
 I386 extend-namespace 
 // {{{ COMMAND_DESCRIPTION
   namespace COMMAND_DESCRIPTION
@@ -19,8 +21,8 @@ I386 extend-namespace
       t_ptr -- .reg
       t_ptr -- .r/m
 
-      t_ptr -- .factor
-      t_ptr -- .base
+      t_ptr -- .factor-xt
+      t_ptr -- .base-xt
       t_ptr -- .index
       t_ptr -- .offset
 
@@ -34,8 +36,9 @@ I386 extend-namespace
     // хитрый хак :)
     enum8 '0 '1 '2 '3 '4 '5 '6 '7
 
+
     // убер команда, компилирующая по данным убер структуры
-    : variant<< ( p) cr
+    : variant<< ( p)
       dup .opcode @ over .+r @ execute + byte<<
       dup .ModR/M? @ if
         dup .mod @ execute
@@ -43,9 +46,9 @@ I386 extend-namespace
         swap .r/m @ execute
         ModR/M byte<<
         dup .r/m @ execute ESP = if
-          dup .factor @ execute
+          dup .factor-xt @ execute
           over dup .index @ execute
-          swap .base @ execute
+          swap .base-xt @ execute
           SIB byte<<
         then
       then
@@ -79,8 +82,8 @@ I386 extend-namespace
         ['] '0 last-multi-mnemonic .reg !
         ['] '0 last-multi-mnemonic .r/m !
 
-        ['] '0 last-multi-mnemonic .factor !
-        ['] '0 last-multi-mnemonic .base !
+        ['] '0 last-multi-mnemonic .factor-xt !
+        ['] '0 last-multi-mnemonic .base-xt !
         ['] '0 last-multi-mnemonic .index !
 
         ['] '0 last-multi-mnemonic .moffset# !
@@ -140,6 +143,92 @@ I386 extend-namespace
     : third.mod third .disp @ disp->mod ; 
 
     : first-mem ['] first.mod mod! ;
+
+    // 2 version
+    : opmod ( opcode -- mod) .disp @ dup if 0 else 256 < if 1 else 2 then then ;
+    : ebp-mod ( opcode -- mod) .disp @ 256 < if 1 else 2 then ;
+    : disp-mod<< ( dm) dup if 1 = if byte<< else dword<< then else drop then ;
+    : disp<< ( operand) dup opmod disp-mod<< ;
+    : ebp-disp<< ( operand) dup ebp-mod disp-mod<< ;
+    : op.SS ( operand -- SS) 
+                   .factor @ switch 
+                      1 of 0 \of 
+                      2 of 1 \of 
+                      4 of 2 \of
+                      8 of 4 \of
+                    \switch ;
+
+    ( rp)
+    variable *temp
+    : [f*i+d]<< 0 lrot ESP ModR/M<< 
+                dup dup op.SS swap dup .index @ swap .base @ SIB<<
+                .disp @ dword<< ;
+    : [ebp+f*i+d]<< tuck ebp-mod ESP ModR/M<< 
+                    dup op.SS over .index @ EBP SIB<< ebp-disp<< ;
+    : [b+f*i+d]<< tuck opmod swap ESP ModR/M<<
+                  dup dup op.SS swap dup .index @ swap .base @ SIB<< disp<< ;
+    : [d]<< swap 0 swap EBP ModR/M<< .disp @ dup . dword<< ;
+    : [ebp+d]<< tuck ebp-mod swap EBP ModR/M<< ebp-disp<< ;
+    : [esp+d]<< tuck opmod swap ESP ModR/M<< 0 ESP ESP SIB<< disp<< ;
+    : [b+d]<< tuck opmod swap ( por) 3 pick .base @ ModR/M<< disp<< ;
+
+    // r -- число от 0 до 7, которое будет записано в reg поле байта ModR/M
+    // p -- операнд, код которого мы генерируем
+    : mem<< ( rp)
+      dup factor? if
+        dup .index @ ESP = if
+          " cannot use ESP as index in mov" error
+        else
+          dup .base @ switch
+            -1 of [f*i+d]<< \of
+            EBP of [ebp+f*i+d]<< \of
+            [b+f*i+d]<<
+          \switch
+        then
+      else
+        dup .base @ dup . switch
+          -1 of [d]<< \of
+          EBP of [ebp+d]<< \of
+          ESP of [esp+d]<< \of
+          [b+d]<<
+        \switch
+      then
+    ;
+    
+    0
+      t_int -- v.opcode // опкод варианта
+      t_int -- v.bits // 8, 16 или 32
+      t_ptr -- v.+r // команда, возвращающая что нужно прибавлять к опкоду
+      t_ptr -- v.mem // команда, возвращающая операнд, который записываем в mem составляющую
+                     // 0 означает, что mem составляющей нет
+      t_ptr -- v./r // команда, возвращающая что записывать в reg поле ModR/M
+      t_int -- v.imm# // команда, возвращающая число байт в imm составляющей
+                      // 0 означает, что imm нет
+      t_ptr -- v.imm
+    struct s_variant
+   
+    : newvariant<< ( variant)
+        ." NOIMM" cr
+      dup v.bits @ switch
+        16 of 16 switch<< \of
+        32 of 32 switch<< \of
+      \switch
+      dup v.opcode @ over v.+r @ execute + dup . byte<<
+      dup v./r @ execute over v.mem @ execute mem<<
+      dup v.imm# @ switch
+        1 of dup v.imm @ execute .value @ byte<< \of
+        2 of dup v.imm @ execute .value @ word<< \of
+        4 of dup v.imm @ execute .value @ dword<< \of
+      \switch
+      drop ;
+    :noname  0 ; value [']0
+    : newvariant ( opcode bits) create swap , , [']0 dup , dup , dup , 0 , ,  
+      does> newvariant<< ;
+    : +r! last xt.param@ v.+r ! ;
+    : mem! last xt.param@ v.mem ! ;
+    : /r! last xt.param@ v./r ! ;
+    : imm#! last xt.param@ v.imm# ! ;
+    : imm! last xt.param@ v.imm ! ;
   \namespace
 // }}}
 \namespace

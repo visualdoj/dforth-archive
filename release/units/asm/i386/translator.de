@@ -76,7 +76,6 @@ uses COMMAND_DESCRIPTION COMMANDS
     : dd call DD step-prefix-reset ; immediate
 // }}}
 
-
     : mem<< ( rp-) 0 rrot .base @ ModR/M byte<< ;
 
 // {{{ unary-op (INC, DEC)
@@ -173,9 +172,7 @@ uses COMMAND_DESCRIPTION COMMANDS
     ;
 // }}}
 // {{{ MOV
-." MOV reg" cr
 // {{{ MOV reg
-." MOV reg imm" cr
 // {{{ MOV reg imm
     : MOV_reg_imm
       second .regtype @ switch
@@ -185,7 +182,6 @@ uses COMMAND_DESCRIPTION COMMANDS
       \switch
     ;
 // }}}
-." MOV reg reg" cr
 // {{{ MOV reg reg
     : MOV_reg_reg
       first .regtype @ second .regtype @ <> 
@@ -197,26 +193,25 @@ uses COMMAND_DESCRIPTION COMMANDS
       \switch
     ;
 // }}}
-." MOV reg mem" cr
 // {{{ MOV reg mem (todo)
     : MOV_reg_mem
-      second .value @ EAX = first .base? @ not and first .factor @ 0= and if
+      second .value @ dup . cr EAX = first .base @ dup . cr -1 = and first .factor @ dup . cr 0= and if
         // особый случай
         second .regtype @ switch
           RT_8 of COMMAND_DESCRIPTION MOV8_al_moffset ^ \of
           RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_ax_moffset ^ \of
-          RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_eax_moffset ^ \of
+          RT_32 of ." HERE" cr 32 switch<< COMMAND_DESCRIPTION MOV32_eax_moffset ^ \of
         \switch
         exit
       then
+      ." HERE2" cr
       second .regtype @ switch
         RT_8 of COMMAND_DESCRIPTION MOV8_reg_mem ^ \of
-        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_reg_mem ^ \of
-        RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_reg_mem ^ \of
+        RT_16 of ( 16 switch<<) COMMAND_DESCRIPTION MOV16_reg_mem ^ \of
+        RT_32 of ( 32 switch<<) COMMAND_DESCRIPTION MOV32_reg_mem ^ \of
       \switch
     ;
 // }}}
-." MOV reg seg" cr
 // {{{ MOV reg seg
     : MOV_reg_seg 
       first .value @ DT_WORD = if
@@ -224,7 +219,6 @@ uses COMMAND_DESCRIPTION COMMANDS
       else " mov to segment register must be 16-bit memory operand" error then
     ;
 // }}}
-." MOV_reg" cr
     : MOV_reg
       first .type @ switch
         OT_IMM of MOV_reg_imm \of
@@ -234,13 +228,12 @@ uses COMMAND_DESCRIPTION COMMANDS
       \switch
     ;
 // }}}
-." MOV mem" cr
 // {{{ MOV mem
     : MOV_mem_imm
       second .value @ switch
         DT_BYTE of COMMAND_DESCRIPTION MOV8_mem_imm ^ \of
-        DT_WORD of 16 switch<< COMMAND_DESCRIPTION MOV16_mem_imm ^ \of
-        DT_DWORD of 32 switch<< COMMAND_DESCRIPTION MOV32_mem_imm ^ \of
+        DT_WORD of ( 16 switch<<) COMMAND_DESCRIPTION MOV16_mem_imm ^ \of
+        DT_DWORD of ( 32 switch<<) COMMAND_DESCRIPTION MOV32_mem_imm ^ \of
         unknown-operand-type
       \switch
     ;
@@ -277,7 +270,6 @@ uses COMMAND_DESCRIPTION COMMANDS
       \switch
     ;
 // }}}
-." MOV seg" cr
 // {{{ MOV seg
     : MOV_seg 
       first .type @ switch

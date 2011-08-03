@@ -19,18 +19,18 @@ I386 extend-namespace
       h8E variant MOV16_seg_reg ' second.value /r // underconstruction
       h8C variant MOV16_mem_seg ' first.value /r // underconstruction
       h8E variant MOV16_seg_mem ' second.value /r // underconstruction
-      hC6 variant MOV8_mem_imm /0 // underconstruction
-      hC7 variant MOV16_mem_imm /0 // underconstruction
-      hC7 variant MOV32_mem_imm /0 // underconstruction
-      h88 variant MOV8_mem_reg ' first.value /r // underconstruction
-      h89 variant MOV16_mem_reg ' first.value /r // underconstruction
-      h89 variant MOV32_mem_reg ' first.value /r // underconstruction
+      hC6  8 newvariant MOV8_mem_imm 1 imm#! ' first imm! ' second mem! [']0 /r!
+      hC7 16 newvariant MOV16_mem_imm 2 imm#! ' first imm! ' second mem! [']0 /r!
+      hC7 32 newvariant MOV32_mem_imm 4 imm#! ' first imm! ' second mem! [']0 /r!
+      h88  8 newvariant MOV8_mem_reg ' second mem! ' first.value /r!
+      h89 16 newvariant MOV16_mem_reg ' second mem! ' first.value /r!
+      h89 32 newvariant MOV32_mem_reg ' second mem! ' first.value /r!
       h8A variant MOV8_reg_reg second_reg_first_reg
       h8B variant MOV16_reg_reg second_reg_first_reg
       h8B variant MOV32_reg_reg second_reg_first_reg
-      h8A variant MOV8_reg_mem ' second.value /r // underconstruction
-      h8B variant MOV16_reg_mem ' second.value /r // underconstruction
-      h8B variant MOV32_reg_mem ' second.value /r // underconstruction
+      h8A  8 newvariant MOV8_reg_mem  ' first mem! ' second.value /r!
+      h8B 16 newvariant MOV16_reg_mem ' first mem! ' second.value /r!
+      h8B 32 newvariant MOV32_reg_mem ' first mem! ' second.value /r!
     \uses
   \namespace
 \namespace

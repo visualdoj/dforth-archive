@@ -71,7 +71,7 @@ namespace I386
     t_int -- .regtype // see RT_*
     // for .type = OT_MEM; [base + factor*index + disp]
     t_int -- .base?
-    t_int -- .disp?
+    // t_int -- .disp?
     t_int -- .base
     t_int -- .factor // 
     t_int -- .index
@@ -144,7 +144,7 @@ namespace I386
 
   : MEM call MEM OT_MEM operand+ 
        last-operand .base? off
-       last-operand .factor off 
+       last-operand .factor off
        last-operand .disp off 
        -1 last-operand .base ! ;
   : b[ MEM DT_BYTE last-operand .value ! ;
@@ -199,5 +199,8 @@ namespace I386
 
   : ModR/M ( iii-b) swap 3 shl or swap 6 shl or ;
   : SIB ModR/M ;
+  : SIB ( iii-b) ." SIB: " dup . swap dup . 3 shl or swap dup . cr 6 shl or ;
+  : ModR/M<< ( iii-) ModR/M byte<< ;
+  : SIB<< SIB byte<< ;
 
 \namespace
