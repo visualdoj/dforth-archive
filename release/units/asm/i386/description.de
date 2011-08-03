@@ -24,7 +24,7 @@ I386 extend-namespace
       t_ptr -- .index
       t_ptr -- .offset
 
-      t_int -- .moffset#
+      t_ptr -- .moffset#
       t_ptr -- .moffset
 
       t_int -- .imm#
@@ -49,7 +49,7 @@ I386 extend-namespace
           SIB byte<<
         then
       then
-      dup dup .moffset @ execute swap .moffset# @ switch
+      dup dup .moffset @ execute swap .moffset# @ execute switch
         1 of byte<< \of
         2 of word<< \of
         4 of dword<< \of
@@ -83,7 +83,7 @@ I386 extend-namespace
         ['] '0 last-multi-mnemonic .base !
         ['] '0 last-multi-mnemonic .index !
 
-        last-multi-mnemonic .moffset# off
+        ['] '0 last-multi-mnemonic .moffset# !
         ['] '0 last-multi-mnemonic .moffset !
 
         ['] '0 last-multi-mnemonic .imm# !
@@ -113,9 +113,9 @@ I386 extend-namespace
     : imm16! last-multi-mnemonic .imm ! ['] '2 last-multi-mnemonic .imm# ! ;
     : imm32! last-multi-mnemonic .imm ! ['] '4 last-multi-mnemonic .imm# ! ;
     // включение генерации moffset данных
-    : moffset8 1 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
-    : moffset16 2 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
-    : moffset32 4 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
+    : moffset8 ['] '1 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
+    : moffset16 ['] '2 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
+    : moffset32 ['] '4 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
 
     : first.value first .value @ ;
     : second.value second .value @ ;
@@ -124,12 +124,22 @@ I386 extend-namespace
     : second.disp second .disp @ ;
     : third.disp third .disp @ ;
 
+    // op reg reg/mem
     : second_reg_first_reg ['] '3 mod!  
                            ['] second.value reg! 
                            ['] first.value r/m! ;
+    // op reg/mem reg
     : first_reg_second_reg ['] '3 mod!  
                            ['] first.value reg! 
                            ['] second.value r/m! ;
+    // mod
+    : disp->mod dup if drop Mod_MODE_SIMPLE 
+                    else 256 < if Mod_MODE_8 else Mod_MODE_32 then then ;
+    : first.mod first .disp @ disp->mod ; 
+    : second.mod second .disp @ disp->mod ; 
+    : third.mod third .disp @ disp->mod ; 
+
+    : first-mem ['] first.mod mod! ;
   \namespace
 // }}}
 \namespace

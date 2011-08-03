@@ -192,6 +192,11 @@ namespace I386
   ;
 // }}}
 
+    0 6 shl constant Mod_MODE_SIMPLE
+    1 6 shl constant Mod_MODE_8
+    2 6 shl constant Mod_MODE_32
+    3 6 shl constant Mod_MODE_REG
+
   : ModR/M ( iii-b) swap 3 shl or swap 6 shl or ;
   : SIB ModR/M ;
 

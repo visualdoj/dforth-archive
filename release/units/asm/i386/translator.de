@@ -9,11 +9,6 @@ uses COMMAND_DESCRIPTION COMMANDS
     // default
     *auto-integers? off
 
-    0 6 shl constant Mod_MODE_SIMPLE
-    1 6 shl constant Mod_MODE_8
-    2 6 shl constant Mod_MODE_32
-    3 6 shl constant Mod_MODE_REG
-
     // список кратких регистров
     : short-reg32 create , does> @ reg32 ;
     EAX short-reg32 eax
@@ -178,53 +173,32 @@ uses COMMAND_DESCRIPTION COMMANDS
     ;
 // }}}
 // {{{ MOV
+." MOV reg" cr
 // {{{ MOV reg
+." MOV reg imm" cr
 // {{{ MOV reg imm
     : MOV_reg_imm
       second .regtype @ switch
         RT_8 of COMMAND_DESCRIPTION MOV8_reg_imm ^ \of
-        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV32_reg_imm ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_reg_imm ^ \of
         RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_reg_imm ^ \of
       \switch
     ;
 // }}}
+." MOV reg reg" cr
 // {{{ MOV reg reg
     : MOV_reg_reg
       first .regtype @ second .regtype @ <> 
       if " both operands of MOV must have the same type" error then
       second .regtype @ switch
         RT_8 of COMMAND_DESCRIPTION MOV8_reg_reg ^ \of
-        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV32_reg_reg ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_reg_reg ^ \of
         RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_reg_reg ^ \of
       \switch
     ;
 // }}}
+." MOV reg mem" cr
 // {{{ MOV reg mem (todo)
-    : ?regsize=memsize first .value @ <> 
-        if " both operand of MOV must have the same bit size" error then ;
-    : reg_[r+f*i+...]<<
-                first disp? if
-                  first .disp @ 1 8 shl < 
-                  if Mod_MODE_8 second .value @ first .base @ ModR/M byte<<
-                    first .disp @ byte<<
-                  else Mod_MODE_32 second .value @ first .base @ ModR/M byte<<
-                    first .disp @ dword<< then                 
-                else 
-                  Mod_MODE_SIMPLE second .value @ first .base @ ModR/M byte<<
-                then ;
-    : reg_[esp+...]<< ;
-    : reg_[r+...]<<
-                first factor? if reg_[r+f*i+...]<< exit then    
-                first .base @ trouble-register = if reg_[esp+...]<< exit then    
-                first disp? if
-                  first .disp @ 1 8 shl < 
-                  if Mod_MODE_8 second .value @ first .base @ ModR/M byte<<
-                    first .disp @ byte<<
-                  else Mod_MODE_32 second .value @ first .base @ ModR/M byte<<
-                    first .disp @ dword<< then                 
-                else 
-                  Mod_MODE_SIMPLE second .value @ first .base @ ModR/M byte<<
-                then ;
     : MOV_reg_mem
       second .value @ EAX = first .base? @ not and first .factor @ 0= and if
         // особый случай
@@ -235,15 +209,22 @@ uses COMMAND_DESCRIPTION COMMANDS
         \switch
         exit
       then
-      ." blablabla" cr
       second .regtype @ switch
-        RT_8 of DT_BYTE ?regsize=memsize h8A byte<< reg_[r+...]<< \of
-        RT_16 of underconstruction \of
-        RT_32 of DT_DWORD ?regsize=memsize h8B byte<< reg_[r+...]<< \of
+        RT_8 of COMMAND_DESCRIPTION MOV8_reg_mem ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_reg_mem ^ \of
+        RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_reg_mem ^ \of
       \switch
     ;
 // }}}
-    : MOV_reg_seg ;
+." MOV reg seg" cr
+// {{{ MOV reg seg
+    : MOV_reg_seg 
+      first .value @ DT_WORD = if
+        16 switch<< COMMAND_DESCRIPTION MOV16_mem_seg ^
+      else " mov to segment register must be 16-bit memory operand" error then
+    ;
+// }}}
+." MOV_reg" cr
     : MOV_reg
       first .type @ switch
         OT_IMM of MOV_reg_imm \of
@@ -253,8 +234,16 @@ uses COMMAND_DESCRIPTION COMMANDS
       \switch
     ;
 // }}}
+." MOV mem" cr
 // {{{ MOV mem
-    : MOV_mem_imm underconstruction ;
+    : MOV_mem_imm
+      second .value @ switch
+        DT_BYTE of COMMAND_DESCRIPTION MOV8_mem_imm ^ \of
+        DT_WORD of 16 switch<< COMMAND_DESCRIPTION MOV16_mem_imm ^ \of
+        DT_DWORD of 32 switch<< COMMAND_DESCRIPTION MOV32_mem_imm ^ \of
+        unknown-operand-type
+      \switch
+    ;
     : MOV_mem_reg 
       first .value @ EAX = second .base? @ not and second .factor @ 0= and if
         // особый случай
@@ -262,24 +251,49 @@ uses COMMAND_DESCRIPTION COMMANDS
           RT_8 of COMMAND_DESCRIPTION MOV8_moffset_al ^ \of
           RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_moffset_ax ^ \of
           RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_moffset_eax ^ \of
+          unknown-operand-type
         \switch
         exit
       then
-      underconstruction 
+      // TODO проверить на соответствие data type
+      first .regtype @ switch
+        RT_8 of COMMAND_DESCRIPTION MOV8_mem_reg ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_mem_reg ^ \of
+        RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_mem_reg ^ \of
+        unknown-operand-type
+      \switch
     ;
-    : MOV_mem_mem underconstruction ;
-    : MOV_mem_seg underconstruction ;
+    : MOV_mem_seg 
+      second .value @ DT_WORD = if
+        16 switch<< COMMAND_DESCRIPTION MOV16_mem_seg ^
+      else " mov from segment register must be 16-bit memory operand" error then
+    ;
     : MOV_mem 
       first .type @ switch
         OT_IMM of MOV_mem_imm \of
         OT_REG of MOV_mem_reg \of
-        OT_MEM of MOV_mem_mem \of
         OT_SEG of MOV_mem_seg \of
+        " cannot mov from mem to mem"
       \switch
     ;
 // }}}
+." MOV seg" cr
 // {{{ MOV seg
-    : MOV_seg underconstruction ;
+    : MOV_seg 
+      first .type @ switch
+        OT_REG of first .regtype @ RT_16 <> 
+                  if " must be 16-bit register in this format" error then 
+                  16 switch<< MOV16_seg_reg
+        \of
+        OT_MEM of first .value @ DT_WORD <> 
+                  if " must be 16-bit memory access in this format" error then 
+                  16 switch<< MOV16_seg_mem
+        \of
+        OT_IMM of " cannot mov immediate data to segment register" error \of
+        OT_SEG of " cannot mov segment regfister to segment register" error \of
+        unknown-operand-type
+      \switch
+    ;
 // }}}
     : MOV
       2 ?operands
