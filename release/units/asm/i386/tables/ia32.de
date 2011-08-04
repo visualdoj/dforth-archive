@@ -1,36 +1,169 @@
 // 2011.07.31 # Doj
 // Команды множества IA-32
 
-include" units\asm\i386\description.de"
+multi-op MOV
+  hA0  8 variant _al_moffset  ' first.disp imm!
+  hA1 16 variant _ax_moffset  ' first.disp imm!
+  hA1 32 variant _eax_moffset ' first.disp imm!
+  hA2  8 variant _moffset_al  ' second.disp imm!
+  hA3 16 variant _moffset_ax  ' second.disp imm!
+  hA3 32 variant _moffset_eax ' second.disp imm!
+  hB0  8 variant _reg_imm ' second.value +r ' first.value imm!
+  hB8 16 variant _reg_imm ' second.value +r ' first.value imm!
+  hB8 32 variant _reg_imm ' second.value +r ' first.value imm!
+  h8C 16 variant _reg_seg // underconstruction
+  h8E 16 variant _seg_reg // underconstruction
+  h8C 16 variant _mem_seg // underconstruction
+  h8E 16 variant _seg_mem // underconstruction
+  hC6  8 variant _mem_imm ' first.value imm! ' second mem! '0 /r
+  hC7 16 variant _mem_imm ' first.value imm! ' second mem! '0 /r
+  hC7 32 variant _mem_imm ' first.value imm! ' second mem! '0 /r
+  h88  8 variant _mem_reg ' second mem! ' first.value /r
+  h89 16 variant _mem_reg ' second mem! ' first.value /r
+  h89 32 variant _mem_reg ' second mem! ' first.value /r
+  h8A  8 variant _reg_reg ' second.value /r ' first mem!
+  h8B 16 variant _reg_reg ' second.value /r ' first mem!
+  h8B 32 variant _reg_reg ' second.value /r ' first mem!
+  h8A  8 variant _reg_mem ' first mem! ' second.value /r
+  h8B 16 variant _reg_mem ' first mem! ' second.value /r
+  h8B 32 variant _reg_mem ' first mem! ' second.value /r
 
-I386 extend-namespace 
-  namespace COMMANDS
-    uses COMMAND_DESCRIPTION
-      hA0 variant MOV8_al_moffset ' first.disp moffset8
-      hA1 variant MOV16_ax_moffset ' first.disp moffset16
-      hA1 variant MOV32_eax_moffset ' first.disp moffset32
-      hA2 variant MOV8_moffset_al ' second.disp moffset8
-      hA3 variant MOV16_moffset_ax ' second.disp moffset16
-      hA3 variant MOV32_moffset_eax ' second.disp moffset32
-      hB0 variant MOV8_reg_imm ' second.value +r ' first.value imm8!
-      hB8 variant MOV16_reg_imm ' second.value +r ' first.value imm16!
-      hB8 variant MOV32_reg_imm ' second.value +r ' first.value imm32!
-      h8C variant MOV16_reg_seg ' first.value /r // underconstruction
-      h8E variant MOV16_seg_reg ' second.value /r // underconstruction
-      h8C variant MOV16_mem_seg ' first.value /r // underconstruction
-      h8E variant MOV16_seg_mem ' second.value /r // underconstruction
-      hC6  8 newvariant MOV8_mem_imm 1 imm#! ' first imm! ' second mem! [']0 /r!
-      hC7 16 newvariant MOV16_mem_imm 2 imm#! ' first imm! ' second mem! [']0 /r!
-      hC7 32 newvariant MOV32_mem_imm 4 imm#! ' first imm! ' second mem! [']0 /r!
-      h88  8 newvariant MOV8_mem_reg ' second mem! ' first.value /r!
-      h89 16 newvariant MOV16_mem_reg ' second mem! ' first.value /r!
-      h89 32 newvariant MOV32_mem_reg ' second mem! ' first.value /r!
-      h8A variant MOV8_reg_reg second_reg_first_reg
-      h8B variant MOV16_reg_reg second_reg_first_reg
-      h8B variant MOV32_reg_reg second_reg_first_reg
-      h8A  8 newvariant MOV8_reg_mem  ' first mem! ' second.value /r!
-      h8B 16 newvariant MOV16_reg_mem ' first mem! ' second.value /r!
-      h8B 32 newvariant MOV32_reg_mem ' first mem! ' second.value /r!
-    \uses
-  \namespace
-\namespace
+multi-op ADD
+  h04  8 variant _al_imm  ' first.value imm!
+  h05 16 variant _ax_imm  ' first.value imm!
+  h05 32 variant _eax_imm ' first.value imm!
+  h80  8 variant _mem_imm /0 ' first.value imm! ' second mem!
+  h81 16 variant _mem_imm /0 ' first.value imm! ' second mem!
+  h81 32 variant _mem_imm /0 ' first.value imm! ' second mem!
+  h80  8 variant _reg_imm /0 ' first.value imm! ' second mem!
+  h81 16 variant _reg_imm /0 ' first.value imm! ' second mem!
+  h81 32 variant _reg_imm /0 ' first.value imm! ' second mem!
+  // signed-extended?
+  // h83 16 variant _mem_imm /0 ' first.value imm!
+  // h83 32 variant _mem_imm /0 ' first.value imm!
+  h00  8 variant _mem_reg ' first.value /r ' second mem!
+  h01 16 variant _mem_reg ' first.value /r ' second mem!
+  h01 32 variant _mem_reg ' first.value /r ' second mem!
+  h02  8 variant _reg_mem ' second.value /r ' first mem!
+  h03 16 variant _reg_mem ' second.value /r ' first mem!
+  h03 32 variant _reg_mem ' second.value /r ' first mem!
+  h02  8 variant _reg_reg ' second.value /r ' first mem!
+  h03 16 variant _reg_reg ' second.value /r ' first mem!
+  h03 32 variant _reg_reg ' second.value /r ' first mem!
+
+multi-op ADC
+  h14  8 variant _al_imm  ' first.value imm!
+  h15 16 variant _ax_imm  ' first.value imm!
+  h15 32 variant _eax_imm ' first.value imm!
+  h80  8 variant _mem_imm /2 ' first.value imm! ' second mem!
+  h81 16 variant _mem_imm /2 ' first.value imm! ' second mem!
+  h81 32 variant _mem_imm /2 ' first.value imm! ' second mem!
+  h80  8 variant _reg_imm /2 ' first.value imm! ' second mem!
+  h81 16 variant _reg_imm /2 ' first.value imm! ' second mem!
+  h81 32 variant _reg_imm /2 ' first.value imm! ' second mem!
+  // signed-extended?
+  // h83 16 variant _mem_imm /2 ' first.value imm!
+  // h83 32 variant _mem_imm /2 ' first.value imm!
+  h10  8 variant _mem_reg ' first.value /r ' second mem!
+  h11 16 variant _mem_reg ' first.value /r ' second mem!
+  h11 32 variant _mem_reg ' first.value /r ' second mem!
+  h12  8 variant _reg_mem ' second.value /r ' first mem!
+  h13 16 variant _reg_mem ' second.value /r ' first mem!
+  h13 32 variant _reg_mem ' second.value /r ' first mem!
+  h12  8 variant _reg_reg ' second.value /r ' first mem!
+  h13 16 variant _reg_reg ' second.value /r ' first mem!
+  h13 32 variant _reg_reg ' second.value /r ' first mem!
+
+multi-op AND
+  h24  8 variant _al_imm  ' first.value imm!
+  h25 16 variant _ax_imm  ' first.value imm!
+  h25 32 variant _eax_imm ' first.value imm!
+  h80  8 variant _mem_imm /4 ' first.value imm! ' second mem!
+  h81 16 variant _mem_imm /4 ' first.value imm! ' second mem!
+  h81 32 variant _mem_imm /4 ' first.value imm! ' second mem!
+  h80  8 variant _reg_imm /4 ' first.value imm! ' second mem!
+  h81 16 variant _reg_imm /4 ' first.value imm! ' second mem!
+  h81 32 variant _reg_imm /4 ' first.value imm! ' second mem!
+  // signed-extended?
+  // h83 16 variant _mem_imm /4 ' first.value imm!
+  // h83 32 variant _mem_imm /4 ' first.value imm!
+  h20  8 variant _mem_reg ' first.value /r ' second mem!
+  h21 16 variant _mem_reg ' first.value /r ' second mem!
+  h21 32 variant _mem_reg ' first.value /r ' second mem!
+  h22  8 variant _reg_mem ' second.value /r ' first mem!
+  h23 16 variant _reg_mem ' second.value /r ' first mem!
+  h23 32 variant _reg_mem ' second.value /r ' first mem!
+  h22  8 variant _reg_reg ' second.value /r ' first mem!
+  h23 16 variant _reg_reg ' second.value /r ' first mem!
+  h23 32 variant _reg_reg ' second.value /r ' first mem!
+
+multi-op SUB
+  h2C  8 variant _al_imm  ' first.value imm!
+  h2D 16 variant _ax_imm  ' first.value imm!
+  h2D 32 variant _eax_imm ' first.value imm!
+  h80  8 variant _mem_imm /5 ' first.value imm! ' second mem!
+  h81 16 variant _mem_imm /5 ' first.value imm! ' second mem!
+  h81 32 variant _mem_imm /5 ' first.value imm! ' second mem!
+  h80  8 variant _reg_imm /5 ' first.value imm! ' second mem!
+  h81 16 variant _reg_imm /5 ' first.value imm! ' second mem!
+  h81 32 variant _reg_imm /5 ' first.value imm! ' second mem!
+  // signed-extended?
+  // h83 16 variant _mem_imm /5 ' first.value imm!
+  // h83 32 variant _mem_imm /5 ' first.value imm!
+  h28  8 variant _mem_reg ' first.value /r ' second mem!
+  h29 16 variant _mem_reg ' first.value /r ' second mem!
+  h29 32 variant _mem_reg ' first.value /r ' second mem!
+  h2A  8 variant _reg_mem ' second.value /r ' first mem!
+  h2B 16 variant _reg_mem ' second.value /r ' first mem!
+  h2B 32 variant _reg_mem ' second.value /r ' first mem!
+  h2A  8 variant _reg_reg ' second.value /r ' first mem!
+  h2B 16 variant _reg_reg ' second.value /r ' first mem!
+  h2B 32 variant _reg_reg ' second.value /r ' first mem!
+
+multi-op SBB
+  h1C  8 variant _al_imm  ' first.value imm!
+  h1D 16 variant _ax_imm  ' first.value imm!
+  h1D 32 variant _eax_imm ' first.value imm!
+  h80  8 variant _mem_imm /3 ' first.value imm! ' second mem!
+  h81 16 variant _mem_imm /3 ' first.value imm! ' second mem!
+  h81 32 variant _mem_imm /3 ' first.value imm! ' second mem!
+  h80  8 variant _reg_imm /3 ' first.value imm! ' second mem!
+  h81 16 variant _reg_imm /3 ' first.value imm! ' second mem!
+  h81 32 variant _reg_imm /3 ' first.value imm! ' second mem!
+  // signed-extended?
+  // h83 16 variant _mem_imm /3 ' first.value imm!
+  // h83 32 variant _mem_imm /3 ' first.value imm!
+  h18  8 variant _mem_reg ' first.value /r ' second mem!
+  h19 16 variant _mem_reg ' first.value /r ' second mem!
+  h19 32 variant _mem_reg ' first.value /r ' second mem!
+  h1A  8 variant _reg_mem ' second.value /r ' first mem!
+  h1B 16 variant _reg_mem ' second.value /r ' first mem!
+  h1B 32 variant _reg_mem ' second.value /r ' first mem!
+  h1A  8 variant _reg_reg ' second.value /r ' first mem!
+  h1B 16 variant _reg_reg ' second.value /r ' first mem!
+  h1B 32 variant _reg_reg ' second.value /r ' first mem!
+
+multi-op XOR
+  h34  8 variant _al_imm  ' first.value imm!
+  h35 16 variant _ax_imm  ' first.value imm!
+  h35 32 variant _eax_imm ' first.value imm!
+  h80  8 variant _mem_imm /6 ' first.value imm! ' second mem!
+  h81 16 variant _mem_imm /6 ' first.value imm! ' second mem!
+  h81 32 variant _mem_imm /6 ' first.value imm! ' second mem!
+  h80  8 variant _reg_imm /6 ' first.value imm! ' second mem!
+  h81 16 variant _reg_imm /6 ' first.value imm! ' second mem!
+  h81 32 variant _reg_imm /6 ' first.value imm! ' second mem!
+  // signed-extended?
+  h83 16 variant _mem_imm8 /6 ' first.value imm! 1 imm#!
+  h83 32 variant _mem_imm8 /6 ' first.value imm! 1 imm#!
+  h83 16 variant _reg_imm8 /6 ' first.value imm! 1 imm#!
+  h83 32 variant _reg_imm8 /6 ' first.value imm! 1 imm#!
+  h30  8 variant _mem_reg ' first.value /r ' second mem!
+  h31 16 variant _mem_reg ' first.value /r ' second mem!
+  h31 32 variant _mem_reg ' first.value /r ' second mem!
+  h32  8 variant _reg_mem ' second.value /r ' first mem!
+  h33 16 variant _reg_mem ' second.value /r ' first mem!
+  h33 32 variant _reg_mem ' second.value /r ' first mem!
+  h32  8 variant _reg_reg ' second.value /r ' first mem!
+  h33 16 variant _reg_reg ' second.value /r ' first mem!
+  h33 32 variant _reg_reg ' second.value /r ' first mem!

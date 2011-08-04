@@ -1,0 +1,34 @@
+// 2011.08.04 # Doj
+// Продолжаю эксперименты с ассемблером
+
+include" units\asm\asm.de"
+include" units\asm\i386\all.de"
+
+uses I386 TRANSLATOR
+
+variable *in1
+variable *in2
+variable *in3
+variable *in4
+100 *in1 !
+505 *in2 !
+h55 *in3 !
+h33 *in4 !
+variable *out1
+variable *out2
+:asm-noname
+  PREFIX
+    mov eax d[ *in3 disp ]
+    and eax d[ *in4 disp ]
+    mov d[ *out1 disp ] eax
+    mov eax d[ *in3 disp ]
+    xor eax d[ *in4 disp ]
+    xor eax h00 imm
+    mov d[ *out2 disp ] eax
+    ret
+  \PREFIX
+asm-noname; execute
+." *out1 = " *out1 @ . cr
+." *out2 = " *out2 @ . cr
+
+\uses

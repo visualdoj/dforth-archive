@@ -1,7 +1,15 @@
 // 2011.07.31 # Doj
 // Транслятор
 
-include" units\asm\i386\tables\ia32.de"
+include" units\asm\i386\description.de"
+
+I386 extend-namespace 
+  namespace COMMANDS
+    uses COMMAND_DESCRIPTION
+      include" units\asm\i386\tables\ia32.de"
+    \uses
+  \namespace
+\namespace
 
 I386 extend-namespace 
 uses COMMAND_DESCRIPTION COMMANDS
@@ -176,7 +184,7 @@ uses COMMAND_DESCRIPTION COMMANDS
 // {{{ MOV reg imm
     : MOV_reg_imm
       second .regtype @ switch
-        RT_8 of COMMAND_DESCRIPTION MOV8_reg_imm ^ \of
+        RT_8  of COMMAND_DESCRIPTION MOV8_reg_imm ^ \of
         RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_reg_imm ^ \of
         RT_32 of 32 switch<< COMMAND_DESCRIPTION MOV32_reg_imm ^ \of
       \switch
@@ -193,22 +201,21 @@ uses COMMAND_DESCRIPTION COMMANDS
       \switch
     ;
 // }}}
-// {{{ MOV reg mem (todo)
+// {{{ MOV reg mem
     : MOV_reg_mem
-      second .value @ dup . cr EAX = first .base @ dup . cr -1 = and first .factor @ dup . cr 0= and if
+      second .value @ EAX = first .base @ -1 = and first .factor @ 0= and if
         // особый случай
         second .regtype @ switch
-          RT_8 of COMMAND_DESCRIPTION MOV8_al_moffset ^ \of
-          RT_16 of 16 switch<< COMMAND_DESCRIPTION MOV16_ax_moffset ^ \of
-          RT_32 of ." HERE" cr 32 switch<< COMMAND_DESCRIPTION MOV32_eax_moffset ^ \of
+          RT_8  of COMMAND_DESCRIPTION MOV8_al_moffset ^ \of
+          RT_16 of COMMAND_DESCRIPTION MOV16_ax_moffset ^ \of
+          RT_32 of COMMAND_DESCRIPTION MOV32_eax_moffset ^ \of
         \switch
         exit
       then
-      ." HERE2" cr
       second .regtype @ switch
-        RT_8 of COMMAND_DESCRIPTION MOV8_reg_mem ^ \of
-        RT_16 of ( 16 switch<<) COMMAND_DESCRIPTION MOV16_reg_mem ^ \of
-        RT_32 of ( 32 switch<<) COMMAND_DESCRIPTION MOV32_reg_mem ^ \of
+        RT_8  of COMMAND_DESCRIPTION MOV8_reg_mem ^ \of
+        RT_16 of COMMAND_DESCRIPTION MOV16_reg_mem ^ \of
+        RT_32 of COMMAND_DESCRIPTION MOV32_reg_mem ^ \of
       \switch
     ;
 // }}}
@@ -298,7 +305,112 @@ uses COMMAND_DESCRIPTION COMMANDS
       \switch clear-operands
     ;
 // }}}
-    
+// {{{ XOR
+// {{{ XOR reg
+// {{{ XOR reg imm
+    : XOR_reg_imm
+      second .regtype @ switch
+        RT_8  of COMMAND_DESCRIPTION XOR8_reg_imm ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION XOR16_reg_imm ^ \of
+        RT_32 of 32 switch<< COMMAND_DESCRIPTION XOR32_reg_imm ^ \of
+      \switch
+    ;
+// }}}
+// {{{ XOR reg reg
+    : XOR_reg_reg
+      first .regtype @ second .regtype @ <> 
+      if " both operands of XOR must have the same type" error then
+      second .regtype @ switch
+        RT_8 of COMMAND_DESCRIPTION XOR8_reg_reg ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION XOR16_reg_reg ^ \of
+        RT_32 of 32 switch<< COMMAND_DESCRIPTION XOR32_reg_reg ^ \of
+      \switch
+    ;
+// }}}
+// {{{ XOR reg mem
+    : XOR_reg_mem
+      second .regtype @ switch
+        RT_8  of COMMAND_DESCRIPTION XOR8_reg_mem ^ \of
+        RT_16 of COMMAND_DESCRIPTION XOR16_reg_mem ^ \of
+        RT_32 of COMMAND_DESCRIPTION XOR32_reg_mem ^ \of
+      \switch
+    ;
+// }}}
+// {{{ XOR reg seg
+    : XOR_reg_seg 
+      first .value @ DT_WORD = if
+        // 16 switch<< COMMAND_DESCRIPTION XOR16_mem_seg ^
+      else " mov to segment register must be 16-bit memory operand" error then
+    ;
+// }}}
+    : XOR_reg
+      first .type @ switch
+        OT_IMM of XOR_reg_imm \of
+        OT_REG of XOR_reg_reg \of
+        OT_MEM of XOR_reg_mem \of
+        OT_SEG of XOR_reg_seg \of
+      \switch
+    ;
+// }}}
+// {{{ XOR mem
+    : XOR_mem_imm
+      second .value @ switch
+        DT_BYTE of COMMAND_DESCRIPTION XOR8_mem_imm ^ \of
+        DT_WORD of ( 16 switch<<) COMMAND_DESCRIPTION XOR16_mem_imm ^ \of
+        DT_DWORD of ( 32 switch<<) COMMAND_DESCRIPTION XOR32_mem_imm ^ \of
+        unknown-operand-type
+      \switch
+    ;
+    : XOR_mem_reg 
+      first .regtype @ switch
+        RT_8 of COMMAND_DESCRIPTION XOR8_mem_reg ^ \of
+        RT_16 of 16 switch<< COMMAND_DESCRIPTION XOR16_mem_reg ^ \of
+        RT_32 of 32 switch<< COMMAND_DESCRIPTION XOR32_mem_reg ^ \of
+        unknown-operand-type
+      \switch
+    ;
+    : XOR_mem_seg 
+      second .value @ DT_WORD = if
+        // 16 switch<< COMMAND_DESCRIPTION XOR16_mem_seg ^
+      else " mov from segment register must be 16-bit memory operand" error then
+    ;
+    : XOR_mem 
+      first .type @ switch
+        OT_IMM of XOR_mem_imm \of
+        OT_REG of XOR_mem_reg \of
+        OT_SEG of XOR_mem_seg \of
+        " cannot mov from mem to mem"
+      \switch
+    ;
+// }}}
+// {{{ XOR seg
+    : XOR_seg 
+      first .type @ switch
+        OT_REG of first .regtype @ RT_16 <> 
+                  if " must be 16-bit register in this format" error then 
+                  // TODO 16 switch<< XOR16_seg_reg
+        \of
+        OT_MEM of first .value @ DT_WORD <> 
+                  if " must be 16-bit memory access in this format" error then 
+                  // TODO 16 switch<< XOR16_seg_mem
+        \of
+        OT_IMM of " cannot mov immediate data to segment register" error \of
+        OT_SEG of " cannot mov segment regfister to segment register" error \of
+        unknown-operand-type
+      \switch
+    ;
+// }}}
+    : XOR
+          2 ?operands
+          second .type @ switch
+            OT_IMM of " dst operand of XOR cannot be immediate " error \of
+            OT_REG of XOR_reg \of
+            OT_MEM of XOR_mem \of
+            OT_SEG of XOR_seg \of
+            unknown-operand-type
+          \switch clear-operands
+    ;
+// }}}
     : _COMPILE_NOTFOUND_
         *auto-integers? @ dup if str->int postpone literal postpone imm 
                               else bdrop then
@@ -314,6 +426,7 @@ uses COMMAND_DESCRIPTION COMMANDS
       ' DEC prefix-mnemonic dec
       ' INC prefix-mnemonic inc
       ' MOV prefix-mnemonic mov
+      ' XOR prefix-mnemonic xor
       ' NEG prefix-mnemonic neg
       ' NOP prefix-mnemonic nop
       ' POP prefix-mnemonic pop

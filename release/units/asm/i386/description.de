@@ -6,120 +6,22 @@ include" units\statements\switch.de"
 I386 extend-namespace 
 // {{{ COMMAND_DESCRIPTION
   namespace COMMAND_DESCRIPTION
+    // ѕростейшии команды, у которых лишь одна форма
     : 0op ( опкод) create , does> @ byte<< clear-operands ;
     : w-op ( опкод) create , does> @ byte<< first .value @ word<< clear-operands ;
     : r-op ( опкод) create , does> @ first .value @ + byte<< clear-operands ;
 
-    // убер структура дл€ описани€ одной разновидности команды
-    0
-      t_str -- .mnemonic
-      t_ptr -- .opcode
-      t_ptr -- .+r
+    // —оздаЄм команды, которые кладут xt, возвращающие определЄнные константы
+    :noname  0 ; value '0
+    :noname  1 ; value '1
+    :noname  2 ; value '2
+    :noname  3 ; value '3
+    :noname  4 ; value '4
+    :noname  5 ; value '5
+    :noname  6 ; value '6
+    :noname  7 ; value '7
 
-      t_bool -- .ModR/M?
-      t_ptr -- .mod
-      t_ptr -- .reg
-      t_ptr -- .r/m
-
-      t_ptr -- .factor-xt
-      t_ptr -- .base-xt
-      t_ptr -- .index
-      t_ptr -- .offset
-
-      t_ptr -- .moffset#
-      t_ptr -- .moffset
-
-      t_int -- .imm#
-      t_ptr -- .imm
-    struct s_variant-description
-
-    // хитрый хак :)
-    enum8 '0 '1 '2 '3 '4 '5 '6 '7
-
-
-    // убер команда, компилирующа€ по данным убер структуры
-    : variant<< ( p)
-      dup .opcode @ over .+r @ execute + byte<<
-      dup .ModR/M? @ if
-        dup .mod @ execute
-        over dup .reg @ execute
-        swap .r/m @ execute
-        ModR/M byte<<
-        dup .r/m @ execute ESP = if
-          dup .factor-xt @ execute
-          over dup .index @ execute
-          swap .base-xt @ execute
-          SIB byte<<
-        then
-      then
-      dup dup .moffset @ execute swap .moffset# @ execute switch
-        1 of byte<< \of
-        2 of word<< \of
-        4 of dword<< \of
-        drop
-      \switch
-      dup dup .imm @ execute swap .imm# @ execute switch
-        1 of byte<< \of
-        2 of word<< \of
-        4 of dword<< \of
-        drop
-      \switch
-      drop
-    ;
-
-    variable *last-multi-mnemonic
-    : last-multi-mnemonic *last-multi-mnemonic @ ;
-    : variant create here *last-multi-mnemonic ! 
-                     s_variant-description allot
-                     last-multi-mnemonic .mnemonic off
-                     // source-next-name last-multi-mnemonic .mnemonic b! 
-                     // last-multi-mnemonic .
-        last-multi-mnemonic .opcode !
-        ['] '0 last-multi-mnemonic .+r !
-
-        last-multi-mnemonic .ModR/M? off
-        ['] '0 last-multi-mnemonic .mod !
-        ['] '0 last-multi-mnemonic .reg !
-        ['] '0 last-multi-mnemonic .r/m !
-
-        ['] '0 last-multi-mnemonic .factor-xt !
-        ['] '0 last-multi-mnemonic .base-xt !
-        ['] '0 last-multi-mnemonic .index !
-
-        ['] '0 last-multi-mnemonic .moffset# !
-        ['] '0 last-multi-mnemonic .moffset !
-
-        ['] '0 last-multi-mnemonic .imm# !
-        ['] '0 last-multi-mnemonic .imm !
-    does> variant<<
-    ;
-
-    // xt команды, котора€ кладЄт значение параметра reg в ModR/M
-    : /r ( x) last-multi-mnemonic .reg ! ;
-    : /0 ['] '0 /r ;
-    : /1 ['] '1 /r ;
-    : /2 ['] '2 /r ;
-    : /3 ['] '3 /r ;
-    : /4 ['] '4 /r ;
-    : /5 ['] '5 /r ;
-    : /6 ['] '6 /r ;
-    : /7 ['] '7 /r ;
- 
-    // +r
-    : +r last-multi-mnemonic .+r ! ;
-    // ModR/M
-    : mod! last-multi-mnemonic .mod ! last-multi-mnemonic .ModR/M? on ;
-    : reg! last-multi-mnemonic .reg ! last-multi-mnemonic .ModR/M? on ;
-    : r/m! last-multi-mnemonic .r/m ! last-multi-mnemonic .ModR/M? on ;
-    // imm
-    : imm8! last-multi-mnemonic .imm ! ['] '1 last-multi-mnemonic .imm# ! ;
-    : imm16! last-multi-mnemonic .imm ! ['] '2 last-multi-mnemonic .imm# ! ;
-    : imm32! last-multi-mnemonic .imm ! ['] '4 last-multi-mnemonic .imm# ! ;
-    // включение генерации moffset данных
-    : moffset8 ['] '1 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
-    : moffset16 ['] '2 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
-    : moffset32 ['] '4 last-multi-mnemonic .moffset# ! last-multi-mnemonic .moffset ! ;
-
+    //  оманды доступа к определЄнным пол€м операндов 
     : first.value first .value @ ;
     : second.value second .value @ ;
     : third.value third .value @ ;
@@ -127,29 +29,17 @@ I386 extend-namespace
     : second.disp second .disp @ ;
     : third.disp third .disp @ ;
 
-    // op reg reg/mem
-    : second_reg_first_reg ['] '3 mod!  
-                           ['] second.value reg! 
-                           ['] first.value r/m! ;
-    // op reg/mem reg
-    : first_reg_second_reg ['] '3 mod!  
-                           ['] first.value reg! 
-                           ['] second.value r/m! ;
-    // mod
-    : disp->mod dup if drop Mod_MODE_SIMPLE 
-                    else 256 < if Mod_MODE_8 else Mod_MODE_32 then then ;
-    : first.mod first .disp @ disp->mod ; 
-    : second.mod second .disp @ disp->mod ; 
-    : third.mod third .disp @ disp->mod ; 
-
-    : first-mem ['] first.mod mod! ;
-
-    // 2 version
+    // ¬ычисл€ет по операнду mod поле в ModR/M
     : opmod ( opcode -- mod) .disp @ dup if 0 else 256 < if 1 else 2 then then ;
+    // ¬ычисл€ет по операнду mod поле в ModR/M при условии, что base регистром
+    // €вл€етс€ EBP
     : ebp-mod ( opcode -- mod) .disp @ 256 < if 1 else 2 then ;
+    // «аписываем disp по самому disp и вычесленному ранее mod
     : disp-mod<< ( dm) dup if 1 = if byte<< else dword<< then else drop then ;
+    // «аписываем disp операнда
     : disp<< ( operand) dup opmod disp-mod<< ;
     : ebp-disp<< ( operand) dup ebp-mod disp-mod<< ;
+    // ¬ычисл€ем по операнду SS составл€ющую в SIB
     : op.SS ( operand -- SS) 
                    .factor @ switch 
                       1 of 0 \of 
@@ -158,8 +48,12 @@ I386 extend-namespace
                       8 of 4 \of
                     \switch ;
 
-    ( rp)
-    variable *temp
+    // ¬се команды ниже имеют одинаковы стековый рисунок: 
+    // register operand --
+    // где register - число от 0 до 7, которое будет записано в reg часть байта
+    //                ModR/M
+    //     operand - указатель на структуру операнда, который €вл€етс€
+    //                косвенной адресацией
     : [f*i+d]<< 0 lrot ESP ModR/M<< 
                 dup dup op.SS swap dup .index @ swap .base @ SIB<<
                 .disp @ dword<< ;
@@ -167,34 +61,38 @@ I386 extend-namespace
                     dup op.SS over .index @ EBP SIB<< ebp-disp<< ;
     : [b+f*i+d]<< tuck opmod swap ESP ModR/M<<
                   dup dup op.SS swap dup .index @ swap .base @ SIB<< disp<< ;
-    : [d]<< swap 0 swap EBP ModR/M<< .disp @ dup . dword<< ;
+    : [d]<< swap 0 swap EBP ModR/M<< .disp @ dword<< ;
     : [ebp+d]<< tuck ebp-mod swap EBP ModR/M<< ebp-disp<< ;
     : [esp+d]<< tuck opmod swap ESP ModR/M<< 0 ESP ESP SIB<< disp<< ;
     : [b+d]<< tuck opmod swap ( por) 3 pick .base @ ModR/M<< disp<< ;
 
-    // r -- число от 0 до 7, которое будет записано в reg поле байта ModR/M
-    // p -- операнд, код которого мы генерируем
-    : mem<< ( rp)
-      dup factor? if
-        dup .index @ ESP = if
-          " cannot use ESP as index in mov" error
+    // ќписание параметров то же, что и у предыдущих слов
+    : r/m<< ( rp)
+      dup .type @ OT_REG = if
+        .value @ 3 rrot ModR/M<<
+      else
+        dup factor? if
+          dup .index @ ESP = if
+            " cannot use ESP as index in mov" error
+          else
+            dup .base @ switch
+              -1 of [f*i+d]<< \of
+              EBP of [ebp+f*i+d]<< \of
+              [b+f*i+d]<<
+            \switch
+          then
         else
           dup .base @ switch
-            -1 of [f*i+d]<< \of
-            EBP of [ebp+f*i+d]<< \of
-            [b+f*i+d]<<
+            -1 of [d]<< \of
+            EBP of [ebp+d]<< \of
+            ESP of [esp+d]<< \of
+            [b+d]<<
           \switch
         then
-      else
-        dup .base @ dup . switch
-          -1 of [d]<< \of
-          EBP of [ebp+d]<< \of
-          ESP of [esp+d]<< \of
-          [b+d]<<
-        \switch
       then
     ;
     
+    // —труктура, содержаща€ описание формы команды
     0
       t_int -- v.opcode // опкод варианта
       t_int -- v.bits // 8, 16 или 32
@@ -207,28 +105,46 @@ I386 extend-namespace
       t_ptr -- v.imm
     struct s_variant
    
-    : newvariant<< ( variant)
-        ." NOIMM" cr
+    // «аписывает переданную форму
+    : variant<< ( variant)
       dup v.bits @ switch
         16 of 16 switch<< \of
         32 of 32 switch<< \of
       \switch
-      dup v.opcode @ over v.+r @ execute + dup . byte<<
-      dup v./r @ execute over v.mem @ execute mem<<
+      dup v.opcode @ over v.+r @ execute + byte<<
+      dup v.mem @ execute ?dup if over v./r @ execute swap r/m<< then
       dup v.imm# @ switch
-        1 of dup v.imm @ execute .value @ byte<< \of
-        2 of dup v.imm @ execute .value @ word<< \of
-        4 of dup v.imm @ execute .value @ dword<< \of
+        1 of dup v.imm @ execute byte<< \of
+        2 of dup v.imm @ execute word<< \of
+        4 of dup v.imm @ execute dword<< \of
       \switch
       drop ;
-    :noname  0 ; value [']0
-    : newvariant ( opcode bits) create swap , , [']0 dup , dup , dup , 0 , ,  
-      does> newvariant<< ;
-    : +r! last xt.param@ v.+r ! ;
+    
+    variable *multi-op-name *multi-op-name off
+
+    : multi-op source-next-name *multi-op-name b! ;
+
+    : multi-form-name ( bits B: postfix )
+        int->str bswap str+ 
+        *multi-op-name b@ bswap str+ ;
+    : variant ( opcode bits) 
+        dup source-next-name multi-form-name created 
+        swap , , '0 , '0 , '0 , 0 , '0 ,  
+      does> variant<< ;
+    : +r last xt.param@ v.+r ! ;
     : mem! last xt.param@ v.mem ! ;
-    : /r! last xt.param@ v./r ! ;
+    : /r last xt.param@ v./r ! ;
     : imm#! last xt.param@ v.imm# ! ;
-    : imm! last xt.param@ v.imm ! ;
+    : imm! last xt.param@ v.imm ! last xt.param@ v.bits @ 8 div imm#! ;
+
+    : /0 '0 /r ;
+    : /1 '1 /r ;
+    : /2 '2 /r ;
+    : /3 '3 /r ;
+    : /4 '4 /r ;
+    : /5 '5 /r ;
+    : /6 '6 /r ;
+    : /7 '7 /r ;
   \namespace
 // }}}
 \namespace

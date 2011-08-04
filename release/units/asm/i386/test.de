@@ -40,7 +40,7 @@ variable *test
     // 3ebx
     *auto-integers? off
     mov edx eax
-    mov eax d[ *test disp ] first .factor @ . cr
+    mov eax d[ *test disp ]
     inc eax
     mov d[ *test disp ] eax
     mov eax edx
