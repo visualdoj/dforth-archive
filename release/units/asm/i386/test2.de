@@ -16,19 +16,29 @@ h55 *in3 !
 h33 *in4 !
 variable *out1
 variable *out2
+variable *out3
 :asm-noname
   PREFIX
     mov eax d[ *in3 disp ]
     and eax d[ *in4 disp ]
     mov d[ *out1 disp ] eax
+
     mov eax d[ *in3 disp ]
     xor eax d[ *in4 disp ]
-    xor eax h00 imm
+    // xor eax h00 imm
     mov d[ *out2 disp ] eax
+
+    mov d[ *out3 disp ] h33 imm
+    mov eax d[ *in3 disp ]
+    xor d[ *out3 disp ] eax
     ret
   \PREFIX
 asm-noname; execute
 ." *out1 = " *out1 @ . cr
 ." *out2 = " *out2 @ . cr
+." *out3 = " *out3 @ . cr
+" h55 . cr " bdup str. evaluate 
+" h33 . cr " bdup str. evaluate 
+" h55 h33 xor . " bdup str. evaluate 
 
 \uses
