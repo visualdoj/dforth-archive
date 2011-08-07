@@ -1,3 +1,8 @@
 // 2011.04.19 # Doj
 //      оманды по работе с динамической пам€тью.
 
+samebuiltin malloc
+samebuiltin free
+samebuiltin realloc
+samebuiltin move
+samebuiltin fill0

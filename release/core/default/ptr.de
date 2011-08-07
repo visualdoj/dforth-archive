@@ -3,9 +3,6 @@
 
 samebuiltin @
 samebuiltin !
-samebuiltin malloc
-samebuiltin free
-samebuiltin move
 samebuiltin cell+
 samebuiltin cells
 samebuiltin inc!

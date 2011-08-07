@@ -1,0 +1,60 @@
+// 2011.08.07 # Doj
+// Динамический массив, хранящий структуры
+
+namespace NDYN
+  0
+    t_int -- .count // число элементов
+    t_int -- .size // размер одного элемента
+    t_int -- .capacity // максимальное число элементов, под которое выделена память
+    t_int -- .ptr // адрес памяти, по которому выделено место под массив
+  struct s_ndyn
+
+  : need-bytes ( d-i) dup .size @ swap .capacity @ * ;
+  : get-mem ( d) dup need-bytes malloc swap .ptr ! ;
+  : free-mem ( d) .ptr @ free ;
+  : resize-mem ( d) dup need-bytes over .ptr @ realloc swap .ptr ! ;
+
+  : init-struct ( csd)
+      dup .count off
+      tuck .size !
+      tuck .capacity !
+      get-mem ;
+
+  : # ( d-#) .count @ ;
+  : [] ( id-p) tuck .size @ * swap .ptr @ + ;
+  : #1- ( d-i) # 1- ;
+  : [#] ( d-p) dup #1- swap [] ;
+  : #! ( #d) 
+      2dup .count ! ( #d)
+      tuck .capacity @ ( d#c)
+      2dup <= if 2drop drop exit then ( d#c)
+      drop over .capacity ! ( d)
+      resize-mem ;
+  : ++ ( d) dup # 1+ swap #! ;
+  : 0+ ( d) dup ++ dup [#] swap .size @ fill0 ;
+
+  variable last-ndyn
+  variable op-template
+  : create-op ( B: s) created last-ndyn @ , ;
+  " : op<OP> ( B: s) bdup +^" <OP>^" create-op does> @ <OP> ;" b>w op-template !
+  op-template b@ " <OP>" \" #" evaluate
+  op-template b@ " <OP>" \" []" evaluate
+  op-template b@ " <OP>" \" [#]" evaluate
+  op-template b@ " <OP>" \" #1-" evaluate
+  op-template b@ " <OP>" \" #!" evaluate
+  op-template b@ " <OP>" \" ++" evaluate
+  op-template b@ " <OP>" \" 0+" evaluate
+  : global ( capacity size "name")
+      source-next-name-passive create
+      here dup last-ndyn ! 
+      s_ndyn allot init-struct 
+      op# op[] op[#] op#1- op#! op++ op0+ bdrop ;
+      
+\namespace
+
+: ndym# NDYN # ^ ;
+: ndym#! NDYN #! ^ ;
+: ndym[] NDYN [] ^ ;
+: ndym[#] NDYN [#] ^ ;
+: ndym++ NDYN ++ ^ ;
+: ndyn-global NDYN global ^ ;

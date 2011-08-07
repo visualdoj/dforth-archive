@@ -3,14 +3,55 @@ unit DCommandsMem;
 interface
 
 uses
+  {$I units.inc},
   DForthMachine;
 
 procedure LoadCommands(Machine: TForthMachine);
 
 implementation
 
+procedure _malloc cmdhdr; 
+var 
+  P: Pointer; 
+body( 
+  P := Pointer(WVar(-SizeOf(Integer)));
+  GetMem(P, Integer(WVar(-SizeOf(Integer)))); 
+  Pointer(WVar(-SizeOf(Integer))) := P;
+)
+
+procedure _free cmdhdr; 
+var 
+  P: Pointer; 
+body( 
+  Dec(WP, SizeOf(Pointer));
+  P := Pointer(WP^);
+  FreeMem(P);
+)
+
+procedure _realloc cmdhdr;
+var 
+  P: Pointer;
+body(
+  Dec(WP, SizeOf(Pointer));
+  Pointer(WVar(-SizeOf(Pointer))) := 
+      ReAllocMem(Pointer(WP^), Integer(WVar(-SizeOf(Pointer))));
+)
+
+procedure _move cmdhdr; body( Dec(WP, SizeOf(Pointer)*3); Move(Pointer(WVar(0))^, Pointer(WVar(SizeOf(Pointer)))^, TUint(WVar(2*SizeOf(Pointer)))); {Writeln(TUInt(WVar(0)), TUInt(WVar(SizeOf(Pointer))), TUint(WVar(2*SizeOf(Pointer))));} )
+
+procedure _fill0 cmdhdr;
+body(
+  Dec(WP, 2*SizeOf(Pointer));
+  FillChar(Pointer(WVar(0))^, Integer(WVar(SizeOf(Pointer))), 0);
+)
+
 procedure LoadCommands(Machine: TForthMachine);
 begin
+  Machine.AddCommand('malloc', _malloc);
+  Machine.AddCommand('free', _free);
+  Machine.AddCommand('realloc', _realloc);
+  Machine.AddCommand('move', _move);
+  Machine.AddCommand('fill0', _fill0);
 end;
 
 end.

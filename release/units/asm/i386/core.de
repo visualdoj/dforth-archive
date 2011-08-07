@@ -5,7 +5,7 @@ include" units\statements\switch.de"
 
 namespace I386
   // текущая позиция в ассемблерном коде (для вычисления адресов меток)
-  : pos@ ( -p) ;
+  : pos@ ( -p) here ;
   // записать в ассемблерный код байт
   : byte<< uint->uint8 uint8, ;
   : word<< uint->uint16 uint16, ;

@@ -19,3 +19,4 @@ samebuiltin pick
 // }}}
 
 : 2dup ( ab-abab) over over ;
+: 2drop ( ab-) drop drop ;

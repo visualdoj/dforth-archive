@@ -1,0 +1,30 @@
+// 2011.08.07 # Doj
+// Тестируем метки
+
+include" units\asm\asm.de"
+include" units\asm\i386\all.de"
+
+uses I386 TRANSLATOR
+  :asm-noname
+    PREFIX
+      @@ HERE2 here 'dword-resolver LABELS L[#] label! ^
+      here value here2'-temp 0 ,
+    @> HERE ." here: " here . cr
+      nop nop nop nop
+      @@ HERE here 'dword-resolver LABELS L[#] label! ^
+      here value here-temp 0 ,
+      nop nop nop nop nop
+      @@ HERE3
+      @@ HERE2 here 'dword-resolver LABELS L[#] label! ^
+      here value here2-temp 0 ,
+      nop nop nop
+    @> HERE2 ." here2: " here . cr
+      nop nop nop nop nop nop
+      ret
+      all-resolve
+      ." here-temp: " here-temp . cr
+      ." here2-temp: " here2-temp . cr
+      ." here2'-temp: " here2'-temp . cr
+    \PREFIX
+  asm-noname; // execute
+\uses

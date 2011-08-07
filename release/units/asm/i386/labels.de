@@ -1,0 +1,76 @@
+// 2011.08.07 # Doj
+// Реализация меток для условного и безусловного переходов
+
+include" units\asm\i386\core.de"
+include" units\structures\ndyn.de"
+
+I386 extend-namespace 
+  namespace LABELS
+    0
+      t_str -- .marker
+      t_ptr -- .pos
+    struct s_marker
+    16 s_marker ndyn-global M
+    
+    : M-clear
+      M# begin ?dup while 1-
+        dup M[] .marker 0 w>b b!
+      repeat
+      0 M#! ;
+
+    0
+      t_str -- .label
+      t_ptr -- .ptr
+      t_ptr -- .xt
+    struct s_label
+    16 s_label ndyn-global L
+
+    : L-clear
+      L# begin ?dup while 1-
+        dup L[] .label 0 w>b b!
+      repeat
+      0 L#! ;
+
+    : @> ( "name")
+        M0+
+        source-next-name M[#] .marker b!
+        pos@ M[#] .pos ! ;
+    : label+ ( B: s -- l) L0+ L[#] dup .label b! ;
+    : @@ ( "name" --) 
+        source-next-name label+
+        drop // TODO формирование операнда-ссылки
+        ;
+    : label! ( pxl) tuck .xt ! .ptr ! ;
+
+    : label-resolve ( pos label) dup .ptr @ swap .xt @ execute ;
+    ( а оно нам нужно? 
+      B: s -- l
+      : find-label
+          L# begin dup while 1- 
+            dup L[] .label bdup b@ str= if bdrop L[] exit then
+          repeat bdrop ; )
+    : find-marker // B: s -- l
+          M# begin dup while 1- 
+            dup M[] .marker bdup b@ str= if bdrop M[] exit then
+          repeat bdrop ;
+    : all-resolve
+        L# begin ?dup while 1- dup
+          dup L[] .label b@ find-marker ?dup if
+            .pos @ over L[] label-resolve 
+          else
+            " cannot resolve marker '" dup L[] .marker b@ str+ +" '" error
+          then
+        repeat ;
+
+    : dword-resolver ! ; last value 'dword-resolver
+    : word-resolver ( TODO word!) ; last value 'word-resolver
+    : byte-resolver ( TODO byte!) ; last value 'byte-resolver
+  \namespace
+
+  : 'dword-resolver LABELS 'dword-resolver ^ ;
+  : 'word-resolver LABELS 'word-resolver ^ ;
+  : 'byte-resolver LABELS 'byte-resolver ^ ;
+  : @> LABELS @> ^ ;
+  : @@ LABELS @@ ^ ;
+  : all-resolve LABELS all-resolve ^ ;
+\namespace

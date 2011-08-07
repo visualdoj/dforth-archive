@@ -131,8 +131,10 @@ multi-op SBB
   h81 16 variant _reg_imm /3 ' first.value imm! ' second mem!
   h81 32 variant _reg_imm /3 ' first.value imm! ' second mem!
   // signed-extended?
-  // h83 16 variant _mem_imm /3 ' first.value imm!
-  // h83 32 variant _mem_imm /3 ' first.value imm!
+  h83 16 variant _mem_imm /3 ' first.value imm! 1 imm#!
+  h83 32 variant _mem_imm /3 ' first.value imm! 1 imm#!
+  h83 16 variant _reg_imm /3 ' first.value imm! 1 imm#!
+  h83 32 variant _reg_imm /3 ' first.value imm! 1 imm#!
   h18  8 variant _mem_reg ' first.value /r ' second mem!
   h19 16 variant _mem_reg ' first.value /r ' second mem!
   h19 32 variant _mem_reg ' first.value /r ' second mem!

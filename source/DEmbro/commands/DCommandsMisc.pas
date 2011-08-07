@@ -78,12 +78,9 @@ uses
   procedure CallDoesGt (Machine: TForthMachine; Command: PForthCommand);
   procedure Cells (Machine: TForthMachine; Command: PForthCommand);
   procedure Cell_plus (Machine: TForthMachine; Command: PForthCommand);
-  procedure _malloc (Machine: TForthMachine; Command: PForthCommand);
-  procedure _free (Machine: TForthMachine; Command: PForthCommand);
   procedure _last (Machine: TForthMachine; Command: PForthCommand);
   procedure _xt_dot_n (Machine: TForthMachine; Command: PForthCommand);
   procedure _xt_dot_d (Machine: TForthMachine; Command: PForthCommand);
-  procedure _move (Machine: TForthMachine; Command: PForthCommand);
 
 procedure LoadCommands(Machine: TForthMachine);
 
@@ -146,12 +143,9 @@ implementation
       procedure CallDoesGt (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer));  end; end;
       procedure Cells (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^))*SizeOf(Integer);  end; end;
       procedure Cell_plus (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) := TInt((Pointer(TUInt(Machine.WP) + (-SizeOf(TInt)))^)) + SizeOf(TInt);  end; end;
-      procedure _malloc (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin P := Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^)); GetMem(P, Integer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^))); Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Integer)))^)) := P;  end; end;
-      procedure _free (Machine: TForthMachine; Command: PForthCommand); var P: Pointer; begin with Machine^ do begin Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P);  end; end;
       procedure _last (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer(WP^) := C[FLastMnemonic]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer));  end; end;
       procedure _xt_dot_n (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := @(PForthCommand((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)).Name[0]);  end; end;
       procedure _xt_dot_d (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Pointer((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)) := PForthCommand((Pointer(TUInt(Machine.WP) + (-SizeOf(Pointer)))^)).Data  end; end;
-      procedure _move (Machine: TForthMachine; Command: PForthCommand); begin with Machine^ do begin Dec(WP, SizeOf(Pointer)*3); Move(Pointer((Pointer(TUInt(Machine.WP) + (0))^))^, Pointer((Pointer(TUInt(Machine.WP) + (SizeOf(Pointer)))^))^, TUint((Pointer(TUInt(Machine.WP) + (2*SizeOf(Pointer)))^))); {Writeln(TUInt((Pointer(TUInt(Machine.WP) + (0))^)), TUInt((Pointer(TUInt(Machine.WP) + (SizeOf(Pointer)))^)), TUint((Pointer(TUInt(Machine.WP) + (2*SizeOf(Pointer)))^)));}  end; end;
 
 
 procedure _randomize (Machine: TForthMachine; Command: PForthCommand);
@@ -225,12 +219,9 @@ begin
   Machine.AddCommand('(does>)', _sq_does_gt_sq);
   Machine.AddCommand('cells', Cells);
   Machine.AddCommand('cell+', Cell_plus);
-  Machine.AddCommand('malloc', _malloc);
-  Machine.AddCommand('free', _free);
   Machine.AddCommand('last', _last);
   Machine.AddCommand('xt.n@', _xt_dot_n);
   Machine.AddCommand('xt.d@', _xt_dot_d);
-  Machine.AddCommand('move', _move);
 
   Machine.AddCommand('randomize', _randomize);
   Machine.AddCommand('random', _random);

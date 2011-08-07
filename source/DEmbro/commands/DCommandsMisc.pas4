@@ -59,12 +59,9 @@ uses
   procedure CallDoesGt cmdhdr;
   procedure Cells cmdhdr;
   procedure Cell_plus cmdhdr;
-  procedure _malloc cmdhdr;
-  procedure _free cmdhdr;
   procedure _last cmdhdr;
   procedure _xt_dot_n cmdhdr;
   procedure _xt_dot_d cmdhdr;
-  procedure _move cmdhdr;
 
 procedure LoadCommands(Machine: TForthMachine);
 
@@ -131,12 +128,9 @@ implementation
       procedure CallDoesGt cmdhdr; body( Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); )
       procedure Cells cmdhdr; body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt)))*SizeOf(Integer); )
       procedure Cell_plus cmdhdr; body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); )
-      procedure _malloc cmdhdr; var P: Pointer; body( P := Pointer(WVar(-SizeOf(Integer))); GetMem(P, Integer(WVar(-SizeOf(Integer)))); Pointer(WVar(-SizeOf(Integer))) := P; )
-      procedure _free cmdhdr; var P: Pointer; body( Dec(WP, SizeOf(Pointer)); P := Pointer(WP^); FreeMem(P); )
       procedure _last cmdhdr; body( Pointer(WP^) := C[FLastMnemonic]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer)); )
       procedure _xt_dot_n cmdhdr; body( Pointer(WVar(-SizeOf(Pointer))) := @(PForthCommand(WVar(-SizeOf(Pointer))).Name[0]); )
       procedure _xt_dot_d cmdhdr; body( Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Data )
-      procedure _move cmdhdr; body( Dec(WP, SizeOf(Pointer)*3); Move(Pointer(WVar(0))^, Pointer(WVar(SizeOf(Pointer)))^, TUint(WVar(2*SizeOf(Pointer)))); {Writeln(TUInt(WVar(0)), TUInt(WVar(SizeOf(Pointer))), TUint(WVar(2*SizeOf(Pointer))));} )
 
 
 procedure _randomize cmdhdr;
@@ -211,12 +205,9 @@ begin
   Machine.AddCommand('(does>)', _sq_does_gt_sq);
   Machine.AddCommand('cells', Cells);
   Machine.AddCommand('cell+', Cell_plus);
-  Machine.AddCommand('malloc', _malloc);
-  Machine.AddCommand('free', _free);
   Machine.AddCommand('last', _last);
   Machine.AddCommand('xt.n@', _xt_dot_n);
   Machine.AddCommand('xt.d@', _xt_dot_d);
-  Machine.AddCommand('move', _move);
 
   Machine.AddCommand('randomize', _randomize);
   Machine.AddCommand('random', _random);
