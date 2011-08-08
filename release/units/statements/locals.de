@@ -15,88 +15,89 @@ include" units\utils\parser.de"
 : put-local-offset ( p-) @ call literal ;
 : local-generated! ( s-) " !" local-created does> put-local-offset compile l! ;
 : local-generated@ ( s-) " @" local-created does> put-local-offset compile l@ ;
-: local-++generated ( s-) " ++" bswap local-created 
-  does> dup put-local-offset 
-            compile l@ 
-            compile 1+ 
-            compile dup
-            put-local-offset 
-            compile l! 
-;
+: local-++generated ( s-) 
+    " ++" bswap local-created 
+  does>
+    dup put-local-offset 
+    compile l@ 
+    compile 1+ 
+    compile dup
+    put-local-offset 
+    compile l! ;
 : local-generated++ ( s-) " ++" local-created 
-  does> dup put-local-offset 
-            compile l@ 
-            compile dup 
-            compile 1+
-            put-local-offset 
-            compile l! 
-;
+  does>
+    dup put-local-offset 
+    compile l@ 
+    compile dup 
+    compile 1+
+    put-local-offset 
+    compile l! ;
 : local---generated ( s-) " --" bswap local-created 
-  does> dup put-local-offset 
-            compile l@ 
-            compile 1- 
-            compile dup
-            put-local-offset 
-            compile l! 
-;
+  does>
+    dup put-local-offset 
+    compile l@ 
+    compile 1- 
+    compile dup
+    put-local-offset 
+    compile l! ;
 : local-generated-- ( s-) " --" local-created 
-  does> dup put-local-offset 
-            compile l@ 
-            compile dup 
-            compile 1-
-            put-local-offset 
-            compile l! 
-;
+  does>
+    dup put-local-offset 
+    compile l@ 
+    compile dup 
+    compile 1-
+    put-local-offset 
+    compile l! ;
 : local-generated1+ ( s-) " 1+" local-created 
-  does> dup put-local-offset 
-            compile l@ 
-            compile 1+
-            put-local-offset 
-            compile l! 
-;
+  does>
+    dup put-local-offset 
+    compile l@ 
+    compile 1+
+    put-local-offset 
+    compile l! ;
 : local-generated1- ( s-) " 1-" local-created 
-  does> dup put-local-offset 
-            compile l@ 
-            compile 1-
-            put-local-offset 
-            compile l! 
-;
+  does>
+    dup put-local-offset 
+    compile l@ 
+    compile 1-
+    put-local-offset 
+    compile l! ;
 : local-generated+ ( s-) " +" local-created 
-  does>     put-local-offset 
-            compile l@ 
-            compile +
-;
+  does>
+    put-local-offset 
+    compile l@ 
+    compile + ;
 : local-generated- ( s-) " -" local-created 
-  does>     put-local-offset 
-            compile l@ 
-            compile -
-;
+  does>
+    put-local-offset 
+    compile l@ 
+    compile - ;
 : local-generated* ( s-) " *" local-created 
-  does>     put-local-offset 
-            compile l@ 
-            compile *
-;
+  does>
+    put-local-offset 
+    compile l@ 
+    compile * ;
 : local-generated+! ( s-) " +!" local-created 
-  does> dup put-local-offset 
-            compile l@ 
-            compile +
-            put-local-offset
-            compile l!
-;
+  does>
+    dup put-local-offset 
+    compile l@ 
+    compile +
+    put-local-offset
+    compile l! ;
 : local-generated-! ( s-) " -!" local-created 
-  does> dup put-local-offset 
-            compile l@ 
-            compile -
-            put-local-offset
-            compile l!
-;
+  does>
+    dup put-local-offset 
+    compile l@ 
+    compile -
+    put-local-offset
+    compile l! ;
 : local-generated*! ( s-) " *!" local-created 
-  does>     put-local-offset 
-            compile l@ 
-            compile *
-            put-local-offset
-            compile l!
-;
+  does>
+    put-local-offset 
+    compile l@ 
+    compile *
+    put-local-offset
+    compile l!  ;
 
 : local-generated-int ( s-)
   bdup local-generated!
