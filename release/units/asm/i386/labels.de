@@ -12,6 +12,7 @@ I386 extend-namespace
     struct s_marker
     16 s_marker ndyn-global M
     
+    // Делает контейнер M пустым
     : M-clear
       M# begin ?dup while 1-
         dup M[] .marker 0 w>b b!
@@ -25,6 +26,7 @@ I386 extend-namespace
     struct s_label
     16 s_label ndyn-global L
 
+    // Делает контейнер L пустым
     : L-clear
       L# begin ?dup while 1-
         dup L[] .label 0 w>b b!
@@ -62,15 +64,17 @@ I386 extend-namespace
           then
         repeat ;
 
-    : dword-resolver ! ; last value 'dword-resolver
-    : word-resolver ( TODO word!) ; last value 'word-resolver
-    : byte-resolver ( TODO byte!) ; last value 'byte-resolver
+    ' ! value 'dword-resolver
+    ' nop ( TODO word!) value 'word-resolver
+    ' nop ( TODO byte!) value 'byte-resolver
   \namespace
 
-  : 'dword-resolver LABELS 'dword-resolver ^ ;
-  : 'word-resolver LABELS 'word-resolver ^ ;
-  : 'byte-resolver LABELS 'byte-resolver ^ ;
-  : @> LABELS @> ^ ;
-  : @@ LABELS @@ ^ ;
-  : all-resolve LABELS all-resolve ^ ;
+  LABELS
+    samealias 'dword-resolver
+    samealias 'word-resolver
+    samealias 'byte-resolver
+    samealias @>
+    samealias @@
+    samealias all-resolve
+  ^
 \namespace

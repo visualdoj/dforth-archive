@@ -79,6 +79,38 @@ begin
   X := Machine.WOP;
   X^.Param := Machine.WOP;
 end;
+
+procedure _aliased(Machine: TForthMachine; Command: PForthCommand);
+var
+  X: TXt;
+  Name: TString;
+  NewCommand: TXt;
+begin
+  X := Machine.WOP;
+  Name := Machine.WOS;
+  NewCommand := Machine.ReserveName(Name);
+  NewCommand^.Code := X^.Code;
+  NewCommand^.Data := X^.Data;
+  NewCommand^.Param := X^.Param;
+  NewCommand^.Flags := X^.Flags;
+  Machine.OnUpdateCommand(NewCommand);
+end;
+
+procedure _alias(Machine: TForthMachine; Command: PForthCommand);
+var
+  X: TXt;
+  Name: TString;
+  NewCommand: TXt;
+begin
+  X := Machine.WOP;
+  Name := Machine.NextName;
+  NewCommand := Machine.ReserveName(Name);
+  NewCommand^.Code := X^.Code;
+  NewCommand^.Data := X^.Data;
+  NewCommand^.Param := X^.Param;
+  NewCommand^.Flags := X^.Flags;
+  Machine.OnUpdateCommand(NewCommand);
+end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
 procedure LoadCommands(Machine: TForthMachine);
@@ -94,6 +126,8 @@ begin
   Machine.AddCommand('xt.code!', _xt_dot_code_ex);
   Machine.AddCommand('xt.flags!', _xt_dot_flags_ex);
   Machine.AddCommand('xt.param!', _xt_dot_param_ex);
+  Machine.AddCommand('aliased', _aliased);
+  Machine.AddCommand('alias', _alias);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}  
 end;
 

@@ -208,7 +208,8 @@ syn keyword dembroEndOfColonDef ; ;M ;m
 syn keyword dembroEndOfClassDef ;class
 syn keyword dembroEndOfObjectDef ;object
 syn keyword dembroDefine constant 2constant fconstant variable 2variable
-syn keyword dembroDefine fvariable create user value to defer is does> immediate
+syn keyword dembroDefine fvariable create value to defer does> immediate
+syn keyword dembroDefine samealias samealiased alias aliased
 syn keyword dembroDefine compile-only compile restrict interpret postpone execute
 syn keyword dembroDefine literal create-interpret/compile interpretation>
 syn keyword dembroDefine <interpretation compilation> <compilation ] lastxt
@@ -237,11 +238,12 @@ syn match dembroDefine "\[']"
 syn match dembroDefine '\[compile]'
 
 " i386 assembler
+syn keyword dembroI386mnemonics @>
 syn keyword dembroI386mnemonics NOP MOV PUSH POP ADD SUB INC DEC RET NEG
 syn keyword dembroI386mnemonics nop mov push pop add sub inc dec ret neg
 syn keyword dembroI386registers EAX ECX EDX EBX ESP EBP ESI EDI
 syn keyword dembroI386operands eax ecx edx ebx esp ebp esi edi
-syn keyword dembroI386operands imm reg reg8 reg16 reg32
+syn keyword dembroI386operands imm reg reg8 reg16 reg32 link @@
 syn match dembroI386spec 'b\['
 syn match dembroI386spec 'w\['
 syn match dembroI386spec 'd\['
