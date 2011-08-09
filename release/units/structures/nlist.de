@@ -1,0 +1,56 @@
+// 2011.08.09 # Doj
+// Односвязный список, хранящий структуры
+
+namespace NLIST
+  0
+    t_ptr -- .next
+    t_void -- .data
+  struct s_nlistitem
+
+  0
+    t_ptr -- .head
+    t_int -- .size // size of data
+  struct s_nlist
+
+  : init ( capacity size list) tuck .size ! .head off drop ;
+  : item-size ( list -- int) .size @ s_nlistitem + ;
+  : item-new ( list -- item) item-size malloc ;
+  : # ( list -- #) .head @ 0 begin over while 1+ swap .next @ swap repeat nip ;
+  : #1- ( list -- i) # 1- ;
+  : [#] ( list -- ptr) .head @ .data ;
+  : insert ( item list) 2dup .head @ swap .next ! ( item list) .head ! ;
+  : ++ ( list) dup item-new swap insert ;
+  : 0+ ( list) dup ++ dup .head @ .data swap .size @ fill0 ;
+  : -- ( list) dup .head @ dup .next @ rrot ( item2 list item1) free .head ! ;
+  : >> ( data1 -- data2 T | F) ." inside" 1 cells - ." 1" @ ." 2" dup 0<> if .data true then ;
+
+  variable *last-nlist
+  variable op-template
+  : create-op ( B: s) created *last-nlist @ , ;
+  " : op<OP> ( B: s) bdup +^" <OP>^" create-op does> @ <OP> ;" b>w op-template !
+  op-template b@ " <OP>" \" #" evaluate
+  op-template b@ " <OP>" \" #1-" evaluate
+  op-template b@ " <OP>" \" [#]" evaluate
+  // op-template b@ " <OP>" \" -insert" evaluate
+  op-template b@ " <OP>" \" ++" evaluate
+  op-template b@ " <OP>" \" 0+" evaluate
+  op-template b@ " <OP>" \" --" evaluate
+ 
+  : global ( capacity size "name")
+      source-next-name-passive create
+      here dup *last-nlist !
+      s_nlist allot init
+      op# op#1- op[#] op++ op0+ op-- ;
+\namespace
+
+NLIST
+  ' global alias nlist-global
+  ' # alias nlist#
+  ' #1- alias nlist#1-
+  ' insert alias nlist-insert
+  ' [#] alias nlist[#]
+  ' ++ alias nlist++
+  ' 0+ alias nlist0+
+  ' -- alias nlist--
+  ' >> alias nlist>>
+^
