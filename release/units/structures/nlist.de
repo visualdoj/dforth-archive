@@ -22,7 +22,7 @@ namespace NLIST
   : ++ ( list) dup item-new swap insert ;
   : 0+ ( list) dup ++ dup .head @ .data swap .size @ fill0 ;
   : -- ( list) dup .head @ dup .next @ rrot ( item2 list item1) free .head ! ;
-  : >> ( data1 -- data2 T | F) ." inside" 1 cells - ." 1" @ ." 2" dup 0<> if .data true then ;
+  : >> ( data1 -- data2 T | F) 1 cells - @ dup 0<> if .data true then ;
 
   variable *last-nlist
   variable op-template

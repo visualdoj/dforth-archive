@@ -1,4 +1,4 @@
-library deorth32;
+library dembro32lib;
 
 uses
   {$IFDEF FLAG_FPC}

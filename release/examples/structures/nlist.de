@@ -52,4 +52,4 @@ list0+
 list0+
 list0+
 
-:noname  ." 1" list[#] ." 2" begin ." 3" dup . ." {" dup abcd. ." } " cr nlist>> not until ; execute
+:noname  list[#] begin ." {" dup abcd. ." } " cr nlist>> not until ; execute
