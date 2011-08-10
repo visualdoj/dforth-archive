@@ -18,8 +18,10 @@ DECLARE(realloc)
         ReAllocMem(Pointer(WP^), Integer(WVar(-SizeOf(Pointer))));)
 SUMMARY ( ptr1 newsize -- ptr2) перевыделяет память, сохраняя данные
 
-DECLARE(move)
+DECLARE(move,move)
+  body()
 SUMMARY ( src dst size --) переносит size байт из src в dst
 
 DECLARE(fill)
+  body()
 SUMMARY ( dst size value --) заполняет size байт по адресу dst значением value 

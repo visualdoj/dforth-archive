@@ -1,3 +1,3 @@
 DECLARE(current-directory, current_directory)
-  Machine.WUS(GetCurrentDirectory);   
+  body(Machine.WUS(GetCurrentDirectory);)
 RUS SUMMARY

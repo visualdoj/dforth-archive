@@ -725,6 +725,8 @@ uses
   DCommandsControl,
   DCommandsXT;
 
+{$I '~body.inc|'}
+
 function GetFileName(FullPath: TString): TString;
 var
   I: Integer;
@@ -1950,6 +1952,7 @@ begin
   AddType('extended', SizeOf(PType));
 
   AddCommand('exit', _exit);
+  {$I 'load.inc'}
   DCommandsEmbro.LoadCommands(@Self);
   DCommandsBool.LoadCommands(@Self);
 {$IFNDEF FLAG_FPC}{$REGION 'type commands'}{$ENDIF}

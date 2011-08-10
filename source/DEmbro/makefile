@@ -97,8 +97,14 @@ asm: clean
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
 commands:
-	type commands\mem.cmd commands\misc.cmd > temp\all.cmd
-	m4 ..\m4\cload.m4 temp\all.cmd > load.inc
-	m4 ..\m4\cbody.m4 temp\all.cmd > body.inc
+#	type commands\mem.cmd commands\misc.cmd > temp\all.cmd
+	m4 ..\m4\cgroups.m4 commands\groups.list > temp\all.cmd
+	m4 ..\m4\cload.m4 temp\all.cmd > temp\load.inc4
+	m4 commands.m4 temp\load.inc4 > temp\load.incq
+	dquotes temp\load.incq load.inc
+	m4 ..\m4\cbody.m4 temp\all.cmd > temp\body.inc4
+	m4 commands.m4 temp\body.inc4 > temp\body.incq
+	dquotes temp\body.incq body.inc
+	m4 ..\m4\cevaluate.m4 commands\groups.list > ..\..\release\core\builtin\all.de
 	m4 ..\m4\cbuiltin.m4 commands\mem.cmd > ..\..\release\core\builtin\mem.de
 	m4 ..\m4\cbuiltin.m4 commands\misc.cmd > ..\..\release\core\builtin\misc.de

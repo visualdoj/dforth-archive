@@ -18,7 +18,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '';
+  DFORTHMACHINE_DATE: TString = '\Fri Sep 10 13:53 2011\';
 
 
 
@@ -740,6 +740,8 @@ implementation
 
 uses
   DCommandsBool,DCommandsMisc,DCommandsArithmetic,DCommandsSignedArithmetic,DCommandsNumberArithmetic,DCommandsConvertNumber,DCommandsConsole,DCommandsStrings,DCommandsAlien,DCommandsF,DCommandsBW,DCommandsCompile,DCommandsCreatewords,DCommandsFiles,DCommandsInt,DCommandsMem,DCommandsOS,DCommandsPtr,DCommandsR,DCommandsSource,DCommandsVM,DCommandsVoc,DCommandsExtInt,DCommandsEmbro,DCommandsControl,DCommandsXT;
+
+{$I 'body.inc'}
 
 function GetFileName(FullPath: TString): TString;
 var
@@ -1971,6 +1973,7 @@ begin
   AddType('extended', SizeOf(PType));
 
   AddCommand('exit', _exit);
+  {$I 'load.inc'}
   DCommandsEmbro.LoadCommands(@Self);
   DCommandsBool.LoadCommands(@Self);
 {$IFNDEF FLAG_FPC}{$REGION 'type commands'}{$ENDIF}
