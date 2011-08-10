@@ -1,0 +1,7 @@
+// This file has been generated automatically while DEmbro building
+
+samebuiltin malloc
+samebuiltin free
+samebuiltin realloc
+samebuiltin move
+samebuiltin fill

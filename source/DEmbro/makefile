@@ -7,6 +7,7 @@
 .PHONY: Dx86
 .PHONY: DArm
 .PHONY: asm
+.PHONY: commands
 
 all: clean pas4 pasq
 	dquotes -r .\ *.pasq *.pas
@@ -94,3 +95,10 @@ clean:
 asm: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
+
+commands:
+	type commands\mem.cmd commands\misc.cmd > temp\all.cmd
+	m4 ..\m4\cload.m4 temp\all.cmd > load.inc
+	m4 ..\m4\cbody.m4 temp\all.cmd > body.inc
+	m4 ..\m4\cbuiltin.m4 commands\mem.cmd > ..\..\release\core\builtin\mem.de
+	m4 ..\m4\cbuiltin.m4 commands\misc.cmd > ..\..\release\core\builtin\misc.de
