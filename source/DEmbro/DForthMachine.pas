@@ -18,7 +18,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '\Fri Sep 10 13:53 2011\';
+  DFORTHMACHINE_DATE: TString = '\Fri Sep 10 23:25 2011\';
 
 
 

@@ -58,10 +58,10 @@ pas4:
 	m4 commands\DCommandsControl.pas4 > commands\DCommandsControl.pasq
 	m4 commands\DCommandsXT.pas4 > commands\DCommandsXT.pasq
 	m4 DCommandsTable.pas4 > DCommandsTable.pasq
-	dquotes -r .\ *.pasq *.pas
+	..\tools\dquotes -r .\ *.pasq *.pas
 
 pasq:
-	dquotes -r .\ *.pasq *.pas
+	..\tools\dquotes -r .\ *.pasq *.pas
 
 DMachineCode: Dx86 DArm
 
@@ -97,7 +97,7 @@ asm: clean
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
 commands:
-#	type commands\mem.cmd commands\misc.cmd > temp\all.cmd
+	type commands\mem.cmd commands\misc.cmd > temp\all.cmd
 	m4 ..\m4\cgroups.m4 commands\groups.list > temp\all.cmd
 	m4 ..\m4\cload.m4 temp\all.cmd > temp\load.inc4
 	m4 commands.m4 temp\load.inc4 > temp\load.incq
