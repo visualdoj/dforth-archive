@@ -13,10 +13,10 @@ define(`CELL', `(SizeOf(Pointer))')
 define(`BInc', `Inc(BWP, CELL)')
 define(`BDec', `Dec(TUInt(BWP), CELL)')
 define(`BVar', `TBlock(Pointer(TUInt(Machine.BWP) + ($1)*CELL)^)')
-define(`binc', ` if $1 <> nil then begin
+define(`bAddRef', ` if $1 <> nil then begin
                    if PInteger($1)^ <> -1 then Inc(PInteger($1)^); 
                  end')
-define(`bdec', ` if $1 <> nil then begin
+define(`bDelRef', ` if $1 <> nil then begin
                    if PInteger($1)^ > 1 then Dec(PInteger($1)^)
                    else if PInteger($1)^ = 1 then FreeMem(Pointer($1)); 
                  end')

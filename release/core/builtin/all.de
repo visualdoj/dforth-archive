@@ -2,3 +2,6 @@
 
 " mem.de" evaluate-file
 " misc.de" evaluate-file
+" alien.de" evaluate-file
+" bits.de" evaluate-file
+" bw.de" evaluate-file

@@ -1,0 +1,15 @@
+// This file has been generated automatically while DEmbro building
+
+samebuiltin false
+samebuiltin true
+samebuiltin not
+samebuiltin or
+samebuiltin and
+samebuiltin xor
+samebuiltin bool.
+samebuiltin bool-false
+samebuiltin bool-true
+samebuiltin bool-not
+samebuiltin bool-or
+samebuiltin bool-and
+samebuiltin bool-xor
