@@ -5,3 +5,5 @@
 " alien.de" evaluate-file
 " bits.de" evaluate-file
 " bw.de" evaluate-file
+" console.de" evaluate-file
+" control.de" evaluate-file
