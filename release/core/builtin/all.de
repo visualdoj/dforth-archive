@@ -8,3 +8,5 @@
 " console.de" evaluate-file
 " control.de" evaluate-file
 " convert_number.de" evaluate-file
+" createwords.de" evaluate-file
+" embro.de" evaluate-file

@@ -685,7 +685,6 @@ end;
   procedure _builtin(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileLineComment(Machine: TForthMachine; Command: PForthCommand);
-  procedure _here(Machine: TForthMachine; Command: PForthCommand); overload;
   procedure _FIND_(Machine: TForthMachine; Command: PForthCommand);
   procedure _NOTFOUND_(Machine: TForthMachine; Command: PForthCommand);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
@@ -1390,14 +1389,6 @@ end;
 function OForthMachine.Here: Pointer;
 begin
   Result := @E[EL];
-end;
-
-procedure _here(Machine: TForthMachine; Command: PForthCommand);
-begin
-  with Machine^ do begin
-    Pointer(WP^) := @E[EL];
-    Inc(WP, SizeOf(Pointer));
-  end;
 end;
 
 procedure OForthMachine.EWV(V: Pointer; Size: Integer); // Embro Write Data
