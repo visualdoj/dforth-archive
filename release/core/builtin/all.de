@@ -1,7 +1,5 @@
 // This file has been generated automatically while DEmbro building
 
-" mem.de" evaluate-file
-" misc.de" evaluate-file
 " alien.de" evaluate-file
 " bits.de" evaluate-file
 " bw.de" evaluate-file
@@ -13,3 +11,4 @@
 " f.de" evaluate-file
 " files.de" evaluate-file
 " int.de" evaluate-file
+" mem.de" evaluate-file

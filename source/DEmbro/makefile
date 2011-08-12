@@ -102,7 +102,8 @@ commands:
 #	type commands\mem.cmd commands\misc.cmd > temp\all.cmd
 	m4 ..\m4\cgroups.m4 commands\groups.list > temp\all.cmd
 	m4 ..\m4\cload.m4 temp\all.cmd > temp\load.inc4
-	m4 commands.m4 temp\load.inc4 > temp\load.incq
+	m4 commands.m4 temp\load.inc4 > temp\load.temp
+	m4 id2.m4 temp\load.temp > temp\load.incq
 	dquotes temp\load.incq load.inc
 	m4 ..\m4\cbody.m4 temp\all.cmd > temp\body.temp
 	m4 id2.m4 temp\body.temp > temp\body.inc4

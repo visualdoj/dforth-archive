@@ -1,3 +1,4 @@
+
 // This file has been generated automatically while DEmbro building
 
 samebuiltin drop
@@ -12,7 +13,7 @@ samebuiltin rrot
 samebuiltin lrotn
 samebuiltin rrotn
 samebuiltin pick
-samebuiltin idle(,)
+samebuiltin ,
 samebuiltin @
 samebuiltin !
 samebuiltin ptr+
@@ -37,7 +38,7 @@ samebuiltin ptr-rrot
 samebuiltin ptr-lrotn
 samebuiltin ptr-rrotn
 samebuiltin ptr-pick
-samebuiltin idle(ptr,)
+samebuiltin ptr,
 samebuiltin ptr@
 samebuiltin ptr!
 samebuiltin ptr+ptr
@@ -62,7 +63,7 @@ samebuiltin int-rrot
 samebuiltin int-lrotn
 samebuiltin int-rrotn
 samebuiltin int-pick
-samebuiltin idle(int,)
+samebuiltin int,
 samebuiltin int@
 samebuiltin int!
 samebuiltin ptr+int
@@ -87,7 +88,7 @@ samebuiltin int8-rrot
 samebuiltin int8-lrotn
 samebuiltin int8-rrotn
 samebuiltin int8-pick
-samebuiltin idle(int8,)
+samebuiltin int8,
 samebuiltin int8@
 samebuiltin int8!
 samebuiltin ptr+int8
@@ -112,7 +113,7 @@ samebuiltin int16-rrot
 samebuiltin int16-lrotn
 samebuiltin int16-rrotn
 samebuiltin int16-pick
-samebuiltin idle(int16,)
+samebuiltin int16,
 samebuiltin int16@
 samebuiltin int16!
 samebuiltin ptr+int16
@@ -137,7 +138,7 @@ samebuiltin int32-rrot
 samebuiltin int32-lrotn
 samebuiltin int32-rrotn
 samebuiltin int32-pick
-samebuiltin idle(int32,)
+samebuiltin int32,
 samebuiltin int32@
 samebuiltin int32!
 samebuiltin ptr+int32
@@ -162,7 +163,7 @@ samebuiltin int64-rrot
 samebuiltin int64-lrotn
 samebuiltin int64-rrotn
 samebuiltin int64-pick
-samebuiltin idle(int64,)
+samebuiltin int64,
 samebuiltin int64@
 samebuiltin int64!
 samebuiltin ptr+int64
@@ -187,7 +188,7 @@ samebuiltin uint-rrot
 samebuiltin uint-lrotn
 samebuiltin uint-rrotn
 samebuiltin uint-pick
-samebuiltin idle(uint,)
+samebuiltin uint,
 samebuiltin uint@
 samebuiltin uint!
 samebuiltin ptr+uint
@@ -212,7 +213,7 @@ samebuiltin uint8-rrot
 samebuiltin uint8-lrotn
 samebuiltin uint8-rrotn
 samebuiltin uint8-pick
-samebuiltin idle(uint8,)
+samebuiltin uint8,
 samebuiltin uint8@
 samebuiltin uint8!
 samebuiltin ptr+uint8
@@ -237,7 +238,7 @@ samebuiltin uint16-rrot
 samebuiltin uint16-lrotn
 samebuiltin uint16-rrotn
 samebuiltin uint16-pick
-samebuiltin idle(uint16,)
+samebuiltin uint16,
 samebuiltin uint16@
 samebuiltin uint16!
 samebuiltin ptr+uint16
@@ -262,7 +263,7 @@ samebuiltin uint32-rrot
 samebuiltin uint32-lrotn
 samebuiltin uint32-rrotn
 samebuiltin uint32-pick
-samebuiltin idle(uint32,)
+samebuiltin uint32,
 samebuiltin uint32@
 samebuiltin uint32!
 samebuiltin ptr+uint32
@@ -287,7 +288,7 @@ samebuiltin uint64-rrot
 samebuiltin uint64-lrotn
 samebuiltin uint64-rrotn
 samebuiltin uint64-pick
-samebuiltin idle(uint64,)
+samebuiltin uint64,
 samebuiltin uint64@
 samebuiltin uint64!
 samebuiltin ptr+uint64
@@ -312,7 +313,7 @@ samebuiltin embro-rrot
 samebuiltin embro-lrotn
 samebuiltin embro-rrotn
 samebuiltin embro-pick
-samebuiltin idle(embro,)
+samebuiltin embro,
 samebuiltin embro@
 samebuiltin embro!
 samebuiltin ptr+embro
@@ -337,7 +338,7 @@ samebuiltin float-rrot
 samebuiltin float-lrotn
 samebuiltin float-rrotn
 samebuiltin float-pick
-samebuiltin idle(float,)
+samebuiltin float,
 samebuiltin float@
 samebuiltin float!
 samebuiltin ptr+float
@@ -362,7 +363,7 @@ samebuiltin double-rrot
 samebuiltin double-lrotn
 samebuiltin double-rrotn
 samebuiltin double-pick
-samebuiltin idle(double,)
+samebuiltin double,
 samebuiltin double@
 samebuiltin double!
 samebuiltin ptr+double
@@ -387,7 +388,7 @@ samebuiltin extended-rrot
 samebuiltin extended-lrotn
 samebuiltin extended-rrotn
 samebuiltin extended-pick
-samebuiltin idle(extended,)
+samebuiltin extended,
 samebuiltin extended@
 samebuiltin extended!
 samebuiltin ptr+extended

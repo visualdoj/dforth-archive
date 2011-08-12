@@ -1,3 +1,104 @@
 DECLARE(current-directory, current_directory)
   body(Machine.WUS(GetCurrentDirectory);)
 RUS SUMMARY
+
+DECLARE(nop)
+  body()
+
+DECLARE(timer)
+  body( WUI(GetTimer); )
+
+DECLARE(@wp, DogwpTemp)
+  body(
+    Pointer(WP^) := @WP;
+    Inc(WP, SizeOf(Pointer)); )
+
+DECLARE(wp) body( Pointer(WP^) := WP; Inc(WP, SizeOf(Pointer)); )
+DECLARE(rp) body( Pointer(WP^) := RP; Inc(WP, SizeOf(Pointer)); )
+DECLARE(lp) body( Pointer(WP^) := LP; Inc(WP, SizeOf(Pointer)); )
+DECLARE(lb) body( Pointer(WP^) := LB; Inc(WP, SizeOf(Pointer)); )
+DECLARE(r@, r_dog) body( Pointer(WP^) := Pointer(Pointer(Cardinal(RP) - SizeOf(Pointer))^); Inc(WP, SizeOf(Pointer)); )
+DECLARE(r>, r_gt) body( Dec(RP, SizeOf(Pointer)); Pointer(WP^) := Pointer(RP^); Inc(WP, SizeOf(Pointer)); )
+DECLARE(>r, gt_r) body( Dec(WP, SizeOf(Pointer)); Pointer(RP^) := Pointer(WP^); Inc(RP, SizeOf(Pointer)); )
+DECLARE(l@, l_dog) body( Pointer(WVar(-SizeOf(Pointer))) := Pointer(LVar(Integer(WVar(-SizeOf(Pointer))))); )
+DECLARE(l!, l_ex) body( Pointer(LVar(Integer(WVar(-SizeOf(Pointer))))) := Pointer(WVar(-2*SizeOf(Pointer))); Dec(WP, 2*SizeOf(Pointer)); )
+DECLARE(l+, l_plus) body( Dec(WP, SizeOf(TInt)); Inc(LP, TInt(WP^)) )
+DECLARE(version) body( TInt(WP^) := DFORTHMACHINE_VERSION; Inc(WP, SizeOf(TInt)); )
+DECLARE(state) body( Pointer(WP^) := @State; Inc(WP, SizeOf(Pointer)); )
+DECLARE(time) body( Integer(WP^) := GetTimer; Inc(WP, SizeOf(TInt)); )
+DECLARE(local) body( RunCommand(PForthCommand((@E[Integer(Command^.Data)])^)); )
+DECLARE(source-cut, source_cut)
+        var _S: TStr; _L: TString;
+        body( 
+          _S := str_pop(Machine); 
+          _L := StrToString(_S);
+          WUS(Source^.SourceCut(_L));
+          DelRef(_S))
+DECLARE(source-next-char, source_next_char) body( WUI(Integer(NextChar)) )
+DECLARE(source-next-name, source_next_name) 
+  body( str_push(Machine, NextName) )
+      procedure interpret_source_next_name_passive cmdhdr; body( str_push(Machine, NextNamePassive) )
+      procedure compile_source_next_name_passive cmdhdr; body( BuiltinEWO('(str)' + Char(34)); EWStr(NextNamePassive); )
+DECLARE(source-next-name-passive, source_next_name_passive) body( // if State <> FS_INTERPRET then compile_source_next_name_passive(Machine, Command) else 
+                                                                                                   interpret_source_next_name_passive(Machine, Command) )
+DECLARE(source-next-line, source_next_line) body( 
+            str_push(Machine, Machine.Source^.NextLine) )
+DECLARE(source-next-line-passive, source_next_line_passive) body(                                            str_push(Machine, Machine.Source^.NextLinePassive) )
+DECLARE(run_source_next_name_passive) body( str_push(Machine, @E[EC]); )
+DECLARE(source-read-to-char, source_read_to_char) body(  
+        Dec(WP, 1);
+        while not Source^.EOS do
+          if Source^.NextChar = TChar(WP^) then
+             break; )
+DECLARE(ptr-nil, ptr_nil) body( WUP(nil); )
+DECLARE(compile@, compile_start) body( State := FS_COMPILE )
+DECLARE(interpret@, interpret_start) body( State := FS_INTERPRET )
+DECLARE(run@, run_start) body( State := FS_INTERPRET )
+DECLARE(opcode->command, opcode_to_command) body( Pointer(WVar(-SizeOf(Integer))) := GetCommandByOpcode(Integer(WVar(-SizeOf(Integer)))) )
+DECLARE(literal) body( BuiltinEWO('(literal)'); EWI(WOI); )
+      //DECLARE(sq_ap_sq) body( {if State <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
+      //          WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
+      //          BuiltinEWO('opcode->command'); ) 
+DECLARE(sq_ap_sq) body( WUP(FindCommand(NextName)); literal(Machine, Command); )
+DECLARE(interpret_sq_ap_sq) body( WUP(FindCommand(NextName)) )
+DECLARE(compile_sq_ap_sq) body( BuiltinEWO('run@['']'); EWO(NextName); )
+DECLARE(run@[""], run_sq_ap_sq) body( WUP(C[ERO]); )
+DECLARE("", tick) body( Pointer(WP^) := FindCommand(NextName); Inc(WP, SizeOf(Pointer)); )
+DECLARE(execute) var P: PForthCommand; body( 
+                                             P := WOP;
+                                             P.Code(Machine, P) )
+DECLARE(does>, does_gt) body( BuiltinEWO('(does>)'); BuiltinEWO('exit'); )
+DECLARE(CallDoesGt) body( Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); )
+DECLARE((does>), sq_does_gt_sq) body( Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := _CallDoesGt; )
+DECLARE(Cells) body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt)))*SizeOf(Integer); )
+DECLARE(Cell_plus) body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); )
+DECLARE(_last) body( Pointer(WP^) := C[FLastMnemonic]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer)); )
+DECLARE(_xt_dot_n) body( Pointer(WVar(-SizeOf(Pointer))) := @(PForthCommand(WVar(-SizeOf(Pointer))).Name[0]); )
+DECLARE(_xt_dot_d) body( Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Data )
+
+
+DECLARE(_randomize)
+begin
+  Randomize;
+end;
+
+DECLARE(_random)
+begin
+  Machine.WUI(Random(Machine.WOI));
+end;
+      
+DECLARE(_align)
+var
+  I: Integer;
+body(
+  I := WOI;
+  if I mod 4 = 0 then
+    WUI(I)
+  else
+    WUI(I + 4 - (I mod 4))
+)
+
+DECLARE(_palign)
+begin
+  _align(Machine, Command);
+end;
