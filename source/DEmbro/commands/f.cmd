@@ -82,14 +82,14 @@ DECLARE(fln2)
     fldln2
   end;)
 
-DECLARE(w2f)
+DECLARE(w>f, w2f)
   idle(asm
     mov ecx, [eax]
     sub [eax], 4
     fild DWORD [ecx-4]
   end;)
 
-DECLARE(f2w)
+DECLARE(f>w, f2w)
   idle(asm
     mov ecx, [eax]
     fistp DWORD [ecx]
@@ -97,28 +97,28 @@ DECLARE(f2w)
     fwait
   end;)
 
-DECLARE(float_w2f)
+DECLARE(float-w>f, float_w2f)
   idle(asm
     sub [eax], 4
     mov ecx, [eax]
     fld Single [ecx]
   end;)
 
-DECLARE(double_w2f)
+DECLARE(double-w>f, double_w2f)
   idle(asm
     sub [eax], 8
     mov ecx, [eax]
     fld Double [ecx]
   end;)
 
-DECLARE(extended_w2f)
+DECLARE(extended-w>f, extended_w2f)
   idle(asm
     sub [eax], SizeOf(Extended)
     mov ecx, [eax]
     fld Extended [ecx]
   end;)
 
-DECLARE(float_f2w)
+DECLARE(float-f>w, float_f2w)
   idle(asm
     mov ecx, [eax]
     fstp Single [ecx]
@@ -126,7 +126,7 @@ DECLARE(float_f2w)
     fwait
   end;)
 
-DECLARE(double_f2w)
+DECLARE(double-f>w, double_f2w)
   idle(asm
     mov ecx, [eax]
     fstp Double [ecx]
@@ -134,7 +134,7 @@ DECLARE(double_f2w)
     fwait
   end;)
 
-DECLARE(extended_f2w)
+DECLARE(extended-f>w, extended_f2w)
   idle(asm
     mov ecx, [eax]
     fstp Extended [ecx]
@@ -150,32 +150,32 @@ DECLARE(frandom)
     idle(asm fld E end;)
   end;
 
-DECLARE(fadd)
+DECLARE(f+, fadd)
   idle(asm
     fadd
   end;)
 
-DECLARE(fsub)
+DECLARE(f-, fsub)
   idle(asm
     fsub
   end;)
 
-DECLARE(fswapsub)
+DECLARE(fswap-, fswapsub)
   idle(asm
     fsubr
   end;)
 
-DECLARE(fmul)
+DECLARE(f*, fmul)
   idle(asm
     fmul
   end;)
 
-DECLARE(fdiv)
+DECLARE(f/, fdiv)
   idle(asm
     fdiv
   end;)
 
-DECLARE(fswapdiv)
+DECLARE(fswap/, fswapdiv)
   idle(asm
     fdivr
   end;)
@@ -215,17 +215,17 @@ DECLARE(fpatan)
     fpatan
   end;)
 
-DECLARE(flogmul)
+DECLARE(flog*, flogmul)
   idle(asm
     fyl2x
   end;)
 
-DECLARE(flog1plus_mul)
+DECLARE(flog1+mul, flog1plus_mul)
   idle(asm
     fyl2xp1
   end;)
 
-DECLARE(f2pwr)
+DECLARE(f2pwr1-, f2pwr_1minus)
   idle(asm
     f2xm1
   end;)
@@ -245,7 +245,7 @@ DECLARE(fsincos)
     fsincos
   end;)
 
-DECLARE(_float_fliteral)
+DECLARE(float-fliteral, _float_fliteral)
   var
     F: Single;
   begin
@@ -256,7 +256,7 @@ DECLARE(_float_fliteral)
     Machine.EWV(@F, SizeOf(F));
   end;
 
-DECLARE(_double_fliteral)
+DECLARE(double-fliteral, _double_fliteral)
   var
     F: Double;
   begin
@@ -267,7 +267,7 @@ DECLARE(_double_fliteral)
     Machine.EWV(@F, SizeOf(F));
   end;
 
-DECLARE(_extended_fliteral)
+DECLARE(extended-fliteral, _extended_fliteral)
   var
     F: Double;
   begin
@@ -278,7 +278,7 @@ DECLARE(_extended_fliteral)
     Machine.EWV(@F, SizeOf(F));
   end;
 
-DECLARE(_float_run_fliteral)
+DECLARE(float-(fliteral), _float_run_fliteral)
   var
     P: Pointer;
   begin
@@ -289,7 +289,7 @@ DECLARE(_float_run_fliteral)
     Inc(Machine.EC, SizeOf(Single));
   end;
 
-DECLARE(_double_run_fliteral)    
+DECLARE(double-(fliteral), _double_run_fliteral)    
   var
     P: Pointer;
   begin
@@ -300,7 +300,7 @@ DECLARE(_double_run_fliteral)
     Inc(Machine.EC, SizeOf(Double));
   end;
 
-DECLARE(_extended_run_fliteral)    
+DECLARE(extended-(fliteral), _extended_run_fliteral)    
   var
     P: Pointer;
   begin
@@ -311,7 +311,7 @@ DECLARE(_extended_run_fliteral)
     Inc(Machine.EC, SizeOf(Extended));
   end;
 
-DECLARE(_float_to_str)
+DECLARE(float->str, _float_to_str)
   var
     F: Single;
     S: String;
@@ -324,7 +324,7 @@ DECLARE(_float_to_str)
     Machine.WUS(S);
   end;
 
-DECLARE(_double_to_str)
+DECLARE(double->str, _double_to_str)
   var
     F: Double;
     S: String;
@@ -337,7 +337,7 @@ DECLARE(_double_to_str)
     Machine.WUS(S);
   end;
 
-DECLARE(_extended_to_str)
+DECLARE(extended->str, _extended_to_str)
   var
     F: Extended;
     S: String;
@@ -350,7 +350,7 @@ DECLARE(_extended_to_str)
     Machine.WUS(S);
   end;
 
-DECLARE(_str_to_float_ask)
+DECLARE(str->float?, _str_to_float_ask)
   var
     Code: Word;
     S: TString;
@@ -366,7 +366,7 @@ DECLARE(_str_to_float_ask)
       Machine.WUI(BOOL_FALSE);
   end;
 
-DECLARE(_str_to_double_ask)
+DECLARE(str->double?, _str_to_double_ask)
   var
     Code: Word;
     S: TString;
@@ -382,7 +382,7 @@ DECLARE(_str_to_double_ask)
       Machine.WUI(BOOL_FALSE);
   end;
 
-DECLARE(_str_to_extended_ask)
+DECLARE(str->extended?, _str_to_extended_ask)
   var
     Code: Word;
     S: TString;
@@ -398,7 +398,7 @@ DECLARE(_str_to_extended_ask)
       Machine.WUI(BOOL_FALSE);
   end;
 
-DECLARE(_str_to_float_excl_ask)
+DECLARE(str->float!?, _str_to_float_excl_ask)
   var
     Code: Word;
     S: TString;
@@ -413,7 +413,7 @@ DECLARE(_str_to_float_excl_ask)
       Machine.WUI(BOOL_FALSE);
   end;
 
-DECLARE(_str_to_double_excl_ask)
+DECLARE(str->double!?, _str_to_double_excl_ask)
   var
     Code: Word;
     S: TString;
@@ -428,7 +428,7 @@ DECLARE(_str_to_double_excl_ask)
       Machine.WUI(BOOL_FALSE);
   end;
 
-DECLARE(_str_to_extended_excl_ask)
+DECLARE(str->extended!?, _str_to_extended_excl_ask)
   var
     Code: Word;
     S: TString;

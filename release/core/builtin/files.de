@@ -1,0 +1,16 @@
+// This file has been generated automatically while DEmbro building
+
+samebuiltin file-exists
+samebuiltin file-open
+samebuiltin file-close
+samebuiltin file-w
+samebuiltin file-r
+samebuiltin file-write
+samebuiltin file-read
+samebuiltin byte-file-read
+samebuiltin file-str-write
+samebuiltin file-str-read
+samebuiltin file-size
+samebuiltin *cr
+samebuiltin *cr#
+samebuiltin file-cr
