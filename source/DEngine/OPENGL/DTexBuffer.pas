@@ -7,7 +7,7 @@ uses
   Windows,
   GL,
   GLext,
-  SysUtils,
+  // SysUtils,
   
   DDebug,
   DUtils,

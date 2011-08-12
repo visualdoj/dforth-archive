@@ -2,17 +2,17 @@ unit DDate;
 
 interface
 
-uses
-  SysUtils,
-  DateUtils;
+// uses
+//   SysUtils,
+//   DateUtils;
 
-function GetUnixTime: Int64;
+// function GetUnixTime: Int64;
 
 implementation
 
-function GetUnixTime: Int64;
-begin
-  Result := DateTimeToUnix(Now);
-end;
+// function GetUnixTime: Int64;
+// begin
+//   Result := DateTimeToUnix(Now);
+// end;
 
 end.
