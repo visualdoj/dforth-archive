@@ -39,7 +39,7 @@ samebuiltin run@[""]
 samebuiltin ""
 samebuiltin execute
 samebuiltin does>
-samebuiltin CallDoesGt
+samebuiltin (does>)
 samebuiltin (does>)
 samebuiltin Cells
 samebuiltin Cell_plus

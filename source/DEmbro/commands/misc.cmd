@@ -70,7 +70,8 @@ DECLARE(execute) var P: PForthCommand; body(
                                              P := WOP;
                                              P.Code(Machine, P) )
 DECLARE(does>, does_gt) body( BuiltinEWO('(does>)'); BuiltinEWO('exit'); )
-DECLARE(CallDoesGt) body( Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); )
+      procedure CallDoesGt cmdhdr; body( Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); )
+DECLARE((does>), _sq_does_gt_sq) body( Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; )
 DECLARE((does>), sq_does_gt_sq) body( Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := _CallDoesGt; )
 DECLARE(Cells) body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt)))*SizeOf(Integer); )
 DECLARE(Cell_plus) body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); )
