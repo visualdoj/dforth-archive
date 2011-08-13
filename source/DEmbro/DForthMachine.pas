@@ -1,4 +1,3 @@
-
 unit DForthMachine;
 
 interface
@@ -18,7 +17,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '\Sun Sep 12 23:28 2011\';
+  DFORTHMACHINE_DATE: TString = '\Monday Sep 13 16:05 2011\';
 
 
 
@@ -680,7 +679,6 @@ end;
 
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'misc commands'}{$ENDIF}
-  procedure _nop(Machine: TForthMachine; Command: PForthCommand);
   procedure _builtedin(Machine: TForthMachine; Command: PForthCommand);
   procedure _builtin(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
@@ -1262,10 +1260,6 @@ begin
   //  Write(IntToHex(FEmbro[I], 2), ' ');
   //Writeln;
   FCompilation := False;
-end;
-
-procedure _nop(Machine: TForthMachine; Command: PForthCommand);
-begin
 end;
 
 procedure _builtedin(Machine: TForthMachine; Command: PForthCommand);
@@ -1921,7 +1915,6 @@ begin
   AddCommand('builtedin', _builtedin);
 
   UseVoc(vBUILTIN);
-  AddCommand('nop', _nop);
   nop := C[High(C)];
 
   ConvStr := nop;

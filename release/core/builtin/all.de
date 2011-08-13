@@ -12,3 +12,4 @@
 " files.de" evaluate-file
 " int.de" evaluate-file
 " mem.de" evaluate-file
+" misc.de" evaluate-file

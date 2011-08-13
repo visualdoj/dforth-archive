@@ -80,13 +80,6 @@ DECLARE(called)
     Machine.EWO(Machine.WOS);
   end;
 
-DECLARE(execute)
-  begin
-    with Machine^ do begin
-      Machine.InterpretName(PChar(Machine.NextName));
-    end;
-  end;
-
 DECLARE(evaluate)
   var
     S: TStr;

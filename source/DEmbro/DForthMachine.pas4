@@ -639,7 +639,6 @@ end;
   exception_commands
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 {$IFNDEF FLAG_FPC}{$REGION 'misc commands'}{$ENDIF}
-  procedure _nop(Machine: TForthMachine; Command: PForthCommand);
   procedure _builtedin(Machine: TForthMachine; Command: PForthCommand);
   procedure _builtin(Machine: TForthMachine; Command: PForthCommand);
   procedure CompileComment(Machine: TForthMachine; Command: PForthCommand);
@@ -1246,10 +1245,6 @@ begin
   //  Write(IntToHex(FEmbro[I], 2), ' ');
   //Writeln;
   FCompilation := False;
-end;
-
-procedure _nop(Machine: TForthMachine; Command: PForthCommand);
-begin
 end;
 
 procedure _builtedin(Machine: TForthMachine; Command: PForthCommand);
@@ -1905,7 +1900,6 @@ begin
   AddCommand('builtedin', _builtedin);
 
   UseVoc(vBUILTIN);
-  AddCommand('nop', _nop);
   nop := C[High(C)];
 
   ConvStr := nop;

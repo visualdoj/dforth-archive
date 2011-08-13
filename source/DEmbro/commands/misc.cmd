@@ -1,12 +1,14 @@
 DECLARE(current-directory, current_directory)
   body(Machine.WUS(GetCurrentDirectory);)
-RUS SUMMARY
+RUS SUMMARY ( -- B: s) кладёт путь до текущей деректории без завершающего слеша
 
 DECLARE(nop)
   body()
+RUS SUMMARY ничего не делает
 
 DECLARE(timer)
   body( WUI(GetTimer); )
+RUS SUMMARY ( -- i) кладёт счётчик, увеличивающийся на 1 каждую миллисекунду
 
 DECLARE(@wp, DogwpTemp)
   body(
@@ -56,9 +58,9 @@ DECLARE(interpret@, interpret_start) body( State := FS_INTERPRET )
 DECLARE(run@, run_start) body( State := FS_INTERPRET )
 DECLARE(opcode->command, opcode_to_command) body( Pointer(WVar(-SizeOf(Integer))) := GetCommandByOpcode(Integer(WVar(-SizeOf(Integer)))) )
 DECLARE(literal) body( BuiltinEWO('(literal)'); EWI(WOI); )
-      //DECLARE(sq_ap_sq) body( {if State <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
-      //          WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
-      //          BuiltinEWO('opcode->command'); ) 
+      dnl DECLARE(sq_ap_sq) body( {if State <> FS_INTERPRET then compile_sq_ap_sq(Machine, Command) else interpret_sq_ap_sq(Machine, Command)}
+      dnl           WUI(GetOpcodeByName(NextName)); Literal(Machine, Command);
+      dnl           BuiltinEWO('opcode->command'); ) 
 DECLARE(sq_ap_sq) body( WUP(FindCommand(NextName)); literal(Machine, Command); )
 DECLARE(interpret_sq_ap_sq) body( WUP(FindCommand(NextName)) )
 DECLARE(compile_sq_ap_sq) body( BuiltinEWO('run@['']'); EWO(NextName); )
@@ -77,28 +79,24 @@ DECLARE(_xt_dot_n) body( Pointer(WVar(-SizeOf(Pointer))) := @(PForthCommand(WVar
 DECLARE(_xt_dot_d) body( Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Data )
 
 
-DECLARE(_randomize)
-begin
-  Randomize;
-end;
+DECLARE(randomize)
+  body(
+    Randomize;)
 
-DECLARE(_random)
-begin
-  Machine.WUI(Random(Machine.WOI));
-end;
+DECLARE(random)
+  body(
+    Machine.WUI(Random(Machine.WOI));)
       
-DECLARE(_align)
-var
-  I: Integer;
-body(
-  I := WOI;
-  if I mod 4 = 0 then
-    WUI(I)
-  else
-    WUI(I + 4 - (I mod 4))
-)
+DECLARE(align)
+  var
+    I: Integer;
+  body(
+    I := WOI;
+    if I mod 4 = 0 then
+      WUI(I)
+    else
+      WUI(I + 4 - (I mod 4)))
 
-DECLARE(_palign)
-begin
-  _align(Machine, Command);
-end;
+DECLARE(palign)
+  body(
+    _align(Machine, Command);)

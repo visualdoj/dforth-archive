@@ -9,6 +9,5 @@ samebuiltin postpone
 samebuiltin compiled
 samebuiltin postponed
 samebuiltin called
-samebuiltin execute
 samebuiltin evaluate
 samebuiltin evaluate-file

@@ -33,7 +33,6 @@ samebuiltin run@
 samebuiltin opcode->command
 samebuiltin literal
 samebuiltin sq_ap_sq
-samebuiltin sq_ap_sq
 samebuiltin interpret_sq_ap_sq
 samebuiltin compile_sq_ap_sq
 samebuiltin run@[""]
@@ -47,7 +46,7 @@ samebuiltin Cell_plus
 samebuiltin _last
 samebuiltin _xt_dot_n
 samebuiltin _xt_dot_d
-samebuiltin _randomize
-samebuiltin _random
-samebuiltin _align
-samebuiltin _palign
+samebuiltin randomize
+samebuiltin random
+samebuiltin align
+samebuiltin palign
