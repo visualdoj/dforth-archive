@@ -32,9 +32,9 @@ samebuiltin interpret@
 samebuiltin run@
 samebuiltin opcode->command
 samebuiltin literal
-samebuiltin sq_ap_sq
-samebuiltin interpret_sq_ap_sq
-samebuiltin compile_sq_ap_sq
+samebuiltin [""]
+samebuiltin interpret@[""]
+samebuiltin compile@[""]
 samebuiltin run@[""]
 samebuiltin ""
 samebuiltin execute
@@ -42,7 +42,7 @@ samebuiltin does>
 samebuiltin (does>)
 samebuiltin cells
 samebuiltin cell+
-samebuiltin _last
+samebuiltin last
 samebuiltin randomize
 samebuiltin random
 samebuiltin align
