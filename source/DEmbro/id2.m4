@@ -1,1 +1,1 @@
-define(`idle', `$*')
+define(`idle', `$*')dnl
