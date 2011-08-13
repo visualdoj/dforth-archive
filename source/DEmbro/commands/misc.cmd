@@ -70,15 +70,11 @@ DECLARE(execute) var P: PForthCommand; body(
                                              P := WOP;
                                              P.Code(Machine, P) )
 DECLARE(does>, does_gt) body( BuiltinEWO('(does>)'); BuiltinEWO('exit'); )
-      procedure CallDoesGt cmdhdr; body( Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); )
+      procedure _CallDoesGt cmdhdr; body( Call(Machine, Command); Pointer(WP^) := Pointer(Command.Param); Inc(WP, SizeOf(Pointer)); )
 DECLARE((does>), _sq_does_gt_sq) body( Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := CallDoesGt; )
-DECLARE((does>), sq_does_gt_sq) body( Integer(C[FLastMnemonic].Param) := Integer(C[FLastMnemonic].Data); Integer(C[FLastMnemonic].Data) := EC + 4; C[FLastMnemonic].Code := _CallDoesGt; )
-DECLARE(Cells) body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt)))*SizeOf(Integer); )
-DECLARE(Cell_plus) body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); )
+DECLARE(cells) body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt)))*SizeOf(Integer); )
+DECLARE(cell+, cell_plus) body( TInt(WVar(-SizeOf(TInt))) := TInt(WVar(-SizeOf(TInt))) + SizeOf(TInt); )
 DECLARE(_last) body( Pointer(WP^) := C[FLastMnemonic]; {Writeln(Integer(WP^));} Inc(WP, SizeOf(Pointer)); )
-DECLARE(_xt_dot_n) body( Pointer(WVar(-SizeOf(Pointer))) := @(PForthCommand(WVar(-SizeOf(Pointer))).Name[0]); )
-DECLARE(_xt_dot_d) body( Pointer(WVar(-SizeOf(Pointer))) := PForthCommand(WVar(-SizeOf(Pointer))).Data )
-
 
 DECLARE(randomize)
   body(

@@ -40,12 +40,9 @@ samebuiltin ""
 samebuiltin execute
 samebuiltin does>
 samebuiltin (does>)
-samebuiltin (does>)
-samebuiltin Cells
-samebuiltin Cell_plus
+samebuiltin cells
+samebuiltin cell+
 samebuiltin _last
-samebuiltin _xt_dot_n
-samebuiltin _xt_dot_d
 samebuiltin randomize
 samebuiltin random
 samebuiltin align
