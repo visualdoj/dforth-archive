@@ -13,3 +13,9 @@
 " int.de" evaluate-file
 " mem.de" evaluate-file
 " misc.de" evaluate-file
+" strings.de" evaluate-file
+" vm.de" evaluate-file
+" voc.de" evaluate-file
+" xt.de" evaluate-file
+" num.de" evaluate-file
+" num_signed.de" evaluate-file

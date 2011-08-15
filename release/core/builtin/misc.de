@@ -32,7 +32,7 @@ samebuiltin interpret@
 samebuiltin run@
 samebuiltin opcode->command
 samebuiltin literal
-samebuiltin [']
+samebuiltin [""]
 samebuiltin interpret@[""]
 samebuiltin compile@[""]
 samebuiltin run@[""]
