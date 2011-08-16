@@ -1,0 +1,24 @@
+unit console;
+
+interface
+
+type
+TConsole = object
+  // input/output
+  procedure Print(Buf: Pointer; Size: Integer);
+  procedure Scan(EndChar: Integer; var Buf: Pointer; var Size: Integer);
+  procedure Emit(C: Integer);
+  function GetChar: Integer;
+  // clear
+  procedure ClearScreen;
+  procedure ClearLine;
+  procedure Clear(Chars: Integer);
+  // colors
+  procedure SetFontColor(Color: Integer);
+  procedure SetBackgroundColor(Color: Integer);
+  procedure SetBlink(Blink: Boolean);
+end;
+
+implementation
+
+end.

@@ -4,6 +4,7 @@ DECLARE(cr)
       Writeln;
     end;
   end;
+RUS SUMMARY начинает новую строку
 
 DECLARE(emit)
   var
@@ -14,6 +15,7 @@ DECLARE(emit)
       Write(Char(WOI));
     end;
   end;
+RUS SUMMARY ( i) выводит символ с заданным номером
 
 DECLARE(space)
   begin
@@ -21,6 +23,7 @@ DECLARE(space)
       Write(' ');
     end;
   end;
+RUS SUMMARY выводит пробел
 
 DECLARE(spaces)
   var
@@ -34,3 +37,52 @@ DECLARE(spaces)
       end;
     end;
   end;
+RUS SUMMARY ( i) выводит заданное число пробелов
+
+DECLARE(clear)
+    body()
+  RUS SUMMARY ( i) стирает i последних символов
+
+DECLARE(clear-lines, clear_lines)
+    body()
+  RUS SUMMARY ( i) стирает i последних строк
+
+DECLARE(clear-screen, clear_screen)
+    body()
+  RUS SUMMARY стирает все символы экрана
+
+DECLARE(set-font-color, set_font_color)
+    body()
+  RUS SUMMARY ( i) устанавливает i как цвет выводимого далее текста
+
+DECLARE(set-background-color, set_background_color)
+    body()
+  RUS SUMMARY ( i) устанавливает i как цвет выводимого фона для текста
+
+DECLARE(set-blink, set_blink)
+    body()
+  RUS SUMMARY ( f) устанавливает флаг мигания выводимого далее текста
+
+define(`COLOR', `
+  DECLARE(`COLOR_$1')
+      body()
+    RUS SUMMARY ( -i) кладёт цвет $1
+')
+COLOR(RED)
+COLOR(GREEN)
+COLOR(BLUE)
+COLOR(YELLOW)
+COLOR(PINK)
+COLOR(CYAN)
+COLOR(LIGHTRED)
+COLOR(LIGHTGREEN)
+COLOR(LIGHTBLUE)
+COLOR(LIGHTYELLOW)
+COLOR(LIGHTPINK)
+COLOR(LIGHTCYAN)
+COLOR(DARKRED)
+COLOR(DARKGREEN)
+COLOR(DARKBLUE)
+COLOR(DARKYELLOW)
+COLOR(DARKPINK)
+COLOR(DARKCYAN)
