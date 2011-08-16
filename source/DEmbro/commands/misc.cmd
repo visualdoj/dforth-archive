@@ -136,25 +136,25 @@ DECLARE(opcode->command, opcode_to_command)
 DECLARE(literal)
   body( BuiltinEWO('(literal)'); EWI(WOI); )
 
-DECLARE([""], sq_ap_sq)
-  body(
-    WUP(FindCommand(NextName));
-    literal(Machine, Command); )
+dnl DECLARE([""], sq_ap_sq)
+dnl   body(
+dnl     WUP(FindCommand(NextName));
+dnl     literal(Machine, Command); )
 
-DECLARE(interpret@[""], interpret_sq_ap_sq)
-  body( WUP(FindCommand(NextName)) )
+dnl DECLARE(interpret@[""], interpret_sq_ap_sq)
+dnl   body( WUP(FindCommand(NextName)) )
 
-DECLARE(compile@[""], compile_sq_ap_sq)
-  body( 
-    BuiltinEWO('run@['']');
-    EWO(NextName); )
+dnl DECLARE(compile@[""], compile_sq_ap_sq)
+dnl   body( 
+dnl     BuiltinEWO('run@['']');
+dnl     EWO(NextName); )
 
-DECLARE(run@[""], run_sq_ap_sq)
-  body( WUP(C[ERO]); )
+dnl DECLARE(run@[""], run_sq_ap_sq)
+dnl   body( WUP(C[ERO]); )
 
-DECLARE("", tick)
-  body( Pointer(WP^) := FindCommand(NextName);
-  Inc(WP, SizeOf(Pointer)); )
+dnl DECLARE("", tick)
+dnl   body( Pointer(WP^) := FindCommand(NextName);
+dnl   Inc(WP, SizeOf(Pointer)); )
 
 DECLARE(execute)
   var

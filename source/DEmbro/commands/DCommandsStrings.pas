@@ -30,7 +30,6 @@ uses
 
   strings,
 
-  DEmbroCore,
   DCommandsBW,
   DForthMachine;
 

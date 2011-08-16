@@ -2,13 +2,23 @@ unit console;
 
 interface
 
+uses
+  DUtils,
+  DEmbroCore;
+
 type
 TConsole = object
   // input/output
   procedure Print(Buf: Pointer; Size: Integer);
-  procedure Scan(EndChar: Integer; var Buf: Pointer; var Size: Integer);
+  procedure Scan(Buf: Pointer; Size: Integer);
+  function ScanToChar(EndChar: Integer; Buf: Pointer; MaxSize: Integer; var Size: Integer): Boolean;
+  // input/output utils
   procedure Emit(C: Integer);
   function GetChar: Integer;
+  procedure PrintStr(S: TStr);
+  function ReadStr: TStr;
+  procedure PrintPChar(S: PAnsiChar);
+  function ReadPChar: PAnsiChar;
   // clear
   procedure ClearScreen;
   procedure ClearLine;
@@ -21,4 +31,211 @@ end;
 
 implementation
 
+{$IFDEF MSWINDOWS}
+procedure TConsole.Print(Buf: Pointer; Size: Integer);
+var
+  I: Integer;
+begin
+  for I := 0 to Size - 1 do
+    Write(TChar(PArrayOfByte(Buf)^[I]));
+end;
+
+procedure TConsole.Scan(Buf: Pointer; Size: Integer);
+var
+  I: Integer;
+begin
+  for I := 0 to Size - 1 do
+    Read(TChar(PArrayOfByte(Buf)^[I]));
+end;
+
+function TConsole.ScanToChar(EndChar: Integer; Buf: Pointer; MaxSize: Integer; var Size: Integer): Boolean;
+var
+  C: TChar;
+begin
+  Size := 0;
+  while Size < MaxSize do begin
+    Read(C);
+    if Byte(C) = EndChar then begin
+      Result := True;
+      Exit;
+    end;
+    TChar(PArrayOfByte(Buf)^[Size]) := C;
+    Inc(Size);
+  end;
+end;
+
+procedure TConsole.Emit(C: Integer);
+begin
+  Write(TChar(C));
+end;
+
+function TConsole.GetChar: Integer;
+var
+  C: TChar;
+begin
+  Read(C);
+  Result := Ord(C);
+end;
+
+procedure TConsole.PrintStr(S: TStr);
+var
+  I: Integer;
+begin
+  if S^.Width = 1 then begin
+    PrintPChar(@S^.Sym[0]);
+  end else begin
+    for I := 0 to S^.Len - 1 do begin
+      // TODO
+    end;
+  end;
+end;
+
+function TConsole.ReadStr: TStr;
+begin
+  // TODO
+  Result := nil;
+end;
+
+procedure TConsole.PrintPChar(S: PAnsiChar);
+begin
+  Write(S);
+end;
+
+function TConsole.ReadPChar: PAnsiChar;
+var
+  S: TString;
+begin
+  Readln(S);
+  Result := PAnsiChar(S);
+end;
+
+procedure TConsole.ClearScreen;
+begin
+  // nothing can do
+end;
+
+procedure TConsole.ClearLine;
+begin
+  // nothing can do
+end;
+
+procedure TConsole.Clear(Chars: Integer);
+begin
+  // nothing can do
+end;
+
+procedure TConsole.SetFontColor(Color: Integer);
+begin
+  // nothing can do
+end;
+
+procedure TConsole.SetBackgroundColor(Color: Integer);
+begin
+  // nothing can do
+end;
+
+procedure TConsole.SetBlink(Blink: Boolean);
+begin
+  // nothing can do
+end;
+{$ELSE}
+procedure TConsole.Print(Buf: Pointer; Size: Integer);
+var
+  I: Integer;
+begin
+  for I := 0 to Size - 1 do
+    Write(TChar(PArrayOfByte(Buf)^[I]));
+end;
+
+procedure TConsole.Scan(Buf: Pointer; Size: Integer);
+begin
+  // TODO
+end;
+
+function TConsole.ScanToChar(EndChar: Integer; out Size: Integer; out Buffer: Pointer): Boolean;
+begin
+  // TODO
+end;
+
+procedure TConsole.Emit(C: Integer);
+begin
+  Write(TChar(C));
+end;
+
+function TConsole.GetChar: Integer;
+var
+  C: TChar;
+begin
+  Read(C);
+  Result := Ord(C);
+end;
+
+procedure TConsole.PrintStr(S: TStr);
+begin
+end;
+
+function TConsole.ReadStr: TStr;
+begin
+end;
+
+procedure TConsole.PrintPChar(S: PAnsiChar);
+begin
+  Write(S);
+end;
+
+procedure TConsole.ReadPChar: PAnsiChar;
+begin
+  // TODO
+end;
+
+procedure TConsole.ClearScreen;
+begin
+  // nothing can do
+end;
+
+procedure TConsole.ClearLine;
+begin
+  // nothing can do
+end;
+
+procedure TConsole.Clear(Chars: Integer);
+begin
+  // nothing can do
+end;
+
+procedure TConsole.SetFontColor(Color: Integer);
+begin
+  // nothing can do
+end;
+
+procedure TConsole.SetBackgroundColor(Color: Integer);
+begin
+  // nothing can do
+end;
+
+procedure TConsole.SetBlink(Blink: Boolean);
+begin
+  // nothing can do
+end;
+{$ENDIF}
+
 end.
+{$IFDEF CPU32}
+  // 32 bits
+{$ENDIF}
+{$IFDEF CPU64}
+  // 64 bits
+{$ENDIF}
+
+{$IFDEF MSWINDOWS}
+{$ENDIF}
+
+{$IFDEF WIN32}
+{$ENDIF}
+
+{$IFDEF ENDIAN_BIG}
+  // endian big
+{$ELSE}
+  // endian little
+{$ENDIF}
+

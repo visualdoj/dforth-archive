@@ -22,7 +22,7 @@ unit DCommandsBool;
 interface
 
 uses
-  DEmbroCore,
+  {$I units.inc},
   DForthMachine;
 
 procedure LoadCommands(Machine: TForthMachine);

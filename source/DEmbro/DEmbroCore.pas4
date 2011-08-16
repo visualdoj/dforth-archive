@@ -34,6 +34,15 @@ type
         end;
   TXt = PForthCommand;
 
+  TStrRec = packed record
+    Ref: TInt;
+    Len: TInt;
+    Width: TInt;
+    Sym: array[0..1] of Byte;
+  end;
+  PStrRec = ^TStrRec;
+  TStr = PStrRec;
+
 function Align(Value: Cardinal; _Unit: Cardinal = CELL_SIZE): Cardinal;
 
 implementation

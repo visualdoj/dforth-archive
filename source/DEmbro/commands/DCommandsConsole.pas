@@ -22,7 +22,7 @@ unit DCommandsConsole;
 interface
 
 uses
-  DEmbroCore,
+  {$I units.inc},
   DForthMachine;
 
 procedure cr(Machine: TForthMachine; Command: PForthCommand);

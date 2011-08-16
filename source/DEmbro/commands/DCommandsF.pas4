@@ -7,7 +7,6 @@ define(`cmdhdr', `(Machine: TForthMachine; Command: PForthCommand)')
 
 uses
   {$I units.inc},
-  DEmbroCore,
   DForthMachine;
 
       procedure finit cmdhdr;

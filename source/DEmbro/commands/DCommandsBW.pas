@@ -39,7 +39,6 @@ interface
 uses
   {$I units.inc},
 
-  DEmbroCore,
   DForthMachine;
 
     procedure bdog (Machine: TForthMachine; Command: PForthCommand);

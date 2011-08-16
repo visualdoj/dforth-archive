@@ -24,7 +24,6 @@ interface
 uses
   {$I units.inc},
   strings,
-  DEmbroCore,
   DForthMachine;
 
   procedure lib_load(Machine: TForthMachine; Command: PForthCommand);

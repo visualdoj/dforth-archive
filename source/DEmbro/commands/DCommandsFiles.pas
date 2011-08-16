@@ -29,7 +29,6 @@ uses
 
   strings,
 
-  DEmbroCore,
   DCommandsStrings,
   DForthMachine;
 

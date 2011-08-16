@@ -25,7 +25,6 @@ define(`body', `begin with Machine^ do begin $1 end; end;')
 uses
   {$I units.inc},
 
-  DEmbroCore,
   DForthMachine;
 
     procedure bdog cmdhdr;

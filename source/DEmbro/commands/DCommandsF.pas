@@ -26,7 +26,6 @@ interface
 
 uses
   {$I units.inc},
-  DEmbroCore,
   DForthMachine;
 
       procedure finit (Machine: TForthMachine; Command: PForthCommand);

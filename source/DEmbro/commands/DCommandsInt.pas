@@ -24,7 +24,6 @@ interface
 uses
   {$I units.inc},
 
-  DEmbroCore,
   DForthMachine;
 
 

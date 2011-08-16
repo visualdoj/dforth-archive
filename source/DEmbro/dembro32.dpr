@@ -35,6 +35,7 @@ uses
   DEmbroManager,
   DMemMeta,
   DEmbroSource,
+  console,
 
   DCommandsBool in 'commands\DCommandsBool.pas',
   DCommandsMisc in 'commands\DCommandsMisc.pas',
@@ -215,6 +216,6 @@ begin
   // Writeln('Compiler.Free');
   Compiler.Free;
   // Writeln('Dispose Machine');
-  Dispose(Machine);
+  Dispose(Machine, Destroy);
   // Writeln('dembro32 out');
 end.

@@ -4,7 +4,6 @@ interface
 
 uses
   {$I units.inc},
-  DEmbroCore,
   DCommandsTable;
 
 {
@@ -58,10 +57,10 @@ const
 type
   PVocabulary = ^TVocabulary;
   TVocabulary = object
-   public
+   private
     FTable: PCommandsTable;
     FBlock: Pointer;
-   private
+   public
     constructor Create(Table: PCommandsTable; EmbroBlock: Pointer);
     destructor Destroy;
     // Объявить команду без тела. В будущем при определении команды
@@ -169,6 +168,7 @@ end;
 
 function TVocabulary.Find(const Name: TString): TXt;
 begin
+  Result := nil;
 end;
 
 procedure TVocabulary.Allot(Count: Integer);
@@ -177,6 +177,7 @@ end;
 
 function TVocabulary.Here: Pointer;
 begin
+  Result := nil;
 end;
 
 procedure TVocabulary.ClearCurrent(Count: Integer);

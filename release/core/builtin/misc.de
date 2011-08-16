@@ -32,11 +32,6 @@ samebuiltin interpret@
 samebuiltin run@
 samebuiltin opcode->command
 samebuiltin literal
-samebuiltin [""]
-samebuiltin interpret@[""]
-samebuiltin compile@[""]
-samebuiltin run@[""]
-samebuiltin ""
 samebuiltin execute
 samebuiltin does>
 samebuiltin (does>)

@@ -6,7 +6,6 @@ uses
   {$I units.inc},
   DCommandsStrings,
   strings,
-  DEmbroCore,
   DForthMachine;
 
 procedure LoadCommands(Machine: TForthMachine);

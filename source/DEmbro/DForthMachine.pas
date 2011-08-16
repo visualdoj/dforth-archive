@@ -13,11 +13,11 @@ interface
 
 
 uses
-  {$I units.inc},Math,strings,DAlien,DVocabulary,DEmbroCore,DEmbroSource,DCommandsTable,DForthStack;
+  {$I units.inc},Math,strings,DAlien,DVocabulary,DEmbroSource,DCommandsTable,DForthStack;
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '\Thu Sep 16 16:29 2011\';
+  DFORTHMACHINE_DATE: TString = '\Thu Sep 16 20:22 2011\';
 
 
 
@@ -74,6 +74,8 @@ type
   TForthMachine = ^OForthMachine;
 
   PForthCommand = ^TForthCommand;
+  // Machine размещается в EAX
+  // Command размещается в EDX
   TCode = procedure (Machine: TForthMachine; Command: PForthCommand); register;
   TForthCommand = record 
           Code: TCode;
@@ -83,9 +85,6 @@ type
           Param: Pointer;
         end;
   TXt = PForthCommand;
-
-  // Machine размещается в EAX
-  // Command размещается в EDX
 
   TCallback = procedure (machine: Pointer); stdcall;
   TForthRuntimeProc = procedure (machine: TForthMachine; Command: PForthCommand) 
@@ -101,15 +100,6 @@ type
     Ref: TInt;
   end;
   TBlock = ^TRecBlock;
-
-  TStrRec = packed record
-    Ref: TInt;
-    Len: TInt;
-    Width: TInt;
-    Sym: array[0..1] of Byte;
-  end;
-  PStrRec = ^TStrRec;
-  TStr = PStrRec;
 
   PLong = ^TLong;
   TLong = record
@@ -1915,10 +1905,6 @@ begin
   AddCommand('builtedin', _builtedin);
 
   UseVoc(vBUILTIN);
-  nop := C[High(C)];
-
-  ConvStr := nop;
-  ConvName := nop;
 
   AddCommand('exit', _exit);
   AddCommand('_FIND_', _FIND_);
@@ -1958,6 +1944,11 @@ begin
 
   AddCommand('exit', _exit);
   {$I 'load.inc'}
+  nop := FindCommand('nop');
+
+  ConvStr := nop;
+  ConvName := nop;
+
   DCommandsEmbro.LoadCommands(@Self);
   DCommandsBool.LoadCommands(@Self);
 {$IFNDEF FLAG_FPC}{$REGION 'type commands'}{$ENDIF}

@@ -6,10 +6,11 @@ unit DEmbroSource;
 interface
 
 uses
-  {$I units.inc},
-  DEmbroCore;
+  {$I units.inc};
 
 type
+  PtrInt = Cardinal;
+
 PSource = ^TSource;
 PSpaceSkipper = ^TSpaceSkipper;
 PNameReader = ^TNameReader;
@@ -233,7 +234,7 @@ end;
 
 procedure TSource.IncPos(Count: Integer);
 begin
-  if PtrInt(FBuffer.Finish) - PtrInt(FBuffer.Pos) <= Count then
+  if PtrUInt(FBuffer.Finish) - PtrUInt(FBuffer.Pos) <= Count then
     FBuffer.Pos := FBuffer.Finish
   else
     Inc(PByte(FBuffer.Pos),Count);

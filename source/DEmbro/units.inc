@@ -17,4 +17,6 @@
 
   DUtils,
   DDebug,
-  DParser
+  DParser,
+
+  DEmbroCore

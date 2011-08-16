@@ -22,6 +22,8 @@ test: clean pas4 pasq
 pas4:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
 	m4 id2.m4 DForthMachine.temp4 > DForthMachine.pas 
+	m4 ..\m4\id.m4 console.pas4 > temp\console.temp4
+	m4 id2.m4 temp\console.temp4 > console.pas
 	m4 DEmbroSpace.pas4 > DEmbroSpace.pas
 	m4 DEmbroCore.pas4 > DEmbroCore.pas
 	m4 DEmbroManager.pas4 > DEmbroManager.pas
@@ -76,8 +78,7 @@ DArm:
 dll:
 	fpc dembro32lib.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
-release: clean
-	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
+release: clean pas4 pasq
 	fpc dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -FE"..\..\release\" -FU".\temp"
 #	fpc dembro32lib.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -O3 -FE"..\..\release\" -FU".\temp"
 	upx ..\..\release\dembro32.exe
