@@ -65,7 +65,6 @@ uses
   DCommandsXT in 'commands\DCommandsXT.pas',
 
   DAlien,
-  //DForthStack,
   DForthMachine,
   DVocabulary,
   DExecutable,
@@ -176,8 +175,7 @@ begin
   if CommandLine.Help then
     Halt;
 
-  New(Machine);
-  Machine.Create;
+  New(Machine, Create);
   RunSystem;
   Compiler := TCompiler.Create(Machine);
   Machine.AddCommand('quit', quit);

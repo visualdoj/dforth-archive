@@ -22,8 +22,7 @@ uses
   DAlien,
   DVocabulary,
   DEmbroSource,
-  DCommandsTable,
-  DForthStack;
+  DCommandsTable;
 
 const
   DFORTHMACHINE_VERSION = 11;

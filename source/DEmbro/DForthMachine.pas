@@ -13,11 +13,11 @@ interface
 
 
 uses
-  {$I units.inc},Math,strings,DAlien,DVocabulary,DEmbroSource,DCommandsTable,DForthStack;
+  {$I units.inc},Math,strings,DAlien,DVocabulary,DEmbroSource,DCommandsTable;
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '\Thu Sep 16 20:22 2011\';
+  DFORTHMACHINE_DATE: TString = '\Thu Sep 16 20:32 2011\';
 
 
 
