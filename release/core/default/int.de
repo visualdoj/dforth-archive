@@ -29,10 +29,12 @@ samebuiltin divmod
 samebuiltin shl
 samebuiltin shr
 samebuiltin **
-samebuiltin inc
-samebuiltin dec
-builtin inc 1+
-builtin dec 1-
+// samebuiltin inc
+// samebuiltin dec
+// builtin inc 1+
+// builtin dec 1-
+samebuiltin 1+
+samebuiltin 1-
 samebuiltin abs
 samebuiltin neg
 // }}}

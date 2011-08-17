@@ -16,6 +16,7 @@ str" misc.de" evaluate-file
 str" strings.de" evaluate-file
 str" vm.de" evaluate-file
 str" voc.de" evaluate-file
+str" value.de" evaluate-file
 str" xt.de" evaluate-file
 str" num.de" evaluate-file
 str" num_signed.de" evaluate-file

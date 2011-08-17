@@ -25,7 +25,7 @@ DECLARE(b@, bdog)
     bAddRef(BVar(0));
     BInc;)
 
-DECLARE(B!, bexclamation)
+DECLARE(b!, bexclamation)
   body(
     WDec(CELL); 
     BDec; 

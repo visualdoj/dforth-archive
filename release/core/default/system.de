@@ -31,7 +31,6 @@ samebuiltin evaluate-file
 // }}}
 
 str" core\builtin\all.de" evaluate-file
-// str" ..\builtin\all.de" evaluate-file
 
 str" core\default\w.de" evaluate-file
 str" core\default\l.de" evaluate-file

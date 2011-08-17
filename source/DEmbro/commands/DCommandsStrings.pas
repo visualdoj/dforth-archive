@@ -568,7 +568,7 @@ end;
 
 procedure str_minus(Machine: TForthMachine; Command: PForthCommand);
 label
-  _Break, _Exit;
+  _Break;
 var
   X, S, Y: TStr;
   I, J, Len: Integer;
@@ -603,7 +603,7 @@ end;
 
 procedure str_replace(Machine: TForthMachine; Command: PForthCommand);
 label
-  _Break, _Exit;
+  _Break;
 var
   X, S, N, Y: TStr;
   I, J, Len: Integer;

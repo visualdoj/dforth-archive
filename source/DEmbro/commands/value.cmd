@@ -187,7 +187,7 @@ define(`typed_commands',`
       body( ERV(WP, $2); Inc(WP, $2); )
 ')
 
-typed_commands(, 4)
+typed_commands(`', 4)
 typed_commands(ptr, 4)
 typed_commands(int, 4)
 typed_commands(int8, 1)

@@ -17,7 +17,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '\Thu Sep 16 20:32 2011\';
+  DFORTHMACHINE_DATE: TString = '\Fri Sep 17 05:04 2011\';
 
 
 
@@ -729,6 +729,14 @@ uses
   DCommandsBool,DCommandsMisc,DCommandsArithmetic,DCommandsSignedArithmetic,DCommandsNumberArithmetic,DCommandsConvertNumber,DCommandsConsole,DCommandsStrings,DCommandsAlien,DCommandsF,DCommandsBW,DCommandsCompile,DCommandsCreatewords,DCommandsFiles,DCommandsInt,DCommandsMem,DCommandsOS,DCommandsPtr,DCommandsR,DCommandsSource,DCommandsVM,DCommandsVoc,DCommandsExtInt,DCommandsEmbro,DCommandsControl,DCommandsXT;
 
 {$I 'body.inc'}
+
+procedure _sq_tick_sq (Machine: TForthMachine; Command: PForthCommand);
+begin with Machine^ do begin WUP(FindCommand(NextName));
+  literal(Machine, Command);  end; end;
+
+procedure _tick (Machine: TForthMachine; Command: PForthCommand);
+begin with Machine^ do begin Pointer(WP^) := FindCommand(NextName);
+  Inc(WP, SizeOf(Pointer));  end; end;
 
 function GetFileName(FullPath: TString): TString;
 var
@@ -1944,13 +1952,15 @@ begin
 
   AddCommand('exit', _exit);
   {$I 'load.inc'}
+  AddCommand('''', _tick);
+  AddCommand('['']', _sq_tick_sq);
   nop := FindCommand('nop');
 
   ConvStr := nop;
   ConvName := nop;
 
-  DCommandsEmbro.LoadCommands(@Self);
-  DCommandsBool.LoadCommands(@Self);
+  // DCommandsEmbro.LoadCommands(@Self);
+  // DCommandsBool.LoadCommands(@Self);
 {$IFNDEF FLAG_FPC}{$REGION 'type commands'}{$ENDIF}
   AddCommand('typeof', typeof, True);
   AddCommand('(typeof)', run_type);
@@ -1976,30 +1986,30 @@ begin
   AddCommand('t_double', _double, True);
   AddCommand('t_extended', _extended, True);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-  DCommandsAlien.LoadCommands(@Self);
+  // DCommandsAlien.LoadCommands(@Self);
   DCommandsStrings.LoadCommands(@Self);
-  DCommandsConsole.LoadCommands(@Self);
-  DCommandsF.LoadCommands(@Self);
-  DCommandsBW.LoadCommands(@Self);
-  DCommandsCompile.LoadCommands(@Self);
-  DCommandsCreatewords.LoadCommands(@Self);
-  DCommandsFiles.LoadCommands(@Self);
-  DCommandsInt.LoadCommands(@Self);
-  DCommandsMem.LoadCommands(@Self);
-  DCommandsOS.LoadCommands(@Self);
-  DCommandsPtr.LoadCommands(@Self);
-  DCommandsR.LoadCommands(@Self);
-  DCommandsSource.LoadCommands(@Self);
-  DCommandsVM.LoadCommands(@Self);
-  DCommandsVoc.LoadCommands(@Self);
-  DCommandsExtInt.LoadCommands(@Self);
-  DCommandsMisc.LoadCommands(@Self);
-  DCommandsArithmetic.LoadCommands(@Self);
-  DCommandsSignedArithmetic.LoadCommands(@Self);
-  DCommandsNumberArithmetic.LoadCommands(@Self);
-  DCommandsConvertNumber.LoadCommands(@Self);
-  DCommandsControl.LoadCommands(@Self);
-  DCommandsXT.LoadCommands(@Self);
+  // DCommandsConsole.LoadCommands(@Self);
+  // DCommandsF.LoadCommands(@Self);
+  // DCommandsBW.LoadCommands(@Self);
+  // DCommandsCompile.LoadCommands(@Self);
+  // DCommandsCreatewords.LoadCommands(@Self);
+  // DCommandsFiles.LoadCommands(@Self);
+  // DCommandsInt.LoadCommands(@Self);
+  // DCommandsMem.LoadCommands(@Self);
+  // DCommandsOS.LoadCommands(@Self);
+  // DCommandsPtr.LoadCommands(@Self);
+  // DCommandsR.LoadCommands(@Self);
+  // DCommandsSource.LoadCommands(@Self);
+  // DCommandsVM.LoadCommands(@Self);
+  // DCommandsVoc.LoadCommands(@Self);
+  // DCommandsExtInt.LoadCommands(@Self);
+  // DCommandsMisc.LoadCommands(@Self);
+  // DCommandsArithmetic.LoadCommands(@Self);
+  // DCommandsSignedArithmetic.LoadCommands(@Self);
+  // DCommandsNumberArithmetic.LoadCommands(@Self);
+  // DCommandsConvertNumber.LoadCommands(@Self);
+  // DCommandsControl.LoadCommands(@Self);
+  // DCommandsXT.LoadCommands(@Self);
   
     
     
