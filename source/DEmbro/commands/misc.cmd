@@ -136,6 +136,7 @@ DECLARE(opcode->command, opcode_to_command)
 DECLARE(literal)
   body( BuiltinEWO('(literal)'); EWI(WOI); )
 
+dnl ищи в DForthMachine.pas4
 dnl DECLARE([""], sq_ap_sq)
 dnl   body(
 dnl     WUP(FindCommand(NextName));
@@ -163,7 +164,7 @@ DECLARE(execute)
     P := WOP;
     P.Code(Machine, P) )
 
-DECLARE(does>, does_gt)
+DECLARE(does>, does_gt, True)
   body(
     BuiltinEWO('(does>)');
     BuiltinEWO('exit'); )

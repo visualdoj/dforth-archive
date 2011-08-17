@@ -16,7 +16,7 @@ DECLARE(allot)
     end;
   end;
 
-DECLARE(compile)
+DECLARE(compile,, True)
   begin
     with Machine^ do begin
         Machine.BuiltinEWO('(compile)');
@@ -24,7 +24,7 @@ DECLARE(compile)
     end;
   end;
 
-DECLARE((compile), q_compile_q)
+DECLARE((compile), q_compile_q, True)
   var
     O: TOpcode;
   begin
@@ -34,12 +34,12 @@ DECLARE((compile), q_compile_q)
     end;
   end;
 
-DECLARE(call)
+DECLARE(call,, True)
   begin
     Machine.EWO(Machine.NextName);
   end;
 
-DECLARE(postpone)
+DECLARE(postpone,, True)
   var
     C: PForthCommand;
     Opcode: TOpcode;

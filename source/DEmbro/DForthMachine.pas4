@@ -716,7 +716,7 @@ uses
 procedure _sq_tick_sq cmdhdr;
 body(
   WUP(FindCommand(NextName));
-  literal(Machine, Command); )
+  _literal(Machine, Command); )
 
 procedure _tick cmdhdr;
 body(
@@ -1933,7 +1933,7 @@ begin
   AddCommand('exit', _exit);
   {$I 'load.inc'}
   AddCommand('''', _tick);
-  AddCommand('['']', _sq_tick_sq);
+  AddCommand('['']', _sq_tick_sq, True);
   nop := FindCommand('nop');
 
   ConvStr := nop;
@@ -1968,7 +1968,7 @@ begin
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   // DCommandsAlien.LoadCommands(@Self);
   DCommandsStrings.LoadCommands(@Self);
-  // DCommandsConsole.LoadCommands(@Self);
+  DCommandsConsole.LoadCommands(@Self);
   // DCommandsF.LoadCommands(@Self);
   // DCommandsBW.LoadCommands(@Self);
   // DCommandsCompile.LoadCommands(@Self);
@@ -1981,7 +1981,7 @@ begin
   // DCommandsR.LoadCommands(@Self);
   // DCommandsSource.LoadCommands(@Self);
   // DCommandsVM.LoadCommands(@Self);
-  // DCommandsVoc.LoadCommands(@Self);
+  DCommandsVoc.LoadCommands(@Self);
   // DCommandsExtInt.LoadCommands(@Self);
   // DCommandsMisc.LoadCommands(@Self);
   // DCommandsArithmetic.LoadCommands(@Self);

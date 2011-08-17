@@ -22,7 +22,7 @@ samebuiltin max
 samebuiltin min
 samebuiltin minmax
 samebuiltin .
-samebuiltin $$
+samebuiltin $
 samebuiltin +!
 samebuiltin ->str
 samebuiltin str->
@@ -48,7 +48,7 @@ samebuiltin int-max
 samebuiltin int-min
 samebuiltin int-minmax
 samebuiltin int.
-samebuiltin int$$
+samebuiltin int$
 samebuiltin int+!
 samebuiltin int->str
 samebuiltin str->int
@@ -74,7 +74,7 @@ samebuiltin int8-max
 samebuiltin int8-min
 samebuiltin int8-minmax
 samebuiltin int8.
-samebuiltin int8$$
+samebuiltin int8$
 samebuiltin int8+!
 samebuiltin int8->str
 samebuiltin str->int8
@@ -100,7 +100,7 @@ samebuiltin int16-max
 samebuiltin int16-min
 samebuiltin int16-minmax
 samebuiltin int16.
-samebuiltin int16$$
+samebuiltin int16$
 samebuiltin int16+!
 samebuiltin int16->str
 samebuiltin str->int16
@@ -126,7 +126,7 @@ samebuiltin int32-max
 samebuiltin int32-min
 samebuiltin int32-minmax
 samebuiltin int32.
-samebuiltin int32$$
+samebuiltin int32$
 samebuiltin int32+!
 samebuiltin int32->str
 samebuiltin str->int32
@@ -152,7 +152,7 @@ samebuiltin int64-max
 samebuiltin int64-min
 samebuiltin int64-minmax
 samebuiltin int64.
-samebuiltin int64$$
+samebuiltin int64$
 samebuiltin int64+!
 samebuiltin int64->str
 samebuiltin str->int64
@@ -178,7 +178,7 @@ samebuiltin uint-max
 samebuiltin uint-min
 samebuiltin uint-minmax
 samebuiltin uint.
-samebuiltin uint$$
+samebuiltin uint$
 samebuiltin uint+!
 samebuiltin uint->str
 samebuiltin str->uint
@@ -204,7 +204,7 @@ samebuiltin uint8-max
 samebuiltin uint8-min
 samebuiltin uint8-minmax
 samebuiltin uint8.
-samebuiltin uint8$$
+samebuiltin uint8$
 samebuiltin uint8+!
 samebuiltin uint8->str
 samebuiltin str->uint8
@@ -230,7 +230,7 @@ samebuiltin uint16-max
 samebuiltin uint16-min
 samebuiltin uint16-minmax
 samebuiltin uint16.
-samebuiltin uint16$$
+samebuiltin uint16$
 samebuiltin uint16+!
 samebuiltin uint16->str
 samebuiltin str->uint16
@@ -256,7 +256,7 @@ samebuiltin uint32-max
 samebuiltin uint32-min
 samebuiltin uint32-minmax
 samebuiltin uint32.
-samebuiltin uint32$$
+samebuiltin uint32$
 samebuiltin uint32+!
 samebuiltin uint32->str
 samebuiltin str->uint32
@@ -282,7 +282,7 @@ samebuiltin uint64-max
 samebuiltin uint64-min
 samebuiltin uint64-minmax
 samebuiltin uint64.
-samebuiltin uint64$$
+samebuiltin uint64$
 samebuiltin uint64+!
 samebuiltin uint64->str
 samebuiltin str->uint64
@@ -308,7 +308,7 @@ samebuiltin float-max
 samebuiltin float-min
 samebuiltin float-minmax
 samebuiltin float.
-samebuiltin float$$
+samebuiltin float$
 samebuiltin float+!
 samebuiltin float->str
 samebuiltin str->float
@@ -334,7 +334,7 @@ samebuiltin double-max
 samebuiltin double-min
 samebuiltin double-minmax
 samebuiltin double.
-samebuiltin double$$
+samebuiltin double$
 samebuiltin double+!
 samebuiltin double->str
 samebuiltin str->double
@@ -360,7 +360,7 @@ samebuiltin extended-max
 samebuiltin extended-min
 samebuiltin extended-minmax
 samebuiltin extended.
-samebuiltin extended$$
+samebuiltin extended$
 samebuiltin extended+!
 samebuiltin extended->str
 samebuiltin str->extended

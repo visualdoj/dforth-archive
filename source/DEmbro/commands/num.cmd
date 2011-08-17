@@ -49,7 +49,7 @@ define(`arithmetic_commands', `
         end;
       )
       DECLARE($1., $1_dot)    body( Dec(WP, SizeOf($2)); Write($2(WP^), " "); )
-      DECLARE($1$$, $1_dollar) var Temp: $2; body( Read(Temp); Move(Temp, WP^, SizeOf($2)); Inc(WP, SizeOf($2)); )
+      DECLARE($1$, $1_dollar) var Temp: $2; body( Read(Temp); Move(Temp, WP^, SizeOf($2)); Inc(WP, SizeOf($2)); )
       DECLARE($1+!, $1_ptr_plus_exclamation) body( $2(Pointer(WVar(-SizeOf(Pointer)))^) := $2(Pointer(WVar(-SizeOf(Pointer)))^) + $2(WVar(-SizeOf(Pointer)-SizeOf($2))); Dec(WP, SizeOf(Pointer) + SizeOf($2)); )
       DECLARE($1->str, $1_conv_to_str)
       var

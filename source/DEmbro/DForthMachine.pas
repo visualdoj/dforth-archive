@@ -17,7 +17,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = '\Fri Sep 17 05:04 2011\';
+  DFORTHMACHINE_DATE: TString = '\Fri Sep 17 12:25 2011\';
 
 
 
@@ -732,7 +732,7 @@ uses
 
 procedure _sq_tick_sq (Machine: TForthMachine; Command: PForthCommand);
 begin with Machine^ do begin WUP(FindCommand(NextName));
-  literal(Machine, Command);  end; end;
+  _literal(Machine, Command);  end; end;
 
 procedure _tick (Machine: TForthMachine; Command: PForthCommand);
 begin with Machine^ do begin Pointer(WP^) := FindCommand(NextName);
@@ -1953,7 +1953,7 @@ begin
   AddCommand('exit', _exit);
   {$I 'load.inc'}
   AddCommand('''', _tick);
-  AddCommand('['']', _sq_tick_sq);
+  AddCommand('['']', _sq_tick_sq, True);
   nop := FindCommand('nop');
 
   ConvStr := nop;
@@ -1988,7 +1988,7 @@ begin
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   // DCommandsAlien.LoadCommands(@Self);
   DCommandsStrings.LoadCommands(@Self);
-  // DCommandsConsole.LoadCommands(@Self);
+  DCommandsConsole.LoadCommands(@Self);
   // DCommandsF.LoadCommands(@Self);
   // DCommandsBW.LoadCommands(@Self);
   // DCommandsCompile.LoadCommands(@Self);
@@ -2001,7 +2001,7 @@ begin
   // DCommandsR.LoadCommands(@Self);
   // DCommandsSource.LoadCommands(@Self);
   // DCommandsVM.LoadCommands(@Self);
-  // DCommandsVoc.LoadCommands(@Self);
+  DCommandsVoc.LoadCommands(@Self);
   // DCommandsExtInt.LoadCommands(@Self);
   // DCommandsMisc.LoadCommands(@Self);
   // DCommandsArithmetic.LoadCommands(@Self);

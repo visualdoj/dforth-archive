@@ -123,11 +123,12 @@ define(`typed_commands',`
               $2);
          WInc($2 - SizeOf(TInt));)
 
-     DECLARE(idle($1,),_comma_$1)
+     DECLARE(idle($1,),comma_$1)
        body(
-         Dec(WP, $2); ifelse(`',$1,
-         EWI(Integer(WP^)),
-         EWV(WP, $2); ) )
+         Dec(WP, $2);
+         ifelse(`',$1,
+           EWI(Integer(WP^));,
+           EWV(WP, $2); ) )
 
      DECLARE($1@, _dog_$1)
        body(
