@@ -14,7 +14,7 @@ samebuiltin >r
 samebuiltin l@
 samebuiltin l!
 samebuiltin l+
-samebuiltin version
+samebuiltin sys-version
 samebuiltin state
 samebuiltin time
 samebuiltin local

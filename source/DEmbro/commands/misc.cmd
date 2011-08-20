@@ -62,7 +62,7 @@ DECLARE(l+, l_plus)
     Dec(WP, SizeOf(TInt));
     Inc(LP, TInt(WP^)) )
 
-DECLARE(version)
+DECLARE(sys-version, version)
   body(
     TInt(WP^) := DFORTHMACHINE_VERSION;
     Inc(WP, SizeOf(TInt)); )
