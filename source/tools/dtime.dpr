@@ -2,6 +2,8 @@ uses
   SysUtils;
 var
   FormatSettings: TFormatSettings;
+  I: Integer;
+  S: String;
 begin
   if ParamStr(1) = '' then begin
     Writeln('Usage: dtime "format"');
@@ -92,6 +94,10 @@ begin
       LongDayNames[6] := 'Sunday';
       TwoDigitYearCenturyWindow := 50;
     end;
-    Write(FormatDateTime(ParamStr(1), Now, FormatSettings));
+    S := '';
+    for I := 1 to ParamCount - 1 do
+      S := S + ParamStr(I) + ' ';
+    S := S + ParamStr(ParamCount);
+    Write(FormatDateTime(S, Now{, FormatSettings}));
   end;
 end.

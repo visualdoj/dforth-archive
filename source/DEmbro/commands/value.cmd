@@ -143,14 +143,10 @@ define(`typed_commands',`
      DECLARE(ptr+$1, ptr_plus_$1)
        body( PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; )
 
-     DECLARE(genname($1,to), _to_$1)
-       body(
-         if State <> FS_INTERPRET then _compile_to_$1(Machine, Command) else _interpret_to_$1(Machine, Command); )
-
-     DECLARE(compile@genname($1, to), _compile_to_$1)
+     DECLARE(genname($1, [to]), compile_to_$1, True)
        body( BuiltinEWO("run@genname($1, `to')"); EWO(NextName); )
 
-     DECLARE(run@genname($1, to), _run_to_$1)
+     DECLARE(run@genname($1, to), run_to_$1)
        var O: TOpcode;
        body(
          O := ERO;
@@ -158,13 +154,17 @@ define(`typed_commands',`
          C[O].Data^, $2);
          Dec(WP, $2); )
 
-     DECLARE(interpret@genname($1, to), _interpret_to_$1, True)
+     DECLARE(interpret@genname($1, to), interpret_to_$1, True)
        var
          N: TString;
          Comm: PForthCommand;
        body( N := NextName; Comm := FindCommand(N);
                if Comm = nil then begin LogError("unkown name after genname($1, `to'): " + N); FSession := False; Exit; end; 
                Move(WVar(-$2), Comm.Data^, $2); Dec(WP, $2);)
+
+     DECLARE(genname($1,to), _to_$1, True)
+       body(
+         if State <> FS_INTERPRET then _compile_to_$1(Machine, Command) else _interpret_to_$1(Machine, Command); )
 
      procedure RunValue_$1 cmdhdr;
        body( Move(Command.Data^, WP^, $2); Inc(WP, $2); )

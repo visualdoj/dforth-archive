@@ -19,7 +19,7 @@ DECLARE(realloc)
 SUMMARY ( ptr1 newsize -- ptr2) перевыдел€ет пам€ть, сохран€€ данные
 
 DECLARE(move)
-  body()
+  body( Dec(WP, SizeOf(Pointer)*3); Move(Pointer(WVar(0))^, Pointer(WVar(SizeOf(Pointer)))^, TUint(WVar(2*SizeOf(Pointer)))); )
 SUMMARY ( src dst size --) переносит size байт из src в dst
 
 DECLARE(fill0)

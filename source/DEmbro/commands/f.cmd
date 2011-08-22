@@ -245,7 +245,7 @@ DECLARE(fsincos)
     fsincos
   end;)
 
-DECLARE(float-fliteral, _float_fliteral)
+DECLARE(float-fliteral, _float_fliteral, True)
   var
     F: Single;
   begin
@@ -256,7 +256,7 @@ DECLARE(float-fliteral, _float_fliteral)
     Machine.EWV(@F, SizeOf(F));
   end;
 
-DECLARE(double-fliteral, _double_fliteral)
+DECLARE(double-fliteral, _double_fliteral, True)
   var
     F: Double;
   begin
@@ -267,7 +267,7 @@ DECLARE(double-fliteral, _double_fliteral)
     Machine.EWV(@F, SizeOf(F));
   end;
 
-DECLARE(extended-fliteral, _extended_fliteral)
+DECLARE(extended-fliteral, _extended_fliteral, True)
   var
     F: Double;
   begin
