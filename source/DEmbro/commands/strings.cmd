@@ -881,7 +881,7 @@ begin
   end;
 end;
 
-DECLARE(str-new, str_new)
+DECLARE(str-copy, str_copy)
 var
   B: TStr;
 begin
@@ -889,8 +889,9 @@ begin
   str_push(Machine, CreateStr(B));
   DelRef(B);
 end;
+RUS SUMMARY(( B: x -- B: y) создаёт новую строку, содержащую копию x)
 
-{ DECLARE(str_new)
+DECLARE(str-new, str_new)
 var
   B: TStr;
   Len, C, Width, I: Integer;
@@ -902,17 +903,8 @@ begin
   for I := 0 to Len - 1 do
     B^.Sym[I*Width] := C;
   str_push(Machine, B);
-end;}
-
-DECLARE(str_index_dog)
-begin
- // B := str_pop(Machine);
- // WUI(StrSymbol(B, Machine.WOI));
 end;
-
-DECLARE(str_index_exclamation)
-begin
-end;
+RUS SUMMARY(( lcw -- B: s) создаёт строку длинной l шириной w, каждый символ которой c)
 
 DECLARE(pchar->str, pchar_to_str)
 begin

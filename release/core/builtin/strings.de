@@ -32,10 +32,8 @@ samebuiltin str@
 samebuiltin str!
 samebuiltin str[]@
 samebuiltin str[]!
+samebuiltin str-copy
 samebuiltin str-new
-samebuiltin str_new
-samebuiltin str_index_dog
-samebuiltin str_index_exclamation
 samebuiltin pchar->str
 samebuiltin format
 samebuiltin raw->unicode

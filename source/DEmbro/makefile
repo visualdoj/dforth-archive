@@ -98,6 +98,7 @@ asm: clean
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
 commands:
+	del ..\..\release\core\builtin\*.de
 	m4 ..\m4\ctype.m4 commands\groups.list > temp\make_all.bat
 	temp\make_all.bat
 #	type commands\mem.cmd commands\misc.cmd > temp\all.cmd
@@ -113,5 +114,3 @@ commands:
 	m4 ..\m4\g_builtin.m4 commands\groups.list > temp\make_builtin.bat
 	temp\make_builtin.bat
 	m4 ..\m4\cevaluate.m4 commands\groups.list > ..\..\release\core\builtin\all.de
-	m4 ..\m4\cbuiltin.m4 commands\mem.cmd > ..\..\release\core\builtin\mem.de
-	m4 ..\m4\cbuiltin.m4 commands\misc.cmd > ..\..\release\core\builtin\misc.de
