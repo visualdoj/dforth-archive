@@ -344,7 +344,7 @@ begin
   Machine.EWI(Ord(Machine.SNC));
 end;
 
-procedure str_push(Machine: TForthMachine; const B: TString);
+procedure str_push(Machine: TForthMachine; const B: TString); overload;
 var
   FS: TStr;
 begin
@@ -353,7 +353,7 @@ begin
   str_push(Machine, FS);
 end;
 
-procedure str_push(Machine: TForthMachine; B: TStr);
+procedure str_push(Machine: TForthMachine; B: TStr); overload;
 begin
   AddRef(B);
   Machine.BWU(B);
@@ -364,12 +364,12 @@ begin
   Result := Machine.BWO;
 end;
 
-function str_top(Machine: TForthMachine): TStr;
+function str_top(Machine: TForthMachine): TStr; overload;
 begin
   Result := TStr(BVar(-1));
 end;
 
-function str_top(Machine: TForthMachine; Index: Integer): TStr;
+function str_top(Machine: TForthMachine; Index: Integer): TStr; overload;
 begin
   Result := TStr(BVar(-Index));
 end;

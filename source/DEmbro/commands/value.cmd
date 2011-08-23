@@ -143,7 +143,7 @@ define(`typed_commands',`
      DECLARE(ptr+$1, ptr_plus_$1)
        body( PtrInt(WVar(-SizeOf(Pointer))) := PtrInt(WVar(-SizeOf(Pointer))) + $2; )
 
-     DECLARE(genname($1, [to]), compile_to_$1, True)
+     DECLARE(genname($1,[to]), compile_to_$1, True)
        body( BuiltinEWO("run@genname($1, `to')"); EWO(NextName); )
 
      DECLARE(run@genname($1, to), run_to_$1)
