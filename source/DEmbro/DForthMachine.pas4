@@ -19,6 +19,7 @@ uses
 
   Math,
   strings,
+  console,
   DAlien,
   DVocabulary,
   DEmbroSource,
@@ -382,6 +383,7 @@ OForthMachine = object
   FCurrentLine: Integer;
   FCurrentPos: Integer;
   Directories: array of TString;
+  Console: TConsole;
   procedure CompileSource(Source: PChar);
   function CompileName(W: PChar): Boolean; overload;
   function NextMnemonic: Cardinal;

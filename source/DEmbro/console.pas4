@@ -3,8 +3,38 @@ unit console;
 interface
 
 uses
+  {$IFDEF MSWINDOWS}
+  CRT,
+  {$ENDIF}
   DUtils,
   DEmbroCore;
+
+{$IFDEF MSWINDOWS}
+const
+  COLOR_WHITE = White;
+  COLOR_BLACK = Black;
+  COLOR_GRAY = DarkGray;
+  COLOR_RED = Red;
+  COLOR_GREEN = Green;
+  COLOR_BLUE = Blue;
+  COLOR_YELLOW = Yellow;
+  COLOR_PINK = Magenta;
+  COLOR_CYAN = Cyan;
+  COLOR_LIGHTGRAY = LightGray;
+  COLOR_LIGHTRED = LightRed;
+  COLOR_LIGHTGREEN = LightGreen;
+  COLOR_LIGHTBLUE = LightBlue;
+  COLOR_LIGHTYELLOW = Yellow;
+  COLOR_LIGHTPINK = LightMagenta;
+  COLOR_LIGHTCYAN = LightCyan;
+  COLOR_DARKGRAY = DarkGray;
+  COLOR_DARKRED = Red;
+  COLOR_DARKGREEN = Green;
+  COLOR_DARKBLUE = Blue;
+  COLOR_DARKYELLOW = Brown;
+  COLOR_DARKPINK = Magenta;
+  COLOR_DARKCYAN = Cyan;
+{$ENDIF}
 
 type
 TConsole = object
@@ -111,11 +141,14 @@ end;
 
 procedure TConsole.ClearScreen;
 begin
-  // nothing can do
+  ClrScr;
 end;
 
 procedure TConsole.ClearLine;
 begin
+  GotoXY(1, WhereY);
+  DelLine;
+  // GotoXY(1,10);  
   // nothing can do
 end;
 
@@ -126,12 +159,12 @@ end;
 
 procedure TConsole.SetFontColor(Color: Integer);
 begin
-  // nothing can do
+  TextColor(Color);
 end;
 
 procedure TConsole.SetBackgroundColor(Color: Integer);
 begin
-  // nothing can do
+  TextBackground(Color);
 end;
 
 procedure TConsole.SetBlink(Blink: Boolean);

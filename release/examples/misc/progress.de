@@ -1,0 +1,16 @@
+// 2011.08.24 # Doj
+// Прогресс бар на консоли
+
+: ###. ( i-) begin ?dup while 1- [char] # emit repeat ;
+: progress ( i-) 5 div [char] [ emit dup ###. 20 swap - spaces [char] ] emit ;
+: start-progress 0 progress ;
+: update-progress ( i-) clear-line progress ;
+: done-progress clear-line ;
+
+: wait timer begin timer over - 50 > until drop ;
+
+:noname
+  start-progress
+  0 begin dup 100 <= while 1+ wait dup update-progress repeat drop
+  done-progress
+; execute

@@ -1,0 +1,29 @@
+// 2011.08.24 # Doj
+// Пример использования консоли
+
+clear-screen
+CONSOLE_WHITE set-font-color ." white "
+CONSOLE_BLACK set-font-color ." black "
+CONSOLE_GRAY set-font-color ." gray "
+CONSOLE_RED set-font-color ." red "
+CONSOLE_GREEN set-font-color ." green "
+CONSOLE_BLUE set-font-color ." blue "
+CONSOLE_YELLOW set-font-color ." yellow "
+CONSOLE_PINK set-font-color ." pink "
+CONSOLE_CYAN set-font-color ." cyan" cr
+
+CONSOLE_LIGHTGRAY set-font-color ." gray "
+CONSOLE_LIGHTRED set-font-color ." red "
+CONSOLE_LIGHTGREEN set-font-color ." green "
+CONSOLE_LIGHTBLUE set-font-color ." blue "
+CONSOLE_LIGHTYELLOW set-font-color ." yellow "
+CONSOLE_LIGHTPINK set-font-color ." pink "
+CONSOLE_LIGHTCYAN set-font-color ." cyan" cr
+
+CONSOLE_DARKGRAY set-font-color ." gray "
+CONSOLE_DARKRED set-font-color ." red "
+CONSOLE_DARKGREEN set-font-color ." green "
+CONSOLE_DARKBLUE set-font-color ." blue "
+CONSOLE_DARKYELLOW set-font-color ." yellow "
+CONSOLE_DARKPINK set-font-color ." pink "
+CONSOLE_DARKCYAN set-font-color ." cyan" cr

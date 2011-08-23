@@ -13,11 +13,11 @@ interface
 
 
 uses
-  {$I units.inc},Math,strings,DAlien,DVocabulary,DEmbroSource,DCommandsTable;
+  {$I units.inc},Math,strings,console,DAlien,DVocabulary,DEmbroSource,DCommandsTable;
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = 'Wed Aug 24 00:27 2011';
+  DFORTHMACHINE_DATE: TString = 'Wed Aug 24 01:38 2011';
 
 
 
@@ -248,6 +248,7 @@ OForthMachine = object
   FCurrentLine: Integer;
   FCurrentPos: Integer;
   Directories: array of TString;
+  Console: TConsole;
   procedure CompileSource(Source: PChar);
   function CompileName(W: PChar): Boolean; overload;
   function NextMnemonic: Cardinal;
