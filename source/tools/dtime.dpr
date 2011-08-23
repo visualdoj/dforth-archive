@@ -98,6 +98,6 @@ begin
     for I := 1 to ParamCount - 1 do
       S := S + ParamStr(I) + ' ';
     S := S + ParamStr(ParamCount);
-    Write(FormatDateTime(S, Now{, FormatSettings}));
+    Write(FormatDateTime(S, Now, FormatSettings));
   end;
 end.

@@ -11,7 +11,7 @@ define(~_IA32|)
 ifdef(_IA32,,define(~N_IA32|))
 ifdef(_X86,,define(~N_X86|))
 
-ifdef(~__windows__|, ~define(~_DATE_|,~esyscmd(~..\tools\dtime "ddd mmm dd hh:nn yyyy"|)|)|, 
+ifdef(~__windows__|, ~define(~_DATE_|,~esyscmd(~..\tools\dtime ddd mmm dd hh:nn yyyy|)|)|, 
                      ~define(~_DATE_|,~|)|)
 
 uses
