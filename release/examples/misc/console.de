@@ -27,3 +27,34 @@ CONSOLE_DARKBLUE set-font-color ." blue "
 CONSOLE_DARKYELLOW set-font-color ." yellow "
 CONSOLE_DARKPINK set-font-color ." pink "
 CONSOLE_DARKCYAN set-font-color ." cyan" cr
+CONSOLE_GRAY set-font-color
+
+include" units\console\colors.de"
+
+CONSOLE
+  gray
+  white." W"
+  black." B"
+  gray." G"
+  red." R"
+  green." G"
+  blue." B"
+  yellow." Y"
+  pink." P"
+  cyan." C"
+  lightgray." G"
+  lightred." R"
+  lightgreen." G"
+  lightblue." B"
+  lightyellow." Y"
+  lightpink." P"
+  lightcyan." C"
+  darkgray." G"
+  darkred." R"
+  darkgreen." G"
+  darkblue." B"
+  darkyellow." Y"
+  darkpink." P"
+  darkcyan." C"
+  cr
+^

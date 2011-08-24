@@ -13,13 +13,13 @@ uses
 const
   COLOR_WHITE = White;
   COLOR_BLACK = Black;
-  COLOR_GRAY = DarkGray;
-  COLOR_RED = Red;
-  COLOR_GREEN = Green;
-  COLOR_BLUE = Blue;
+  COLOR_GRAY = LightGray;
+  COLOR_RED = LightRed;
+  COLOR_GREEN = LightGreen;
+  COLOR_BLUE = LightBlue;
   COLOR_YELLOW = Yellow;
-  COLOR_PINK = Magenta;
-  COLOR_CYAN = Cyan;
+  COLOR_PINK = LightMagenta;
+  COLOR_CYAN = LightCyan;
   COLOR_LIGHTGRAY = LightGray;
   COLOR_LIGHTRED = LightRed;
   COLOR_LIGHTGREEN = LightGreen;

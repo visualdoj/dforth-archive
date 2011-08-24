@@ -1,0 +1,84 @@
+// 2011.08.24 # Doj
+// Команды для упрощения работы с цветами
+
+include" units\console\core.de"
+
+CONSOLE extend-namespace 
+  : font-color: create , does> @ set-font-color ;
+
+  " 
+    CONSOLE_WHITE action white
+    CONSOLE_BLACK action black
+    CONSOLE_GRAY action gray
+    CONSOLE_RED action red
+    CONSOLE_GREEN action green
+    CONSOLE_BLUE action blue
+    CONSOLE_YELLOW action yellow
+    CONSOLE_PINK action pink
+    CONSOLE_CYAN action cyan
+
+    CONSOLE_LIGHTGRAY action lightgray
+    CONSOLE_LIGHTRED action lightred
+    CONSOLE_LIGHTGREEN action lightgreen
+    CONSOLE_LIGHTBLUE action lightblue
+    CONSOLE_LIGHTYELLOW action lightyellow
+    CONSOLE_LIGHTPINK action lightpink
+    CONSOLE_LIGHTCYAN action lightcyan
+
+    CONSOLE_DARKGRAY action darkgray
+    CONSOLE_DARKRED action darkred
+    CONSOLE_DARKGREEN action darkgreen
+    CONSOLE_DARKBLUE action darkblue
+    CONSOLE_DARKYELLOW action darkyellow
+    CONSOLE_DARKPINK action darkpink
+    CONSOLE_DARKCYAN action darkcyan
+  "
+  bdup " action" \" font-color:" evaluate
+  drop
+    : white." compile? if postpone white postpone [.str]" postpone gray
+                       else white .str" gray then ; immediate
+    : black." compile? if postpone black postpone [.str]" postpone gray
+                      else black .str" gray then ; immediate
+    : gray." compile? if postpone gray postpone [.str]" postpone gray
+                      else gray .str" gray then ; immediate
+    : red." compile? if postpone red postpone [.str]" postpone gray
+                      else red .str" gray then ; immediate
+    : green." compile? if postpone green postpone [.str]" postpone gray
+                      else green .str" gray then ; immediate
+    : blue." compile? if postpone blue postpone [.str]" postpone gray
+                      else blue .str" gray then ; immediate
+    : yellow." compile? if postpone yellow postpone [.str]" postpone gray
+                      else yellow .str" gray then ; immediate
+    : pink." compile? if postpone pink postpone [.str]" postpone gray
+                      else pink .str" gray then ; immediate
+    : cyan." compile? if postpone cyan postpone [.str]" postpone gray
+                      else cyan .str" gray then ; immediate
+    : lightgray." compile? if postpone lightgray postpone [.str]" postpone gray
+                      else lightgray .str" gray then ; immediate
+    : lightred." compile? if postpone lightred postpone [.str]" postpone gray
+                      else lightred .str" gray then ; immediate
+    : lightgreen." compile? if postpone lightgreen postpone [.str]" postpone gray
+                      else lightgreen .str" gray then ; immediate
+    : lightblue." compile? if postpone lightblue postpone [.str]" postpone gray
+                      else lightblue .str" gray then ; immediate
+    : lightyellow." compile? if postpone lightyellow postpone [.str]" postpone gray
+                      else lightyellow .str" gray then ; immediate
+    : lightpink." compile? if postpone lightpink postpone [.str]" postpone gray
+                      else lightpink .str" gray then ; immediate
+    : lightcyan." compile? if postpone lightcyan postpone [.str]" postpone gray
+                      else lightcyan .str" gray then ; immediate
+    : darkgray." compile? if postpone darkgray postpone [.str]" postpone gray
+                      else darkgray .str" gray then ; immediate
+    : darkred." compile? if postpone darkred postpone [.str]" postpone gray
+                      else darkred .str" gray then ; immediate
+    : darkgreen." compile? if postpone darkgreen postpone [.str]" postpone gray
+                      else darkgreen .str" gray then ; immediate
+    : darkblue." compile? if postpone darkblue postpone [.str]" postpone gray
+                      else darkblue .str" gray then ; immediate
+    : darkyellow." compile? if postpone darkyellow postpone [.str]" postpone gray
+                      else darkyellow .str" gray then ; immediate
+    : darkpink." compile? if postpone darkpink postpone [.str]" postpone gray
+                      else darkpink .str" gray then ; immediate
+    : darkcyan." compile? if postpone darkcyan postpone [.str]" postpone gray
+                      else darkcyan .str" gray then ; immediate
+\namespace
