@@ -17,6 +17,8 @@ h33 *in4 !
 variable *out1
 variable *out2
 variable *out3
+variable *out4
+variable *out5
 :asm-noname
   PREFIX
     mov eax d[ *in3 disp ]
@@ -31,14 +33,35 @@ variable *out3
     mov d[ *out3 disp ] h33 imm
     mov eax d[ *in3 disp ]
     xor d[ *out3 disp ] eax
+
+    mov eax d[ *in1 disp ]    
+    mul d[ *in2 disp ]
+    mov d[ *out4 disp ] eax
+
+    *auto-integers? on
+    mov eax 0
+    mov edx 0
+    *auto-integers? off
+
+    mov eax d[ *in1 disp ]    
+    mov ecx d[ *in2 disp ]    
+    imul ecx
+    mov d[ *out5 disp ] eax
+    // mov ecx d[ *in1 disp ]
+    // imul ecx d[ *in2 disp ]
+    // mov d[ *out5 disp ] ecx
+
     ret
   \PREFIX
 asm-noname; execute
 ." *out1 = " *out1 @ . cr
 ." *out2 = " *out2 @ . cr
 ." *out3 = " *out3 @ . cr
+." *out4 = " *out4 @ . cr
+." *out5 = " *out5 @ . cr
 " h55 . cr " bdup str. evaluate 
 " h33 . cr " bdup str. evaluate 
-" h55 h33 xor . " bdup str. evaluate 
+GLOBAL " h55 h33 xor . " bdup str. evaluate ^
+cr
 
 \uses

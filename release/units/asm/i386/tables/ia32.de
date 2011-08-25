@@ -169,3 +169,39 @@ multi-op XOR
   h32  8 variant _reg_reg ' second.value /r ' first mem!
   h33 16 variant _reg_reg ' second.value /r ' first mem!
   h33 32 variant _reg_reg ' second.value /r ' first mem!
+
+multi-op MUL
+  hF6  8 variant _reg /4 ' first mem!
+  hF6  8 variant _mem /4 ' first mem!
+  hF7 16 variant _reg /4 ' first mem!
+  hF7 16 variant _mem /4 ' first mem!
+  hF7 32 variant _reg /4 ' first mem!
+  hF7 32 variant _mem /4 ' first mem!
+
+multi-op IMUL
+  hF6  8 variant _reg /5 ' first mem!
+  last alias IMUL8_mem
+  hF7 16 variant _reg /5 ' first mem!
+  last alias IMUL16_mem
+  hF7 32 variant _reg /5 ' first mem!
+  last alias IMUL32_mem
+  // h0F hAF 16 variant _reg_reg ' second.value /r ' first mem!
+  // last alias IMUL16_reg_mem
+  // h0F hAF 32 variant _reg_reg ' second.value /r ' first mem!
+  // last alias IMUL16_reg_mem
+  h6B 16 variant _reg_reg_imm8 ' third.value /r 
+                               ' second mem!
+                               ' first.value imm! 1 imm#!
+  last alias IMUL16_reg_mem_imm8
+  h6B 32 variant _reg_reg_imm8 ' third.value /r 
+                               ' second mem!
+                               ' first.value imm! 1 imm#!
+  last alias IMUL32_reg_mem_imm8
+  h69 16 variant _reg_reg_imm  ' third.value /r 
+                               ' second mem!
+                               ' first.value imm!
+  last alias IMUL16_reg_mem_imm
+  h69 32 variant _reg_reg_imm  ' third.value /r 
+                               ' second mem!
+                               ' first.value imm!
+  last alias IMUL32_reg_mem_imm

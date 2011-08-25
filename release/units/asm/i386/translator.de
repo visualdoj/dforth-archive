@@ -514,9 +514,54 @@ uses COMMAND_DESCRIPTION COMMANDS
             OT_MEM of AND_mem \of
             OT_SEG of AND_seg \of
             unknown-operand-type
-          \switch clear-operands
-    ;
+          \switch clear-operands ;
 // }}}
+
+    : MUL_reg
+        first .regtype @ switch
+          RT_8 of COMMAND_DESCRIPTION MUL8_reg ^ \of
+          RT_16 of COMMAND_DESCRIPTION MUL16_reg ^ \of
+          RT_32 of COMMAND_DESCRIPTION MUL32_reg ^ \of
+          unknown-operand-type
+        \switch ;
+    : MUL_mem
+      first .value @ switch
+        DT_BYTE of COMMAND_DESCRIPTION MUL8_mem ^ \of
+        DT_WORD of COMMAND_DESCRIPTION MUL16_mem ^ \of
+        DT_DWORD of COMMAND_DESCRIPTION MUL32_mem ^ \of
+        unknown-operand-type
+      \switch ;
+    : MUL
+        1 ?operands
+        first .type @ switch
+          OT_REG of MUL_reg \of
+          OT_MEM of MUL_mem \of
+          unknown-operand-type
+        \switch clear-operands ;
+
+    : IMUL_reg
+        first .regtype @ switch
+          RT_8 of COMMAND_DESCRIPTION IMUL8_reg ^ \of
+          RT_16 of COMMAND_DESCRIPTION IMUL16_reg ^ \of
+          RT_32 of COMMAND_DESCRIPTION IMUL32_reg ^ \of
+          unknown-operand-type
+        \switch ;
+    : IMUL_reg_*
+        ;
+    : IMUL_reg_*_*
+        ;
+    : IMUL
+        operands# switch
+          0 of " incorrect number of parameters" error \of
+            
+          1 of first .type @ OT_REG =
+               if IMUL_reg else unknown-operand-type then \of
+          2 of second .type @ OT_REG = 
+               if IMUL_reg_* else unknown-operand-type then \of
+          third .type @ OT_REG =
+               if IMUL_reg_*_* else unknown-operand-type then
+        \switch clear-operands ;
+
     : _COMPILE_NOTFOUND_
         *auto-integers? @ dup if str->int postpone literal postpone imm 
                               else bdrop then
@@ -531,7 +576,9 @@ uses COMMAND_DESCRIPTION COMMANDS
       : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
       ' DEC prefix-mnemonic dec
       ' INC prefix-mnemonic inc
+      ' IMUL prefix-mnemonic imul
       ' MOV prefix-mnemonic mov
+      ' MUL prefix-mnemonic mul
       ' AND prefix-mnemonic and
       ' XOR prefix-mnemonic xor
       ' NEG prefix-mnemonic neg

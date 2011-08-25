@@ -36,7 +36,7 @@ DECLARE(and)
 DECLARE(xor)
   begin
     with Machine^ do begin
-      Machine.WUI(Machine.WOI xor Machine.WOI);
+      Machine.WUU(Machine.WOU xor Machine.WOU);
     end;
   end;
 

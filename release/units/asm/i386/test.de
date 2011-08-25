@@ -96,7 +96,7 @@ variable *test
 ." *test = " *test @ . cr 
 
 uses I386 TRANSLATOR
-: lea_eax_[eax_4*edx] db h8d h04 h90 \db ;
+  : lea_eax_[eax_4*edx] db h8d h04 h90 \db ;
 \uses
 
 variable *a 505 *a !
