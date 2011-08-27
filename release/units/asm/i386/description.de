@@ -30,15 +30,16 @@ I386 extend-namespace
     : third.disp third .disp @ ;
 
     // Вычисляет по операнду mod поле в ModR/M
-    : opmod ( opcode -- mod) .disp @ dup if 0 else 256 < if 1 else 2 then then ;
+    // : opmod ( opcode -- mod) .disp @ dup if 0 else 256 < if 1 else 2 then then ;
+    : opmod ( opcode -- mod) .disp @ dup if 256 < if 1 else 2 then then ;
     // Вычисляет по операнду mod поле в ModR/M при условии, что base регистром
     // является EBP
     : ebp-mod ( opcode -- mod) .disp @ 256 < if 1 else 2 then ;
     // Записываем disp по самому disp и вычесленному ранее mod
-    : disp-mod<< ( dm) dup if 1 = if byte<< else dword<< then else drop then ;
+    : disp-mod<< ( dm) ?dup if 1 = if byte<< else dword<< then else drop then ;
     // Записываем disp операнда
-    : disp<< ( operand) dup opmod disp-mod<< ;
-    : ebp-disp<< ( operand) dup ebp-mod disp-mod<< ;
+    : disp<< ( operand) dup .disp @ swap opmod disp-mod<< ;
+    : ebp-disp<< ( operand) dup .disp @ swap ebp-mod disp-mod<< ;
     // Вычисляем по операнду SS составляющую в SIB
     : op.SS ( operand -- SS) 
                    .factor @ switch 
@@ -83,7 +84,7 @@ I386 extend-namespace
           then
         else
           dup .base @ switch
-            -1 of [d]<< \of
+             -1 of [d]<< \of
             EBP of [ebp+d]<< \of
             ESP of [esp+d]<< \of
             [b+d]<<

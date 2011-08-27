@@ -207,7 +207,7 @@ multi-op IMUL
   last alias IMUL32_reg_mem_imm
 
 multi-op LEA
-  h8D 16 variant _reg_mem16 ' second.value /r ' first.value mem!
+  h8D 16 variant _reg_mem16 ' second.value /r ' first mem!
   last alias LEA16_reg_mem32
-  h8D 32 variant _reg_mem16 ' second.value /r ' first.value mem!
+  h8D 32 variant _reg_mem16 ' second.value /r ' first mem!
   last alias LEA32_reg_mem32

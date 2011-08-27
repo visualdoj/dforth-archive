@@ -54,12 +54,12 @@ variable *out6
 
     mov eax d[ *in1 disp ]
     mov ecx d[ *in2 disp ]
-    lea eax d[ ( ecx base 2* eax index ) 5 disp ] 
+    lea eax d[ ecx 2* eax 256 disp ] 
     mov d[ *out6 disp ] eax
 
     ret
   \PREFIX
-asm-noname; ." HERE" execute
+asm-noname; execute
 ." *out1 = " *out1 @ . cr
 ." *out2 = " *out2 @ . cr
 ." *out3 = " *out3 @ . cr
