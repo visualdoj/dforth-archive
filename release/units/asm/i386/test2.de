@@ -19,6 +19,7 @@ variable *out2
 variable *out3
 variable *out4
 variable *out5
+variable *out6
 :asm-noname
   PREFIX
     mov eax d[ *in3 disp ]
@@ -51,14 +52,20 @@ variable *out5
     // imul ecx d[ *in2 disp ]
     // mov d[ *out5 disp ] ecx
 
+    mov eax d[ *in1 disp ]
+    mov ecx d[ *in2 disp ]
+    lea eax d[ ( ecx base 2* eax index ) 5 disp ] 
+    mov d[ *out6 disp ] eax
+
     ret
   \PREFIX
-asm-noname; execute
+asm-noname; ." HERE" execute
 ." *out1 = " *out1 @ . cr
 ." *out2 = " *out2 @ . cr
 ." *out3 = " *out3 @ . cr
 ." *out4 = " *out4 @ . cr
 ." *out5 = " *out5 @ . cr
+." *out6 = " *out6 @ . cr
 " h55 . cr " bdup str. evaluate 
 " h33 . cr " bdup str. evaluate 
 GLOBAL " h55 h33 xor . " bdup str. evaluate ^

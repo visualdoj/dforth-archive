@@ -516,7 +516,7 @@ uses COMMAND_DESCRIPTION COMMANDS
             unknown-operand-type
           \switch clear-operands ;
 // }}}
-
+// {{{ MUL
     : MUL_reg
         first .regtype @ switch
           RT_8 of COMMAND_DESCRIPTION MUL8_reg ^ \of
@@ -538,7 +538,8 @@ uses COMMAND_DESCRIPTION COMMANDS
           OT_MEM of MUL_mem \of
           unknown-operand-type
         \switch clear-operands ;
-
+// }}}
+// {{{ IMUL
     : IMUL_reg
         first .regtype @ switch
           RT_8 of COMMAND_DESCRIPTION IMUL8_reg ^ \of
@@ -561,6 +562,40 @@ uses COMMAND_DESCRIPTION COMMANDS
           third .type @ OT_REG =
                if IMUL_reg_*_* else unknown-operand-type then
         \switch clear-operands ;
+// }}}
+// {{{ LEA
+    : LEA_reg16
+            first .value @ switch
+              DT_WORD of COMMAND_DESCRIPTION LEA16_reg_mem16 ^ \of
+              DT_DWORD of COMMAND_DESCRIPTION LEA16_reg_mem32 ^ \of
+              unknown-operand-type
+            \switch ;
+    : LEA_reg32
+            first .value @ switch
+              DT_WORD of COMMAND_DESCRIPTION LEA32_reg_mem16 ^ \of
+              DT_DWORD of COMMAND_DESCRIPTION LEA32_reg_mem32 ^ \of
+              unknown-operand-type
+            \switch ;
+    : LEA
+        2 ?operands
+        first .type @ OT_MEM <> if unknown-operand-type clear-operands exit then
+        second .type @ OT_REG <> if unknown-operand-type clear-operands exit then
+        second .regtype @ switch
+          RT_16 of LEA_reg16 \of
+            // first .value @ switch
+            //   DT_WORD of COMMAND_DESCRIPTION LEA16_reg_mem16 ^ \\of
+            //   DT_DWORD of COMMAND_DESCRIPTION LEA16_reg_mem32 ^ \\of
+            //   unknown-operand-type
+            // \\switch \\of
+          RT_32 of LEA_reg32 \of
+            // first .value @ switch
+            //   DT_WORD of COMMAND_DESCRIPTION LEA32_reg_mem16 ^ \\of
+            //   DT_DWORD of COMMAND_DESCRIPTION LEA32_reg_mem32 ^ \\of
+            //   unknown-operand-type
+            // \\switch \\of
+          unknown-operand-type
+        \switch clear-operands ;
+// }}}
 
     : _COMPILE_NOTFOUND_
         *auto-integers? @ dup if str->int postpone literal postpone imm 
@@ -574,18 +609,19 @@ uses COMMAND_DESCRIPTION COMMANDS
     
     PREFIX 
       : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
+      ' AND prefix-mnemonic and
       ' DEC prefix-mnemonic dec
-      ' INC prefix-mnemonic inc
       ' IMUL prefix-mnemonic imul
+      ' INC prefix-mnemonic inc
+      ' LEA prefix-mnemonic lea
       ' MOV prefix-mnemonic mov
       ' MUL prefix-mnemonic mul
-      ' AND prefix-mnemonic and
-      ' XOR prefix-mnemonic xor
       ' NEG prefix-mnemonic neg
       ' NOP prefix-mnemonic nop
       ' POP prefix-mnemonic pop
       ' PUSH prefix-mnemonic push
       ' RET prefix-mnemonic ret
+      ' XOR prefix-mnemonic xor
     ^
   \namespace
 \uses
