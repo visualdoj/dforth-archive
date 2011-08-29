@@ -48,6 +48,7 @@ namespace I386
   OPERAND_TYPE OT_REG // регистр
   OPERAND_TYPE OT_SEG // сегментный регистр
   OPERAND_TYPE OT_MEM // память
+  OPERAND_TYPE OT_LINK // ссылка на место в машинном коде
 
   0 enum DATA_TYPE
   DATA_TYPE DT_BYTE
@@ -59,6 +60,11 @@ namespace I386
   REG_TYPE RT_32
   REG_TYPE RT_16
   REG_TYPE RT_8
+
+  0 enum DIST_TYPE
+  DIST_TYPE SHORT
+  DIST_TYPE NEAR
+  DIST_TYPE FAR
 
   0
     t_int -- .type
@@ -76,6 +82,8 @@ namespace I386
     t_int -- .factor // 
     t_int -- .index
     t_int -- .disp
+    // for .type == OT_LINK
+    t_int -- .dist
   struct s_operand
 
   variable *operands#
@@ -96,11 +104,16 @@ namespace I386
   : second *operands operands# 2 - s_operand * + ;
   : third *operands operands# 3 - s_operand * + ;
 
-  : operand+ ( type:int) *operands# 1+! last-operand .type ! ;
+  : operand+ ( type:int) *operands# 1+! last-operand .type !
+                                  SHORT last-operand .dist ! ;
 
-  : factor? ( o) .factor @ 0<> ;
-  : disp? ( o) .disp @ 0<> ;
-  : base? ( o) .base @ -1 = ;
+  : short SHORT last-operand .dist ! ;
+  : near NEAR last-operand .dist ! ;
+  : far FAR last-operand .dist ! ;
+
+  : factor? ( o-?) .factor @ 0<> ;
+  : disp? ( o-?) .disp @ 0<> ;
+  : base? ( o-?) .base @ -1 = ;
 
   : reg32 ( i) OT_REG operand+ last-operand .value ! 
                          RT_32 last-operand .regtype ! ; 
