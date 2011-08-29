@@ -7,6 +7,7 @@ I386 extend-namespace
   namespace COMMANDS
     uses COMMAND_DESCRIPTION
       include" units\asm\i386\tables\ia32.de"
+      include" units\asm\i386\tables\fpu.de"
     \uses
   \namespace
 \namespace
@@ -232,8 +233,7 @@ uses COMMAND_DESCRIPTION COMMANDS
         OT_REG of MOV_reg_reg \of
         OT_MEM of MOV_reg_mem \of
         OT_SEG of MOV_reg_seg \of
-      \switch
-    ;
+      \switch ;
 // }}}
 // {{{ MOV mem
     : MOV_mem_imm
@@ -302,8 +302,7 @@ uses COMMAND_DESCRIPTION COMMANDS
         OT_MEM of MOV_mem \of
         OT_SEG of MOV_seg \of
         unknown-operand-type
-      \switch clear-operands
-    ;
+      \switch clear-operands ;
 // }}}
 // {{{ XOR
 // {{{ XOR reg
@@ -465,29 +464,26 @@ uses COMMAND_DESCRIPTION COMMANDS
         DT_WORD of COMMAND_DESCRIPTION AND16_mem_imm ^ \of
         DT_DWORD of COMMAND_DESCRIPTION AND32_mem_imm ^ \of
         unknown-operand-type
-      \switch
-    ;
+      \switch ;
     : AND_mem_reg 
       first .regtype @ switch
         RT_8 of COMMAND_DESCRIPTION AND8_mem_reg ^ \of
         RT_16 of COMMAND_DESCRIPTION AND16_mem_reg ^ \of
         RT_32 of COMMAND_DESCRIPTION AND32_mem_reg ^ \of
         unknown-operand-type
-      \switch
-    ;
+      \switch ;
     : AND_mem_seg 
       second .value @ DT_WORD = if
         // COMMAND_DESCRIPTION AND16_mem_seg ^
       else " mov from segment register must be 16-bit memory operand" error then
-    ;
+      ;
     : AND_mem 
       first .type @ switch
         OT_IMM of AND_mem_imm \of
         OT_REG of AND_mem_reg \of
         OT_SEG of AND_mem_seg \of
         " cannot mov from mem to mem"
-      \switch
-    ;
+      \switch ;
 // }}}
 // {{{ AND seg
     : AND_seg 
@@ -547,10 +543,31 @@ uses COMMAND_DESCRIPTION COMMANDS
           RT_32 of COMMAND_DESCRIPTION IMUL32_reg ^ \of
           unknown-operand-type
         \switch ;
+    : IMUL_reg_reg
+      first .regtype @ switch
+        RT_16 of COMMAND_DESCRIPTION IMUL16_reg_reg ^ \of
+        RT_32 of COMMAND_DESCRIPTION IMUL32_reg_reg ^ \of
+        unknown-operand-type
+      \switch ;
+    : IMUL_reg_mem
+      second .regtype @ switch
+        RT_16 of COMMAND_DESCRIPTION IMUL16_reg_mem ^ \of
+        RT_32 of COMMAND_DESCRIPTION IMUL32_reg_mem ^ \of
+        unknown-operand-type
+      \switch ;
     : IMUL_reg_*
-        ;
+        first .type @ switch
+          OT_REG of IMUL_reg_reg \of
+          OT_MEM of IMUL_reg_mem \of
+          unknown-operand-type
+        \switch ;
     : IMUL_reg_*_*
-        ;
+        first .type @ OT_IMM <> if unknown-operand-type exit then
+        second .type @ switch
+          OT_REG of unknown-operand-type ( TODO ) \of
+          OT_MEM of unknown-operand-type ( TODO ) \of
+          unknown-operand-type
+        \switch ;
     : IMUL
         operands# switch
           0 of " incorrect number of parameters" error \of

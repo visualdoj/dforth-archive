@@ -179,16 +179,19 @@ multi-op MUL
   hF7 32 variant _mem /4 ' first mem!
 
 multi-op IMUL
+  // 1 operand
   hF6  8 variant _reg /5 ' first mem!
   last alias IMUL8_mem
   hF7 16 variant _reg /5 ' first mem!
   last alias IMUL16_mem
   hF7 32 variant _reg /5 ' first mem!
   last alias IMUL32_mem
-  // h0F hAF 16 variant _reg_reg ' second.value /r ' first mem!
-  // last alias IMUL16_reg_mem
-  // h0F hAF 32 variant _reg_reg ' second.value /r ' first mem!
-  // last alias IMUL16_reg_mem
+  // 2 operands
+  h0F hAF 16 2variant _reg_reg ' second.value /r ' first mem!
+  last alias IMUL16_reg_mem
+  h0F hAF 32 2variant _reg_reg ' second.value /r ' first mem!
+  last alias IMUL32_reg_mem
+  // 3 operands
   h6B 16 variant _reg_reg_imm8 ' third.value /r 
                                ' second mem!
                                ' first.value imm! 1 imm#!
@@ -211,3 +214,6 @@ multi-op LEA
   last alias LEA16_reg_mem32
   h8D 32 variant _reg_mem16 ' second.value /r ' first mem!
   last alias LEA32_reg_mem32
+
+multi-op HL
+  hF4 0 variant T

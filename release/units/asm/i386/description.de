@@ -104,6 +104,12 @@ I386 extend-namespace
       t_int -- v.imm# // команда, возвращающая число байт в imm составляющей
                       // 0 означает, что imm нет
       t_ptr -- v.imm
+
+      t_int -- v.prefixes# // число префиксов перед опкодом
+      t_int -- v.prefix1
+      t_int -- v.prefix2
+      t_int -- v.prefix3
+      t_int -- v.prefix4
     struct s_variant
    
     // Записывает переданную форму
@@ -112,6 +118,9 @@ I386 extend-namespace
         16 of 16 switch<< \of
         32 of 32 switch<< \of
       \switch
+      dup v.prefix1 over v.prefixes# @ begin ?dup while
+        swap dup @ byte<< cell+ swap
+      1- repeat drop
       dup v.opcode @ over v.+r @ execute + byte<<
       dup v.mem @ execute ?dup if over v./r @ execute swap r/m<< then
       dup v.imm# @ switch
@@ -126,12 +135,19 @@ I386 extend-namespace
     : multi-op source-next-name *multi-op-name b! ;
 
     : multi-form-name ( bits B: postfix )
-        int->str bswap str+ 
+        ?dup if int->str bswap str+ then 
         *multi-op-name b@ bswap str+ ;
     : variant ( opcode bits) 
         dup source-next-name multi-form-name created 
-        swap , , '0 , '0 , '0 , 0 , '0 ,  
+        swap , , '0 , '0 , '0 , 0 , '0 , 0 , 0 , 0 , 0 , 0 ,
       does> variant<< ;
+    : 2variant ( prefix opcode bits) variant ( prefix)
+      1 last xt.param@ v.prefixes# ! 
+      last xt.param@ v.prefix1 ! ;
+    : 3variant ( prefix1 prefix2 opcode bits) variant ( prefix1 prefix2)
+      1 last xt.param@ v.prefixes# ! 
+      last xt.param@ v.prefix2 !
+      last xt.param@ v.prefix1 ! ;
     : +r last xt.param@ v.+r ! ;
     : mem! last xt.param@ v.mem ! ;
     : /r last xt.param@ v./r ! ;

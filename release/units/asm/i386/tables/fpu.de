@@ -1,0 +1,117 @@
+// 2011.08.29 # Doj
+// Таблица команд сопроцессора
+
+multi-op F
+  hD9 hF0 0 2variant 2XM1
+  hD9 hE1 0 2variant ABS
+
+multi-op FADD
+  hD8 32 variant _mem /0 ' first mem!
+  hDC 64 variant _mem /0 ' first mem!
+  hD8 hC0 0 2variant _st0_sti ' first.value +r
+  hDC hC0 0 2variant _sti_st0 ' second.value +r
+  hDE hC0 0 2variant P_sti_st0 ' second.value +r
+  hDE hC1 0 2variant P
+
+multi-op FIADD
+  hDA 32 variant _mem ' first mem!
+  hDE 64 variant _mem ' first mem!
+
+multi-op F
+  // ? hDF 0 variant BLD_mem /4 ' first mem!
+  // ? hDF 0 variant BSTP_mem /6 ' first mem!
+  hD9 hE0 0 variant CHS
+  h98 hDB hE2 0 3variant CLEX
+  hDB hE2 0 2variant NCLEX
+
+multi-op FCMOV
+  hDA hC0 0 2variant B ' first.value +r
+  hDA hC8 0 2variant E ' first.value +r
+  hDA hD0 0 2variant BE ' first.value +r
+  hDA hD8 0 2variant U ' first.value +r
+  hDB hC0 0 2variant NB ' first.value +r
+  hDB hC8 0 2variant NE ' first.value +r
+  hDB hD0 0 2variant NBE ' first.value +r
+  hDB hD8 0 2variant NU ' first.value +r
+
+// TODO FCOM FCOMP FCOMPP
+
+multi-op F
+  hDB hF0 0 2variant COMI ' first.value +r
+  hDF hF0 0 2variant COMIP ' first.value +r
+  hDB hE8 0 2variant UCOMI ' first.value +r
+  hDF hE8 0 2variant UCOMIP ' first.value +r
+  
+  hD9 hFF 0 2variant COS
+  hD9 hF6 0 2variant DECSTP
+
+// TODO FDIV FDIVP FIDIV
+// TODO FDIVR FDIVRP FIDIVR
+
+multi-op F
+  h0D hC0 0 2variant FREE ' first.value +r
+
+// TODO FICOM FICOMP
+// TODO FILD
+
+multi-op F
+  hD9 hF7 0 2variant INCSTP
+  h9B hDB hE3 0 3variant INIT
+  hDB hE3 0 3variant NINIT
+
+// TODO FIST FISTP FISTTP FLD
+
+multi-op F
+  hD9 hE8 0 2variant LD1
+  hD9 hE9 0 2variant LDL2T
+  hD9 hEA 0 2variant LDL2E
+  hD9 hEB 0 2variant LDPI
+  hD9 hEC 0 2variant LDLG2
+  hD9 hED 0 2variant LDLN2
+  hD9 hEE 0 2variant LDZ
+
+// TODO FLDCW
+// TODO FLDENV
+// TODO FMUL FMULP FIMUL
+
+multi-op F
+  hD9 hD0 0 2variant NOP
+  hD9 hF3 0 2variant PATAN
+  hD9 hF8 0 2variant PREM
+  hD9 hF5 0 2variant PREM1
+  hD9 hF2 0 2variant PTAN
+  hD9 hFC 0 2variant RNDINT
+
+// TODO FRSTOR FSAVE FNSAVE
+
+multi-op F
+  hD9 hFD 0 2variant SCALE
+  hD9 hFE 0 2variant SIN
+  hD9 hFB 0 2variant SINCOS
+  hD9 hFA 0 2variant SQRT
+
+// TODO FST FSTP FSTCW FNSTCW FSTENV FNSTENV FSTSW FNSTSW FSUB FSUBP FISUB
+// TODO FSUBR FSUBRP FISUBR
+
+multi-op F
+  hD9 hE4 0 2variant TST
+
+multi-op FUCOM
+  hDD hE0 0 2variant _st0_sti ' first.value +r
+  hDD hE1 0 2variant _st0_st1 // strangely, but it is like in ia32 manual
+  hDD hE8 0 2variant P_st0_sti ' first.value +r
+  hDD hE9 0 2variant P_st0_st1 ' first.value +r
+  hDA hE9 0 2variant PP_st0_st1
+
+multi-op F
+  hD9 hE5 0 2variant XAM
+  hD9 hC8 0 2variant XCH_st0_sti ' first.value +r
+  hD9 hC9 0 2variant XCH_st0_st1
+
+// TODO FXRSTOR FXSAVE FXTRACT
+
+multi-op F
+  hD9 hF1 0 2variant YL2X
+  hD9 hF9 0 2variant YL2XP1
+
+// TODO HADDPD HADDPS
