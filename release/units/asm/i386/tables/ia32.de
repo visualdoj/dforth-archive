@@ -1,6 +1,13 @@
 // 2011.07.31 # Doj
 // Команды множества IA-32
 
+// {{{ Data Transfer Instructions
+// TODO CMOVE/CMOVZ CMOVNE/CMOVNZ CMOVA/CMOVNBE CMOVAE/CMOVNB
+// TODO CMOVB/CMOVNAE CMOVBE/CMOVNA CMOVG/CMOVNLE CMOVGE/CMOVNL
+// TODO CMOVL/CMOVNGE CMOVLE/CMOVNG CMOVC CMOVNC CMOVO CMOVNO
+// TODO CMOVS CMOVNS CMOVP/CMOVPE CMOVNP/CMOVPO XCHG BSWAP
+// TODO XADD CMPXCHG CMPXCHG8B PUSH POP PUSHA/PUSHAD POPA/POPAD
+// TODO CWD/CDQ CBW/CWDE MOVSX MOVZX
 multi-op MOV
   hA0  8 variant _al_moffset  ' first.disp imm!
   hA1 16 variant _ax_moffset  ' first.disp imm!
@@ -27,7 +34,9 @@ multi-op MOV
   h8A  8 variant _reg_mem ' first mem! ' second.value /r
   h8B 16 variant _reg_mem ' first mem! ' second.value /r
   h8B 32 variant _reg_mem ' first mem! ' second.value /r
-
+// }}}
+// {{{ Binary Arithmetic Instructions
+// TODO IDIV DIV INC DEC NEG CMP
 multi-op ADD
   h04  8 variant _al_imm  ' first.value imm!
   h05 16 variant _ax_imm  ' first.value imm!
@@ -73,29 +82,6 @@ multi-op ADC
   h12  8 variant _reg_reg ' second.value /r ' first mem!
   h13 16 variant _reg_reg ' second.value /r ' first mem!
   h13 32 variant _reg_reg ' second.value /r ' first mem!
-
-multi-op AND
-  h24  8 variant _al_imm  ' first.value imm!
-  h25 16 variant _ax_imm  ' first.value imm!
-  h25 32 variant _eax_imm ' first.value imm!
-  h80  8 variant _mem_imm /4 ' first.value imm! ' second mem!
-  h81 16 variant _mem_imm /4 ' first.value imm! ' second mem!
-  h81 32 variant _mem_imm /4 ' first.value imm! ' second mem!
-  h80  8 variant _reg_imm /4 ' first.value imm! ' second mem!
-  h81 16 variant _reg_imm /4 ' first.value imm! ' second mem!
-  h81 32 variant _reg_imm /4 ' first.value imm! ' second mem!
-  // signed-extended?
-  // h83 16 variant _mem_imm /4 ' first.value imm!
-  // h83 32 variant _mem_imm /4 ' first.value imm!
-  h20  8 variant _mem_reg ' first.value /r ' second mem!
-  h21 16 variant _mem_reg ' first.value /r ' second mem!
-  h21 32 variant _mem_reg ' first.value /r ' second mem!
-  h22  8 variant _reg_mem ' second.value /r ' first mem!
-  h23 16 variant _reg_mem ' second.value /r ' first mem!
-  h23 32 variant _reg_mem ' second.value /r ' first mem!
-  h22  8 variant _reg_reg ' second.value /r ' first mem!
-  h23 16 variant _reg_reg ' second.value /r ' first mem!
-  h23 32 variant _reg_reg ' second.value /r ' first mem!
 
 multi-op SUB
   h2C  8 variant _al_imm  ' first.value imm!
@@ -145,31 +131,6 @@ multi-op SBB
   h1B 16 variant _reg_reg ' second.value /r ' first mem!
   h1B 32 variant _reg_reg ' second.value /r ' first mem!
 
-multi-op XOR
-  h34  8 variant _al_imm  ' first.value imm!
-  h35 16 variant _ax_imm  ' first.value imm!
-  h35 32 variant _eax_imm ' first.value imm!
-  h80  8 variant _mem_imm /6 ' first.value imm! ' second mem!
-  h81 16 variant _mem_imm /6 ' first.value imm! ' second mem!
-  h81 32 variant _mem_imm /6 ' first.value imm! ' second mem!
-  h80  8 variant _reg_imm /6 ' first.value imm! ' second mem!
-  h81 16 variant _reg_imm /6 ' first.value imm! ' second mem!
-  h81 32 variant _reg_imm /6 ' first.value imm! ' second mem!
-  // signed-extended?
-  h83 16 variant _mem_imm8 /6 ' first.value imm! 1 imm#!
-  h83 32 variant _mem_imm8 /6 ' first.value imm! 1 imm#!
-  h83 16 variant _reg_imm8 /6 ' first.value imm! 1 imm#!
-  h83 32 variant _reg_imm8 /6 ' first.value imm! 1 imm#!
-  h30  8 variant _mem_reg ' first.value /r ' second mem!
-  h31 16 variant _mem_reg ' first.value /r ' second mem!
-  h31 32 variant _mem_reg ' first.value /r ' second mem!
-  h32  8 variant _reg_mem ' second.value /r ' first mem!
-  h33 16 variant _reg_mem ' second.value /r ' first mem!
-  h33 32 variant _reg_mem ' second.value /r ' first mem!
-  h32  8 variant _reg_reg ' second.value /r ' first mem!
-  h33 16 variant _reg_reg ' second.value /r ' first mem!
-  h33 32 variant _reg_reg ' second.value /r ' first mem!
-
 multi-op MUL
   hF6  8 variant _reg /4 ' first mem!
   hF6  8 variant _mem /4 ' first mem!
@@ -208,12 +169,87 @@ multi-op IMUL
                                ' second mem!
                                ' first.value imm!
   last alias IMUL32_reg_mem_imm
+// }}}
+// {{{ Decimal Arithmetic Instructions
+// TODO DAA DAS AAA AAS AAM AAD
+// }}}
+// {{{ Logical Instructions
+// TODO OR NOT
+multi-op AND
+  h24  8 variant _al_imm  ' first.value imm!
+  h25 16 variant _ax_imm  ' first.value imm!
+  h25 32 variant _eax_imm ' first.value imm!
+  h80  8 variant _mem_imm /4 ' first.value imm! ' second mem!
+  h81 16 variant _mem_imm /4 ' first.value imm! ' second mem!
+  h81 32 variant _mem_imm /4 ' first.value imm! ' second mem!
+  h80  8 variant _reg_imm /4 ' first.value imm! ' second mem!
+  h81 16 variant _reg_imm /4 ' first.value imm! ' second mem!
+  h81 32 variant _reg_imm /4 ' first.value imm! ' second mem!
+  // signed-extended?
+  // h83 16 variant _mem_imm /4 ' first.value imm!
+  // h83 32 variant _mem_imm /4 ' first.value imm!
+  h20  8 variant _mem_reg ' first.value /r ' second mem!
+  h21 16 variant _mem_reg ' first.value /r ' second mem!
+  h21 32 variant _mem_reg ' first.value /r ' second mem!
+  h22  8 variant _reg_mem ' second.value /r ' first mem!
+  h23 16 variant _reg_mem ' second.value /r ' first mem!
+  h23 32 variant _reg_mem ' second.value /r ' first mem!
+  h22  8 variant _reg_reg ' second.value /r ' first mem!
+  h23 16 variant _reg_reg ' second.value /r ' first mem!
+  h23 32 variant _reg_reg ' second.value /r ' first mem!
 
+multi-op XOR
+  h34  8 variant _al_imm  ' first.value imm!
+  h35 16 variant _ax_imm  ' first.value imm!
+  h35 32 variant _eax_imm ' first.value imm!
+  h80  8 variant _mem_imm /6 ' first.value imm! ' second mem!
+  h81 16 variant _mem_imm /6 ' first.value imm! ' second mem!
+  h81 32 variant _mem_imm /6 ' first.value imm! ' second mem!
+  h80  8 variant _reg_imm /6 ' first.value imm! ' second mem!
+  h81 16 variant _reg_imm /6 ' first.value imm! ' second mem!
+  h81 32 variant _reg_imm /6 ' first.value imm! ' second mem!
+  // signed-extended?
+  h83 16 variant _mem_imm8 /6 ' first.value imm! 1 imm#!
+  h83 32 variant _mem_imm8 /6 ' first.value imm! 1 imm#!
+  h83 16 variant _reg_imm8 /6 ' first.value imm! 1 imm#!
+  h83 32 variant _reg_imm8 /6 ' first.value imm! 1 imm#!
+  h30  8 variant _mem_reg ' first.value /r ' second mem!
+  h31 16 variant _mem_reg ' first.value /r ' second mem!
+  h31 32 variant _mem_reg ' first.value /r ' second mem!
+  h32  8 variant _reg_mem ' second.value /r ' first mem!
+  h33 16 variant _reg_mem ' second.value /r ' first mem!
+  h33 32 variant _reg_mem ' second.value /r ' first mem!
+  h32  8 variant _reg_reg ' second.value /r ' first mem!
+  h33 16 variant _reg_reg ' second.value /r ' first mem!
+  h33 32 variant _reg_reg ' second.value /r ' first mem!
+// }}}
+// {{{ Shift and Rotate Instructions
+// TODO SAR SHR SAL/SHL SHRD SHLD ROR ROL RCR RCL
+// }}}
+// {{{ Bit and Byte Instructions
+// TODO BT BTS BTR BTC BSF BSR SETE/SETZ SETNE/SETNZ SETA/SETNBE
+// TODO SETAE/SETNB/SETNC SETB/SETNAE/SETC SETBE/SETNA SETG/SETNLE
+// TODO SETGE/SETNL SETL/SETNGE SETLE/SETNG SETS SETNS SETO
+// TODO SETNO SETPE/SETP SETPO/SETNP TEST
+// }}}
+// {{{ Control Transfer Instructions
+// }}}
+// {{{ String Instructions
+// }}}
+// {{{ I/O Instructions
+// }}}
+// {{{ Enter and Leave Instructions
+// }}}
+// {{{ Flag Control (EFLAG) Instructions
+// }}}
+// {{{ Segment Register Instructions
+// }}}
+// {{{ Miscellaneous Instructions
 multi-op LEA
   h8D 16 variant _reg_mem16 ' second.value /r ' first mem!
   last alias LEA16_reg_mem32
   h8D 32 variant _reg_mem16 ' second.value /r ' first mem!
   last alias LEA32_reg_mem32
-
+// }}}
 multi-op HL
   hF4 0 variant T
