@@ -1,3 +1,19 @@
 // 2011.08.30 # Doj
 // Таблица mmx команд
 
+// {{{ Data Transfer Instructions
+// TODO MOVD MOVQ
+// }}}
+// {{{ Conversion Instructions
+// TODO PACKSSWB PACKSSDW PACKUSWB PUNPCKHBW PUNPCKHWD PUNPCKHDQ 
+// TODO PUNPCKLBW PUNPCKLWD PUNPCKLDQ
+// }}}
+// {{{ Packed Arithmetic Instructions
+// TODO PADDB PADDW PADDD PADDSB PADDSW PADDUSB PADDUSW
+// TODO PSUBB PSUBW PSUBD PSUBSB PSUBSW PSUBUSB PSUBUSW
+// TODO PMULHW PMULLW PMADDWD
+// }}}
+// {{{ Comparison Instructions
+// TODO PCMPEQB PCMPEQW PCMPEQD PCMPGTB PCMPGTW PCMGTD
+// }}}
+// TODO

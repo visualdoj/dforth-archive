@@ -132,14 +132,21 @@ I386 extend-namespace
     
     variable *multi-op-name *multi-op-name off
 
+    : init-variant ( opcode bits)
+        swap , , '0 , '0 , '0 , 0 , '0 , 0 , 0 , 0 , 0 , 0 , ;
+
+    : op ( opcode bits) create init-variant does> variant<< ;
+    : 2op ( prefix opcode bits) 
+        op
+        1 last xt.param@ v.prefixes# !
+        last xt.param@ v.prefix1 ! ;
     : multi-op source-next-name *multi-op-name b! ;
 
     : multi-form-name ( bits B: postfix )
         ?dup if int->str bswap str+ then 
         *multi-op-name b@ bswap str+ ;
     : variant ( opcode bits) 
-        dup source-next-name multi-form-name created 
-        swap , , '0 , '0 , '0 , 0 , '0 , 0 , 0 , 0 , 0 , 0 ,
+        dup source-next-name multi-form-name created init-variant
       does> variant<< ;
     : 2variant ( prefix opcode bits) variant ( prefix)
       1 last xt.param@ v.prefixes# ! 

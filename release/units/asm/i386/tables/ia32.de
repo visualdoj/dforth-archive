@@ -171,7 +171,9 @@ multi-op IMUL
   last alias IMUL32_reg_mem_imm
 // }}}
 // {{{ Decimal Arithmetic Instructions
-// TODO DAA DAS AAA AAS AAM AAD
+// TODO DAA DAS AAM AAD
+h37 0 op AAA
+h3F 0 op AAS
 // }}}
 // {{{ Logical Instructions
 // TODO OR NOT
@@ -233,23 +235,41 @@ multi-op XOR
 // TODO SETNO SETPE/SETP SETPO/SETNP TEST
 // }}}
 // {{{ Control Transfer Instructions
+// TODO JMP JE/JZ JNE/JNZ JA/JNBE JAE/JNB JB/JNAE JBE/JNA JG/JNLE JGE/JNL
+// TODO JL/JNGE JLE/JNG JC JNC JO JNO JS JNS JPO/JNP JPE/JP JCXZ/JECXZ
+// TODO LOOP LOOPZ/LOOPE LOOPNZ/LOOPNE CALL RET IRET INT INTO BOUND
+// TODO ENTER LEAVE
 // }}}
 // {{{ String Instructions
+// TODO MOVS/MOVSB MOVS/MOVSW MOVS/MOVSD CMPS/CMPSB CMPS/CMPSW CMPS/CMPSD
+// TODO SCAS/SCASB SCAS/SCASW SCAS/SCASD LODS/LODSB LODS/LODSW LODS/LODSD
+// TODO STOS/STOSB STOS/STOSW STOS/STOSD REP REPE/REPZ REPNE/REPNZ
 // }}}
 // {{{ I/O Instructions
-// }}}
-// {{{ Enter and Leave Instructions
+// TODO IN OUT INS/INSB INS/INSW INS/INSD OUTS/OUTSB OUTS/OUTSW OUTS/OUTSD
 // }}}
 // {{{ Flag Control (EFLAG) Instructions
+// TODO STC CLC CMC CLD STD LAHF SAHF PUSHF/PUSHFD POPF/POPFD STI CLI
 // }}}
 // {{{ Segment Register Instructions
+// TODO LDS LES LFS LGS LSS
 // }}}
 // {{{ Miscellaneous Instructions
+// TODO XLAT/XLATB MOVBE
 multi-op LEA
   h8D 16 variant _reg_mem16 ' second.value /r ' first mem!
   last alias LEA16_reg_mem32
   h8D 32 variant _reg_mem16 ' second.value /r ' first mem!
   last alias LEA32_reg_mem32
+
+multi-op NOP
+  h90 0 variant _
+  h0F h1F 16 2variant _reg /0 ' first mem!
+  last alias NOP16_mem
+  h0F h1F 32 2variant _reg /0 ' first mem!
+  last alias NOP32_mem
+
+hF4 0 op HLT
+h0F h0B 0 2op UD2
+h0F hA2 0 2op CPUID
 // }}}
-multi-op HL
-  hF4 0 variant T
