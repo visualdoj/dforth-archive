@@ -158,10 +158,10 @@ I386 extend-namespace
       last xt.param@ v.prefix1 ! ;
     : prefixes ( prefix1 ... prefixn n)
         dup last xt.param@ v.prefixes# ! 0;
-        swap last xt.param@ v.prefix1 ! 0;
-        swap last xt.param@ v.prefix2 ! 0;
-        swap last xt.param@ v.prefix3 ! 0;
-        swap last xt.param@ v.prefix4 ! 0;
+        swap last xt.param@ v.prefix1 ! 1- 0;
+        swap last xt.param@ v.prefix2 ! 1- 0;
+        swap last xt.param@ v.prefix3 ! 1- 0;
+        swap last xt.param@ v.prefix4 ! 1- 0;
         " not supported " 4 + int->str str+ 
         "  prefixes per an instruction" str+ error ;
     : +r last xt.param@ v.+r ! ;
@@ -179,14 +179,23 @@ I386 extend-namespace
     : /6 '6 /r ;
     : /7 '7 /r ;
 
-    : variant_mem " _mem" varianted ' first mem! ;
-    : variant_r/m " _reg" varianted ' first mem! ;
-    : variant_reg_imm " _reg_imm" varianted ' second.value +r ' first.value imm! ;
-    : variant_mem_imm " _mem_imm" varianted ' first.value imm! ' second mem! '0 /r ;
-    : variant_reg_mem " _reg_imm" varianted ' second.value /r ' first mem! ;
-    : variant_reg_r/m " _reg_reg" varianted ' second.value /r ' first mem! ;
-    : variant_mem_reg " _mem_reg" varianted ' second mem! ' first.value /r ;
-    : variant_r/m_reg " _r/m_reg" varianted ' second mem! ' first.value /r ;
+    : variant_mem " _mem" varianted ['] first mem! ;
+    : variant_r/m " _reg" varianted ['] first mem! ;
+    last alias variant_reg
+    : variant_reg_imm " _reg_imm" varianted ['] second.value +r ['] first.value imm! ;
+    : variant_mem_imm " _mem_imm" varianted ['] first.value imm! ['] second mem! '0 /r ;
+
+    : variant_reg_mem " _reg_mem" varianted ['] second.value /r ['] first mem! ;
+    : variant_reg_r/m " _reg_reg" varianted ['] second.value /r ['] first mem! ;
+    last alias variant_reg_reg
+
+    : variant_mem_reg " _mem_reg" varianted ['] second mem! ['] first.value /r ;
+    : variant_r/m_reg " _r/m_reg" varianted ['] second mem! ['] first.value /r ;
+
+    : variant_mem_imm8 " _mem_imm8" varianted ['] first.value imm! ['] second mem! '0 /r 1 imm#! ;
+    : variant_r/m_imm8 " _reg_imm8" varianted ['] first.value imm! ['] second mem! '0 /r 1 imm#! ;
+    last alias variant_reg_imm8
+
   \namespace
 // }}}
 \namespace
