@@ -608,12 +608,21 @@ uses COMMAND_DESCRIPTION COMMANDS
           unknown-operand-type
         \switch
       else
-        second .regtype @ switch
-          RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_imm ^ \of
-          RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_imm ^ \of
-          RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_imm ^ \of
-          unknown-operand-type
-        \switch
+        first .value @ 256 < if
+          second .regtype @ switch
+            RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_imm ^ \of
+            RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_imm8 ^ \of
+            RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_imm8 ^ \of
+            unknown-operand-type
+          \switch
+        else
+          second .regtype @ switch
+            RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_imm ^ \of
+            RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_imm ^ \of
+            RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_imm ^ \of
+            unknown-operand-type
+          \switch
+        then
       then
     ;
     : <INSTRUCTION>_reg_reg
@@ -643,12 +652,21 @@ uses COMMAND_DESCRIPTION COMMANDS
       \switch
     ;
     : <INSTRUCTION>_mem_imm
-      second .value @ switch
-        DT_BYTE of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_imm ^ \of
-        DT_WORD of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_imm ^ \of
-        DT_DWORD of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_imm ^ \of
-        unknown-operand-type
-      \switch ;
+        first .value @ 256 < if
+          second .value @ switch
+            DT_BYTE of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_imm ^ \of
+            DT_WORD of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_imm8 ^ \of
+            DT_DWORD of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_imm8 ^ \of
+            unknown-operand-type
+          \switch
+        else
+          second .value @ switch
+            DT_BYTE of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_imm ^ \of
+            DT_WORD of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_imm ^ \of
+            DT_DWORD of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_imm ^ \of
+            unknown-operand-type
+          \switch
+        then ;
     : <INSTRUCTION>_mem_reg 
       first .regtype @ switch
         RT_8 of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_reg ^ \of

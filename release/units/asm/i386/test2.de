@@ -93,6 +93,13 @@ variable *out
 \PREFIX asm-noname; execute
 *out @ . cr
 
+:asm-noname PREFIX
+    mov d[ *out disp ] 456 imm
+    sub d[ *out disp ] 123 imm
+    ret 
+\PREFIX asm-noname; execute
+*out @ . cr
+
 " h55 . cr " bdup str. evaluate 
 " h33 . cr " bdup str. evaluate 
 GLOBAL " h55 h33 xor . " bdup str. evaluate ^
