@@ -61,7 +61,8 @@ multi-op MOV
     over 3 + 32 variant_reg_mem
     over 2 +  8 variant_reg_reg
     over 3 + 16 variant_reg_reg
-    over 3 + 32 variant_reg_reg ;
+    over 3 + 32 variant_reg_reg
+    drop drop ;
 
 h00 '0 binary-instruction ADD
 h08 '1 binary-instruction OR
