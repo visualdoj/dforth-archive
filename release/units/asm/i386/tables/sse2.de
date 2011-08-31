@@ -1,3 +1,38 @@
 // 2011.08.30 # Doj
 // Таблица sse2 команд
 
+// {{{ Packed and Scalar Double-Precision Floating-Point Instructions
+// {{{ Data Movement Instructions
+// TODO MOVAPD MOVUPD MOVHPD MOVLPD MOVMSKPD MOVSD
+// }}}
+// {{{ Packed Arithmetic Instructions
+// TODO ADDPD ADDSD SUBPD SUBSD
+// TODO MULPD MULSD DIVPS DIVSD
+// TODO SQRTPD SQRTSD MAXPD MAXSD
+// TODO MINPD MINSD
+// }}}
+// {{{ Logical Instructions
+// TODO ANDPD ANDNPD ORPD XORPD
+// }}}
+// {{{ Compare Instructions
+// TODO CMPPD CMPSD COMISD UCOMISD SHUFPD UNPCKHPD UNPCKLPD
+// }}}
+// {{{ Shuffle and Unpack Instructions
+// TODO SHUFPD UNPCKHPD UNPCKLPD
+// }}}
+// {{{ Conversion Instructions
+// TODO CVTTPD2PI CVTTPD2PI CVTPI2PD CVTPD2DQ CVTTPD2DQ
+// TODO CVTDQ2PD CVTPS2PD CVTPD2PS CVTSS2SD CVTSD2SS CVTSD2SI
+// TODO CVTTSD2SI CVTSI2SD
+// }}}
+// {{{ Packed Single-Precision Floating-Point Instructions
+// TODO CVTDQ2PS CVTPS2DQ CVTTPS2DQ
+// }}}
+// {{{ 128-bit SIMD Integer Instructions
+// TODO MOVDQA MOVDQU MOVQ2DQ MOVDQ2Q PMULUDQ PADDQ PSUBQ
+// TODO PSHUFLW PSHUFHW PSHUFD PSLLDQ PSRLDQ PUNPCKHQDQ PUNPCKLQDQ
+// }}}
+// {{{ Cacheability Control and Ordering Instructions
+// TODO CLFLUSH LFENCE MFENCE PAUSE MASKMOVDQU MOVNTPD MOVNTDQ MOVNTI
+// }}}
+// }}}

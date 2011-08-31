@@ -1,3 +1,9 @@
 // 2011.08.30 # Doj
 // Таблица sse4.2 команд
 
+// {{{ String and Text Processing Instructions
+// TODO PCMPESTRI PCMPESTRM PCMPISTRI PCMPISTRM
+// }}}
+// {{{ Packed Comparison SIMD integer Instruction
+// TODO PCMPGTQ CRC32 POPCNT
+// }}}

@@ -8,6 +8,12 @@ I386 extend-namespace
     uses COMMAND_DESCRIPTION
       include" units\asm\i386\tables\ia32.de"
       include" units\asm\i386\tables\fpu.de"
+      include" units\asm\i386\tables\mmx.de"
+      include" units\asm\i386\tables\sse.de"
+      include" units\asm\i386\tables\sse2.de"
+      include" units\asm\i386\tables\sse3.de"
+      include" units\asm\i386\tables\sse4.1.de"
+      include" units\asm\i386\tables\sse4.2.de"
     \uses
   \namespace
 \namespace

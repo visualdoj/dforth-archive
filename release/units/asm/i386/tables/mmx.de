@@ -16,4 +16,12 @@
 // {{{ Comparison Instructions
 // TODO PCMPEQB PCMPEQW PCMPEQD PCMPGTB PCMPGTW PCMGTD
 // }}}
-// TODO
+// {{{ Logical Instructions
+// TODO PAND PANDN POR PXOR
+// }}}
+// {{{ Shift and Rotate Instructions
+// TODO PSLLW PSLLD PSLLQ PSRLW PSRLD PSRLQ PSRAW PSRAD
+// }}}
+// {{{ State Management Instructions
+// TODO EMMS
+// }}}

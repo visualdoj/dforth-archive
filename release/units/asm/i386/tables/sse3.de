@@ -1,3 +1,21 @@
 // 2011.08.30 # Doj
 // Таблица sse3 команд
 
+// {{{ x87-FP Integer Conversion Instruction
+// FISTTP see in fpu.de
+// }}}
+// {{{ Specialized 128-bit Unaligned Data Load Instruction
+// TODO LDDQU
+// }}}
+// {{{ SIMD Floating-Point Packed ADD/SUB Instructions
+// TODO ADDSUBPS ADDSUBPD
+// }}}
+// {{{ SIMD Floating-Point Horizontal ADD/SUB Instructions
+// TODO HADDPS HSUBPS HADDPD HSUBPD
+// }}}
+// {{{ SIMD Floating-Point LOAD/MOVE/DUPLICATE Instructions
+// TODO MOVSHDUP MOVSLDUP MOVDDUP
+// }}}
+// {{{ Agent Synchronization Instructions
+// TODO MONITOR MWAIT
+// }}}

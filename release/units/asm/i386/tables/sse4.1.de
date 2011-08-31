@@ -1,3 +1,44 @@
 // 2011.08.30 # Doj
 // Таблица sse4.1 команд
 
+// {{{ Dword Multiply Instructions
+// TODO PMULLD PMULDQ
+// }}}
+// {{{ Floating-Point Dot Product Instructions
+// TODO DPPD DPPS
+// }}}
+// {{{ Streaming Load Hint Instruction
+// TODO MOVNTDQA
+// }}}
+// {{{ Packed Blending Instructions
+// TODO BLENDPD BLENDPS BLENDVPD BLENDVPS PBLENDVB PBLENDW
+// }}}
+// {{{ Packed Integer MIN/MAX Instructions
+// TODO PMINUW PMINUD PMINSB PMINSD
+// TODO PMAXUW PMAXUD PMAXSB PMAXSD
+// }}}
+// {{{ Floating-Point Round Instructions with Selectable Rounding Mode
+// TODO ROUNDPS ROUNDPD ROUNDSS ROUNDSD 
+// }}}
+// {{{ Insertion and Extractions from XMM Registers
+// TODO EXTRACTPS INSERTPS PINSRB PINSRD PINSRQ PEXTRB PEXTRW PEXTRD PEXTRQ
+// }}}
+// {{{ Packed Integer Format Conversions
+// TODO PMOVSXBW PMOVZXBW PMOVSXBD PMOVZXBD PMOVSXWD PMOVZXWD
+// TODO PMOVSXBQ PMOVZXBQ PMOVSXWQ PMOVZXWQ PMOVSXDQ PMOVZXDQ
+// }}}
+// {{{ Improved Sums of Absolute Differences (SAD) for 4-Byte Blocks
+// TODO MPSADBW
+// }}}
+// {{{ Horizontal Search
+// TODO PHMINPOSUW
+// }}}
+// {{{ Packed Test
+// TODO PTEST
+// }}}
+// {{{ Packed Qword Equality Comparisons
+// TODO PCMPEQQ
+// }}}
+// {{{ Dword Packing With Unsigned Saturation
+// TODO PACKUSDW
+// }}}

@@ -1,3 +1,39 @@
 // 2011.08.30 # Doj
 // Таблица sse команд
 
+// {{{ Data Transfer Instructions
+// TODO MOVAPS MOVUPS MOVHPS MOVHLPS MOVLPS MOVLHPS MOVMSKPS MOVSS
+// }}}
+// {{{ Packed Arithmetic Instructions
+// TODO ADDPS ADDSS
+// TODO SUBPS SUBSS
+// TODO MULPS MULSS
+// TODO DIVPS DIVSS
+// TODO RCPPS RCPSS
+// TODO SQRTPS SQRTSS
+// TODO RSQRTPS RSQRTSS
+// TODO MAXPS MAXSS
+// TODO MINPS MINSS
+// }}}
+// {{{ Comparison Instructions
+// TODO CMPPS CMPSS COMISS UCOMISS
+// }}}
+// {{{ Logical Instructions
+// TODO ANDPS ANDNPS ORPS XORPS SHUFPS UNPCKHPS UNPCKLPS
+// }}}
+// {{{ Shuffle and Unpack Instructions
+// TODO UNPCKHPS UNPCKLPS
+// }}}
+// {{{ Conversion Instructions
+// TODO CVTPI2PS CVTSI2SS CVTPS2PI CVTTPS2PI CVTSS2SI CVTTSS2SI
+// }}}
+// {{{ MXCSR State Management Instructions
+// TODO LDMXCSR STMMXCSR
+// }}}
+// {{{ 64-bit SIMD Integer Instructions
+// TODO PAVGB PAVGW PEXTRW PINSRW PMAXUB PMAXSW PMINUB PMINSW
+// TODO PMOVMSKB PMULHUW PSADBW PSHUFW
+// }}}
+// {{{ Cacheability Control, Prefetch, and Instruction Ordering Instructions
+// TODO MASKMOVQ MOVNTQ MOVNTPS PREFETCHh SFENCE
+// }}}
