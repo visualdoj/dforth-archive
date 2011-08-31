@@ -141,6 +141,7 @@ I386 extend-namespace
         1 last xt.param@ v.prefixes# !
         last xt.param@ v.prefix1 ! ;
     : multi-op source-next-name *multi-op-name b! ;
+    : single-instructions str0 *multi-op-name b! ;
 
     : multi-form-name ( bits B: postfix )
         ?dup if int->str bswap str+ then 
@@ -179,6 +180,7 @@ I386 extend-namespace
     : /6 '6 /r ;
     : /7 '7 /r ;
 
+    : variant_imm " _imm" varianted ['] first.value imm! ;
     : variant_mem " _mem" varianted ['] first mem! ;
     : variant_r/m " _reg" varianted ['] first mem! ;
     last alias variant_reg
@@ -195,6 +197,9 @@ I386 extend-namespace
     : variant_mem_imm8 " _mem_imm8" varianted ['] first.value imm! ['] second mem! '0 /r 1 imm#! ;
     : variant_r/m_imm8 " _reg_imm8" varianted ['] first.value imm! ['] second mem! '0 /r 1 imm#! ;
     last alias variant_reg_imm8
+    : variant_al_imm " _al_imm" varianted ['] first.value imm! ;
+    : variant_ax_imm " _ax_imm" varianted ['] first.value imm! ;
+    : variant_eax_imm " _eax_imm" varianted ['] first.value imm! ;
 
   \namespace
 // }}}

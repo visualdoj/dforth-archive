@@ -2,11 +2,8 @@
 // Команды множества IA-32
 
 // {{{ Data Transfer Instructions
-// TODO CMOVE/CMOVZ CMOVNE/CMOVNZ CMOVA/CMOVNBE CMOVAE/CMOVNB
-// TODO CMOVB/CMOVNAE CMOVBE/CMOVNA CMOVG/CMOVNLE CMOVGE/CMOVNL
-// TODO CMOVL/CMOVNGE CMOVLE/CMOVNG CMOVC CMOVNC CMOVO CMOVNO
-// TODO CMOVS CMOVNS CMOVP/CMOVPE CMOVNP/CMOVPO XCHG BSWAP
-// TODO XADD CMPXCHG CMPXCHG8B PUSH POP PUSHA/PUSHAD POPA/POPAD
+// TODO BSWAP
+// TODO XADD CMPXCHG CMPXCHG8B
 // TODO CWD/CDQ CBW/CWDE MOVSX MOVZX
 multi-op MOV
   hA0  8 variant _al_moffset  ' first.disp imm!
@@ -34,14 +31,102 @@ multi-op MOV
   h8A  8 variant_reg_mem
   h8B 16 variant_reg_mem
   h8B 32 variant_reg_mem
+
+multi-op POP
+    h8F 16 variant_mem /0
+    h8F 32 variant_mem /0
+    h58 16 variant _reg ' first.value +r
+    h58 32 variant _reg ' first.value +r
+    h1F  0 variant _ds
+    h07  0 variant _es
+    h17  0 variant _ss
+    h0F hA1 16 variant _fs 1 prefixes
+    h0F hA1 32 variant _fs 1 prefixes
+    h0F hA9 16 variant _gs 1 prefixes
+    h0F hA9 32 variant _gs 1 prefixes
+
+multi-op PUSH
+    hFF 16 variant_mem /6
+    hFF 32 variant_mem /6
+    h50 16 variant _reg ' first.value +r
+    h50 32 variant _reg ' first.value +r
+    h6A  8 variant_imm
+    h68 16 variant_imm
+    h68 32 variant_imm
+    h0E  0 variant _cs
+    h16  0 variant _ss
+    h1E  0 variant _ds
+    h06  0 variant _es
+    h0F hA0 0 variant _fs 1 prefixes
+    h0F hA8 0 variant _gs 1 prefixes
+
+multi-op XCHG
+    h90 16 variant _ax_reg ' first.value +r
+    h90 32 variant _eax_reg ' first.value +r
+    h90 16 variant _reg_ax ' second.value +r
+    h90 32 variant _reg_eax ' second.value +r
+    h86  8 variant_mem_reg
+    h87 16 variant_mem_reg
+    h87 32 variant_mem_reg
+    h86  8 variant_reg_mem
+    h87 16 variant_reg_mem
+    h87 32 variant_reg_mem
+    h86  8 variant_reg_reg
+    h87 16 variant_reg_reg
+    h87 32 variant_reg_reg
+
+single-instructions
+    // TODO : нужно ли тут переключение режимов 16/32 ?
+    h60  0 variant PUSHA
+    h60  0 variant PUSHAD
+    h61  0 variant POPA
+    h61  0 variant POPAD
+
+: declare-CMOVcc ( base-opcode)
+    multi-op h0F swap
+    2dup 16 variant_reg_mem 1 prefixes
+    2dup 32 variant_reg_mem 1 prefixes
+    2dup 16 variant_reg_reg 1 prefixes
+    2dup 32 variant_reg_reg 1 prefixes
+    2drop ;
+h47 declare-CMOVcc CMOVA
+h43 declare-CMOVcc CMOVAE
+h42 declare-CMOVcc CMOVAB
+h46 declare-CMOVcc CMOVABE
+h42 declare-CMOVcc CMOVC
+h44 declare-CMOVcc CMOVE
+h4F declare-CMOVcc CMOVG
+h4D declare-CMOVcc CMOVGE
+h4C declare-CMOVcc CMOVL
+h4E declare-CMOVcc CMOVLE
+h46 declare-CMOVcc CMOVNA
+h42 declare-CMOVcc CMOVNAE
+h43 declare-CMOVcc CMOVNB
+h47 declare-CMOVcc CMOVNBE
+h43 declare-CMOVcc CMOVNC
+h45 declare-CMOVcc CMOVNE
+h4E declare-CMOVcc CMOVNG
+h4C declare-CMOVcc CMOVNGE
+h4D declare-CMOVcc CMOVNL
+h4F declare-CMOVcc CMOVNLE
+h41 declare-CMOVcc CMOVNO
+h4B declare-CMOVcc CMOVNP
+h49 declare-CMOVcc CMOVNS
+h45 declare-CMOVcc CMOVNZ
+h40 declare-CMOVcc CMOVO
+h4A declare-CMOVcc CMOVP
+h4A declare-CMOVcc CMOVPE
+h4B declare-CMOVcc CMOVPO
+h48 declare-CMOVcc CMOVS
+h44 declare-CMOVcc CMOVZ
 // }}}
 // {{{ Binary Arithmetic Instructions
-// TODO IDIV DIV INC DEC NEG
+// TODO IDIV DIV
 : binary-instruction ( base-opcode base-exopcode B: name)
     multi-op
-    // over 4 +  8 variant_al_imm
-    // over 5 + 16 variant_ax_imm
-    // over 5 + 32 variant_eax_imm
+    over 4 +  8 variant_al_imm
+    over 5 + 16 variant_ax_imm
+    over 5 + 32 variant_eax_imm
     h80   8 variant_mem_imm dup /r
     h81  16 variant_mem_imm dup /r
     h81  32 variant_mem_imm dup /r
@@ -72,106 +157,6 @@ h20 '4 binary-instruction AND
 h28 '5 binary-instruction SUB
 h30 '6 binary-instruction XOR
 h38 '7 binary-instruction CMP
-
-( multi-op ADD
-  h04  8 variant _al_imm  ' first.value imm!
-  h05 16 variant _ax_imm  ' first.value imm!
-  h05 32 variant _eax_imm ' first.value imm!
-  h80  8 variant_mem_imm /0
-  h81 16 variant_mem_imm /0
-  h81 32 variant_mem_imm /0
-  h80  8 variant_reg_imm /0
-  h81 16 variant_reg_imm /0
-  h81 32 variant_reg_imm /0
-  // signed-extended?
-  h83 16 variant_mem_imm8 /0
-  h83 16 variant_reg_imm8 /0
-  h83 32 variant_mem_imm8 /0
-  h83 32 variant_reg_imm8 /0
-  h00  8 variant_mem_reg
-  h01 16 variant_mem_reg
-  h01 32 variant_mem_reg
-  h02  8 variant_reg_mem
-  h03 16 variant_reg_mem
-  h03 32 variant_reg_mem
-  h02  8 variant_reg_reg
-  h03 16 variant_reg_reg
-  h03 32 variant_reg_reg
-
-multi-op ADC
-  h14  8 variant _al_imm  ' first.value imm!
-  h15 16 variant _ax_imm  ' first.value imm!
-  h15 32 variant _eax_imm ' first.value imm!
-  h80  8 variant_mem_imm /2
-  h81 16 variant_mem_imm /2
-  h81 32 variant_mem_imm /2
-  h80  8 variant_reg_imm /2
-  h81 16 variant_reg_imm /2
-  h81 32 variant_reg_imm /2
-  // signed-extended?
-  h83 16 variant_mem_imm8 /2
-  h83 16 variant_reg_imm8 /2
-  h83 32 variant_mem_imm8 /2
-  h83 32 variant_reg_imm8 /2
-  h10  8 variant_mem_reg
-  h11 16 variant_mem_reg
-  h11 32 variant_mem_reg
-  h12  8 variant_reg_mem
-  h13 16 variant_reg_mem
-  h13 32 variant_reg_mem
-  h12  8 variant_reg_reg
-  h13 16 variant_reg_reg
-  h13 32 variant_reg_reg
-
-multi-op SUB
-  h2C  8 variant _al_imm  ' first.value imm!
-  h2D 16 variant _ax_imm  ' first.value imm!
-  h2D 32 variant _eax_imm ' first.value imm!
-  h80  8 variant_mem_imm /5
-  h81 16 variant_mem_imm /5
-  h81 32 variant_mem_imm /5
-  h80  8 variant_reg_imm /5
-  h81 16 variant_reg_imm /5
-  h81 32 variant_reg_imm /5
-  // signed-extended?
-  h83 16 variant_mem_imm8 /5
-  h83 16 variant_reg_imm8 /5
-  h83 32 variant_mem_imm8 /5
-  h83 32 variant_reg_imm8 /5
-  h28  8 variant_mem_reg
-  h29 16 variant_mem_reg
-  h29 32 variant_mem_reg
-  h2A  8 variant_reg_mem
-  h2B 16 variant_reg_mem
-  h2B 32 variant_reg_mem
-  h2A  8 variant_reg_reg
-  h2B 16 variant_reg_reg
-  h2B 32 variant_reg_reg
-
-multi-op SBB
-  h1C  8 variant _al_imm  ' first.value imm!
-  h1D 16 variant _ax_imm  ' first.value imm!
-  h1D 32 variant _eax_imm ' first.value imm!
-  h80  8 variant_mem_imm /3
-  h81 16 variant_mem_imm /3
-  h81 32 variant_mem_imm /3
-  h80  8 variant_reg_imm /3
-  h81 16 variant_reg_imm /3
-  h81 32 variant_reg_imm /3
-  // signed-extended?
-  h83 16 variant_mem_imm8 /3
-  h83 32 variant_mem_imm8 /3
-  h83 16 variant_reg_imm8 /3
-  h83 32 variant_reg_imm8 /3
-  h18  8 variant_mem_reg
-  h19 16 variant_mem_reg
-  h19 32 variant_mem_reg
-  h1A  8 variant_reg_mem
-  h1B 16 variant_reg_mem
-  h1B 32 variant_reg_mem
-  h1A  8 variant_reg_reg
-  h1B 16 variant_reg_reg
-  h1B 32 variant_reg_reg )
 
 multi-op MUL
   hF6  8 variant_reg /4
@@ -211,63 +196,41 @@ multi-op IMUL
                                ' second mem!
                                ' first.value imm!
   last alias IMUL32_reg_mem_imm
+
+multi-op INC
+  hFE  8 variant_mem /0
+  hFF 16 variant_mem /0
+  hFF 32 variant_mem /0
+  h40 16 variant _reg ' first.value +r
+  h40 32 variant _reg ' first.value +r
+
+multi-op DEC
+  hFE  8 variant_mem /1
+  hFF 16 variant_mem /1
+  hFF 32 variant_mem /1
+  h48 16 variant _reg ' first.value +r
+  h48 32 variant _reg ' first.value +r
+
+multi-op NOT
+  hF6  8 variant_mem /2
+  hF7 16 variant_mem /2
+  hF7 32 variant_mem /2
+  hF6  8 variant_reg /2
+  hF7 16 variant_reg /2
+  hF7 32 variant_reg /2
+
+multi-op NEG
+  hF6  8 variant_mem /3
+  hF7 16 variant_mem /3 
+  hF7 32 variant_mem /3 
+  hF6  8 variant_reg /3
+  hF7 16 variant_reg /3 
+  hF7 32 variant_reg /3 
 // }}}
 // {{{ Decimal Arithmetic Instructions
 // TODO DAA DAS AAM AAD
 h37 0 op AAA
 h3F 0 op AAS
-// }}}
-// {{{ Logical Instructions
-// TODO NOT
-( multi-op AND
-  h24  8 variant _al_imm  ' first.value imm!
-  h25 16 variant _ax_imm  ' first.value imm!
-  h25 32 variant _eax_imm ' first.value imm!
-  h80  8 variant_mem_imm /4
-  h81 16 variant_mem_imm /4
-  h81 32 variant_mem_imm /4
-  h80  8 variant_reg_imm /4
-  h81 16 variant_reg_imm /4
-  h81 32 variant_reg_imm /4
-  // signed-extended?
-  h83 16 variant_mem_imm8 /4
-  h83 16 variant_reg_imm8 /4
-  h83 32 variant_mem_imm8 /4
-  h83 32 variant_reg_imm8 /4
-  h20  8 variant_mem_reg
-  h21 16 variant_mem_reg
-  h21 32 variant_mem_reg
-  h22  8 variant_reg_mem
-  h23 16 variant_reg_mem
-  h23 32 variant_reg_mem
-  h22  8 variant_reg_reg
-  h23 16 variant_reg_reg
-  h23 32 variant_reg_reg
-
-multi-op XOR
-  h34  8 variant _al_imm  ' first.value imm!
-  h35 16 variant _ax_imm  ' first.value imm!
-  h35 32 variant _eax_imm ' first.value imm!
-  h80  8 variant_mem_imm /6
-  h81 16 variant_mem_imm /6
-  h81 32 variant_mem_imm /6
-  h80  8 variant_reg_imm /6
-  h81 16 variant_reg_imm /6
-  h81 32 variant_reg_imm /6
-  // signed-extended?
-  h83 16 variant_mem_imm8 /6
-  h83 32 variant_mem_imm8 /6
-  h83 16 variant_reg_imm8 /6
-  h83 32 variant_reg_imm8 /6
-  h30  8 variant_mem_reg
-  h31 16 variant_mem_reg
-  h31 32 variant_mem_reg
-  h32  8 variant_reg_mem
-  h33 16 variant_reg_mem
-  h33 32 variant_reg_mem
-  h32  8 variant_reg_reg
-  h33 16 variant_reg_reg
-  h33 32 variant_reg_reg )
 // }}}
 // {{{ Shift and Rotate Instructions
 // TODO SAR SHR SAL/SHL SHRD SHLD ROR ROL RCR RCL
