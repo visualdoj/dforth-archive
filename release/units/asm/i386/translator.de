@@ -146,21 +146,28 @@ uses COMMAND_DESCRIPTION COMMANDS
     : POP
       1 ?operands
       first .type @ switch
-        OT_REG of h58 first .value @ + byte<< \of
-        OT_MEM of h8F byte<< 0 first mem<< \of
+        OT_REG of
+                  first .regtype @ switch
+                    RT_16 of COMMAND_DESCRIPTION POP16_reg ^ \of
+                    RT_32 of COMMAND_DESCRIPTION POP32_reg ^ \of
+                    unknown-operand-type
+                  \switch \of
+        OT_MEM of 
+                  first .value @ switch
+                    DT_WORD of COMMAND_DESCRIPTION POP16_mem ^ \of
+                    DT_DWORD of COMMAND_DESCRIPTION POP32_mem ^ \of
+                    unknown-operand-type
+                  \switch \of
         OT_SEG of
                  first .value @ switch 
-                   ES of h07 byte<< \of
-                   CS of ( error) \of
-                   SS of h17 byte<< \of
-                   DS of h1F byte<< \of
-                   FS of h0f byte<< hA1 byte<< \of
-                   GS of h0F byte<< hA9 byte<< \of
-                 \switch
-               \of
-        ( error)
-      \switch clear-operands
-    ;
+                   ES of COMMAND_DESCRIPTION POP_es ^ \of
+                   SS of COMMAND_DESCRIPTION POP_ss ^ \of
+                   DS of COMMAND_DESCRIPTION POP_ds ^ \of
+                   FS of COMMAND_DESCRIPTION POP32_fs ^ \of
+                   GS of COMMAND_DESCRIPTION POP32_gs ^ \of
+                 \switch \of
+        unknown-operand-type
+      \switch clear-operands ;
 // }}}
 // {{{ PUSH
     : PUSH
@@ -168,21 +175,34 @@ uses COMMAND_DESCRIPTION COMMANDS
       first .type @ switch
         OT_IMM of
                  first .value @ dup 256 < 
-                 if h6A byte<< byte<<
-                 else h68 byte<< dword<< then 
-               \of
-        OT_REG of h50 first .value @ + byte<< \of
-        OT_MEM of hFF byte<< 6 first mem<< \of
+                 if 
+                   COMMAND_DESCRIPTION PUSH8_imm ^
+                 else
+                   COMMAND_DESCRIPTION PUSH32_imm ^
+                 then \of
+        OT_REG of
+                  first .regtype @ switch
+                    RT_16 of COMMAND_DESCRIPTION PUSH16_reg ^ \of
+                    RT_32 of COMMAND_DESCRIPTION PUSH32_reg ^ \of
+                    unknown-operand-type
+                  \switch \of
+        OT_MEM of 
+                  first .value @ switch
+                    DT_WORD of COMMAND_DESCRIPTION PUSH16_mem ^ \of
+                    DT_DWORD of COMMAND_DESCRIPTION PUSH32_mem ^ \of
+                    unknown-operand-type
+                  \switch \of
         OT_SEG of
                  first .value @ switch 
-                   ES of h06 byte<< \of
-                   CS of h0E byte<< \of
-                   SS of h16 byte<< \of
-                   DS of h1E byte<< \of
-                   FS of h0F byte<< hA0 byte<< \of
-                   GS of h0F byte<< hA8 byte<< \of
+                   ES of COMMAND_DESCRIPTION PUSH_es ^ \of
+                   CS of COMMAND_DESCRIPTION PUSH_cs ^ \of
+                   SS of COMMAND_DESCRIPTION PUSH_ss ^ \of
+                   DS of COMMAND_DESCRIPTION PUSH_ds ^ \of
+                   FS of COMMAND_DESCRIPTION PUSH_fs ^ \of
+                   GS of COMMAND_DESCRIPTION PUSH_gs ^ \of
                  \switch
                \of
+        unknown-operand-type
       \switch clear-operands
     ;
 // }}}
@@ -310,112 +330,6 @@ uses COMMAND_DESCRIPTION COMMANDS
         unknown-operand-type
       \switch clear-operands ;
 // }}}
-// {{{ XOR
-// {{{ XOR reg
-// {{{ XOR reg imm
-    : XOR_reg_imm
-      second .regtype @ switch
-        RT_8  of COMMAND_DESCRIPTION XOR8_reg_imm ^ \of
-        RT_16 of COMMAND_DESCRIPTION XOR16_reg_imm ^ \of
-        RT_32 of COMMAND_DESCRIPTION XOR32_reg_imm ^ \of
-      \switch
-    ;
-// }}}
-// {{{ XOR reg reg
-    : XOR_reg_reg
-      first .regtype @ second .regtype @ <> 
-      if " both operands of XOR must have the same type" error then
-      second .regtype @ switch
-        RT_8 of COMMAND_DESCRIPTION XOR8_reg_reg ^ \of
-        RT_16 of COMMAND_DESCRIPTION XOR16_reg_reg ^ \of
-        RT_32 of COMMAND_DESCRIPTION XOR32_reg_reg ^ \of
-      \switch
-    ;
-// }}}
-// {{{ XOR reg mem
-    : XOR_reg_mem
-      second .regtype @ switch
-        RT_8  of COMMAND_DESCRIPTION XOR8_reg_mem ^ \of
-        RT_16 of COMMAND_DESCRIPTION XOR16_reg_mem ^ \of
-        RT_32 of COMMAND_DESCRIPTION XOR32_reg_mem ^ \of
-      \switch
-    ;
-// }}}
-// {{{ XOR reg seg
-    : XOR_reg_seg 
-      first .value @ DT_WORD = if
-        // 16 switch<< COMMAND_DESCRIPTION XOR16_mem_seg ^
-      else " mov to segment register must be 16-bit memory operand" error then
-    ;
-// }}}
-    : XOR_reg
-      first .type @ switch
-        OT_IMM of XOR_reg_imm \of
-        OT_REG of XOR_reg_reg \of
-        OT_MEM of XOR_reg_mem \of
-        OT_SEG of XOR_reg_seg \of
-      \switch
-    ;
-// }}}
-// {{{ XOR mem
-    : XOR_mem_imm
-      second .value @ switch
-        DT_BYTE of COMMAND_DESCRIPTION XOR8_mem_imm ^ \of
-        DT_WORD of COMMAND_DESCRIPTION XOR16_mem_imm ^ \of
-        DT_DWORD of COMMAND_DESCRIPTION XOR32_mem_imm ^ \of
-        unknown-operand-type
-      \switch
-    ;
-    : XOR_mem_reg 
-      first .regtype @ switch
-        RT_8 of COMMAND_DESCRIPTION XOR8_mem_reg ^ \of
-        RT_16 of COMMAND_DESCRIPTION XOR16_mem_reg ^ \of
-        RT_32 of COMMAND_DESCRIPTION XOR32_mem_reg ^ \of
-        unknown-operand-type
-      \switch
-    ;
-    : XOR_mem_seg 
-      second .value @ DT_WORD = if
-        // COMMAND_DESCRIPTION XOR16_mem_seg ^
-      else " mov from segment register must be 16-bit memory operand" error then
-    ;
-    : XOR_mem 
-      first .type @ switch
-        OT_IMM of XOR_mem_imm \of
-        OT_REG of XOR_mem_reg \of
-        OT_SEG of XOR_mem_seg \of
-        " cannot mov from mem to mem"
-      \switch
-    ;
-// }}}
-// {{{ XOR seg
-    : XOR_seg 
-      first .type @ switch
-        OT_REG of first .regtype @ RT_16 <> 
-                  if " must be 16-bit register in this format" error then 
-                  // TODO 16 switch<< XOR16_seg_reg
-        \of
-        OT_MEM of first .value @ DT_WORD <> 
-                  if " must be 16-bit memory access in this format" error then 
-                  // TODO 16 switch<< XOR16_seg_mem
-        \of
-        OT_IMM of " cannot mov immediate data to segment register" error \of
-        OT_SEG of " cannot mov segment regfister to segment register" error \of
-        unknown-operand-type
-      \switch
-    ;
-// }}}
-    : XOR
-          2 ?operands
-          second .type @ switch
-            OT_IMM of " dst operand of XOR cannot be immediate " error \of
-            OT_REG of XOR_reg \of
-            OT_MEM of XOR_mem \of
-            OT_SEG of XOR_seg \of
-            unknown-operand-type
-          \switch clear-operands
-    ;
-// }}}
 // {{{ MUL
     : MUL_reg
         first .regtype @ switch
@@ -516,86 +430,6 @@ uses COMMAND_DESCRIPTION COMMANDS
             // \\switch \\of
           unknown-operand-type
         \switch clear-operands ;
-// }}}
-// {{{ binary instructions
-( 
-// {{{ AND
-// {{{ AND reg
-// {{{ AND reg imm
-    : AND_reg_imm
-      second .regtype @ switch
-        RT_8  of COMMAND_DESCRIPTION AND8_reg_imm ^ \of
-        RT_16 of COMMAND_DESCRIPTION AND16_reg_imm ^ \of
-        RT_32 of COMMAND_DESCRIPTION AND32_reg_imm ^ \of
-      \switch
-    ;
-// }}}
-// {{{ AND reg reg
-    : AND_reg_reg
-      first .regtype @ second .regtype @ <> 
-      if " both operands of AND must have the same type" error then
-      second .regtype @ switch
-        RT_8 of COMMAND_DESCRIPTION AND8_reg_reg ^ \of
-        RT_16 of COMMAND_DESCRIPTION AND16_reg_reg ^ \of
-        RT_32 of COMMAND_DESCRIPTION AND32_reg_reg ^ \of
-      \switch
-    ;
-// }}}
-// {{{ AND reg mem
-    : AND_reg_mem
-      second .regtype @ switch
-        RT_8  of COMMAND_DESCRIPTION AND8_reg_mem ^ \of
-        RT_16 of COMMAND_DESCRIPTION AND16_reg_mem ^ \of
-        RT_32 of COMMAND_DESCRIPTION AND32_reg_mem ^ \of
-      \switch
-    ;
-// }}}
-    : AND_reg
-      first .type @ switch
-        OT_IMM of AND_reg_imm \of
-        OT_REG of AND_reg_reg \of
-        OT_MEM of AND_reg_mem \of
-        OT_SEG of AND_reg_seg \of
-      \switch
-    ;
-// }}}
-// {{{ AND mem
-// {{{ AND_mem_imm
-    : AND_mem_imm
-      second .value @ switch
-        DT_BYTE of COMMAND_DESCRIPTION AND8_mem_imm ^ \of
-        DT_WORD of COMMAND_DESCRIPTION AND16_mem_imm ^ \of
-        DT_DWORD of COMMAND_DESCRIPTION AND32_mem_imm ^ \of
-        unknown-operand-type
-      \switch ;
-// }}}
-// {{{ AND_mem_reg
-    : AND_mem_reg 
-      first .regtype @ switch
-        RT_8 of COMMAND_DESCRIPTION AND8_mem_reg ^ \of
-        RT_16 of COMMAND_DESCRIPTION AND16_mem_reg ^ \of
-        RT_32 of COMMAND_DESCRIPTION AND32_mem_reg ^ \of
-        unknown-operand-type
-      \switch ;
-// }}}
-    : AND_mem 
-      first .type @ switch
-        OT_IMM of AND_mem_imm \of
-        OT_REG of AND_mem_reg \of
-        OT_MEM of " cannot mov from mem to mem" error \of
-        unknown-operand-type
-      \switch ;
-// }}}
-    : AND
-          2 ?operands
-          second .type @ switch
-            OT_IMM of " dst operand of AND cannot be immediate " error \of
-            OT_REG of AND_reg \of
-            OT_MEM of AND_mem \of
-            unknown-operand-type
-          \switch clear-operands ;
-// }}}
-) 
 // }}}
 // {{{ template for binary command
 " 
