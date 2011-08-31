@@ -184,8 +184,9 @@ I386 extend-namespace
     : variant_mem " _mem" varianted ['] first mem! ;
     : variant_r/m " _reg" varianted ['] first mem! ;
     last alias variant_reg
-    : variant_reg_imm " _reg_imm" varianted ['] second.value +r ['] first.value imm! ;
-    : variant_mem_imm " _mem_imm" varianted ['] first.value imm! ['] second mem! '0 /r ;
+    : variant_mem_imm " _mem_imm" varianted ['] first.value imm! ['] second mem! ;
+    : variant_r/m_imm " _reg_imm" varianted ['] first.value imm! ['] second mem! ;
+    : variant_reg_imm " _reg_imm" varianted ['] first.value imm! ['] second.value +r ;
 
     : variant_reg_mem " _reg_mem" varianted ['] second.value /r ['] first mem! ;
     : variant_reg_r/m " _reg_reg" varianted ['] second.value /r ['] first mem! ;

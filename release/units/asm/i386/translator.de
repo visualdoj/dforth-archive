@@ -416,108 +416,6 @@ uses COMMAND_DESCRIPTION COMMANDS
           \switch clear-operands
     ;
 // }}}
-// {{{ AND
-// {{{ AND reg
-// {{{ AND reg imm
-    : AND_reg_imm
-      second .regtype @ switch
-        RT_8  of COMMAND_DESCRIPTION AND8_reg_imm ^ \of
-        RT_16 of COMMAND_DESCRIPTION AND16_reg_imm ^ \of
-        RT_32 of COMMAND_DESCRIPTION AND32_reg_imm ^ \of
-      \switch
-    ;
-// }}}
-// {{{ AND reg reg
-    : AND_reg_reg
-      first .regtype @ second .regtype @ <> 
-      if " both operands of AND must have the same type" error then
-      second .regtype @ switch
-        RT_8 of COMMAND_DESCRIPTION AND8_reg_reg ^ \of
-        RT_16 of COMMAND_DESCRIPTION AND16_reg_reg ^ \of
-        RT_32 of COMMAND_DESCRIPTION AND32_reg_reg ^ \of
-      \switch
-    ;
-// }}}
-// {{{ AND reg mem
-    : AND_reg_mem
-      second .regtype @ switch
-        RT_8  of COMMAND_DESCRIPTION AND8_reg_mem ^ \of
-        RT_16 of COMMAND_DESCRIPTION AND16_reg_mem ^ \of
-        RT_32 of COMMAND_DESCRIPTION AND32_reg_mem ^ \of
-      \switch
-    ;
-// }}}
-// {{{ AND reg seg
-    : AND_reg_seg 
-      first .value @ DT_WORD = if
-        // 16 switch<< COMMAND_DESCRIPTION AND16_mem_seg ^
-      else " mov to segment register must be 16-bit memory operand" error then
-    ;
-// }}}
-    : AND_reg
-      first .type @ switch
-        OT_IMM of AND_reg_imm \of
-        OT_REG of AND_reg_reg \of
-        OT_MEM of AND_reg_mem \of
-        OT_SEG of AND_reg_seg \of
-      \switch
-    ;
-// }}}
-// {{{ AND mem
-    : AND_mem_imm
-      second .value @ switch
-        DT_BYTE of COMMAND_DESCRIPTION AND8_mem_imm ^ \of
-        DT_WORD of COMMAND_DESCRIPTION AND16_mem_imm ^ \of
-        DT_DWORD of COMMAND_DESCRIPTION AND32_mem_imm ^ \of
-        unknown-operand-type
-      \switch ;
-    : AND_mem_reg 
-      first .regtype @ switch
-        RT_8 of COMMAND_DESCRIPTION AND8_mem_reg ^ \of
-        RT_16 of COMMAND_DESCRIPTION AND16_mem_reg ^ \of
-        RT_32 of COMMAND_DESCRIPTION AND32_mem_reg ^ \of
-        unknown-operand-type
-      \switch ;
-    : AND_mem_seg 
-      second .value @ DT_WORD = if
-        // COMMAND_DESCRIPTION AND16_mem_seg ^
-      else " mov from segment register must be 16-bit memory operand" error then
-      ;
-    : AND_mem 
-      first .type @ switch
-        OT_IMM of AND_mem_imm \of
-        OT_REG of AND_mem_reg \of
-        OT_SEG of AND_mem_seg \of
-        " cannot mov from mem to mem"
-      \switch ;
-// }}}
-// {{{ AND seg
-    : AND_seg 
-      first .type @ switch
-        OT_REG of first .regtype @ RT_16 <> 
-                  if " must be 16-bit register in this format" error then 
-                  // TODO 16 switch<< AND16_seg_reg
-        \of
-        OT_MEM of first .value @ DT_WORD <> 
-                  if " must be 16-bit memory access in this format" error then 
-                  // TODO 16 switch<< AND16_seg_mem
-        \of
-        OT_IMM of " cannot mov immediate data to segment register" error \of
-        OT_SEG of " cannot mov segment regfister to segment register" error \of
-        unknown-operand-type
-      \switch
-    ;
-// }}}
-    : AND
-          2 ?operands
-          second .type @ switch
-            OT_IMM of " dst operand of AND cannot be immediate " error \of
-            OT_REG of AND_reg \of
-            OT_MEM of AND_mem \of
-            OT_SEG of AND_seg \of
-            unknown-operand-type
-          \switch clear-operands ;
-// }}}
 // {{{ MUL
     : MUL_reg
         first .regtype @ switch
@@ -619,6 +517,171 @@ uses COMMAND_DESCRIPTION COMMANDS
           unknown-operand-type
         \switch clear-operands ;
 // }}}
+// {{{ binary instructions
+( 
+// {{{ AND
+// {{{ AND reg
+// {{{ AND reg imm
+    : AND_reg_imm
+      second .regtype @ switch
+        RT_8  of COMMAND_DESCRIPTION AND8_reg_imm ^ \of
+        RT_16 of COMMAND_DESCRIPTION AND16_reg_imm ^ \of
+        RT_32 of COMMAND_DESCRIPTION AND32_reg_imm ^ \of
+      \switch
+    ;
+// }}}
+// {{{ AND reg reg
+    : AND_reg_reg
+      first .regtype @ second .regtype @ <> 
+      if " both operands of AND must have the same type" error then
+      second .regtype @ switch
+        RT_8 of COMMAND_DESCRIPTION AND8_reg_reg ^ \of
+        RT_16 of COMMAND_DESCRIPTION AND16_reg_reg ^ \of
+        RT_32 of COMMAND_DESCRIPTION AND32_reg_reg ^ \of
+      \switch
+    ;
+// }}}
+// {{{ AND reg mem
+    : AND_reg_mem
+      second .regtype @ switch
+        RT_8  of COMMAND_DESCRIPTION AND8_reg_mem ^ \of
+        RT_16 of COMMAND_DESCRIPTION AND16_reg_mem ^ \of
+        RT_32 of COMMAND_DESCRIPTION AND32_reg_mem ^ \of
+      \switch
+    ;
+// }}}
+    : AND_reg
+      first .type @ switch
+        OT_IMM of AND_reg_imm \of
+        OT_REG of AND_reg_reg \of
+        OT_MEM of AND_reg_mem \of
+        OT_SEG of AND_reg_seg \of
+      \switch
+    ;
+// }}}
+// {{{ AND mem
+// {{{ AND_mem_imm
+    : AND_mem_imm
+      second .value @ switch
+        DT_BYTE of COMMAND_DESCRIPTION AND8_mem_imm ^ \of
+        DT_WORD of COMMAND_DESCRIPTION AND16_mem_imm ^ \of
+        DT_DWORD of COMMAND_DESCRIPTION AND32_mem_imm ^ \of
+        unknown-operand-type
+      \switch ;
+// }}}
+// {{{ AND_mem_reg
+    : AND_mem_reg 
+      first .regtype @ switch
+        RT_8 of COMMAND_DESCRIPTION AND8_mem_reg ^ \of
+        RT_16 of COMMAND_DESCRIPTION AND16_mem_reg ^ \of
+        RT_32 of COMMAND_DESCRIPTION AND32_mem_reg ^ \of
+        unknown-operand-type
+      \switch ;
+// }}}
+    : AND_mem 
+      first .type @ switch
+        OT_IMM of AND_mem_imm \of
+        OT_REG of AND_mem_reg \of
+        OT_MEM of " cannot mov from mem to mem" error \of
+        unknown-operand-type
+      \switch ;
+// }}}
+    : AND
+          2 ?operands
+          second .type @ switch
+            OT_IMM of " dst operand of AND cannot be immediate " error \of
+            OT_REG of AND_reg \of
+            OT_MEM of AND_mem \of
+            unknown-operand-type
+          \switch clear-operands ;
+// }}}
+) 
+// }}}
+// {{{ template for binary command
+" 
+    : <INSTRUCTION>_reg_imm
+      second .value @ EAX = if
+        second .regtype @ switch
+          RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_al_imm ^ \of
+          RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_ax_imm ^ \of
+          RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_eax_imm ^ \of
+          unknown-operand-type
+        \switch
+      else
+        second .regtype @ switch
+          RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_imm ^ \of
+          RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_imm ^ \of
+          RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_imm ^ \of
+          unknown-operand-type
+        \switch
+      then
+    ;
+    : <INSTRUCTION>_reg_reg
+      first .regtype @ second .regtype @ <> 
+      if ^" both operands of <INSTRUCTION> must have the same type^" error then
+      second .regtype @ switch
+        RT_8 of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_reg ^ \of
+        RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_reg ^ \of
+        RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_reg ^ \of
+        unknown-operand-type
+      \switch
+    ;
+    : <INSTRUCTION>_reg_mem
+      second .regtype @ switch
+        RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_mem ^ \of
+        RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_mem ^ \of
+        RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_mem ^ \of
+        unknown-operand-type
+      \switch
+    ;
+    : <INSTRUCTION>_reg
+      first .type @ switch
+        OT_IMM of <INSTRUCTION>_reg_imm \of
+        OT_REG of <INSTRUCTION>_reg_reg \of
+        OT_MEM of <INSTRUCTION>_reg_mem \of
+        unknown-operand-type
+      \switch
+    ;
+    : <INSTRUCTION>_mem_imm
+      second .value @ switch
+        DT_BYTE of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_imm ^ \of
+        DT_WORD of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_imm ^ \of
+        DT_DWORD of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_imm ^ \of
+        unknown-operand-type
+      \switch ;
+    : <INSTRUCTION>_mem_reg 
+      first .regtype @ switch
+        RT_8 of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_reg ^ \of
+        RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_reg ^ \of
+        RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_reg ^ \of
+        unknown-operand-type
+      \switch ;
+    : <INSTRUCTION>_mem 
+      first .type @ switch
+        OT_IMM of <INSTRUCTION>_mem_imm \of
+        OT_REG of <INSTRUCTION>_mem_reg \of
+        OT_MEM of ^" cannot mov from mem to mem^" error \of
+        unknown-operand-type
+      \switch ;
+    : <INSTRUCTION>
+          2 ?operands
+          second .type @ switch
+            OT_IMM of ^" dst operand of <INSTRUCTION> cannot be immediate ^" error \of
+            OT_REG of <INSTRUCTION>_reg \of
+            OT_MEM of <INSTRUCTION>_mem \of
+            unknown-operand-type
+          \switch clear-operands ;
+"
+// }}}
+bdup " <INSTRUCTION>" \" ADD" evaluate ." ADD done" cr
+bdup " <INSTRUCTION>" \" OR" evaluate ." OR done" cr
+bdup " <INSTRUCTION>" \" ADC" evaluate ." ADC done" cr
+bdup " <INSTRUCTION>" \" SBB" evaluate ." SBB done" cr
+bdup " <INSTRUCTION>" \" AND" evaluate ." AND done" cr
+bdup " <INSTRUCTION>" \" SUB" evaluate ." SUB done" cr
+bdup " <INSTRUCTION>" \" XOR" evaluate ." XOR done" cr
+bdup " <INSTRUCTION>" \" CMP" evaluate ." CMP done" cr
+bdrop
 
     : _COMPILE_NOTFOUND_
         *auto-integers? @ dup if str->int postpone literal postpone imm 
@@ -632,7 +695,10 @@ uses COMMAND_DESCRIPTION COMMANDS
     
     PREFIX 
       : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
+      ' ADC prefix-mnemonic adc
+      ' ADD prefix-mnemonic add
       ' AND prefix-mnemonic and
+      ' CMP prefix-mnemonic cmp
       ' DEC prefix-mnemonic dec
       ' IMUL prefix-mnemonic imul
       ' INC prefix-mnemonic inc
@@ -641,9 +707,12 @@ uses COMMAND_DESCRIPTION COMMANDS
       ' MUL prefix-mnemonic mul
       ' NEG prefix-mnemonic neg
       ' NOP prefix-mnemonic nop
+      ' OR prefix-mnemonic or
       ' POP prefix-mnemonic pop
       ' PUSH prefix-mnemonic push
       ' RET prefix-mnemonic ret
+      ' SBB prefix-mnemonic sbb
+      ' SUB prefix-mnemonic sub
       ' XOR prefix-mnemonic xor
     ^
   \namespace

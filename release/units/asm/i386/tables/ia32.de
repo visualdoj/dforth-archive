@@ -122,7 +122,7 @@ h44 declare-CMOVcc CMOVZ
 // }}}
 // {{{ Binary Arithmetic Instructions
 // TODO IDIV DIV
-: binary-instruction ( base-opcode base-exopcode B: name)
+: binary-instruction ( base-opcode base-exopcode "name")
     multi-op
     over 4 +  8 variant_al_imm
     over 5 + 16 variant_ax_imm
@@ -130,9 +130,9 @@ h44 declare-CMOVcc CMOVZ
     h80   8 variant_mem_imm dup /r
     h81  16 variant_mem_imm dup /r
     h81  32 variant_mem_imm dup /r
-    h80   8 variant_reg_imm dup /r
-    h80  16 variant_reg_imm dup /r
-    h80  32 variant_reg_imm dup /r
+    h80   8 variant_r/m_imm dup /r
+    h81  16 variant_r/m_imm dup /r
+    h81  32 variant_r/m_imm dup /r
     // signed-extended?
     h83  16 variant_mem_imm8 dup /r
     h83  16 variant_reg_imm8 dup /r

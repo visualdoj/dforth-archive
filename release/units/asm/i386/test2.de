@@ -73,6 +73,26 @@ asm-noname; execute
 ." *out5 = " *out5 @ . cr
 ." *out6 = " *out6 @ . cr
 ." *out7 = " *out7 @ . cr
+
+variable *out
+:asm-noname PREFIX
+    mov edx 456 imm
+    mov ebx 123 imm
+    // sub edx ebx
+    sub edx 123 imm
+    mov d[ *out disp ] edx
+    ret 
+\PREFIX asm-noname; execute
+*out @ . cr
+
+:asm-noname PREFIX
+    mov eax 456 imm
+    sub eax 123 imm
+    mov d[ *out disp ] eax
+    ret 
+\PREFIX asm-noname; execute
+*out @ . cr
+
 " h55 . cr " bdup str. evaluate 
 " h33 . cr " bdup str. evaluate 
 GLOBAL " h55 h33 xor . " bdup str. evaluate ^
