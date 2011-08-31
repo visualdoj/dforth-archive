@@ -145,16 +145,25 @@ I386 extend-namespace
     : multi-form-name ( bits B: postfix )
         ?dup if int->str bswap str+ then 
         *multi-op-name b@ bswap str+ ;
-    : variant ( opcode bits) 
-        dup source-next-name multi-form-name created init-variant
+    : varianted ( opcode bits S: postfix) 
+        dup multi-form-name created init-variant
       does> variant<< ;
+    : variant ( opcode bits) source-next-name varianted ;
     : 2variant ( prefix opcode bits) variant ( prefix)
       1 last xt.param@ v.prefixes# ! 
       last xt.param@ v.prefix1 ! ;
     : 3variant ( prefix1 prefix2 opcode bits) variant ( prefix1 prefix2)
-      1 last xt.param@ v.prefixes# ! 
+      2 last xt.param@ v.prefixes# ! 
       last xt.param@ v.prefix2 !
       last xt.param@ v.prefix1 ! ;
+    : prefixes ( prefix1 ... prefixn n)
+        dup last xt.param@ v.prefixes# ! 0;
+        swap last xt.param@ v.prefix1 ! 0;
+        swap last xt.param@ v.prefix2 ! 0;
+        swap last xt.param@ v.prefix3 ! 0;
+        swap last xt.param@ v.prefix4 ! 0;
+        " not supported " 4 + int->str str+ 
+        "  prefixes per an instruction" str+ error ;
     : +r last xt.param@ v.+r ! ;
     : mem! last xt.param@ v.mem ! ;
     : /r last xt.param@ v./r ! ;
@@ -169,6 +178,15 @@ I386 extend-namespace
     : /5 '5 /r ;
     : /6 '6 /r ;
     : /7 '7 /r ;
+
+    : variant_mem " _mem" varianted ' first mem! ;
+    : variant_r/m " _reg" varianted ' first mem! ;
+    : variant_reg_imm " _reg_imm" varianted ' second.value +r ' first.value imm! ;
+    : variant_mem_imm " _mem_imm" varianted ' first.value imm! ' second mem! '0 /r ;
+    : variant_reg_mem " _reg_imm" varianted ' second.value /r ' first mem! ;
+    : variant_reg_r/m " _reg_reg" varianted ' second.value /r ' first mem! ;
+    : variant_mem_reg " _mem_reg" varianted ' second mem! ' first.value /r ;
+    : variant_r/m_reg " _r/m_reg" varianted ' second mem! ' first.value /r ;
   \namespace
 // }}}
 \namespace
