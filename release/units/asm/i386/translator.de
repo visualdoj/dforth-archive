@@ -165,6 +165,7 @@ uses COMMAND_DESCRIPTION COMMANDS
                    DS of COMMAND_DESCRIPTION POP_ds ^ \of
                    FS of COMMAND_DESCRIPTION POP32_fs ^ \of
                    GS of COMMAND_DESCRIPTION POP32_gs ^ \of
+                   " unsupported segment register" error
                  \switch \of
         unknown-operand-type
       \switch clear-operands ;
@@ -174,7 +175,7 @@ uses COMMAND_DESCRIPTION COMMANDS
       1 ?operands
       first .type @ switch
         OT_IMM of
-                 first .value @ dup 256 < 
+                 first .value @ 128 < // TODO : signed case
                  if 
                    COMMAND_DESCRIPTION PUSH8_imm ^
                  else
@@ -205,6 +206,60 @@ uses COMMAND_DESCRIPTION COMMANDS
         unknown-operand-type
       \switch clear-operands
     ;
+// }}}
+// {{{ XCHG
+    : XCHG_reg_reg
+      first .value @ EAX = if
+        first .regtype @ switch
+          RT_8  of COMMAND_DESCRIPTION XCHG8_reg_reg ^ \of
+          RT_16 of COMMAND_DESCRIPTION XCHG16_reg_ax ^ \of
+          RT_32 of COMMAND_DESCRIPTION XCHG32_reg_eax ^ \of
+          unknown-operand-type
+        \switch exit then
+      second .value @ EAX = if
+        first .regtype @ switch
+          RT_8  of COMMAND_DESCRIPTION XCHG8_reg_reg ^ \of
+          RT_16 of COMMAND_DESCRIPTION XCHG16_ax_reg ^ \of
+          RT_32 of COMMAND_DESCRIPTION XCHG32_eax_reg ^ \of
+          unknown-operand-type
+        \switch exit then
+      first .regtype @ switch
+        RT_8  of COMMAND_DESCRIPTION XCHG8_reg_reg ^ \of
+        RT_16 of COMMAND_DESCRIPTION XCHG16_reg_reg ^ \of
+        RT_32 of COMMAND_DESCRIPTION XCHG32_reg_reg ^ \of
+        unknown-operand-type
+        \switch ;
+    : XCHG_reg_mem
+        second .regtype @ switch
+          RT_8  of COMMAND_DESCRIPTION XCHG8_reg_mem ^ \of
+          RT_16 of COMMAND_DESCRIPTION XCHG16_reg_mem ^ \of
+          RT_32 of COMMAND_DESCRIPTION XCHG32_reg_mem ^ \of
+          unknown-operand-type
+        \switch ;
+    : XCHG_reg
+      first .type @ switch
+        OT_REG of XCHG_reg_reg \of
+        OT_MEM of XCHG_reg_mem \of
+        unknown-operand-type
+      \switch clear-operands ;
+    : XCHG_mem
+      first .type @ OT_REG = if
+        first .regtype @ switch
+          RT_8  of COMMAND_DESCRIPTION XCHG8_mem_reg ^ \of
+          RT_16 of COMMAND_DESCRIPTION XCHG16_mem_reg ^ \of
+          RT_32 of COMMAND_DESCRIPTION XCHG32_mem_reg ^ \of
+          unknown-operand-type
+        \switch
+      else
+        " cannot apply XCHG for two mem operands" error
+      then ;
+    : XCHG
+      2 ?operands
+      second .type @ switch
+        OT_REG of XCHG_reg \of
+        OT_MEM of XCHG_mem \of
+        unknown-operand-type
+      \switch clear-operands ;
 // }}}
 // {{{ MOV
 // {{{ MOV reg
@@ -525,6 +580,7 @@ uses COMMAND_DESCRIPTION COMMANDS
           \switch clear-operands ;
 "
 // }}}
+: delta. ( start) timer swap - . ; 
 bdup " <INSTRUCTION>" \" ADD" evaluate ." ADD done" cr
 bdup " <INSTRUCTION>" \" OR" evaluate ." OR done" cr
 bdup " <INSTRUCTION>" \" ADC" evaluate ." ADC done" cr
@@ -533,7 +589,6 @@ bdup " <INSTRUCTION>" \" AND" evaluate ." AND done" cr
 bdup " <INSTRUCTION>" \" SUB" evaluate ." SUB done" cr
 bdup " <INSTRUCTION>" \" XOR" evaluate ." XOR done" cr
 bdup " <INSTRUCTION>" \" CMP" evaluate ." CMP done" cr
-bdrop
 
     : _COMPILE_NOTFOUND_
         *auto-integers? @ dup if str->int postpone literal postpone imm 
@@ -565,6 +620,7 @@ bdrop
       ' RET prefix-mnemonic ret
       ' SBB prefix-mnemonic sbb
       ' SUB prefix-mnemonic sub
+      ' XCHG prefix-mnemonic xchg
       ' XOR prefix-mnemonic xor
     ^
   \namespace

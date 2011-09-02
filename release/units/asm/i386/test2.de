@@ -100,6 +100,26 @@ variable *out
 \PREFIX asm-noname; execute
 *out @ . cr
 
+:asm-noname PREFIX
+    push 333 imm
+    mov eax 456 imm
+    push eax
+    pop ecx
+    pop d[ *out disp ]
+    ret 
+\PREFIX asm-noname; execute
+*out @ . cr
+
+:asm-noname PREFIX
+    mov eax 333 imm
+    mov edx 456 imm
+    mov d[ *out disp ] 117 imm
+    xchg eax edx
+    xchg d[ *out disp ] edx
+    ret 
+\PREFIX asm-noname; execute
+." xchg: " *out @ . cr
+
 " h55 . cr " bdup str. evaluate 
 " h33 . cr " bdup str. evaluate 
 GLOBAL " h55 h33 xor . " bdup str. evaluate ^
