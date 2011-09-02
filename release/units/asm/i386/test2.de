@@ -120,6 +120,32 @@ variable *out
 \PREFIX asm-noname; execute
 ." xchg: " *out @ . cr
 
+:asm-noname PREFIX
+    mov d[ *out disp ] 333 imm
+    neg d[ *out disp ]
+    ret 
+\PREFIX asm-noname; execute
+." neg: " *out @ . cr
+
+:asm-noname PREFIX
+    mov d[ *out disp ] -334 imm
+    not d[ *out disp ]
+    and d[ *out disp ] hFFF imm
+    ret
+\PREFIX asm-noname; execute
+." not: " *out @ . cr
+
+:asm-noname PREFIX
+    mov edx 123 imm
+    mov eax 333 imm
+    mov ebx 333 imm
+    sub eax ebx
+    cmovz edx ebx
+    mov d[ *out disp ] edx
+    ret
+\PREFIX asm-noname; execute
+." cmovz: " *out @ . cr
+
 " h55 . cr " bdup str. evaluate 
 " h33 . cr " bdup str. evaluate 
 GLOBAL " h55 h33 xor . " bdup str. evaluate ^

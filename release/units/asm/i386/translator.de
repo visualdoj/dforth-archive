@@ -120,25 +120,6 @@ uses COMMAND_DESCRIPTION COMMANDS
     hFE hFF 0 h40 unary-op INC
     hFE hFF 1 h48 unary-op DEC
 
-// {{{ NEG
-    : unary-op
-      create , , , , does>
-      1 ?operands
-      first .type @ switch
-        OT_MEM of 
-                 first .value @ switch
-                   DT_BYTE of dup .r/m8 @ byte<< .ex @ first mem<< \of
-                   DT_DWORD of dup .r/m32 @ byte<< .ex @ first mem<< \of
-                   ( error)
-                 \switch
-               \of
-        OT_REG of dup .r/m32 @ byte<< .ex @ first mem<< \of
-        ( error)
-      \switch
-      clear-operands
-    ;
-    hF6 hF7 3 0 unary-op NEG
- // }}}
     h90 0op NOP
     hC2 w-op RET
     hC3 0op RET
@@ -260,6 +241,48 @@ uses COMMAND_DESCRIPTION COMMANDS
         OT_MEM of XCHG_mem \of
         unknown-operand-type
       \switch clear-operands ;
+// }}}
+// {{{ NEG
+  : NEG
+    1 ?operands
+    first .type @ switch
+      OT_REG of
+                first .regtype @ switch
+                  RT_8  of COMMAND_DESCRIPTION NEG8_reg ^ \of
+                  RT_16 of COMMAND_DESCRIPTION NEG16_reg ^ \of
+                  RT_32 of COMMAND_DESCRIPTION NEG32_reg ^ \of
+                  unknown-operand-type
+                \switch \of
+      OT_MEM of 
+                first .value @ switch
+                  DT_BYTE of COMMAND_DESCRIPTION NEG8_mem ^ \of
+                  DT_WORD of COMMAND_DESCRIPTION NEG16_mem ^ \of
+                  DT_DWORD of COMMAND_DESCRIPTION NEG32_mem ^ \of
+                  unknown-operand-type
+                \switch \of
+      unknown-operand-type
+    \switch clear-operands ;
+// }}}
+// {{{ NOT
+  : NOT
+    1 ?operands
+    first .type @ switch
+      OT_REG of
+                first .regtype @ switch
+                  RT_8  of COMMAND_DESCRIPTION NOT8_reg ^ \of
+                  RT_16 of COMMAND_DESCRIPTION NOT16_reg ^ \of
+                  RT_32 of COMMAND_DESCRIPTION NOT32_reg ^ \of
+                  unknown-operand-type
+                \switch \of
+      OT_MEM of 
+                first .value @ switch
+                  DT_BYTE of COMMAND_DESCRIPTION NOT8_mem ^ \of
+                  DT_WORD of COMMAND_DESCRIPTION NOT16_mem ^ \of
+                  DT_DWORD of COMMAND_DESCRIPTION NOT32_mem ^ \of
+                  unknown-operand-type
+                \switch \of
+      unknown-operand-type
+    \switch clear-operands ;
 // }}}
 // {{{ MOV
 // {{{ MOV reg
@@ -486,29 +509,29 @@ uses COMMAND_DESCRIPTION COMMANDS
           unknown-operand-type
         \switch clear-operands ;
 // }}}
-// {{{ template for binary command
+// {{{ template for binary instructions
 " 
     : <INSTRUCTION>_reg_imm
       second .value @ EAX = if
         second .regtype @ switch
-          RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_al_imm ^ \of
-          RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_ax_imm ^ \of
-          RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_eax_imm ^ \of
+          RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_al_imm ^^ \of
+          RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_ax_imm ^^ \of
+          RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_eax_imm ^^ \of
           unknown-operand-type
         \switch
       else
         first .value @ 256 < if
           second .regtype @ switch
-            RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_imm ^ \of
-            RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_imm8 ^ \of
-            RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_imm8 ^ \of
+            RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_imm ^^ \of
+            RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_imm8 ^^ \of
+            RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_imm8 ^^ \of
             unknown-operand-type
           \switch
         else
           second .regtype @ switch
-            RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_imm ^ \of
-            RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_imm ^ \of
-            RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_imm ^ \of
+            RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_imm ^^ \of
+            RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_imm ^^ \of
+            RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_imm ^^ \of
             unknown-operand-type
           \switch
         then
@@ -518,17 +541,17 @@ uses COMMAND_DESCRIPTION COMMANDS
       first .regtype @ second .regtype @ <> 
       if ^" both operands of <INSTRUCTION> must have the same type^" error then
       second .regtype @ switch
-        RT_8 of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_reg ^ \of
-        RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_reg ^ \of
-        RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_reg ^ \of
+        RT_8 of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_reg ^^ \of
+        RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_reg ^^ \of
+        RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_reg ^^ \of
         unknown-operand-type
       \switch
     ;
     : <INSTRUCTION>_reg_mem
       second .regtype @ switch
-        RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_mem ^ \of
-        RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_mem ^ \of
-        RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_mem ^ \of
+        RT_8  of COMMAND_DESCRIPTION <INSTRUCTION>8_reg_mem ^^ \of
+        RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_reg_mem ^^ \of
+        RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_reg_mem ^^ \of
         unknown-operand-type
       \switch
     ;
@@ -543,24 +566,24 @@ uses COMMAND_DESCRIPTION COMMANDS
     : <INSTRUCTION>_mem_imm
         first .value @ 256 < if
           second .value @ switch
-            DT_BYTE of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_imm ^ \of
-            DT_WORD of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_imm8 ^ \of
-            DT_DWORD of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_imm8 ^ \of
+            DT_BYTE of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_imm ^^ \of
+            DT_WORD of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_imm8 ^^ \of
+            DT_DWORD of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_imm8 ^^ \of
             unknown-operand-type
           \switch
         else
           second .value @ switch
-            DT_BYTE of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_imm ^ \of
-            DT_WORD of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_imm ^ \of
-            DT_DWORD of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_imm ^ \of
+            DT_BYTE of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_imm ^^ \of
+            DT_WORD of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_imm ^^ \of
+            DT_DWORD of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_imm ^^ \of
             unknown-operand-type
           \switch
         then ;
     : <INSTRUCTION>_mem_reg 
       first .regtype @ switch
-        RT_8 of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_reg ^ \of
-        RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_reg ^ \of
-        RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_reg ^ \of
+        RT_8 of COMMAND_DESCRIPTION <INSTRUCTION>8_mem_reg ^^ \of
+        RT_16 of COMMAND_DESCRIPTION <INSTRUCTION>16_mem_reg ^^ \of
+        RT_32 of COMMAND_DESCRIPTION <INSTRUCTION>32_mem_reg ^^ \of
         unknown-operand-type
       \switch ;
     : <INSTRUCTION>_mem 
@@ -590,6 +613,61 @@ bdup " <INSTRUCTION>" \" SUB" evaluate ." SUB done" cr
 bdup " <INSTRUCTION>" \" XOR" evaluate ." XOR done" cr
 bdup " <INSTRUCTION>" \" CMP" evaluate ." CMP done" cr
 
+// {{{ template for CMOVcc instructions
+" 
+    : CMOV<POSTFIX>
+        2 ?operands
+        second .type @ OT_REG <> if 
+          ^" first operand must be reg^" error
+        else
+          first .type @ OT_REG = if 
+              first .regtype @ switch
+                RT_16 of COMMAND_DESCRIPTION CMOV<POSTFIX>16_reg_reg ^^ \of
+                RT_32 of COMMAND_DESCRIPTION CMOV<POSTFIX>32_reg_reg ^^ \of
+                unknown-operand-type
+              \switch
+          else
+            first .type @ OT_MEM = if 
+                first .value @ switch
+                  DT_WORD of COMMAND_DESCRIPTION CMOV<POSTFIX>16_reg_mem ^^ \of
+                  DT_DWORD of COMMAND_DESCRIPTION CMOV<POSTFIX>32_reg_mem ^^ \of
+                  unknown-operand-type
+                \switch
+            else
+              unknown-operand-type
+            then
+          then
+        then clear-operands ;
+"
+// }}}
+bdup " <POSTFIX>" \" A" evaluate ." CMOVA done" cr
+bdup " <POSTFIX>" \" AE" evaluate ." CMOVAE done" cr
+bdup " <POSTFIX>" \" AB" evaluate ." CMOVAB done" cr
+bdup " <POSTFIX>" \" ABE" evaluate ." CMOVABE done" cr
+bdup " <POSTFIX>" \" C" evaluate ." CMOVC done" cr
+bdup " <POSTFIX>" \" G" evaluate ." CMOVG done" cr
+bdup " <POSTFIX>" \" GE" evaluate ." CMOVGE done" cr
+bdup " <POSTFIX>" \" L" evaluate ." CMOVL done" cr
+bdup " <POSTFIX>" \" LE" evaluate ." CMOVLE done" cr
+bdup " <POSTFIX>" \" NA" evaluate ." CMOVNA done" cr
+bdup " <POSTFIX>" \" NAE" evaluate ." CMOVNAE done" cr
+bdup " <POSTFIX>" \" NE" evaluate ." CMOVNE done" cr
+bdup " <POSTFIX>" \" NG" evaluate ." CMOVNG done" cr
+bdup " <POSTFIX>" \" NGE" evaluate ." CMOVNGE done" cr
+bdup " <POSTFIX>" \" NL" evaluate ." CMOVNL done" cr
+bdup " <POSTFIX>" \" NLE" evaluate ." CMOVNLE done" cr
+bdup " <POSTFIX>" \" NO" evaluate ." CMOVNO done" cr
+bdup " <POSTFIX>" \" NP" evaluate ." CMOVNP done" cr
+bdup " <POSTFIX>" \" NS" evaluate ." CMOVNS done" cr
+bdup " <POSTFIX>" \" NZ" evaluate ." CMOVNZ done" cr
+bdup " <POSTFIX>" \" O" evaluate ." CMOVO done" cr
+bdup " <POSTFIX>" \" P" evaluate ." CMOVP done" cr
+bdup " <POSTFIX>" \" PE" evaluate ." CMOVPE done" cr
+bdup " <POSTFIX>" \" PO" evaluate ." CMOVPO done" cr
+bdup " <POSTFIX>" \" S" evaluate ." CMOVS done" cr
+bdup " <POSTFIX>" \" Z" evaluate ." CMOVZ done " last xt.name@ str. cr
+bdrop
+
     : _COMPILE_NOTFOUND_
         *auto-integers? @ dup if str->int postpone literal postpone imm 
                               else bdrop then
@@ -600,7 +678,7 @@ bdup " <INSTRUCTION>" \" CMP" evaluate ." CMP done" cr
     ;    
 
     
-    PREFIX 
+    PREFIX
       : PREFIX call PREFIX ['] nop PREFIX *xt ^ ! ;
       ' ADC prefix-mnemonic adc
       ' ADD prefix-mnemonic add
@@ -614,6 +692,7 @@ bdup " <INSTRUCTION>" \" CMP" evaluate ." CMP done" cr
       ' MUL prefix-mnemonic mul
       ' NEG prefix-mnemonic neg
       ' NOP prefix-mnemonic nop
+      ' NOT prefix-mnemonic not
       ' OR prefix-mnemonic or
       ' POP prefix-mnemonic pop
       ' PUSH prefix-mnemonic push
@@ -622,6 +701,36 @@ bdup " <INSTRUCTION>" \" CMP" evaluate ." CMP done" cr
       ' SUB prefix-mnemonic sub
       ' XCHG prefix-mnemonic xchg
       ' XOR prefix-mnemonic xor
+      ' CMOVA dup . cr prefix-mnemonic cmova
+      ' CMOVAE prefix-mnemonic cmovae
+      ' CMOVAB prefix-mnemonic cmovab
+      ' CMOVABE prefix-mnemonic cmovabe
+      ' CMOVC prefix-mnemonic cmovc
+      ' CMOVE prefix-mnemonic cmove
+      ' CMOVG prefix-mnemonic cmovg
+      ' CMOVGE prefix-mnemonic cmovge
+      ' CMOVL prefix-mnemonic cmovl
+      ' CMOVLE prefix-mnemonic cmovle
+      ' CMOVNA prefix-mnemonic cmovna
+      ' CMOVNAE prefix-mnemonic cmovnae
+      ' CMOVNB prefix-mnemonic cmovnb
+      ' CMOVNBE prefix-mnemonic cmovnbe
+      ' CMOVNC prefix-mnemonic cmovnc
+      ' CMOVNE prefix-mnemonic cmovne
+      ' CMOVNG prefix-mnemonic cmovng
+      ' CMOVNGE prefix-mnemonic cmovnge
+      ' CMOVNL prefix-mnemonic cmovnl
+      ' CMOVNLE prefix-mnemonic cmovnle
+      ' CMOVNO prefix-mnemonic cmovno
+      ' CMOVNP prefix-mnemonic cmovnp
+      ' CMOVNS prefix-mnemonic cmovns
+      ' CMOVNZ prefix-mnemonic cmovnz
+      ' CMOVO prefix-mnemonic cmovo
+      ' CMOVP prefix-mnemonic cmovp
+      ' CMOVPE prefix-mnemonic cmovpe
+      ' CMOVPO prefix-mnemonic cmovpo
+      ' CMOVS prefix-mnemonic cmovs
+      ' CMOVZ prefix-mnemonic cmovz
     ^
   \namespace
 \uses
