@@ -62,6 +62,7 @@ namespace I386
   REG_TYPE RT_8
 
   0 enum DIST_TYPE
+  DIST_TYPE DIST_DEFAULT
   DIST_TYPE SHORT
   DIST_TYPE NEAR
   DIST_TYPE FAR
@@ -72,6 +73,7 @@ namespace I386
     // value = register for .type = OT_REG
     // value = segment register for .type = OT_REG
     // value = data type (see DT_*)
+    // value = link
     t_int -- .value
     // for .type = OT_REG
     t_int -- .regtype // see RT_*
@@ -83,7 +85,7 @@ namespace I386
     t_int -- .index
     t_int -- .disp
     // for .type == OT_LINK
-    t_int -- .dist
+    t_int -- .disttype
   struct s_operand
 
   variable *operands#
@@ -105,7 +107,7 @@ namespace I386
   : third *operands operands# 3 - s_operand * + ;
 
   : operand+ ( type:int) *operands# 1+! last-operand .type !
-                                  SHORT last-operand .dist ! ;
+                           DIST_DEFAULT last-operand .dist ! ;
 
   : short SHORT last-operand .dist ! ;
   : near NEAR last-operand .dist ! ;
@@ -125,7 +127,8 @@ namespace I386
   // : w-imm ( int) OT_WIMM operand+ *operand-value ! ;
   : imm ( int) OT_IMM operand+ last-operand .value ! ;
   : seg ( seg) OT_SEG operand+ last-operand .value ! ;
-  // d[ ... ]d
+  : link ( l) OT_LINK operand+ last-operand .value ! ;
+  // d[ ... ]
   namespace MEM
     : base last-operand .base ! ;
     : factor last-operand .factor ! ;

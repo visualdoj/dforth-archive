@@ -140,7 +140,8 @@ I386 extend-namespace
         op
         1 last xt.param@ v.prefixes# !
         last xt.param@ v.prefix1 ! ;
-    : multi-op source-next-name *multi-op-name b! ;
+    : multi-oped *multi-op-name b! ;
+    : multi-op source-next-name multi-oped ;
     : single-instructions str0 *multi-op-name b! ;
 
     : multi-form-name ( bits B: postfix )
@@ -201,6 +202,7 @@ I386 extend-namespace
     : variant_al_imm " _al_imm" varianted ['] first.value imm! ;
     : variant_ax_imm " _ax_imm" varianted ['] first.value imm! ;
     : variant_eax_imm " _eax_imm" varianted ['] first.value imm! ;
+    : variant_rel " _rel" varianted ;
 
   \namespace
 // }}}

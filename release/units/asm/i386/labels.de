@@ -38,10 +38,7 @@ I386 extend-namespace
         source-next-name M[#] .marker b!
         pos@ M[#] .pos ! ;
     : label+ ( B: s -- l) L0+ L[#] dup .label b! ;
-    : @@ ( "name" --) 
-        source-next-name label+
-        drop // TODO формирование операнда-ссылки
-        ;
+    : @@ ( "name" --) source-next-name label+ link ;
     : label! ( pxl) tuck .xt ! .ptr ! ;
 
     : label-resolve ( pos label) dup .ptr @ swap .xt @ execute ;

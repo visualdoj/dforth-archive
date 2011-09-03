@@ -246,6 +246,44 @@ h3F 0 op AAS
 // TODO JL/JNGE JLE/JNG JC JNC JO JNO JS JNS JPO/JNP JPE/JP JCXZ/JECXZ
 // TODO LOOP LOOPZ/LOOPE LOOPNZ/LOOPNE CALL RET IRET INT INTO BOUND
 // TODO ENTER LEAVE
+: Jcc ( short-opcode near-opcode)
+    " J" source-next-name str+ multi-oped
+    h0F swap 2dup 16 variant_rel 1 prefixes
+    32 variant_rel 1 prefixes
+    8 variant_rel ;
+h77 h87 Jcc A
+h73 h83 Jcc AE
+h72 h82 Jcc B
+h76 h86 Jcc BE
+h72 h82 Jcc C
+hE3 h00 Jcc CXZ
+hE3 h00 Jcc ECXZ
+// hE3 h00 Jcc RCXZ
+h74 h84 Jcc E
+h7F h8F Jcc G
+h7D h8D Jcc GE
+h7C h8C Jcc L
+h7E h8E Jcc LE
+h76 h86 Jcc NA
+h72 h82 Jcc NAE
+h73 h83 Jcc NB
+h77 h87 Jcc NBE
+h73 h83 Jcc NC
+h75 h82 Jcc NE
+h7E h8E Jcc NG
+h7C h8C Jcc NGE
+h7D h8D Jcc NL
+h7F h8F Jcc NLE
+h71 h81 Jcc NO
+h7B h88 Jcc NP
+h79 h89 Jcc NS
+h75 h85 Jcc NZ
+h70 h80 Jcc O
+h7A h8A Jcc P
+h7A h8A Jcc PE
+h7B h8B Jcc PO
+h78 h88 Jcc S
+h74 h84 Jcc Z
 // }}}
 // {{{ String Instructions
 // TODO MOVS/MOVSB MOVS/MOVSW MOVS/MOVSD CMPS/CMPSB CMPS/CMPSW CMPS/CMPSD
