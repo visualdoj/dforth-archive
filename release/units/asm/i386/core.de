@@ -107,11 +107,11 @@ namespace I386
   : third *operands operands# 3 - s_operand * + ;
 
   : operand+ ( type:int) *operands# 1+! last-operand .type !
-                           DIST_DEFAULT last-operand .dist ! ;
+                           DIST_DEFAULT last-operand .disttype ! ;
 
-  : short SHORT last-operand .dist ! ;
-  : near NEAR last-operand .dist ! ;
-  : far FAR last-operand .dist ! ;
+  : short SHORT last-operand .disttype ! ;
+  : near NEAR last-operand .disttype ! ;
+  : far FAR last-operand .disttype ! ;
 
   : factor? ( o-?) .factor @ 0<> ;
   : disp? ( o-?) .disp @ 0<> ;
