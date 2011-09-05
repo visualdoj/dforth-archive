@@ -121,7 +121,7 @@ variable *out
 ." xchg: " *out @ . cr
 
 :asm-noname PREFIX
-    mov d[ *out disp ] 333 imm
+    mov d[ *out disp ] -333 imm
     neg d[ *out disp ]
     ret 
 \PREFIX asm-noname; execute

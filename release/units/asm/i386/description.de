@@ -104,6 +104,7 @@ I386 extend-namespace
       t_int -- v.imm# // команда, возвращающая число байт в imm составляющей
                       // 0 означает, что imm нет
       t_ptr -- v.imm
+      t_ptr -- v.link // ссылка
 
       t_int -- v.prefixes# // число префиксов перед опкодом
       t_int -- v.prefix1

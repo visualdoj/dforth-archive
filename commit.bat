@@ -1,1 +1,1 @@
-TortoiseProc /command:commit /path:"%~dp0"
+start TortoiseProc /command:commit /path:"%~dp0"

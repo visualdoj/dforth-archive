@@ -1,1 +1,1 @@
-TortoiseProc /command:update /path:"%~dp0"
+start TortoiseProc /command:update /path:"%~dp0"
