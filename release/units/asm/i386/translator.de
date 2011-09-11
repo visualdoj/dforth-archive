@@ -666,8 +666,19 @@ bdup " <POSTFIX>" \" P" evaluate ." CMOVP done" cr
 bdup " <POSTFIX>" \" PE" evaluate ." CMOVPE done" cr
 bdup " <POSTFIX>" \" PO" evaluate ." CMOVPO done" cr
 bdup " <POSTFIX>" \" S" evaluate ." CMOVS done" cr
-bdup " <POSTFIX>" \" Z" evaluate ." CMOVZ done " last xt.name@ str. cr
+bdup " <POSTFIX>" \" Z" evaluate ." CMOVZ done " cr
 bdrop
+
+: JZ
+    1 ?operands
+    first .type @ OT_LINK <> if unknown-operand-type clear-operands exit then
+    first .disttype @ switch
+      DT_SHORT of COMMAND_DESCRIPTION JZ8_rel ^ \of
+      DT_NEAR of COMMAND_DESCRIPTION JZ16_rel ^ \of
+      DT_FAR of COMMAND_DESCRIPTION JZ32_rel ^ \of
+      " unknown command disttype" error
+    \switch clear-operands ;
+
 
     : _COMPILE_NOTFOUND_
         *auto-integers? @ dup if str->int postpone literal postpone imm 

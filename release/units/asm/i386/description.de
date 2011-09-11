@@ -225,7 +225,10 @@ I386 extend-namespace
     : variant_al_imm " _al_imm" varianted ['] first.value imm! ;
     : variant_ax_imm " _ax_imm" varianted ['] first.value imm! ;
     : variant_eax_imm " _eax_imm" varianted ['] first.value imm! ;
-    : variant_rel " _rel" varianted ;
+    : variant_rel " _rel" varianted short-link ;
+    : variant_short " _rel" varianted short-link ;
+    : variant_near " _rel" varianted near-link ;
+    : variant_far " _rel" varianted far-link ;
 
   \namespace
 // }}}
