@@ -66,6 +66,7 @@ uses COMMAND_DESCRIPTION COMMANDS
       variable *xt
       : \PREFIX ^^^ *xt @ execute ;
       : prefix-mnemonic ( p "name") create , does> @ PREFIX *xt ^ dup @ execute ! ;
+      ' @> prefix-mnemonic @>
     \namespace
     : prefix-reset PREFIX *xt ^ dup @ execute ['] nop swap ! ;
     : step-prefix-reset compile? if postpone prefix-reset else prefix-reset then ;

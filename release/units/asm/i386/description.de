@@ -104,7 +104,10 @@ I386 extend-namespace
       t_int -- v.imm# // команда, возвращающа€ число байт в imm составл€ющей
                       // 0 означает, что imm нет
       t_ptr -- v.imm
-      t_ptr -- v.link // ссылка
+
+      t_int -- v.link# // сколько байт выделить под ссылку
+      t_ptr -- v.resolver // xt-resolver
+      t_ptr -- v.link // link (см. labels.de)
 
       t_int -- v.prefixes# // число префиксов перед опкодом
       t_int -- v.prefix1
@@ -129,12 +132,19 @@ I386 extend-namespace
         2 of dup v.imm @ execute word<< \of
         4 of dup v.imm @ execute dword<< \of
       \switch
+      dup v.link# @ if
+        pos@ over v.resolver @ 3 pick v.link @ LABELS label! ^
+        dup v.link# @ switch
+          1 of 0 byte<< \of
+          2 of 0 word<< \of
+          4 of 0 dword<< \of
+          \switch then
       drop ;
     
     variable *multi-op-name *multi-op-name off
 
     : init-variant ( opcode bits)
-        swap , , '0 , '0 , '0 , 0 , '0 , 0 , 0 , 0 , 0 , 0 , ;
+        swap , , '0 , '0 , '0 , 0 , '0 , 0 , '0 , '0 , 0 , 0 , 0 , 0 , 0 , ;
 
     : op ( opcode bits) create init-variant does> variant<< ;
     : 2op ( prefix opcode bits) 
@@ -172,6 +182,18 @@ I386 extend-namespace
     : /r last xt.param@ v./r ! ;
     : imm#! last xt.param@ v.imm# ! ;
     : imm! last xt.param@ v.imm ! last xt.param@ v.bits @ 8 div imm#! ;
+    : res! last xt.param@ v.imm ! last xt.param@ v.bits @ 8 div imm#! ;
+    : link#! 
+        ['] first.value last xt.param@ v.link !
+        dup last xt.param@ v.link# !
+        swap switch
+          1 of 'byte-rel-resolver res! \of
+          2 of 'word-rel-resolver res! \of
+          4 of 'dword-rel-resolver res! \of
+        \switch ;
+    : short-link 1 link#! ;
+    : near-link 2 link#! ;
+    : far-link 4 link#! ;
 
     : /0 '0 /r ;
     : /1 '1 /r ;

@@ -61,15 +61,24 @@ I386 extend-namespace
           then
         repeat ;
 
+    ' byte! value 'byte-resolver
+    ' word! value 'word-resolver
     ' ! value 'dword-resolver
-    ' nop ( TODO word!) value 'word-resolver
-    ' nop ( TODO byte!) value 'byte-resolver
+    : byte-rel-resolver ( val ptr) tuck - swap byte! ;
+    last value 'byte-rel-resolver
+    : word-rel-resolver ( val ptr) tuck - swap word! ;
+    last value 'word-rel-resolver
+    : dword-rel-resolver ( val ptr) tuck - swap dword! ;
+    last value 'dword-rel-resolver
   \namespace
 
   LABELS
     samealias 'dword-resolver
     samealias 'word-resolver
     samealias 'byte-resolver
+    samealias 'dword-rel-resolver
+    samealias 'word-rel-resolver
+    samealias 'byte-rel-resolver
     samealias @>
     samealias @@
     samealias all-resolve
