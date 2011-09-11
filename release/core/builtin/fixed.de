@@ -1,0 +1,18 @@
+// This file has been generated automatically while DEmbro building
+
+samebuiltin byte!
+samebuiltin word!
+samebuiltin dword!
+samebuiltin qword!
+samebuiltin ubyte!
+samebuiltin uword!
+samebuiltin udword!
+samebuiltin uqword!
+samebuiltin byte@
+samebuiltin word@
+samebuiltin dword@
+samebuiltin qword@
+samebuiltin ubyte@
+samebuiltin uword@
+samebuiltin udword@
+samebuiltin uqword@
