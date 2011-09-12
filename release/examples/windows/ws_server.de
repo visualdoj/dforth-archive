@@ -31,7 +31,7 @@ create *addr_another TSockAddr allot
 variable *size
 TSockAddr *size !
 s *addr_another *size accept value client
-." ACCEPTED: " dup . cr
+." ACCEPTED: " client . cr
 
 client pchar" Hello world!" dup pchar-len 1+ 0 send ." Sent: " . cr
 
