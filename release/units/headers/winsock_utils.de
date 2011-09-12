@@ -1,0 +1,58 @@
+// 2011.09.12 # Doj
+// Вспомогательные команды для упрощения стандартных действий
+// при использовании winsock.
+
+// include" units\headers\winsock.de"
+include" units\statements\switch.de"
+
+: wsaerror->str
+    switch
+      0 of " OK" \of
+      WSAEINTR of " WSAEINTR" \of
+      WSAEBADF of " WSAEBADF" \of
+      WSAEACCES of " WSAEACCES" \of
+      WSAEDISCON of " WSAEDISCON" \of
+      WSAEFAULT of " WSAEFAULT" \of
+      WSAEINVAL of " WSAEINVAL" \of
+      WSAEMFILE of " WSAEMFILE" \of
+      WSAEWOULDBLOCK of " WSAEWOULDBLOCK" \of
+      WSAEINPROGRESS of " WSAEINPROGRESS" \of
+      WSAEALREADY of " WSAEALREADY" \of
+      WSAENOTSOCK of " WSAENOTSOCK" \of
+      WSAEDESTADDRREQ of " WSAEDESTADDRREQ" \of
+      WSAEMSGSIZE of " WSAEMSGSIZE" \of
+      WSAEPROTOTYPE of " WSAEPROTOTYPE" \of
+      WSAENOPROTOOPT of " WSAENOPROTOOPT" \of
+      WSAEPROTONOSUPPORT of " WSAEPROTONOSUPPORT" \of
+      WSAESOCKTNOSUPPORT of " WSAESOCKTNOSUPPORT" \of
+      WSAEOPNOTSUPP of " WSAEOPNOTSUPP" \of
+      WSAEPFNOSUPPORT of " WSAEPFNOSUPPORT" \of
+      WSAEAFNOSUPPORT of " WSAEAFNOSUPPORT" \of
+      WSAEADDRINUSE of " WSAEADDRINUSE" \of
+      WSAEADDRNOTAVAIL of " WSAEADDRNOTAVAIL" \of
+      WSAENETDOWN of " WSAENETDOWN" \of
+      WSAENETUNREACH of " WSAENETUNREACH" \of
+      WSAENETRESET of " WSAENETRESET" \of
+      WSAECONNABORTED of " WSWSAECONNABORTEDAEINTR" \of
+      WSAECONNRESET of " WSAECONNRESET" \of
+      WSAENOBUFS of " WSAENOBUFS" \of
+      WSAEISCONN of " WSAEISCONN" \of
+      WSAENOTCONN of " WSAENOTCONN" \of
+      WSAESHUTDOWN of " WSAESHUTDOWN" \of
+      WSAETOOMANYREFS of " WSAETOOMANYREFS" \of
+      WSAETIMEDOUT of " WSAETIMEDOUT" \of
+      WSAECONNREFUSED of " WSAECONNREFUSED" \of
+      WSAELOOP of " WSAELOOP" \of
+      ( WSAENAMETOOLONG of " WSAENAMETOOLONG" \of
+      WSAEHOSTDOWN of " WSAEHOSTDOWN" \of
+      WSASYSNOTREADY of " WSASYSNOTREADY" \of
+      WSAVERNOTSUPPORTED of " WSAVERNOTSUPPORTED" \of
+      WSANOTINITIALISED of " WSANOTINITIALISED" \of
+      WSAHOST_NOT_FOUND of " WSAHOST_NOT_FOUND" \of
+      WSATRY_AGAIN of " WSATRY_AGAIN" \of
+      WSANO_RECOVERY of " WSANO_RECOVERY" \of
+      WSANO_DATA of " WSANO_DATA" \of)
+      " UNKNOWN"
+    \switch ;
+
+: make-wsa-version ( first second -- version) 8 shl or ;

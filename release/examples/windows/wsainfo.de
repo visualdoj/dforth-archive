@@ -1,0 +1,26 @@
+// 2011.09.12 # Doj
+// Пример получения информации об wsa
+
+include" units\headers\winsock.de"
+include" units\headers\winsock_utils.de"
+winsock-load
+
+: MAKEVERSION ( first second -- version) 8 shl or ;
+
+create *winsock_data TWSADATA allot
+
+1 0 MAKEVERSION *winsock_data WSAStartup ." WSAStartup: " . cr
+." WSAGetLastError: " WSAGetLastError wsaerror->str str. cr
+
+*winsock_data
+dup " TWSADATA.wVersion" bdup evaluate word@ str. ." : " uint. cr
+dup " TWSADATA.wHighVersion" bdup evaluate word@ str. ." : " uint. cr
+dup " TWSADATA.szDescription" bdup evaluate str. ." : " pchar. cr
+dup " TWSADATA.szSystemStatus" bdup evaluate str. ." : " pchar. cr
+dup " TWSADATA.iMaxSockets" bdup evaluate word@ str. ." : " uint. cr
+dup " TWSADATA.iMaxUpdDg" bdup evaluate word@ str. ." : " uint. cr
+dup " TWSADATA.lpVendorInfo" bdup evaluate @ str. ." : " pchar. cr
+drop
+
+WSACleanup ." WSACleanup: " . cr
+." WSAGetLastError: " WSAGetLastError wsaerror->str str. cr

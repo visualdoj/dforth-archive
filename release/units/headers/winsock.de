@@ -1,0 +1,172 @@
+// 2011.09.12 # Doj
+// Заголовочный файл к windows sockets
+
+include" units\headers\windows.de"
+include" units\structures\dyn.de"
+include" units\utils\headers.de"
+
+stdcall declare-header wsock32.dll
+
+// {{{ types
+: tOS_INT t_int ;
+: u_long t_uint32 ;
+: pu_long t_ptr ;
+: PtrUInt t_uint ;
+: TSocket PtrUInt ;
+: ptOS_INT t_ptr ;
+: u_short t_uint16 ;
+: u_char t_uint8 ;
+
+0
+  WORD -- TWSADATA.wVersion
+  WORD -- TWSADATA.wHighVersion
+  256 constant WSADESCRIPTION_LEN
+  WSADESCRIPTION_LEN bytes-- TWSADATA.szDescription
+  drop 261
+  128 constant WSASYS_STATUS_LEN
+  WSASYS_STATUS_LEN bytes-- TWSADATA.szSystemStatus
+  drop 390
+  WORD -- TWSADATA.iMaxSockets
+  WORD -- TWSADATA.iMaxUpdDg
+  t_pchar -- TWSADATA.lpVendorInfo
+  // TODO 64-bit version
+struct TWSADATA
+
+0
+  u_char -- SunB.s_b1
+  u_char -- SunB.s_b2
+  u_char -- SunB.s_b3
+  u_char -- SunB.s_b4
+struct SunB
+
+0
+  u_short -- SunB.s_w1
+  u_short -- SunB.s_w2
+struct SunW
+
+0
+  u_long -- TInAddr.S_addr
+  last alias TInAddr.S_un_b
+  last alias TInAddr.S_un_w
+struct TInAddr
+
+0
+  t_int16 -- .sin_family last alias .sa_family
+  t_uint16 -- .sin_port last alias .sa_data
+  // TInAddr bytes-- .sin_addr
+  t_uint -- .sin_addr
+  8 bytes-- .sin_zero
+struct TSockAddr
+' t_ptr alias PSockAddr
+// }}}
+// {{{ constants
+1 not constant INVALID_SOCKET
+
+// All Windows Sockets error constants are biased by WSABASEERR from
+// the "normal"
+10000 constant WSABASEERR
+// Windows Sockets definitions of regular Microsoft C error constants
+WSABASEERR 4 + constant WSAEINTR
+WSABASEERR 9 + constant WSAEBADF
+WSABASEERR 13 + constant WSAEACCES
+WSABASEERR 14 + constant WSAEFAULT
+WSABASEERR 22 + constant WSAEINVAL
+WSABASEERR 24 + constant WSAEMFILE
+//  Windows Sockets definitions of regular Berkeley error constants
+WSABASEERR 35 + constant WSAEWOULDBLOCK
+WSABASEERR 36 + constant WSAEINPROGRESS
+WSABASEERR 37 + constant WSAEALREADY
+WSABASEERR 38 + constant WSAENOTSOCK
+WSABASEERR 49 + constant WSAEDESTADDRREQ
+WSABASEERR 40 + constant WSAEMSGSIZE
+WSABASEERR 41 + constant WSAEPROTOTYPE
+WSABASEERR 42 + constant WSAENOPROTOOPT
+WSABASEERR 43 + constant WSAEPROTONOSUPPORT
+WSABASEERR 44 + constant WSAESOCKTNOSUPPORT
+WSABASEERR 45 + constant WSAEOPNOTSUPP
+WSABASEERR 46 + constant WSAEPFNOSUPPORT
+WSABASEERR 47 + constant WSAEAFNOSUPPORT
+WSABASEERR 48 + constant WSAEADDRINUSE
+WSABASEERR 49 + constant WSAEADDRNOTAVAIL
+WSABASEERR 50 + constant WSAENETDOWN
+WSABASEERR 51 + constant WSAENETUNREACH
+WSABASEERR 52 + constant WSAENETRESET
+WSABASEERR 53 + constant WSAECONNABORTED
+WSABASEERR 54 + constant WSAECONNRESET
+WSABASEERR 55 + constant WSAENOBUFS
+WSABASEERR 56 + constant WSAEISCONN
+WSABASEERR 57 + constant WSAENOTCONN
+WSABASEERR 58 + constant WSAESHUTDOWN
+WSABASEERR 59 + constant WSAETOOMANYREFS
+WSABASEERR 60 + constant WSAETIMEDOUT
+WSABASEERR 61 + constant WSAECONNREFUSED
+WSABASEERR 62 + constant WSAELOOP
+WSABASEERR 63 + constant WSAENAMETOOLONG
+WSABASEERR 64 + constant WSAEHOSTDOWN
+WSABASEERR 65 + constant WSAEHOSTUNREACH
+WSABASEERR 66 + constant WSAENOTEMPTY
+WSABASEERR 67 + constant WSAEPROCLIM
+WSABASEERR 68 + constant WSAEUSERS
+WSABASEERR 69 + constant WSAEDQUOT
+WSABASEERR 70 + constant WSAESTALE
+WSABASEERR 71 + constant WSAEREMOTE
+WSABASEERR 101 + constant WSAEDISCON
+
+h00000000 constant INADDR_ANY
+h7F000001 constant INADDR_LOOPBACK
+hFFFFFFFF constant INADDR_BROADCAST
+
+2 constant AF_INET
+AF_INET constant PF_INET
+
+-1 constant SOCKET_ERROR
+1 constant SOCK_STREAM
+2 constant SOCK_DGRAM
+
+17 constant IPPROTO_UDP
+
+hffff constant SOL_SOCKET
+
+h0020 constant SO_BROADCAST
+
+h7f constant IOCPARM_MASK
+h20000000 constant IOC_VOID
+h40000000 constant IOC_OUT
+h80000000 constant IOC_IN
+IOC_IN IOC_OUT or constant IOC_INOUT
+  IOC_OUT
+  4 IOCPARM_MASK and 16 shl or
+  102 8 shl or
+127 or constant FIONREAD
+  IOC_IN
+  4 IOCPARM_MASK and 16 shl or
+  102 8 shl or
+126 or constant FIONBIO
+// }}}
+// {{{ prototypes
+:a WSACleanup tOS_INT wsock32.dll header;
+:a WSAGetLastError tOS_INT wsock32.dll header;
+:a WSAStartup t_uint t_ptr tOS_INT wsock32.dll header;
+
+:a accept TSocket PSockAddr ptOS_INT TSocket wsock32.dll header;
+:a closesocket TSocket tOS_INT wsock32.dll header;
+:a bind TSocket PSockAddr tOS_INT tOS_INT wsock32.dll header;
+:a connect TSocket PSockAddr tOS_INT tOS_INT wsock32.dll header;
+:a ioctlsocket TSocket t_int pu_long tOS_INT wsock32.dll header;
+:a listen TSocket tOS_INT tOS_INT wsock32.dll header;
+:a recv TSocket t_ptr tOS_INT tOS_INT tOS_INT wsock32.dll header;
+:a recvfrom TSocket t_ptr tOS_INT tOS_INT PSockAddr wsock32.dll header;
+:a send TSocket t_ptr tOS_INT tOS_INT tOS_INT wsock32.dll header;
+:a sendto TSocket t_ptr tOS_INT tOS_INT PSockAddr tOS_INT wsock32.dll header;
+:a setsockopt TSocket tOS_INT tOS_INT t_ptr tOS_INT wsock32.dll header;
+:a socket tOS_INT tOS_INT tOS_INT TSocket wsock32.dll header;
+:a shutdown TSocket tOS_INT tOS_INT wsock32.dll header;
+:a closesocket TSocket tOS_INT wsock32.dll header;
+// 
+// function Inet_ntoa(i : TInAddr):pchar;stdcall;external winsockdll name 'inet_ntoa';
+// function Inet_addr(cp:pchar):cardinal;stdcall;external winsockdll name 'inet_addr';
+// function ntohs(netshort:u_short):u_short;stdcall;external winsockdll name 'ntohs';
+// function htons(hostshort:u_short):u_short;stdcall;external winsockdll name 'htons';
+// }}}
+
+: winsock-load wsock32.dll header-load ;

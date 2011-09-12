@@ -14,6 +14,7 @@ stdcall declare-header GDI32.dll
 : BOOLEAN   t_int8 ;
 : BYTE      t_uint8 ;
 : CHAR      t_uint8 ;
+: WORD      t_uint16 ;
 : DWORD     t_uint32 ;
 : FLOAT     t_single ;
 : UINT      t_uint ;

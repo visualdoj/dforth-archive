@@ -60,3 +60,4 @@
 //      struct vec3i
 : -- ( t "name"-) create type-size swap dup , + does> ( p-p) @ + ;
 : struct ( "name"-) constant ;
+: bytes-- ( i "name"-) create swap dup , + does> ( p-p) @ + ;
