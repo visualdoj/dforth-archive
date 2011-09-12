@@ -1,5 +1,8 @@
 // 2011.09.12 # Doj
-// ������ ������������� �������: ������
+// Пример использования сокетов: сервер
+// Сервер запускается на порту 9880, и ждёт соединения
+// Как только соединение установлено, отправляет строку Hello world
+// (с завершающим нулём) и завершает выполнение
 
 include" units\headers\winsock.de"
 include" units\headers\winsock_utils.de"
@@ -7,21 +10,17 @@ winsock-load
 
 create *winsock_data TWSADATA allot
 
-: check-error if ." WSAGetLastError: " WSAGetLastError dup wsaerror->str str. ."  " . cr then ;
+: check-error ( ?)
+    if ." WSAGetLastError: " WSAGetLastError dup wsaerror->str str. ."  " . cr then ;
 
 1 0 make-wsa-version *winsock_data WSAStartup check-error
 
 PF_INET SOCK_STREAM 0 socket value s
 
-( variable *temp
-1 *temp !
-s FIONBIO *temp ioctlsocket check-error)
-
 create *addr TSockAddr allot
 *addr .sin_zero 8 fill0
 AF_INET *addr .sin_family word!
-9880 *addr .sin_port uword!
-8080 *addr .sin_port uword!
+9880 htons *addr .sin_port uword!
 INADDR_ANY *addr .sin_addr !
 
 s *addr TSockAddr bind check-error
@@ -31,10 +30,10 @@ s 10 listen check-error
 create *addr_another TSockAddr allot
 variable *size
 TSockAddr *size !
-:noname  ( 0 begin drop) s *addr_another *size accept ( dup -1 <> until) ; execute
+s *addr_another *size accept value client
 ." ACCEPTED: " dup . cr
-dup pchar" Hello world!" dup pchar-len 1+ 0 send ." Sent: " . cr
-drop
+
+client pchar" Hello world!" dup pchar-len 1+ 0 send ." Sent: " . cr
 
 WSACleanup check-error
 ." DONE" cr

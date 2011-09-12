@@ -127,7 +127,62 @@ AF_INET constant PF_INET
 
 hffff constant SOL_SOCKET
 
+h0001 constant SO_DEBUG
+h0002 constant SO_ACCEPTCONN
+h0004 constant SO_REUSEADDR
+h0008 constant SO_KEEPALIVE
+h0010 constant SO_DONTROUTE
 h0020 constant SO_BROADCAST
+h0040 constant SO_USELOOPBACK
+h0080 constant SO_LINGER
+h0100 constant SO_OOBINLINE
+(  send buffer size  )
+h1001 constant SO_SNDBUF
+(  receive buffer size  )
+h1002 constant SO_RCVBUF
+(  send low-water mark  )
+h1003 constant SO_SNDLOWAT
+(  receive low-water mark  )
+h1004 constant SO_RCVLOWAT
+(  send timeout  )
+h1005 constant SO_SNDTIMEO
+(  receive timeout  )
+h1006 constant SO_RCVTIMEO
+(  get error status and clear  )
+h1007 constant SO_ERROR
+(  get socket type  )
+h1008 constant SO_TYPE
+
+( Options for connect and disconnect data and options.  Used only by
+ non-TCP/IP transports such as DECNet, OSI TP4, etc.)
+h7000 constant SO_CONNDATA
+h7001 constant SO_CONNOPT
+h7002 constant SO_DISCDATA
+h7003 constant SO_DISCOPT
+h7004 constant SO_CONNDATALEN
+h7005 constant SO_CONNOPTLEN
+h7006 constant SO_DISCDATALEN
+h7007 constant SO_DISCOPTLEN
+
+( Option for opening sockets for synchronous access.)
+h7008 constant SO_OPENTYPE
+h10 constant SO_SYNCHRONOUS_ALERT
+h20 constant SO_SYNCHRONOUS_NONALERT
+
+( Other NT-specific options.)
+h7009 constant SO_MAXDG
+h700A constant SO_MAXPATHDG
+h700B constant SO_UPDATE_ACCEPT_CONTEXT
+h700C constant SO_CONNECT_TIME
+
+( TCP options.)
+h0001 constant TCP_NODELAY
+h7000 constant TCP_BSDURGENT
+
+h1009 constant SO_BSP_STATE
+h3002 constant SO_CONDITIONAL_ACCEPT
+// ??? constant SO_EXCLUSIVEADDRUSE
+h3006 constant SO_PORT_SCALABILITY
 
 h7f constant IOCPARM_MASK
 h20000000 constant IOC_VOID
@@ -162,11 +217,15 @@ IOC_IN IOC_OUT or constant IOC_INOUT
 :a socket tOS_INT tOS_INT tOS_INT TSocket wsock32.dll header;
 :a shutdown TSocket tOS_INT tOS_INT wsock32.dll header;
 :a closesocket TSocket tOS_INT wsock32.dll header;
-// 
-// function Inet_ntoa(i : TInAddr):pchar;stdcall;external winsockdll name 'inet_ntoa';
-// function Inet_addr(cp:pchar):cardinal;stdcall;external winsockdll name 'inet_addr';
-// function ntohs(netshort:u_short):u_short;stdcall;external winsockdll name 'ntohs';
-// function htons(hostshort:u_short):u_short;stdcall;external winsockdll name 'htons';
+
+:a inet_ntoa u_long t_pchar  wsock32.dll header;
+:a inet_addr t_pchar  u_long wsock32.dll header;
+// :a ntohs u_short u_short wsock32.dll header;
+// :a htons u_short u_short wsock32.dll header;
+:a ntohs t_uint t_uint wsock32.dll header;
+:a htons t_uint t_uint wsock32.dll header;
+:a ntohl u_long u_long wsock32.dll header;
+:a htonl u_long u_long wsock32.dll header;
 // }}}
 
 : winsock-load wsock32.dll header-load ;

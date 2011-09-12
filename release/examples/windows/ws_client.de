@@ -1,5 +1,7 @@
 // 2011.09.12 # Doj
-// ������ ������������� �������: ������
+// Пример использования сокетов: клиент
+// Соединяется с адресом 127.0.0.1:9880
+// Получает с него строку, печатает на консоль и завершает выполнение
 
 include" units\headers\winsock.de"
 include" units\headers\winsock_utils.de"
@@ -7,26 +9,18 @@ winsock-load
 
 create *winsock_data TWSADATA allot
 
-: check-error if ." WSAGetLastError: " WSAGetLastError dup wsaerror->str str. ."  " . cr then ;
+: check-error ( ?)
+    if ." WSAGetLastError: " WSAGetLastError dup wsaerror->str str. ."  " . cr then ;
 
 1 0 make-wsa-version *winsock_data WSAStartup check-error
 
 PF_INET SOCK_STREAM 0 socket value s
 
-variable *temp
-1 *temp !
-s FIONBIO *temp ioctlsocket check-error
-
 create *addr TSockAddr allot
 *addr .sin_zero 8 fill0
 AF_INET *addr .sin_family word!
-9880 *addr .sin_port uword!
-8080 *addr .sin_port uword!
-INADDR_LOOPBACK *addr .sin_addr !
-127 *addr .sin_addr SunB.s_b1 ubyte!
-0 *addr .sin_addr SunB.s_b2 ubyte!
-0 *addr .sin_addr SunB.s_b3 ubyte!
-1 *addr .sin_addr SunB.s_b4 ubyte!
+9880 htons *addr .sin_port uword!
+INADDR_LOOPBACK htonl *addr .sin_addr !
 
 s *addr TSockAddr connect check-error
 create *buffer 1024 allot

@@ -1,0 +1,51 @@
+// 2011.09.12 # Doj
+// Пример простого http-сервера
+// При обращении к адресу http://127.0.0.1/ или http://localhost/
+// возвращает строку Hello world
+// Обработка входящего запроса не производится
+
+include" units\headers\winsock.de"
+include" units\headers\winsock_utils.de"
+winsock-load
+
+create *winsock_data TWSADATA allot
+
+: check-error ( ?)
+    if ." WSAGetLastError: " WSAGetLastError dup wsaerror->str str. ."  " . cr then ;
+
+1 0 make-wsa-version *winsock_data WSAStartup check-error
+
+PF_INET SOCK_STREAM 0 socket value s
+
+create *addr TSockAddr allot
+*addr .sin_zero 8 fill0
+AF_INET *addr .sin_family word!
+80 htons *addr .sin_port uword!
+INADDR_ANY *addr .sin_addr !
+
+s *addr TSockAddr bind check-error
+
+s 10 listen check-error
+
+create *addr_another TSockAddr allot
+variable *size
+TSockAddr *size !
+s *addr_another *size accept value client
+
+create *buffer 1024 allot
+variable *pos
+*buffer *pos !
+: pchar-write ( p-) dup pchar-len *pos @ 2dup + *pos ! swap move ;
+: char-write ( c-) *pos @ byte! *pos 1+! ;
+: \n h0D char-write h0A char-write ;
+
+pchar" HTTP/1.1 200 OK" pchar-write \n
+pchar" Server: DEmbro" pchar-write \n
+pchar" Content-Type: text/plain; carset=cp1251" pchar-write \n
+\n
+pchar" Hello world!" pchar-write \n
+*buffer pchar.
+client *buffer *pos @ *buffer - 0 send ." Sent: " . cr
+
+WSACleanup check-error
+." DONE" cr
