@@ -21,7 +21,7 @@ create *addr TSockAddr allot
 *addr .sin_zero 8 fill0
 AF_INET *addr .sin_family word!
 9880 htons *addr .sin_port uword!
-INADDR_ANY *addr .sin_addr !
+INADDR_ANY htonl *addr .sin_addr !
 
 s *addr TSockAddr bind check-error
 
