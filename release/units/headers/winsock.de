@@ -1,5 +1,5 @@
 // 2011.09.12 # Doj
-// Заголовочный файл к windows sockets
+// Р—Р°РіРѕР»РѕРІРѕС‡РЅС‹Р№ С„Р°Р№Р» Рє windows sockets
 
 include" units\headers\windows.de"
 include" units\structures\dyn.de"
