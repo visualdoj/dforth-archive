@@ -74,9 +74,146 @@ DECLARE(file-read, file_read)
 DECLARE(byte-file-read, file_byte_read)
   var
     F: PdfFile;
+    V: TInt8;
   body( 
     F := WOP;
-    WUI(F^.Data.ReadByte);)
+    F^.Data.ReadVar(@V, SizeOf(V));
+    WUI(V);)
+
+DECLARE(word-file-read, file_word_read)
+  var
+    F: PdfFile;
+    V: TInt16;
+  body( 
+    F := WOP;
+    F^.Data.ReadVar(@V, SizeOf(V));
+    WUI(V);)
+
+DECLARE(dword-file-read, file_dword_read)
+  var
+    F: PdfFile;
+    V: TInt32;
+  body( 
+    F := WOP;
+    F^.Data.ReadVar(@V, SizeOf(V));
+    WUI(V);)
+
+DECLARE(qword-file-read, file_qword_read)
+  var
+    F: PdfFile;
+    V: TInt64;
+  body( 
+    F := WOP;
+    F^.Data.ReadVar(@V, SizeOf(V));
+    WUI(V);)
+
+DECLARE(ubyte-file-read, file_ubyte_read)
+  var
+    F: PdfFile;
+    V: TUInt8;
+  body( 
+    F := WOP;
+    F^.Data.ReadVar(@V, SizeOf(V));
+    WUU(V);)
+
+DECLARE(uword-file-read, file_uword_read)
+  var
+    F: PdfFile;
+    V: TUInt16;
+  body( 
+    F := WOP;
+    F^.Data.ReadVar(@V, SizeOf(V));
+    WUU(V);)
+
+DECLARE(udword-file-read, file_udword_read)
+  var
+    F: PdfFile;
+    V: TUInt32;
+  body( 
+    F := WOP;
+    F^.Data.ReadVar(@V, SizeOf(V));
+    WUU(V);)
+
+DECLARE(uqword-file-read, file_uqword_read)
+  var
+    F: PdfFile;
+    V: TUInt64;
+  body( 
+    F := WOP;
+    F^.Data.ReadVar(@V, SizeOf(V));
+    WUU(V);)
+
+DECLARE(byte-file-write, file_byte_write)
+  var
+    F: PdfFile;
+    V: TInt8;
+  body( 
+    F := WOP;
+    V := WOI;
+    F^.Data.WriteVar(@V, SizeOf(V));)
+
+DECLARE(word-file-write, file_word_write)
+  var
+    F: PdfFile;
+    V: TInt16;
+  body( 
+    F := WOP;
+    V := WOI;
+    F^.Data.WriteVar(@V, SizeOf(V));)
+
+DECLARE(dword-file-write, file_dword_write)
+  var
+    F: PdfFile;
+    V: TInt32;
+  body( 
+    F := WOP;
+    V := WOI;
+    F^.Data.WriteVar(@V, SizeOf(V));)
+
+DECLARE(qword-file-write, file_qword_write)
+  var
+    F: PdfFile;
+    V: TInt64;
+  body( 
+    F := WOP;
+    V := WOI;
+    F^.Data.WriteVar(@V, SizeOf(V));)
+
+DECLARE(ubyte-file-write, file_ubyte_write)
+  var
+    F: PdfFile;
+    V: TUInt8;
+  body( 
+    F := WOP;
+    V := WOI;
+    F^.Data.WriteVar(@V, SizeOf(V));)
+
+DECLARE(uword-file-write, file_uword_write)
+  var
+    F: PdfFile;
+    V: TUInt16;
+  body( 
+    F := WOP;
+    V := WOI;
+    F^.Data.WriteVar(@V, SizeOf(V));)
+
+DECLARE(udword-file-write, file_udword_write)
+  var
+    F: PdfFile;
+    V: TUInt32;
+  body( 
+    F := WOP;
+    V := WOI;
+    F^.Data.WriteVar(@V, SizeOf(V));)
+
+DECLARE(uqword-file-write, file_uqword_write)
+  var
+    F: PdfFile;
+    V: TUInt64;
+  body( 
+    F := WOP;
+    V := WOI;
+    F^.Data.WriteVar(@V, SizeOf(V));)
 
 DECLARE(file-str-write, file_str_write)
   var

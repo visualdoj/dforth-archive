@@ -1,0 +1,15 @@
+// 2011.09.16 # Doj
+// Saving binary file
+
+" foo.bin" file-w file-open value f
+
+4 f byte-file-write // count of elements
+
+100 f dword-file-write
+101 f dword-file-write
+110 f dword-file-write
+111 f dword-file-write
+
+pchar" Hello world!" dup pchar-len 1+ f file-write // writing null-terminated string
+
+f file-close
