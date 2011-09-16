@@ -1,0 +1,23 @@
+// 2011.09.16 # Doj
+// Команды для упрощения работы с файлами
+
+namespace FILES
+  ' file-read alias f>>
+  ' file-write alias f<<
+  ' byte-file-read alias bf>>
+  ' word-file-read alias wf>>
+  ' dword-file-read alias df>>
+  ' qword-file-read alias qf>>
+  ' ubyte-file-read alias ubf>>
+  ' uword-file-read alias uwf>>
+  ' udword-file-read alias udf>>
+  ' uqword-file-read alias uqf>>
+  ' byte-file-write alias bf<<
+  ' word-file-write alias wf<<
+  ' dword-file-write alias df<<
+  ' qword-file-write alias qf<<
+  ' ubyte-file-write alias ubf<<
+  ' uword-file-write alias uwf<<
+  ' udword-file-write alias udf<<
+  ' uqword-file-write alias uqf<<
+\namespace
