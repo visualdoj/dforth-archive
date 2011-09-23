@@ -1,0 +1,9 @@
+// 2011.09.23 # Doj
+// Простые, но полезные блоки
+
+s_block
+  t_str -- .str
+struct s_str.
+
+:noname  .str b@ str. ; value str.-calc
+: b-str. ( B: s) block b>w , str.-calc .DoCalc ! ;
