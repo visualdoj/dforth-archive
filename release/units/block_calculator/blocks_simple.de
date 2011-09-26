@@ -6,4 +6,5 @@ s_block
 struct s_str.
 
 :noname  .str b@ str. ; value str.-calc
-: b-str. ( B: s) block b>w , str.-calc .DoCalc ! ;
+: b-str. ( B: s) block b>w , str.-calc *block @ .DoCalc ! ;
+// " TEST" b-str.

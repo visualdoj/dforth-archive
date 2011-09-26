@@ -1,0 +1,43 @@
+unit source;
+
+interface
+
+uses
+  {$I units.inc};
+
+type
+  PtrInt = Cardinal;
+
+PPage = ^TPage;
+TPage = object
+  P: Pointer;
+  Size: Integer;
+  MaxSize: Integer;
+end;
+
+TPagePosition = object
+  FPage: PPage;
+  FCur: PByte;
+  function IsEnd: Boolean; abstract;
+  function ReadChar: TChar;
+  procedure SkipToChar(C: TChar); abstract; overload;
+  procedure SkipToChar(S: PChar); abstract; overload;
+  procedure SkipToPChar(S: PChar); abstract; overload;
+  procedure SkipToStr(S: TStr); abstract; overload;
+end;
+
+TPosition = object
+end;
+
+TOnPosInc = procedure of object;
+TOnNextPage = procedure of object;
+
+TSource = object
+  FPrev: TPage;
+  FCur: TPage;
+  FCurPos: TPagePosition; // Pos in Cur
+end;
+
+implementation
+
+end.
