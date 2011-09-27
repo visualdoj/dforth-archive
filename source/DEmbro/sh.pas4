@@ -1,0 +1,299 @@
+unit sh;
+
+interface
+
+uses
+  {$I units.inc},
+  strings,
+  stream,
+  pool;
+
+type
+TShLineOptions = record
+  PipeStr: PAnsiChar; // default: '|'
+  InFileStr: PAnsiChar; // default: '<'
+  OutFileStr: PAnsiChar; // default: '>'
+  AppendFileStr: PAnsiChar; // default: '>>'
+  SeqStr: PAnsiChar; // default: '&&'
+  NotSeqStr: PAnsiChar; // default: '||'
+  ParallelStr: PAnsiChar; // default: '&'
+end;
+
+TShBase = object
+ protected
+  FPool: TPool;
+  FDone: Boolean;
+  FExitCode: Integer;
+  FInStream: PInStream;
+  FOutStream: POutStream;
+ public
+  procedure _Run; virtual;
+  procedure _Update; virtual;
+  function WaitDone: Integer;
+  function RunAndWait: Integer;
+  property Done: Boolean read FDone;
+  property ExitCode: Integer read FExitCode;
+  property InStream: PInStream read FInStream;
+  property OutStream: POutStream read FOutStream;
+end;
+
+// cmd ..
+TShSimple = object(TShBase)
+  procedure ReadFromLine(Line: PAnsiChar);
+  procedure ReadFromLine(Line: PAnsiChar; const Options: TShLineOptions);
+  procedure ReadFromLineOwn(Line: PAnsiChar);
+  procedure ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
+  procedure _Update; virtual;
+  procedure Update;
+end;
+
+// cmd .. | cmd .. | cmd .. | ...
+TShPipe = object(TShBase)
+  procedure ReadFromLine(Line: PAnsiChar);
+  procedure ReadFromLine(Line: PAnsiChar; const Options: TShLineOptions);
+  procedure ReadFromLineOwn(Line: PAnsiChar);
+  procedure ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
+  procedure _Update; virtual;
+  procedure Update;
+end;
+
+// cmd .. | cmd .. | cmd .. | ... < in > out
+TShPipeFiles = object(TShBase)
+  procedure ReadFromLine(Line: PAnsiChar);
+  procedure ReadFromLine(Line: PAnsiChar; const Options: TShLineOptions);
+  procedure ReadFromLineOwn(Line: PAnsiChar);
+  procedure ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
+  procedure _Update; virtual;
+  procedure Update;
+end;
+
+// pipe1 && pipe2 || pipe3 && ...
+TShSequence = object(TShBase)
+  procedure ReadFromLine(Line: PAnsiChar);
+  procedure ReadFromLine(Line: PAnsiChar; const Options: TShLineOptions);
+  procedure ReadFromLineOwn(Line: PAnsiChar);
+  procedure ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
+  procedure _Update; virtual;
+  procedure Update;
+end;
+
+// seq1 & seq2 & seq3 ....
+TShParallel = object(TShBase)
+  procedure ReadFromLine(Line: PAnsiChar);
+  procedure ReadFromLine(Line: PAnsiChar; const Options: TShLineOptions);
+  procedure ReadFromLineOwn(Line: PAnsiChar);
+  procedure ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
+  procedure _Update; virtual;
+  procedure Update;
+end;
+
+implementation
+
+function StrChr(S: PAnsiChar; C: TAnsiChar): PAnsiChar;
+begin
+  Result := S;
+  while (Ord(Result^) > 0) and (Result^ <> C) do
+    Inc(Result);
+end;
+
+function StrStr(S, Sub: PAnsiChar): PAnsiChar;
+begin
+end;
+
+function StrListNext(var Left, Right: PAnsiChar; Delim: Char): Boolean; overload;
+begin
+end;
+
+function StrListNext(var Left, Right, Delim: PAnsiChar): Boolean; overload;
+begin
+end;
+
+// {{{ TShBase
+function TShBase.WaitDone: Integer;
+begin
+  while not FDone do
+    _Update;
+  Result := FExitCode;
+end;
+
+function TShBase.RunAndWait: Integer;
+begin
+  _Run;
+  Result := WaitDone;
+end;
+// }}}
+// {{{ TShSimple
+procedure TShSimple.ReadFromLine(Line: PAnsiChar);
+begin
+  FPool.Clear;
+  ReadFromLineOwn(FPool.Append(Line));
+end;
+
+procedure TShSimple.ReadFromLine(Line: PAnsiChar; const Options: TShLineOptions);
+begin
+  FPool.Clear;
+  ReadFromLineOwn(FPool.Append(Line));
+end;
+
+procedure TShSimple.ReadFromLineOwn(Line: PAnsiChar);
+begin
+end;
+
+procedure TShSimple.ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
+begin
+end;
+
+procedure TShSimple._Update;
+begin
+  Update;
+end;
+
+procedure TShSimple.Update;
+begin
+end;
+// }}}
+// {{{ TShPipe
+procedure TShPipe.ReadFromLine(Line: PAnsiChar);
+begin
+  FPool.Clear;
+  ReadFromLineOwn(FPool.Append(Line));
+end;
+
+procedure TShPipe.ReadFromLine(Line: PAnsiChar; const Options: TShLineOptions);
+begin
+  FPool.Clear;
+  ReadFromLineOwn(FPool.Append(Line));
+end;
+
+procedure TShPipe.ReadFromLineOwn(Line: PAnsiChar);
+var
+  Left: PAnsiChar;
+begin
+  while StrListNext(Left, Line, '|') do
+    AddPipe(Left);
+end;
+
+procedure TShPipe.ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
+begin
+  while StrListNext(Left, Line, Options.PipeStr) do
+    AddPipe(Left);
+end;
+
+procedure TShPipe._Update;
+begin
+  Update;
+end;
+
+procedure TShPipe.Update;
+begin
+end;
+// }}}
+// {{{ TShPipeFiles
+procedure TShPipeFiles.ReadFromLine(Line: PAnsiChar);
+begin
+  FPool.Clear;
+  ReadFromLineOwn(FPool.Append(Line));
+end;
+
+procedure TShPipeFiles.ReadFromLine(Line: PAnsiChar; const Options: TShLineOptions);
+begin
+  FPool.Clear;
+  ReadFromLineOwn(FPool.Append(Line));
+end;
+
+procedure TShPipeFiles.ReadFromLineOwn(Line: PAnsiChar);
+begin
+end;
+
+procedure TShPipeFiles.ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
+begin
+end;
+
+procedure TShPipeFiles._Update;
+begin
+  Update;
+end;
+
+procedure TShPipeFiles.Update;
+begin
+end;
+// }}}
+// {{{ TShSequence
+procedure TShSequence.ReadFromLine(Line: PAnsiChar);
+begin
+  FPool.Clear;
+  ReadFromLineOwn(FPool.Append(Line));
+end;
+
+procedure TShSequence.ReadFromLine(Line: PAnsiChar; const Options: TShLineOptions);
+begin
+  FPool.Clear;
+  ReadFromLineOwn(FPool.Append(Line));
+end;
+
+procedure TShSequence.ReadFromLineOwn(Line: PAnsiChar);
+begin
+  ReadFromLineOwn(Line, DefaultOptions);
+end;
+
+procedure TShSequence.ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
+var
+  SubSeq, Left: PAnsiChar;
+begin
+  while StrListNext(SubSeq, Line, Options.SeqStr) do begin
+    StrListNext(Left, SubSeq, Options.NotSeqStr);
+    AddSeqItem(Left, True);
+    while StrListNext(Left, SubSeq, Options.NotSeqStr) do
+      AddSeqItem(Left, False);
+  end;
+end;
+
+procedure TShSequence._Update;
+begin
+  Update;
+end;
+
+procedure TShSequence.Update;
+begin
+end;
+// }}}
+// {{{ TShParallel
+procedure TShParallel.ReadFromLine(Line: PAnsiChar);
+begin
+  FPool.Clear;
+  ReadFromLineOwn(FPool.Append(Line));
+end;
+
+procedure TShParallel.ReadFromLine(Line: PAnsiChar; const Options: TShLineOptions);
+begin
+  FPool.Clear;
+  ReadFromLineOwn(FPool.Append(Line));
+end;
+
+procedure TShParallel.ReadFromLineOwn(Line: PAnsiChar);
+var
+  Left: PAnsiChar;
+begin
+  while StrListNext(Left, Line, '&') do
+    AddParallelItem(Left);
+end;
+
+procedure TShParallel.ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
+var
+  Left: PAnsiChar;
+begin
+  while StrListNext(Left, Line, Options.ParallelStr) do
+    AddParallelItem(Left);
+end;
+
+procedure TShParallel._Update;
+begin
+  Update;
+end;
+
+procedure TShParallel.Update;
+begin
+end;
+// }}}
+
+end.

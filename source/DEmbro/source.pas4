@@ -13,6 +13,9 @@ TPage = object
   P: Pointer;
   Size: Integer;
   MaxSize: Integer;
+  // Если Stream уже прочитан, то вернёт False, иначе прочитает и вернёт True
+  function ReadFromStream(Stream: PStream): Boolean; abstract;
+  procedure WriteToStream(Stream: PStream); abstract;
 end;
 
 TPagePosition = object
