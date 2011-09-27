@@ -1,0 +1,34 @@
+unit stream;
+
+interface
+
+uses
+  {$I units.inc};
+
+type
+PInStream = ^TInStream;
+POutStream = ^TOutStream;
+
+TInStream = object
+  function Read(P: Pointer; Size: Integer): Integer; virtual; abstract; 
+end;
+
+TOutStream = object
+  function Write(P: Pointer; Size: Integer): Integer; virtual; abstract;
+end;
+
+TInFile = object(TInStream)
+end;
+
+TOutFile = object(TOutStream)
+end;
+
+TInMemory = object(TInStream)
+end;
+
+TOutMemory = object(TOutStream)
+end;
+
+implementation
+
+end.
