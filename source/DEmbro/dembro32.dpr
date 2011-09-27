@@ -36,6 +36,7 @@ uses
   DMemMeta,
   DEmbroSource,
   console,
+  stream,
 
   DCommandsBool in 'commands\DCommandsBool.pas',
   DCommandsMisc in 'commands\DCommandsMisc.pas',

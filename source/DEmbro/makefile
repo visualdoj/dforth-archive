@@ -24,6 +24,8 @@ pas4:
 	m4 id2.m4 DForthMachine.temp4 > DForthMachine.pas 
 	m4 ..\m4\id.m4 console.pas4 > temp\console.temp4
 	m4 id2.m4 temp\console.temp4 > console.pas
+	m4 ..\m4\id.m4 stream.pas4 > temp\stream.temp4
+	m4 id2.m4 temp\stream.temp4 > stream.pas
 	m4 DEmbroSpace.pas4 > DEmbroSpace.pas
 	m4 DEmbroCore.pas4 > DEmbroCore.pas
 	m4 DEmbroManager.pas4 > DEmbroManager.pas
