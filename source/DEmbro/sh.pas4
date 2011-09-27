@@ -94,18 +94,56 @@ begin
   Result := S;
   while (Ord(Result^) > 0) and (Result^ <> C) do
     Inc(Result);
+  if Ord(Result^) = 0 then
+    Result := nil;
 end;
 
-function StrStr(S, Sub: PAnsiChar): PAnsiChar;
+function StrStr(S, Sub: PAnsiChar; SubLen: Integer): PAnsiChar; overload;
 begin
+  if Sub[0] = #0 then
+    RETURN(S);
+  Result := StrChr(S, Sub[0]);
+  while Result <> nil do
+    if MemCmp(@S[1], @Sub[1], SubLen - 1) then
+      Exit
+    else
+      Result := StrChr(S, Sub[0]);
+end;
+
+function StrStr(S, Sub: PAnsiChar): PAnsiChar; overload;
+begin
+  Result := StrStr(S, Sub, StrLen(Sub));
 end;
 
 function StrListNext(var Left, Right: PAnsiChar; Delim: Char): Boolean; overload;
 begin
+  if Right = nil then
+    RETURN(False);
+  Result := True;
+  Left := Right;
+  Right := StrChr(Right, Delim);
+  if Right = nil then
+    Exit;
+  Right[0] := #0;
+  Inc(Right);
+end;
+
+function StrListNext(var Left, Right, Delim: PAnsiChar; Len: Integer): Boolean; overload;
+begin
+  if Right = nil then
+    RETURN(False);
+  Result := True;
+  Left := Right;
+  Right := StrStr(Right, Delim, Len);
+  if Right = nil then
+    Exit;
+  Right[0] := #0;
+  Inc(Right, Len);
 end;
 
 function StrListNext(var Left, Right, Delim: PAnsiChar): Boolean; overload;
 begin
+  Result := StrListNext(Left, Right, Delim, StrLen(Delim));
 end;
 
 // {{{ TShBase
