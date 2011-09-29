@@ -22,8 +22,12 @@ test: clean pas4 pasq
 pas4:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
 	m4 id2.m4 DForthMachine.temp4 > DForthMachine.pas 
-	m4 ..\m4\id.m4 console.pas4 > temp\console.temp4
+	m4 meta.m4 console.pas4 > temp\console.temp4
 	m4 id2.m4 temp\console.temp4 > console.pas
+	m4 meta.m4 sh.pas4 > temp\sh.temp4
+	m4 id2.m4 temp\sh.temp4 > sh.pas
+	m4 meta.m4 pool.pas4 > temp\pool.temp4
+	m4 id2.m4 temp\pool.temp4 > pool.pas
 	m4 ..\m4\id.m4 stream.pas4 > temp\stream.temp4
 	m4 id2.m4 temp\stream.temp4 > stream.pas
 	m4 DEmbroSpace.pas4 > DEmbroSpace.pas

@@ -53,9 +53,18 @@ begin
   Writeln('           --system <filename>     change system file location');
   Writeln('                                   (default "core\default\system.de")');  
   Writeln('           --help                  print this help');
+  Writeln('           --subhelp               print help for subprograms');
   Writeln('           <other>                 uses as filename to evaluate');  
   Writeln('Examples: dembro32');  
   Writeln('          dembro32 source1.de source2.de -r');  
+  CommandLine.Help := True;
+end;
+
+procedure PrintSubHelp;
+begin
+  Writeln('Usage: dembro32 --subprog <prog> <option> ... <option>');
+  Writeln('  <prog> sh           see --evaluate');
+  Writeln('Examples: dembro32 --subprog sh ping 127.0.0.1');  
   CommandLine.Help := True;
 end;
 
@@ -67,8 +76,8 @@ begin
   SetDefault;
   I := 1;
   while I <= ParamCount do begin
+    C := ParamStr(I);
     Inc(I);
-    C := ParamStr(I - 1);
     // длинный параметр
     if Pos('--', C) = 1 then begin
       if C = '--help' then

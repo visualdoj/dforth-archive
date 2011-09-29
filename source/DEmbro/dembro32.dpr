@@ -37,6 +37,7 @@ uses
   DEmbroSource,
   console,
   stream,
+  sh,
 
   DCommandsBool in 'commands\DCommandsBool.pas',
   DCommandsMisc in 'commands\DCommandsMisc.pas',

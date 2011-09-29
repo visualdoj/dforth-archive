@@ -130,7 +130,7 @@ end;
 function StrStr(S, Sub: PAnsiChar; SubLen: Integer): PAnsiChar; overload;
 begin
   if Sub[0] = #0 then
-    RETURN(S);
+    begin Result := S; Exit; end;
   Result := StrChr(S, Sub[0]);
   while Result <> nil do
     if MemCmp(@S[1], @Sub[1], SubLen - 1) then
@@ -147,7 +147,7 @@ end;
 function StrListNext(var Left, Right: PAnsiChar; Delim: Char): Boolean; overload;
 begin
   if Right = nil then
-    RETURN(False);
+    begin Result := False; Exit; end;
   Result := True;
   Left := Right;
   Right := StrChr(Right, Delim);
@@ -162,7 +162,7 @@ function StrListNext(var Left, Right: PAnsiChar;
                      Len: Integer): Boolean; overload;
 begin
   if Right = nil then
-    RETURN(False);
+    begin Result := False; Exit; end;
   Result := True;
   Left := Right;
   Right := StrStr(Right, Delim, Len);
