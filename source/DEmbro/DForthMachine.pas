@@ -17,7 +17,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = 'Thu Sep 29 14:01 2011';
+  DFORTHMACHINE_DATE: TString = 'Sat Oct 08 02:58 2011';
 
 
 
@@ -727,7 +727,7 @@ function CopyStrToPChar(const B: TString): PChar;
 implementation
 
 uses
-  DCommandsBool,DCommandsMisc,DCommandsArithmetic,DCommandsSignedArithmetic,DCommandsNumberArithmetic,DCommandsConvertNumber,DCommandsConsole,DCommandsStrings,DCommandsAlien,DCommandsF,DCommandsBW,DCommandsCompile,DCommandsCreatewords,DCommandsFiles,DCommandsInt,DCommandsMem,DCommandsOS,DCommandsPtr,DCommandsR,DCommandsSource,DCommandsVM,DCommandsVoc,DCommandsExtInt,DCommandsEmbro,DCommandsControl,DCommandsXT;
+  DCommandsNumberArithmetic,DCommandsAlien,DCommandsControl,DCommandsMisc,DCommandsConsole,DCommandsStrings,DCommandsVoc;
 
 {$I 'body.inc'}
 
@@ -1960,8 +1960,6 @@ begin
   ConvStr := nop;
   ConvName := nop;
 
-  // DCommandsEmbro.LoadCommands(@Self);
-  // DCommandsBool.LoadCommands(@Self);
 {$IFNDEF FLAG_FPC}{$REGION 'type commands'}{$ENDIF}
   AddCommand('typeof', typeof, True);
   AddCommand('(typeof)', run_type);
@@ -1987,30 +1985,9 @@ begin
   AddCommand('t_double', _double, True);
   AddCommand('t_extended', _extended, True);
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-  // DCommandsAlien.LoadCommands(@Self);
   DCommandsStrings.LoadCommands(@Self);
   DCommandsConsole.LoadCommands(@Self);
-  // DCommandsF.LoadCommands(@Self);
-  // DCommandsBW.LoadCommands(@Self);
-  // DCommandsCompile.LoadCommands(@Self);
-  // DCommandsCreatewords.LoadCommands(@Self);
-  // DCommandsFiles.LoadCommands(@Self);
-  // DCommandsInt.LoadCommands(@Self);
-  // DCommandsMem.LoadCommands(@Self);
-  // DCommandsOS.LoadCommands(@Self);
-  // DCommandsPtr.LoadCommands(@Self);
-  // DCommandsR.LoadCommands(@Self);
-  // DCommandsSource.LoadCommands(@Self);
-  // DCommandsVM.LoadCommands(@Self);
   DCommandsVoc.LoadCommands(@Self);
-  // DCommandsExtInt.LoadCommands(@Self);
-  // DCommandsMisc.LoadCommands(@Self);
-  // DCommandsArithmetic.LoadCommands(@Self);
-  // DCommandsSignedArithmetic.LoadCommands(@Self);
-  // DCommandsNumberArithmetic.LoadCommands(@Self);
-  // DCommandsConvertNumber.LoadCommands(@Self);
-  // DCommandsControl.LoadCommands(@Self);
-  // DCommandsXT.LoadCommands(@Self);
   
     
     

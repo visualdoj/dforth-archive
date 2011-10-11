@@ -1,31 +1,20 @@
 uses
   {$IFDEF FLAG_FPC}
-    DMath in '..\DEngine\FPC\DMath.pas',
+    DMath in 'FPC\DMath.pas',
   {$ELSE}
     DMath in '..\DEngine\DELPHI\DMath.pas',
   {$ENDIF}
 
-  DEncoding in '..\DLocal\DEncoding.pas',
-  //DTranslater in '..\DLocal\DTranslater.pas',
+  DEncoding,
 
-  //DXML in '..\DParser\DXML.pas',
-  //DXMLExecutor in '..\DParser\DXMLExecutor.pas',
-  DIni in '..\DParser\DIni.pas',
-  DTreeExpr in '..\DParser\DTreeExpr.pas',
-
-  {$IFNDEF FLAG_DEBUG}
-    winsock in '..\DEngine\WINSOCK\winsock.pas',
-  {$ENDIF}
-
-  DEvents in '..\DEngine\DEvents.pas',
-  DClasses in '..\DEngine\DClasses.pas',
+  DEvents,
+  DClasses,
   DWinApi in '..\DEngine\WINDOWS\DWinApi.pas',
-  DNet in '..\DEngine\WINSOCK\DNet.pas',
   DLib in '..\DEngine\WINDOWS\DLib.pas',
 
-  DUtils in '..\DEngine\DUtils.pas',
-  DDebug in '..\DEngine\DDebug.pas',
-  DParser in '..\DEngine\DParser.pas',
+  DUtils,
+  DDebug,
+  DParser,
 
   DMachineCode in '..\DMachineCode\DMachineCode.pas',
   Dx86 in '..\DMachineCode\Dx86.pas',
