@@ -66,7 +66,7 @@ uses COMMAND_DESCRIPTION COMMANDS
       variable *xt
       : \PREFIX ^^^ *xt @ execute ;
       : prefix-mnemonic ( p "name") create , does> @ PREFIX *xt ^ dup @ execute ! ;
-      ' @> prefix-mnemonic @>
+      : @> ( "name") ['] nop PREFIX *xt ^ dup @ execute ! call @> ;
     \namespace
     : prefix-reset PREFIX *xt ^ dup @ execute ['] nop swap ! ;
     : step-prefix-reset compile? if postpone prefix-reset else prefix-reset then ;
@@ -669,16 +669,55 @@ bdup " <POSTFIX>" \" S" evaluate ." CMOVS done" cr
 bdup " <POSTFIX>" \" Z" evaluate ." CMOVZ done " cr
 bdrop
 
-: JZ
-    1 ?operands
-    first .type @ OT_LINK <> if unknown-operand-type clear-operands exit then
-    first .disttype @ switch
-      DIST_DEFAULT of COMMAND_DESCRIPTION JZ8_rel ^ \of
-      SHORT of COMMAND_DESCRIPTION JZ8_rel ^ \of
-      NEAR of COMMAND_DESCRIPTION JZ16_rel ^ \of
-      FAR of COMMAND_DESCRIPTION JZ32_rel ^ \of
-      " unknown command disttype" error
-    \switch clear-operands ;
+: 2bdup bover bover ;
+
+" 
+  : J<POSTFIX>
+      1 ?operands
+      first .type @ OT_LINK <> if unknown-operand-type clear-operands exit then
+      first .disttype @ switch
+        DIST_DEFAULT of COMMAND_DESCRIPTION J<POSTFIX>8_rel \of
+        SHORT of COMMAND_DESCRIPTION J<POSTFIX>8_rel ^^ \of
+        NEAR of COMMAND_DESCRIPTION J<POSTFIX>16_rel ^^ \of
+        FAR of COMMAND_DESCRIPTION J<POSTFIX>32_rel ^^ \of
+        ^" unknown command disttype^" error
+      \switch clear-operands ;
+"
+" <POSTFIX>"
+2bdup \" A" evaluate
+2bdup \" AE" evaluate
+2bdup \" B" evaluate
+2bdup \" BE" evaluate
+2bdup \" C" evaluate
+2bdup \" CXZ" evaluate
+2bdup \" ECXZ" evaluate
+// RCXZ
+2bdup \" E" evaluate
+2bdup \" G" evaluate
+2bdup \" GE" evaluate
+2bdup \" L" evaluate
+2bdup \" LE" evaluate
+2bdup \" NA" evaluate
+2bdup \" NAE" evaluate
+2bdup \" NB" evaluate
+2bdup \" NBE" evaluate
+2bdup \" NC" evaluate
+2bdup \" NE" evaluate
+2bdup \" NG" evaluate
+2bdup \" NGE" evaluate
+2bdup \" NL" evaluate
+2bdup \" NLE" evaluate
+2bdup \" NO" evaluate
+2bdup \" NP" evaluate
+2bdup \" NS" evaluate
+2bdup \" NZ" evaluate
+2bdup \" O" evaluate
+2bdup \" P" evaluate
+2bdup \" PE" evaluate
+2bdup \" PO" evaluate
+2bdup \" S" evaluate
+2bdup \" Z" evaluate
+bdrop bdrop
 
 
     : _COMPILE_NOTFOUND_
@@ -698,6 +737,7 @@ bdrop
       ' AND prefix-mnemonic and
       ' CMP prefix-mnemonic cmp
       ' DEC prefix-mnemonic dec
+      ' JZ prefix-mnemonic jz
       ' IMUL prefix-mnemonic imul
       ' INC prefix-mnemonic inc
       ' LEA prefix-mnemonic lea
@@ -744,6 +784,38 @@ bdrop
       ' CMOVPO prefix-mnemonic cmovpo
       ' CMOVS prefix-mnemonic cmovs
       ' CMOVZ prefix-mnemonic cmovz
+      ' JA prefix-mnemonic ja
+      ' JAE prefix-mnemonic jae
+      ' JB prefix-mnemonic jb
+      ' JBE prefix-mnemonic jbe
+      ' JC prefix-mnemonic jc
+      ' JCXZ prefix-mnemonic jcxz
+      ' JECXZ prefix-mnemonic jecxz
+      ' JE prefix-mnemonic je
+      ' JG prefix-mnemonic jg
+      ' JGE prefix-mnemonic jge
+      ' JL prefix-mnemonic jl
+      ' JLE prefix-mnemonic jle
+      ' JNA prefix-mnemonic jna
+      ' JNAE prefix-mnemonic jnae
+      ' JNB prefix-mnemonic jnb
+      ' JNBE prefix-mnemonic jnbe
+      ' JNC prefix-mnemonic jnc
+      ' JNE prefix-mnemonic jne
+      ' JNG prefix-mnemonic jng
+      ' JNGE prefix-mnemonic jnge
+      ' JNL prefix-mnemonic jnl
+      ' JNLE prefix-mnemonic jnle
+      ' JNO prefix-mnemonic jno
+      ' JNP prefix-mnemonic jnp
+      ' JNS prefix-mnemonic jns
+      ' JNZ prefix-mnemonic jnz
+      ' JO prefix-mnemonic jo
+      ' JP prefix-mnemonic jp
+      ' JPE prefix-mnemonic jpe
+      ' JPO prefix-mnemonic jpo
+      ' JS prefix-mnemonic js
+      ' JZ prefix-mnemonic jz
     ^
   \namespace
 \uses

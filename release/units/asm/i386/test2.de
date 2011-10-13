@@ -146,6 +146,20 @@ variable *out
 \PREFIX asm-noname; execute
 ." cmovz: " *out @ . cr
 
+:asm-noname PREFIX
+  *auto-integers? on
+    mov eax 555
+    mov ebx 111
+  @> LOOP
+    sub eax 2
+    sub ebx 1
+    jnz @@ LOOP
+    mov d[ *out disp ] eax
+    ret
+  all-resolve
+\PREFIX asm-noname; execute
+." jz: " *out @ . cr
+
 " h55 . cr " bdup str. evaluate 
 " h33 . cr " bdup str. evaluate 
 GLOBAL " h55 h33 xor . " bdup str. evaluate ^

@@ -37,34 +37,13 @@ pas4:
 	m4 ..\m4\metapascal.m4 DEmbroSource.pas4 > DEmbroSource.pasq
 	m4 ..\m4\metapascal.m4 DEmbroChunk.pas4 > DEmbroChunk.pasq
 	m4 commands.m4 commands\DCommandsAlien.pas4 > commands\DCommandsAlien.pasq
-	m4 commands.m4 commands\DCommandsBool.pas4 > commands\DCommandsBool.pasq
-	m4 commands.m4 commands\DCommandsBW.pas4 > commands\DCommandsBW.pasq
-	m4 commands.m4 commands\DCommandsCompile.pas4 > commands\DCommandsCompile.pasq
 	m4 commands.m4 commands\DCommandsConsole.pas4 > commands\DCommandsConsole.pasq
-	m4 commands.m4 commands\DCommandsCreatewords.pas4 > commands\DCommandsCreatewords.pasq
-	m4 commands.m4 commands\DCommandsEmbro.pas4 > commands\DCommandsEmbro.pasq
-	m4 commands.m4 commands\DCommandsExtInt.pas4 > commands\DCommandsExtInt.pasq
-	m4 commands.m4 commands\DCommandsF.pas4 > commands\DCommandsF.pasq
-	m4 commands.m4 commands\DCommandsFiles.pas4 > commands\DCommandsFiles.pasq
-	m4 commands.m4 commands\DCommandsInt.pas4 > commands\DCommandsInt.temp
-	m4 id2.m4 commands\DCommandsInt.temp > commands\DCommandsInt.pasq
-	m4 commands.m4 commands\DCommandsMem.pas4 > commands\DCommandsMem.pasq
 	m4 commands.m4 commands\DCommandsMisc.pas4 > commands\DCommandsMisc.pasq
-	m4 commands.m4 commands\DCommandsOS.pas4 > commands\DCommandsOS.pasq
-	m4 commands.m4 commands\DCommandsPtr.pas4 > commands\DCommandsPtr.pasq
-	m4 commands.m4 commands\DCommandsR.pas4 > commands\DCommandsR.pasq
-	m4 commands.m4 commands\DCommandsSource.pas4 > commands\DCommandsSource.pasq
 	m4 commands.m4 commands\DCommandsStrings.pas4 > commands\DCommandsStrings.pasq
-	m4 commands.m4 commands\DCommandsVM.pas4 > commands\DCommandsVM.pasq
 	m4 commands.m4 commands\DCommandsVoc.pas4 > commands\DCommandsVoc.pasq
-	m4 commands.m4 commands\DCommandsArithmetic.pas4 > commands\DCommandsArithmetic.pasq
-	m4 commands.m4 commands\DCommandsSignedArithmetic.pas4 > commands\DCommandsSignedArithmetic.pasq
 	m4 commands.m4 commands\DCommandsNumberArithmetic.pas4 > commands\DCommandsNumberArithmetic.temp
 	m4 id2.m4 commands\DCommandsNumberArithmetic.temp > commands\DCommandsNumberArithmetic.pasq
-	m4 commands.m4 commands\DCommandsConvertNumber.pas4 > commands\DCommandsConvertNumber.temp
-	m4 id2.m4 commands\DCommandsConvertNumber.temp > commands\DCommandsConvertNumber.pasq
 	m4 commands\DCommandsControl.pas4 > commands\DCommandsControl.pasq
-	m4 commands\DCommandsXT.pas4 > commands\DCommandsXT.pasq
 	m4 DCommandsTable.pas4 > DCommandsTable.pasq
 	..\tools\dquotes -r .\ *.pasq *.pas
 

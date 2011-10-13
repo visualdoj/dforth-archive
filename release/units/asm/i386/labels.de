@@ -33,10 +33,10 @@ I386 extend-namespace
       repeat
       0 L#! ;
 
-    : @> ( "name")
-        M0+
-        source-next-name M[#] .marker b!
+    : M+ ( B: S)
+        M0+ M[#] .marker b!
         pos@ M[#] .pos ! ;
+    : @> ( "name") source-next-name M+ ;
     : label+ ( B: s -- l) L0+ L[#] dup .label b! ;
     : @@ ( "name" --) source-next-name label+ link ;
     : label! ( pxl) tuck .xt ! .ptr ! ;
@@ -55,7 +55,7 @@ I386 extend-namespace
     : all-resolve
         L# begin ?dup while 1- dup
           dup L[] .label b@ find-marker ?dup if
-            .pos @ over L[] label-resolve 
+            .pos @ over L[] label-resolve
           else
             " cannot resolve marker '" dup L[] .marker b@ str+ +" '" error
           then
@@ -64,7 +64,7 @@ I386 extend-namespace
     ' byte! value 'byte-resolver
     ' word! value 'word-resolver
     ' ! value 'dword-resolver
-    : byte-rel-resolver ( val ptr) tuck - swap byte! ;
+    : byte-rel-resolver ( val ptr) ." byte-rel-resolver: " over . dup . cr tuck - 1- swap byte! ;
     last value 'byte-rel-resolver
     : word-rel-resolver ( val ptr) tuck - swap word! ;
     last value 'word-rel-resolver

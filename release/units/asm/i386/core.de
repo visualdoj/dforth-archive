@@ -7,9 +7,9 @@ namespace I386
   // текущая позиция в ассемблерном коде (для вычисления адресов меток)
   : pos@ ( -p) here ;
   // записать в ассемблерный код байт
-  : byte<< uint->uint8 uint8, ;
-  : word<< uint->uint16 uint16, ;
-  : dword<< uint->uint32 uint32, ;
+  : byte<< ." BYTE: " dup . cr uint->uint8 uint8, ;
+  : word<< ." WORD: " dup . cr uint->uint16 uint16, ;
+  : dword<< ." DWORD: " dup . cr uint->uint32 uint32, ;
   // перехват сообщений об ошибках
   : error ( B: s) ." Error: " str. cr ;
   : unknown-operand-type " unknown operand type" error ;

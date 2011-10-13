@@ -128,12 +128,12 @@ I386 extend-namespace
       dup v.opcode @ over v.+r @ execute + byte<<
       dup v.mem @ execute ?dup if over v./r @ execute swap r/m<< then
       dup v.imm# @ switch
-        1 of dup v.imm @ execute byte<< \of
+        1 of ." imm " dup v.imm @ execute byte<< cr \of
         2 of dup v.imm @ execute word<< \of
         4 of dup v.imm @ execute dword<< \of
       \switch
       dup v.link# @ if
-        pos@ over v.resolver @ 3 pick v.link @ LABELS label! ^
+        pos@ over v.resolver @ 3 pick v.link @ execute LABELS label! ^
         dup v.link# @ switch
           1 of 0 byte<< \of
           2 of 0 word<< \of
@@ -182,7 +182,7 @@ I386 extend-namespace
     : /r last xt.param@ v./r ! ;
     : imm#! last xt.param@ v.imm# ! ;
     : imm! last xt.param@ v.imm ! last xt.param@ v.bits @ 8 div imm#! ;
-    : res! last xt.param@ v.imm ! last xt.param@ v.bits @ 8 div imm#! ;
+    : res! last xt.param@ v.resolver ! ;
     : link#! 
         ['] first.value last xt.param@ v.link !
         dup last xt.param@ v.link# !

@@ -238,9 +238,91 @@ syn match dembroDefine "\[']"
 syn match dembroDefine '\[compile]'
 
 " i386 assembler
-syn keyword dembroI386mnemonics @>
-syn keyword dembroI386mnemonics NOP MOV PUSH POP ADD SUB INC DEC RET NEG
-syn keyword dembroI386mnemonics nop mov push pop add sub inc dec ret neg
+syn keyword dembroI386mnemonics dembroI386mnemonics @>
+syn keyword dembroI386mnemonics ADC adc
+syn keyword dembroI386mnemonics ADD add
+syn keyword dembroI386mnemonics AND and
+syn keyword dembroI386mnemonics CMP cmp
+syn keyword dembroI386mnemonics DEC dec
+syn keyword dembroI386mnemonics JZ jz
+syn keyword dembroI386mnemonics IMUL imul
+syn keyword dembroI386mnemonics INC inc
+syn keyword dembroI386mnemonics LEA lea
+syn keyword dembroI386mnemonics MOV mov
+syn keyword dembroI386mnemonics MUL mul
+syn keyword dembroI386mnemonics NEG neg
+syn keyword dembroI386mnemonics NOP nop
+syn keyword dembroI386mnemonics NOT not
+syn keyword dembroI386mnemonics OR or
+syn keyword dembroI386mnemonics POP pop
+syn keyword dembroI386mnemonics PUSH push
+syn keyword dembroI386mnemonics RET ret
+syn keyword dembroI386mnemonics SBB sbb
+syn keyword dembroI386mnemonics SUB sub
+syn keyword dembroI386mnemonics XCHG xchg
+syn keyword dembroI386mnemonics XOR xor
+syn keyword dembroI386mnemonics CMOVA prefix-mnemonic cmova
+syn keyword dembroI386mnemonics CMOVAE cmovae
+syn keyword dembroI386mnemonics CMOVAB cmovab
+syn keyword dembroI386mnemonics CMOVABE cmovabe
+syn keyword dembroI386mnemonics CMOVC cmovc
+syn keyword dembroI386mnemonics CMOVE cmove
+syn keyword dembroI386mnemonics CMOVG cmovg
+syn keyword dembroI386mnemonics CMOVGE cmovge
+syn keyword dembroI386mnemonics CMOVL cmovl
+syn keyword dembroI386mnemonics CMOVLE cmovle
+syn keyword dembroI386mnemonics CMOVNA cmovna
+syn keyword dembroI386mnemonics CMOVNAE cmovnae
+syn keyword dembroI386mnemonics CMOVNB cmovnb
+syn keyword dembroI386mnemonics CMOVNBE cmovnbe
+syn keyword dembroI386mnemonics CMOVNC cmovnc
+syn keyword dembroI386mnemonics CMOVNE cmovne
+syn keyword dembroI386mnemonics CMOVNG cmovng
+syn keyword dembroI386mnemonics CMOVNGE cmovnge
+syn keyword dembroI386mnemonics CMOVNL cmovnl
+syn keyword dembroI386mnemonics CMOVNLE cmovnle
+syn keyword dembroI386mnemonics CMOVNO cmovno
+syn keyword dembroI386mnemonics CMOVNP cmovnp
+syn keyword dembroI386mnemonics CMOVNS cmovns
+syn keyword dembroI386mnemonics CMOVNZ cmovnz
+syn keyword dembroI386mnemonics CMOVO cmovo
+syn keyword dembroI386mnemonics CMOVP cmovp
+syn keyword dembroI386mnemonics CMOVPE cmovpe
+syn keyword dembroI386mnemonics CMOVPO cmovpo
+syn keyword dembroI386mnemonics CMOVS cmovs
+syn keyword dembroI386mnemonics CMOVZ cmovz
+syn keyword dembroI386mnemonics JA ja
+syn keyword dembroI386mnemonics JAE jae
+syn keyword dembroI386mnemonics JB jb
+syn keyword dembroI386mnemonics JBE jbe
+syn keyword dembroI386mnemonics JC jc
+syn keyword dembroI386mnemonics JCXZ jcxz
+syn keyword dembroI386mnemonics JECXZ jecxz
+syn keyword dembroI386mnemonics JE je
+syn keyword dembroI386mnemonics JG jg
+syn keyword dembroI386mnemonics JGE jge
+syn keyword dembroI386mnemonics JL jl
+syn keyword dembroI386mnemonics JLE jle
+syn keyword dembroI386mnemonics JNA jna
+syn keyword dembroI386mnemonics JNAE jnae
+syn keyword dembroI386mnemonics JNB jnb
+syn keyword dembroI386mnemonics JNBE jnbe
+syn keyword dembroI386mnemonics JNC jnc
+syn keyword dembroI386mnemonics JNE jne
+syn keyword dembroI386mnemonics JNG jng
+syn keyword dembroI386mnemonics JNGE jnge
+syn keyword dembroI386mnemonics JNL jnl
+syn keyword dembroI386mnemonics JNLE jnle
+syn keyword dembroI386mnemonics JNO jno
+syn keyword dembroI386mnemonics JNP jnp
+syn keyword dembroI386mnemonics JNS jns
+syn keyword dembroI386mnemonics JNZ jnz
+syn keyword dembroI386mnemonics JO jo
+syn keyword dembroI386mnemonics JP jp
+syn keyword dembroI386mnemonics JPE jpe
+syn keyword dembroI386mnemonics JPO jpo
+syn keyword dembroI386mnemonics JS js
+syn keyword dembroI386mnemonics JZ jz
 syn keyword dembroI386registers EAX ECX EDX EBX ESP EBP ESI EDI
 syn keyword dembroI386operands eax ecx edx ebx esp ebp esi edi
 syn keyword dembroI386operands imm reg reg8 reg16 reg32 link @@

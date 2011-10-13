@@ -686,11 +686,11 @@ function CopyStrToPChar(const B: TString): PChar;
 implementation
 
 uses
-  DCommandsNumberArithmetic,
   DCommandsAlien,
+  DCommandsConsole,
   DCommandsControl,
   DCommandsMisc,
-  DCommandsConsole,
+  DCommandsNumberArithmetic,
   DCommandsStrings,
   DCommandsVoc;
 

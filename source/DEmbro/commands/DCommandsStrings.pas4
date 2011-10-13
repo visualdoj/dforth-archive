@@ -11,7 +11,6 @@ uses
 
   strings,
 
-  DCommandsBW,
   DForthMachine;
 
   procedure pchar_alloc(Machine: TForthMachine; Command: PForthCommand);
@@ -1150,15 +1149,6 @@ begin
   Machine.AddCommand('str-literal', _str_literal, True);
   Machine.AddCommand('str.', str_dot);
   Machine.AddCommand('str$', str_dollar);
-  (* Machine.AddCommand('str-drop', bdrop); *)
-  (* Machine.AddCommand('str-dup', bdup); *)
-  (* Machine.AddCommand('str-swap', swap_ptr); *)
-  (* Machine.AddCommand('str-over', bover); *)
-  (* Machine.AddCommand('str-rot', lrot_ptr); *)
-  (* Machine.AddCommand('str-lrot', lrot_ptr); *)
-  (* Machine.AddCommand('str-rrot', rrot_ptr); *)
-  (* Machine.AddCommand('str-lrotn', lrotn_ptr); *)
-  (* Machine.AddCommand('str-rrotn', rrotn_ptr); *)
   Machine.AddCommand('pchar->str', pchar_to_str);  
 
   Machine.AddCommand('utf8->unicode', _utf8_2_unicode);

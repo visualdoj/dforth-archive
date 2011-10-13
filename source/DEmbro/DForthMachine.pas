@@ -17,7 +17,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = 'Sat Oct 08 02:58 2011';
+  DFORTHMACHINE_DATE: TString = 'Thu Oct 13 07:59 2011';
 
 
 
@@ -727,7 +727,7 @@ function CopyStrToPChar(const B: TString): PChar;
 implementation
 
 uses
-  DCommandsNumberArithmetic,DCommandsAlien,DCommandsControl,DCommandsMisc,DCommandsConsole,DCommandsStrings,DCommandsVoc;
+  DCommandsAlien,DCommandsConsole,DCommandsControl,DCommandsMisc,DCommandsNumberArithmetic,DCommandsStrings,DCommandsVoc;
 
 {$I 'body.inc'}
 
