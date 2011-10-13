@@ -64,12 +64,24 @@ I386 extend-namespace
     ' byte! value 'byte-resolver
     ' word! value 'word-resolver
     ' ! value 'dword-resolver
-    : byte-rel-resolver ( val ptr) ." byte-rel-resolver: " over . dup . cr tuck - 1- swap byte! ;
+    : byte-rel-resolver ( val ptr) tuck - swap byte! ;
     last value 'byte-rel-resolver
     : word-rel-resolver ( val ptr) tuck - swap word! ;
     last value 'word-rel-resolver
     : dword-rel-resolver ( val ptr) tuck - swap dword! ;
     last value 'dword-rel-resolver
+    : byte-rel-resolver1- ( val ptr) tuck - 1- swap byte! ;
+    last value 'byte-rel-resolver1-
+    : word-rel-resolver1- ( val ptr) tuck - 1- swap word! ;
+    last value 'word-rel-resolver1-
+    : dword-rel-resolver1- ( val ptr) tuck - 1- swap dword! ;
+    last value 'dword-rel-resolver1-
+    : byte-rel-resolver2- ( val ptr) tuck - 2 - swap byte! ;
+    last value 'byte-rel-resolver2-
+    : word-rel-resolver2- ( val ptr) tuck - 2 - swap word! ;
+    last value 'word-rel-resolver2-
+    : dword-rel-resolver2- ( val ptr) tuck - 2 - swap dword! ;
+    last value 'dword-rel-resolver2-
   \namespace
 
   LABELS
@@ -79,6 +91,12 @@ I386 extend-namespace
     samealias 'dword-rel-resolver
     samealias 'word-rel-resolver
     samealias 'byte-rel-resolver
+    samealias 'dword-rel-resolver1-
+    samealias 'word-rel-resolver1-
+    samealias 'byte-rel-resolver1-
+    samealias 'dword-rel-resolver2-
+    samealias 'word-rel-resolver2-
+    samealias 'byte-rel-resolver2-
     samealias @>
     samealias @@
     samealias all-resolve

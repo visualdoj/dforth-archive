@@ -128,7 +128,7 @@ I386 extend-namespace
       dup v.opcode @ over v.+r @ execute + byte<<
       dup v.mem @ execute ?dup if over v./r @ execute swap r/m<< then
       dup v.imm# @ switch
-        1 of ." imm " dup v.imm @ execute byte<< cr \of
+        1 of dup v.imm @ execute byte<< \of
         2 of dup v.imm @ execute word<< \of
         4 of dup v.imm @ execute dword<< \of
       \switch

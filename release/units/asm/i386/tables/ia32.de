@@ -248,9 +248,10 @@ h3F 0 op AAS
 // TODO ENTER LEAVE
 : J ( short-opcode near-opcode)
     " J" source-next-name str+ multi-oped
-    h0F swap 2dup 16 variant_near 1 prefixes
-    32 variant_far 1 prefixes
-    8 variant_short ;
+    h0F swap 2dup 
+    16 variant_near 1 prefixes     'word-rel-resolver2- res!
+    32 variant_far 1 prefixes      'dword-rel-resolver2- res!
+    8 variant_short                'byte-rel-resolver1- res! ;
 h77 h87 J A
 h73 h83 J AE
 h72 h82 J B
