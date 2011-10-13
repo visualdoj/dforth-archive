@@ -2162,22 +2162,21 @@ begin
 end;
 
 procedure OForthMachine.Step;
-var
-  Running: Boolean;
 begin
   if not FSession then
     Exit;
-  Writeln('Step');
-  Running := FRunning;
-  FRunning := False;
+  // Running := FRunning;
+  // FRunning := False;
   case State of
-    FS_INTERPRET: InterpretStep;
+    FS_INTERPRET:  InterpretStep;
     FS_COMPILE:   CompileStep;
   else
     LogError('Illegal State');
     FSession := False;
   end;
-  FRunning := Running;
+  // while FRunning do
+  //   RunStep;
+  // FRunning := Running;
 end;
 
 procedure OForthMachine.InterpretStep;

@@ -3,5 +3,9 @@
 
 : context-drop context> drop ;
 
-: shortnamespace ( "name") namespace 
-  does> ( "...") @ context< vm-step context-drop ;
+: cs context> dup . context> dup . context< context< cr ;
+
+: shortnamespace ( "name") create vocabulary-new dup target< dup context< , immediate 
+  does> @ context< dembro-step context> drop ;
+// : shortnamespace ( "name") namespace 
+// does> ( "name") dup . @ ." HERE" dup . context< dembro-step ." hello" context-drop ." bye" ; )

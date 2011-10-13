@@ -17,7 +17,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = 'Thu Oct 13 07:59 2011';
+  DFORTHMACHINE_DATE: TString = 'Thu Oct 13 16:36 2011';
 
 
 
@@ -2233,22 +2233,21 @@ begin
 end;
 
 procedure OForthMachine.Step;
-var
-  Running: Boolean;
 begin
   if not FSession then
     Exit;
-  Writeln('Step');
-  Running := FRunning;
-  FRunning := False;
+  // Running := FRunning;
+  // FRunning := False;
   case State of
-    FS_INTERPRET: InterpretStep;
+    FS_INTERPRET:  InterpretStep;
     FS_COMPILE:   CompileStep;
   else
     LogError('Illegal State');
     FSession := False;
   end;
-  FRunning := Running;
+  // while FRunning do
+  //   RunStep;
+  // FRunning := Running;
 end;
 
 procedure OForthMachine.InterpretStep;

@@ -7,6 +7,7 @@ str" console.de" evaluate-file
 str" control.de" evaluate-file
 str" convert_number.de" evaluate-file
 str" createwords.de" evaluate-file
+str" dembro.de" evaluate-file
 str" embro.de" evaluate-file
 str" f.de" evaluate-file
 str" files.de" evaluate-file
