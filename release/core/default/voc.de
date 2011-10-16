@@ -54,8 +54,7 @@ samebuiltin context>
 : \namespace target> drop context> drop ;
 
 : ^^^ context> drop ;
-// ' ^^^ alias ^ immediate
-: ^ ^^^ ; immediate
+' ^^^ alias ^ immediate
 
 : extend-namespace context> voc.use ;
 ' \namespace alias \extend-namespace 
