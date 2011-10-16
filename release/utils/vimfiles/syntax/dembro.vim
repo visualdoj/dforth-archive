@@ -216,6 +216,11 @@ syn keyword dembroDefine <interpretation compilation> <compilation ] lastxt
 syn keyword dembroDefine comp' postpone, find-name name>int name?int name>comp
 syn keyword dembroDefine name>string state c; cvariable
 syn keyword dembroDefine , 2, f, c, 
+syn keyword dembroDefine vocabulary ^ ^^^
+syn keyword dembroDefine namespace \\namespace
+syn keyword dembroDefine shortnamespace \\shortnamespace
+syn keyword dembroDefine extend-namespace \\extend-namespace
+syn keyword dembroDefine uses \\uses
 syn match dembroDefine "\[ifdef]"
 syn match dembroDefine "\[ifundef]"
 syn match dembroDefine "\[then]"

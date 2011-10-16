@@ -1,3 +1,5 @@
+// 2011.09.16 # Doj
+//     Модуль переписан для удобочитаемости, появились короткие пространства имён
 // 2010.12.03 # Doj
 //     Модуль для удобной работы со словарями
 
@@ -45,11 +47,23 @@ samebuiltin context>
 //         // иначе /uses сработает неправильно
 //       \uses               // отключаем подключённые в uses пространства
 : declare-namespace ( "name") vocabulary immediate does> @ context< ; 
-: extend-namespace context> voc.use ;
-: namespace ( "name") declare-namespace last execute extend-namespace ; 
+
+: namespaced ( B: S) created immediate vocabulary-new dup voc.use ,
+  does> @ context< ;
+: namespace ( "name") source-next-name namespaced ; 
 : \namespace target> drop context> drop ;
-' \namespace alias \extend-namespace 
+
 : ^^^ context> drop ;
+// ' ^^^ alias ^ immediate
 : ^ ^^^ ; immediate
+
+: extend-namespace context> voc.use ;
+' \namespace alias \extend-namespace 
+
 : uses 0 context< 0 target< ;
 : \uses begin context> 0= until   begin target> 0= until ;
+
+: shortnamespaced ( B: s) namespaced
+  does> @ context< dembro-step context> drop ;
+: shortnamespace ( "name") source-next-name shortnamespaced ;
+' \namespace alias \shortnamespace
