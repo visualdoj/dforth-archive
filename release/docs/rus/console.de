@@ -1,0 +1,34 @@
+
+ " cr" "   начинает новую строку " described 
+ " emit" "   ( i) выводит символ с заданным номером " described 
+ " space" "   выводит пробел " described 
+ " spaces" "   ( i) выводит заданное число пробелов " described 
+ " clear" "   ( i) стирает i последних символов " described 
+ " clear-line" "   стирает текущую линию " described 
+ " clear-screen" "   стирает все символы экрана " described 
+ " set-font-color" "   ( i) устанавливает i как цвет выводимого далее текста " described 
+ " set-background-color" "   ( i) устанавливает i как цвет выводимого фона для текста " described 
+ " set-blink" "   ( f) устанавливает флаг мигания выводимого далее текста " described 
+ " CONSOLE_WHITE" " ( -i) кладёт цвет WHITE  " described 
+ " CONSOLE_BLACK" " ( -i) кладёт цвет BLACK  " described 
+ " CONSOLE_GRAY" " ( -i) кладёт цвет GRAY  " described 
+ " CONSOLE_RED" " ( -i) кладёт цвет RED  " described 
+ " CONSOLE_GREEN" " ( -i) кладёт цвет GREEN  " described 
+ " CONSOLE_BLUE" " ( -i) кладёт цвет BLUE  " described 
+ " CONSOLE_YELLOW" " ( -i) кладёт цвет YELLOW  " described 
+ " CONSOLE_PINK" " ( -i) кладёт цвет PINK  " described 
+ " CONSOLE_CYAN" " ( -i) кладёт цвет CYAN  " described 
+ " CONSOLE_LIGHTGRAY" " ( -i) кладёт цвет LIGHTGRAY  " described 
+ " CONSOLE_LIGHTRED" " ( -i) кладёт цвет LIGHTRED  " described 
+ " CONSOLE_LIGHTGREEN" " ( -i) кладёт цвет LIGHTGREEN  " described 
+ " CONSOLE_LIGHTBLUE" " ( -i) кладёт цвет LIGHTBLUE  " described 
+ " CONSOLE_LIGHTYELLOW" " ( -i) кладёт цвет LIGHTYELLOW  " described 
+ " CONSOLE_LIGHTPINK" " ( -i) кладёт цвет LIGHTPINK  " described 
+ " CONSOLE_LIGHTCYAN" " ( -i) кладёт цвет LIGHTCYAN  " described 
+ " CONSOLE_DARKGRAY" " ( -i) кладёт цвет DARKGRAY  " described 
+ " CONSOLE_DARKRED" " ( -i) кладёт цвет DARKRED  " described 
+ " CONSOLE_DARKGREEN" " ( -i) кладёт цвет DARKGREEN  " described 
+ " CONSOLE_DARKBLUE" " ( -i) кладёт цвет DARKBLUE  " described 
+ " CONSOLE_DARKYELLOW" " ( -i) кладёт цвет DARKYELLOW  " described 
+ " CONSOLE_DARKPINK" " ( -i) кладёт цвет DARKPINK  " described 
+ " CONSOLE_DARKCYAN" " ( -i) кладёт цвет DARKCYAN  " described 

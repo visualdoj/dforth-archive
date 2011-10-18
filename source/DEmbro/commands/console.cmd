@@ -4,7 +4,7 @@ DECLARE(cr)
       Writeln;
     end;
   end;
-RUS SUMMARY начинает новую строку
+RUS SUMMARY начинает новую строку _SUMMARY
 
 DECLARE(emit)
   var
@@ -15,7 +15,7 @@ DECLARE(emit)
       Write(Char(WOI));
     end;
   end;
-RUS SUMMARY ( i) выводит символ с заданным номером
+RUS SUMMARY ( i) выводит символ с заданным номером _SUMMARY
 
 DECLARE(space)
   begin
@@ -23,7 +23,7 @@ DECLARE(space)
       Write(' ');
     end;
   end;
-RUS SUMMARY выводит пробел
+RUS SUMMARY выводит пробел _SUMMARY
 
 DECLARE(spaces)
   var
@@ -37,36 +37,36 @@ DECLARE(spaces)
       end;
     end;
   end;
-RUS SUMMARY ( i) выводит заданное число пробелов
+RUS SUMMARY ( i) выводит заданное число пробелов _SUMMARY
 
 DECLARE(clear)
     body(Console.Clear(WOI);)
-  RUS SUMMARY ( i) стирает i последних символов
+  RUS SUMMARY ( i) стирает i последних символов _SUMMARY
 
 DECLARE(clear-line, clear_line)
     body(Console.ClearLine;)
-  RUS SUMMARY стирает текущую линию
+  RUS SUMMARY стирает текущую линию _SUMMARY
 
 DECLARE(clear-screen, clear_screen)
     body(Console.ClearScreen;)
-  RUS SUMMARY стирает все символы экрана
+  RUS SUMMARY стирает все символы экрана _SUMMARY
 
 DECLARE(set-font-color, set_font_color)
     body(Console.SetFontColor(WOI);)
-  RUS SUMMARY ( i) устанавливает i как цвет выводимого далее текста
+  RUS SUMMARY ( i) устанавливает i как цвет выводимого далее текста _SUMMARY
 
 DECLARE(set-background-color, set_background_color)
     body(Console.SetBackgroundColor(WOI);)
-  RUS SUMMARY ( i) устанавливает i как цвет выводимого фона для текста
+  RUS SUMMARY ( i) устанавливает i как цвет выводимого фона для текста _SUMMARY
 
 DECLARE(set-blink, set_blink)
     body()
-  RUS SUMMARY ( f) устанавливает флаг мигания выводимого далее текста
+  RUS SUMMARY ( f) устанавливает флаг мигания выводимого далее текста _SUMMARY
 
 define(`COLOR', `
   DECLARE(`CONSOLE_$1')
       body(WUI(COLOR_$1))
-    RUS SUMMARY(( -i) кладёт цвет $1)
+    RUS SUMMARY(( -i) кладёт цвет $1) _SUMMARY
 ')
 COLOR(WHITE)
 COLOR(BLACK)

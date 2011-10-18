@@ -98,4 +98,6 @@ commands:
 	dquotes temp\body.incq body.inc
 	m4 ..\m4\g_builtin.m4 commands\groups.list > temp\make_builtin.bat
 	temp\make_builtin.bat
+	m4 ..\m4\g_help.m4 commands\groups.list > temp\make_docs.bat
+	temp\make_docs.bat
 	m4 ..\m4\cevaluate.m4 commands\groups.list > ..\..\release\core\builtin\all.de
