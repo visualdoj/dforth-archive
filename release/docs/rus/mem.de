@@ -1,17 +1,7 @@
 
-  ( size -- ptr) выделяет переданное число байт, возвращает указатель
-
-
-  ( ptr) освобождает выделенный ранее участок памяти
-
-
-  ( ptr1 newsize -- ptr2) перевыделяет память, сохраняя данные
-
-
-  ( src dst size --) переносит size байт из src в dst
-
-
-  ( dst size --) заполняет size байт по адресу dst нулями
-
-
-  ( dst size value --) заполняет size байт по адресу dst значениями Value
+ " malloc" "   ( size -- ptr) выделяет переданное число байт, возвращает указатель " described 
+ " free" "   ( ptr) освобождает выделенный ранее участок памяти " described 
+ " realloc" "   ( ptr1 newsize -- ptr2) перевыделяет память, сохраняя данные " described 
+ " move" "   ( src dst size --) переносит size байт из src в dst " described 
+ " fill0" "   ( dst size --) заполняет size байт по адресу dst нулями " described 
+ " fill" "   ( dst size value --) заполняет size байт по адресу dst значениями Value " described 

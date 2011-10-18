@@ -1,14 +1,14 @@
 DECLARE(current-directory, current_directory)
   body(Machine.WUS(GetCurrentDirectory);)
-RUS SUMMARY ( -- B: s) кладёт путь до текущей деректории без завершающего слеша
+RUS SUMMARY ( -- B: s) кладёт путь до текущей деректории без завершающего слеша _SUMMARY
 
 DECLARE(nop)
   body()
-RUS SUMMARY ничего не делает
+RUS SUMMARY ничего не делает _SUMMARY
 
 DECLARE(timer)
   body( WUI(GetTimer); )
-RUS SUMMARY ( -- i) кладёт счётчик, увеличивающийся на 1 каждую миллисекунду
+RUS SUMMARY ( -- i) кладёт счётчик, увеличивающийся на 1 каждую миллисекунду _SUMMARY
 
 DECLARE(@wp, DogwpTemp)
   body(

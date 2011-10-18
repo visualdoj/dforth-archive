@@ -889,7 +889,7 @@ begin
   str_push(Machine, CreateStr(B));
   DelRef(B);
 end;
-RUS SUMMARY(( B: x -- B: y) создаёт новую строку, содержащую копию x)
+RUS SUMMARY(( B: x -- B: y) создаёт новую строку, содержащую копию x) _SUMMARY
 
 DECLARE(str-new, str_new)
 var
@@ -904,7 +904,7 @@ begin
     B^.Sym[I*Width] := C;
   str_push(Machine, B);
 end;
-RUS SUMMARY(( lcw -- B: s) создаёт строку длинной l шириной w, каждый символ которой c)
+RUS SUMMARY(( lcw -- B: s) создаёт строку длинной l шириной w, каждый символ которой c) _SUMMARY
 
 DECLARE(pchar->str, pchar_to_str)
 begin

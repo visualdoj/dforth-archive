@@ -101,3 +101,4 @@ commands:
 	m4 ..\m4\g_help.m4 commands\groups.list > temp\make_docs.bat
 	temp\make_docs.bat
 	m4 ..\m4\cevaluate.m4 commands\groups.list > ..\..\release\core\builtin\all.de
+	m4 ..\m4\c_rusall.m4 commands\groups.list > ..\..\release\docs\rus\all.de

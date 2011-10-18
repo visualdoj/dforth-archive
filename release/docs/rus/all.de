@@ -1,0 +1,24 @@
+// This file has been generated automatically while DEmbro building
+
+str" docs\rus\alien.de" evaluate-file
+str" docs\rus\bits.de" evaluate-file
+str" docs\rus\bw.de" evaluate-file
+str" docs\rus\console.de" evaluate-file
+str" docs\rus\control.de" evaluate-file
+str" docs\rus\convert_number.de" evaluate-file
+str" docs\rus\createwords.de" evaluate-file
+str" docs\rus\dembro.de" evaluate-file
+str" docs\rus\embro.de" evaluate-file
+str" docs\rus\f.de" evaluate-file
+str" docs\rus\files.de" evaluate-file
+str" docs\rus\fixed.de" evaluate-file
+str" docs\rus\int.de" evaluate-file
+str" docs\rus\mem.de" evaluate-file
+str" docs\rus\misc.de" evaluate-file
+str" docs\rus\num.de" evaluate-file
+str" docs\rus\signed.de" evaluate-file
+str" docs\rus\strings.de" evaluate-file
+str" docs\rus\value.de" evaluate-file
+str" docs\rus\vm.de" evaluate-file
+str" docs\rus\voc.de" evaluate-file
+str" docs\rus\xt.de" evaluate-file
