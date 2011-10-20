@@ -1,8 +1,11 @@
 // 2011.08.04 # Doj
 // Продолжаю эксперименты с ассемблером
 
+timer value start
+
 include" units\asm\asm.de"
 include" units\asm\i386\all.de"
+
 
 uses I386 TRANSLATOR
 
@@ -166,3 +169,5 @@ GLOBAL " h55 h33 xor . " bdup str. evaluate ^
 cr
 
 \uses
+
+timer start - .

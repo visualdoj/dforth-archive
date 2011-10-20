@@ -1,0 +1,22 @@
+// 2011.10.20 # Doj
+// Генератор страниц помощи
+
+include" units\tools\doc\core.de"
+
+namespace GOOGLECODE
+  DOC-GENERATOR ' \ alias \ 
+    : str->printable ( B: x -- B: y) ;
+    : == " ==" << ;
+    : === " ===" << ;
+    : ==== " ====" << ;
+    : article source-next-name str->printable == << == ;
+    ' nop alias \article
+    : code " {{{" << ;
+    : \code " }}}" << ;
+    : space<< "  " << ;
+    : ** source-next-name bdup str->printable " [" << << space<< << " ] " << ;
+    : header == space<< ;
+    : \header space<< == ;
+    : inline " `" << << " `" << ;
+  ^^^
+\namespace

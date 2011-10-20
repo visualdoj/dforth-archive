@@ -1,0 +1,21 @@
+// 2011.10.20 # Doj
+// Генератор страниц помощи
+
+namespace DOC-GENERATOR
+  variable *doing?
+  variable *<<
+  : \ *doing? off ;
+  : << *<< @ execute ;
+\namespace
+
+: <<! ( x) DOC-GENERATOR *<< ^ ! ;
+' str. <<!
+
+: docpage
+  DOC-GENERATOR
+    *doing? on
+    begin *doing? @ while
+      " {" source-cut <<
+      " }" source-cut evaluate
+    repeat
+  ^ ;
