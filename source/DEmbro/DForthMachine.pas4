@@ -203,7 +203,7 @@ const
   DF_FILE_R                     = $A0;
   DF_FILE_W                     = $A1;
 
-  EOL: String                   = #13;
+  EOL: String                   = #13#10;
 
 type
   TForthMachine = ^OForthMachine;

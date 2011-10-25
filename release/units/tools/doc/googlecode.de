@@ -4,7 +4,7 @@
 include" units\tools\doc\core.de"
 
 namespace GOOGLECODE
-  DOC-GENERATOR ' \ alias \ 
+  DOC-GENERATOR ' \page alias \page
     : str->printable ( B: x -- B: y) ;
     : == " ==" << ;
     : === " ===" << ;
@@ -13,10 +13,23 @@ namespace GOOGLECODE
     ' nop alias \article
     : code " {{{" << ;
     : \code " }}}" << ;
-    : space<< "  " << ;
-    : ** source-next-name bdup str->printable " [" << << space<< << " ] " << ;
-    : header == space<< ;
-    : \header space<< == ;
-    : inline " `" << << " `" << ;
+    : _ "  " << ;
+    : @> source-next-name bdup str->printable " [" << << _ << " ] " << ;
+    : header == _ ;
+    : \header _ == ;
+    : inline " `" << ;
+    ' inline alias \inline
+    : s( " {{{( " << " )" source-cut << " )}}} " << ;
+    ' nop alias list
+    ' nop alias \list
+    : ** "   # " << ;
+    ' nop alias \** 
+    : b " *" << ;
+    ' b alias \b
+    ' nop alias u
+    ' u alias \u
+    : i " _" << ;
+    ' i alias \i
+    : w " {{{" << source-next-name << " }}} " << ;
   ^^^
 \namespace

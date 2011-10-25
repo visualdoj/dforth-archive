@@ -17,7 +17,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = 'Thu Oct 13 16:36 2011';
+  DFORTHMACHINE_DATE: TString = 'Tue Oct 25 06:55 2011';
 
 
 
@@ -68,7 +68,7 @@ const
   DF_FILE_R                     = $A0;
   DF_FILE_W                     = $A1;
 
-  EOL: String                   = #13;
+  EOL: String                   = #13#10;
 
 type
   TForthMachine = ^OForthMachine;

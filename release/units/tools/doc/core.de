@@ -4,14 +4,14 @@
 namespace DOC-GENERATOR
   variable *doing?
   variable *<<
-  : \ *doing? off ;
+  : \page *doing? off ;
   : << *<< @ execute ;
 \namespace
 
 : <<! ( x) DOC-GENERATOR *<< ^ ! ;
 ' str. <<!
 
-: docpage
+: {page}
   DOC-GENERATOR
     *doing? on
     begin *doing? @ while
