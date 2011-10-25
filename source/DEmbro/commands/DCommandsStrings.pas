@@ -762,7 +762,6 @@ begin
           Temp[High(Temp)] := C; 
         end;
         C := Machine.NextChar;
-        Writeln(Ord(Temp[High(Temp)]), ' ');
       end; 
       GetMem(B, 3*SizeOf(TInt) + Length(Temp) + 1);
       PStrRec(B)^.Len := Length(Temp);
