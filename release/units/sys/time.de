@@ -1,0 +1,10 @@
+// 2011.10.27 # Doj
+//  оманды дл€ упрощени€ работы со временем
+
+: ms->secs 1000 div ;
+: secs->mins 60 div ;
+last alias mins->hours
+: hours->days 24 div ;
+
+: starttime. timer ms->secs dup secs->mins dup mins->hours ( secs mins hours)
+             . ." :" 60 mod . ." :" 60 mod . ;
