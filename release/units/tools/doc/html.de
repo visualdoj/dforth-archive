@@ -1,0 +1,36 @@
+// 2011.10.20 # Doj
+// Генератор html-страниц из htd
+
+include" units\tools\doc\core.de"
+
+namespace HTML
+  DOC-GENERATOR ' \page alias \page
+    : b " <strong>" << ;
+    : \b " </strong>" << ;
+    : u " <u>" << ;
+    : \u " </u>" << ;
+    : i " <em>" << ;
+    : \i " </em>" << ;
+    : strike " <strike>" << ;
+    : \strike " </strike>" << ;
+    : ^ " <sup>" << ;
+    : \^ " </sup>" << ;
+    : _ " <sub>" << ;
+    : \_ " </sub>" << ;
+    : cr " <br/>" << ;
+    : code " <code><pre>" << ;
+    : \code " </pre></code>" << ;
+    : quote " <blockquote>" << ;
+    : \quote " </blockquote>" << ;
+    : left " <div align=^"left^">" << ;
+    : \left " </div>" << ;
+    : right " <div align=^"right^">" << ;
+    : \right " </div>" << ;
+    : center " <div align=^"center^">" << ;
+    : \center " </div>" << ;
+    : justify " <div align=^"justify^">" << ;
+    : \justify " </div>" << ;
+    : comment " <!--" << ;
+    : \comment " -->" << ;
+  ^^^
+\namespace

@@ -11,8 +11,6 @@ namespace GOOGLECODE
     : ==== " ====" << ;
     : article source-next-name str->printable == << == ;
     ' nop alias \article
-    : code " {{{" << ;
-    : \code " }}}" << ;
     : _ "  " << ;
     : @> source-next-name bdup str->printable " [" << << _ << " ] " << ;
     : header == _ ;
@@ -24,12 +22,15 @@ namespace GOOGLECODE
     ' nop alias \list
     : ** "   # " << ;
     ' nop alias \** 
+    : w " {{{" << source-next-name << " }}} " << ;
+
     : b " *" << ;
     ' b alias \b
     ' nop alias u
     ' u alias \u
     : i " _" << ;
     ' i alias \i
-    : w " {{{" << source-next-name << " }}} " << ;
+    : code " {{{" << ;
+    : \code " }}}" << ;
   ^^^
 \namespace
