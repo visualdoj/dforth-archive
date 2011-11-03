@@ -1,6 +1,10 @@
 // 2011.07.11 # Doj
 // Самописный тасктрекер
 
+include" units\statements\loops.de"
+include" units\statements\switch.de"
+include" units\structures\ndyn.de"
+
 namespace TASK-BASE
   0
     t_int -- .id
@@ -12,86 +16,55 @@ namespace TASK-BASE
     t_int -- .changedDate
   struct s_task
 
-  : task-cells s_task 1 cells div 1+ ;
-  : task-cells* task-cells * ;
-
-  1024 task-cells* dyn tasks
-  : [] ( it) swap task-cells* swap dyn[] ;
-  : tasks[] ( i) task-cells* tasks dyn[] ;
-  : tasks# tasks dyn# task-cells div ;
-  : tasks-high tasks# 1- ;
-  : task0! ( p) dup .id off 
-                dup .descr dup off str0 b!
-                dup .status off
-                dup .parentId off
-                dup .createdDate off
-                dup .changedDate off
-                dup .short dup off str0 b!
-                drop ;
-  : task+ tasks# tasks dyn# task-cells + tasks dyn.l! tasks[] task0! ;
+  enum STATUS
+  STATUS NORMAL
+  STATUS CLOSED
+  STATUS INPROGRESS
+  STATUS STATUS#
   
-  : [].id@ ( it-i) [] .id @ ;
-  : [].descr@ ( it- B: s) [] .descr b@ ;
-  : [].status@ ( it-i) [] .status @ ;
-  : [].parentId@ ( it-i) [] .parentId @ ;
-  : [].createdDate@ ( it-i) [] .createdDate @ ;
-  : [].changedDate@ ( it-i) [] .changedDate @ ;
-  : [].short@ ( it- B: s) [] .short b@ ;
-  : tasks[].id@ ( i-i) tasks [].id@ ;
-  : tasks[].descr@ ( i- B: s) tasks [].descr@ ;
-  : tasks[].status@ ( i-i) tasks [].status@ ;
-  : tasks[].parentId@ ( i-i) tasks [].parentId@ ;
-  : tasks[].createdDate@ ( i-i) tasks [].createdDate@ ;
-  : tasks[].changedDate@ ( i-i) tasks [].changedDate@ ;
-  : tasks[].short@ ( i- B: s) tasks [].short@ ;
-  : last[].id@ ( -i) tasks-high tasks[].id@ ;
-  : last[].descr@ ( - B: s) tasks-high tasks[].descr@ ;
-  : last[].status@ ( -i) tasks-high tasks[].status@ ;
-  : last[].parentId@ ( -i) tasks-high tasks[].parentId@ ;
-  : last[].createdDate@ ( -i) tasks-high tasks[].createdDate@ ;
-  : last[].changedDate@ ( -i) tasks-high tasks[].changedDate@ ;
-  : last[].short@ ( - B: s) tasks-high tasks[].short@ ;
+  create status-chars char o , char x , char * ,
+  : status->char ( i-i) cells status-chars + @ ;
+  : char->status ( i-i) STATUS# downto0 
+        dup cells status-chars + @ lrot tuck = if drop exit then swap
+      repeat drop 0 ;
+  : status. status->char emit space ;
 
-  : [].id! ( iit-) [] .id ! ;
-  : [].descr! ( B:s it-) [] .descr b! ;
-  : [].status! ( iit-) [] .status ! ;
-  : [].parentId! ( iit-) [] .parentId ! ;
-  : [].createdDate! ( iit-) [] .createdDate ! ;
-  : [].changedDate! ( iit-) [] .changedDate ! ;
-  : [].short! ( B: s it-) [] .short b! ;
-  : tasks[].id! ( ii-) tasks [].id! ;
-  : tasks[].descr! ( B: s i-) tasks [].descr! ;
-  : tasks[].status! ( ii-) tasks [].status! ;
-  : tasks[].parentId! ( ii-) tasks [].parentId! ;
-  : tasks[].createdDate! ( ii-) tasks [].createdDate! ;
-  : tasks[].changedDate! ( ii-) tasks [].changedDate! ;
-  : tasks[].short! ( B: s i-) tasks [].short! ;
-  : last[].id! ( i-) tasks-high tasks[].id! ;
-  : last[].descr! (  B: s -) tasks-high tasks[].descr! ;
-  : last[].status! ( i-) tasks-high tasks[].status! ;
-  : last[].parentId! ( i-) tasks-high tasks[].parentId! ;
-  : last[].createdDate! ( i-) tasks-high tasks[].createdDate! ;
-  : last[].changedDate! ( i-) tasks-high tasks[].changedDate! ;
-  : last[].short! ( B: s -) tasks-high tasks[].short! ;
+  1024 ndyn-global tasks
 
-  : find ( i-i) 0 begin dup tasks# < while 
-                  over over tasks[].id@ = if nip exit then
-                1+ repeat drop 0 ;
+  variable current
+  : cur ( -p) current @ ;
+  : new-id ( -i) 0 tasks# downto0 dup tasks[] .id @ lrot max swap repeat 1+ ;
+  : find ( i-p) tasks# downto0 
+        dup tasks[] .id @ lrot tuck = if drop tasks[] exit then swap
+      repeat 0 tasks[] ;
+  : task ( i) find current ! ;
+  : now timer ; // TODO normal time
+  : init ( id)
+        cur .id !
+        cur .short off
+        cur .descr off
+        cur .status off 
+        cur .parentId off
+        now dup cur .createdDate ! cur .changedDate ! ;
+  : new new-id tasks++ tasks[#] current ! init ;
 
-  : normalize-ids 
-    ( 0 begin dup tasks# < while 
-      dup tasks[].parentId@ dup 0<> if find over 1+ tasks[].parentId! then
-    1+ repeat drop )
-    0 begin dup tasks# < while dup 1+ over tasks[].id! 1+ repeat drop
-  ;
-  
-  : about ( "i") source-next-name str->int find
-                   dup tasks[].parentId@ ?dup if ." ^^" . then
-                   dup tasks[].status@ .
-                   dup tasks[].short@ str. space
-                   dup tasks[].descr@ str. cr
-                   drop
-                 ;
+  // commands that works with current task
+  // auto : id cur .id ! ;
+  : short cur .short b! ;
+  : descr cur .descr b! ;
+  : status cur .status ! ;
+  : parent cur .parentId ! ;
+  // auto : created-date cur .createdDate ! ;
+  // auto : changed-date cur .changedDate ! ;
+  : about ( p) dup .status @ status. ." #" dup .id @ . ." | " .short b@ str. ;
+  : info cur about ;
+  // status actions
+  : close CLOSED cur .status ! ;
+  : open NORMAL cur .status ! ;
+  : progress INPROGRESS cur .status ! ;
+
+  : task+ ( B: s) new short ;
+  : all 0 begin dup tasks# < while dup tasks[] about cr 1+ repeat drop ;
 \namespace
 
 namespace TASK-BASE-v01
