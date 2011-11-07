@@ -23,8 +23,8 @@ samebuiltin ubyte-file-write
 samebuiltin uword-file-write
 samebuiltin udword-file-write
 samebuiltin uqword-file-write
-samebuiltin file-str-write
-samebuiltin file-str-read
+samebuiltin str-file-write
+samebuiltin str-file-read
 samebuiltin file-size
 samebuiltin *cr
 samebuiltin *cr#

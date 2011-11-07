@@ -8,13 +8,16 @@ include" units\structures\ndyn.de"
 namespace TASK-BASE
   0
     t_int -- .id
-    t_str -- .short
-    t_str -- .descr
-    t_int -- .status
+    t_str -- .name // word with no spaces
+    t_str -- .short // one line descriprion
+    t_str -- .descr // long description
+    t_int -- .status // see STATUS
     t_int -- .parentId
     t_int -- .createdDate
     t_int -- .changedDate
   struct s_task
+
+  1024 ndyn-global tasks
 
   enum STATUS
   STATUS NORMAL
@@ -29,8 +32,6 @@ namespace TASK-BASE
       repeat drop 0 ;
   : status. status->char emit space ;
 
-  1024 ndyn-global tasks
-
   variable current
   : cur ( -p) current @ ;
   : new-id ( -i) 0 tasks# downto0 dup tasks[] .id @ lrot max swap repeat 1+ ;
@@ -41,12 +42,22 @@ namespace TASK-BASE
   : now timer ; // TODO normal time
   : init ( id)
         cur .id !
+        cur .name off str0 cur .name b!
         cur .short off
         cur .descr off
         cur .status off 
         cur .parentId off
         now dup cur .createdDate ! cur .changedDate ! ;
   : new new-id tasks++ tasks[#] current ! init ;
+
+  : task->name ( task -- B: s)
+      " #" dup .name b@ str0 str= if .id @ int->str else .name b@ then str+ ;
+  : name->task ( B: s -- p)
+      bdup ( <-bug) 1 str# 1- str-cut ( bug->) bswap bdrop
+      tasks# downto0
+        dup tasks[] .name bdup b@ str= if bdrop tasks[] exit then
+      repeat
+      str->int find ;
 
   // commands that works with current task
   // auto : id cur .id ! ;
@@ -56,17 +67,49 @@ namespace TASK-BASE
   : parent cur .parentId ! ;
   // auto : created-date cur .createdDate ! ;
   // auto : changed-date cur .changedDate ! ;
-  : about ( p) dup .status @ status. ." #" dup .id @ . ." | " .short b@ str. ;
+  : about ( p) dup .status @ status. dup task->name str. ."  | " .short b@ str. ;
   : info cur about ;
   // status actions
-  : close CLOSED cur .status ! ;
-  : open NORMAL cur .status ! ;
-  : progress INPROGRESS cur .status ! ;
+  : status: ( "c") char char->status status ;
+  : close CLOSED status ;
+  : open NORMAL status ;
+  : progress INPROGRESS status ;
 
   : task+ ( B: s) new short ;
+  : task: ( B: s " name") task+ source-next-name cur .name b! ;
   : all 0 begin dup tasks# < while dup tasks[] about cr 1+ repeat drop ;
+
+  " Dummy task with zero id" task: null 0 cur .id !
+
+  : _NOTFOUND_ 0 str[]@ [char] # = if name->task current ! true else
+                                      bdrop false then ;
 \namespace
 
 namespace TASK-BASE-v01
-  
+  TASK-BASE
+    variable f
+    : id cur .id ! ;
+    : << ( B: s) f @ str-file-write ;
+    : c<< ( c) f @ ubyte-file-write ;
+    : cr<< ( c) h0D c<< h0A c<< ; 
+    : task<< ( task) 
+        "   ^" " << dup .short b@ << 
+        dup .name b@ str0 str= if " ^" task+ " << else 
+                                  " ^" task: " << dup .name b@ << "  " << then
+        dup .id @ int->str << "  id" << 
+        dup .status @ ?dup if "  status: " << status->char c<< then
+        drop cr<< ;
+    : save ( B: s)
+        file-w file-open f !
+        " // This file was generated automatically by DEmbro task base" << cr<<
+        cr<<
+        " include^" utils\taskbase\taskbase.de^"" << cr<<
+        cr<<
+        " uses TASK-BASE TASK-BASE-v01" << cr<<
+        1 begin dup tasks# < while dup tasks[] task<< 1+ repeat drop
+        " \uses" << cr<<
+        cr<<
+        " include^" utils\taskbase\session.de^"" << cr<<
+        f @ file-close ;
+  ^^^
 \namespace

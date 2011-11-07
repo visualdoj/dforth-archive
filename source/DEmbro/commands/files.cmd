@@ -215,7 +215,7 @@ DECLARE(uqword-file-write, file_uqword_write)
     V := WOI;
     F^.Data.WriteVar(@V, SizeOf(V));)
 
-DECLARE(file-str-write, file_str_write)
+DECLARE(str-file-write, file_str_write)
   var
     B: TStr;
     F: PdfFile;
@@ -224,7 +224,7 @@ DECLARE(file-str-write, file_str_write)
     B := str_pop(Machine);
     F^.Data.WriteVar(@B^.Sym[0], B^.Len * B^.Width);)
 
-DECLARE(file-str-read, file_str_read)
+DECLARE(str-file-read, file_str_read)
   var
     B: TStr;
     F: PdfFile;

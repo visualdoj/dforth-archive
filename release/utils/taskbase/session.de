@@ -1,6 +1,8 @@
 // 2011.07.11 # Doj
 // Сессия по работе с базой из командной строки
 
-include" taskbase.de"
+include" units\taskbase\taskbase.de"
 
 TASK-BASE
+
+: quit " tasks.de" TASK-BASE-v01 save ^ quit ;
