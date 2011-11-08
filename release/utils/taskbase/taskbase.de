@@ -67,7 +67,8 @@ namespace TASK-BASE
   : parent cur .parentId ! ;
   // auto : created-date cur .createdDate ! ;
   // auto : changed-date cur .changedDate ! ;
-  : about ( p) dup .status @ status. dup task->name str. ."  | " .short b@ str. ;
+  : about ( p) dup .status @ status. dup task->name 20 str# - str. 0 max spaces
+               ."  | " .short b@ str. ;
   : info cur about ;
   // status actions
   : status: ( "c") char char->status status ;
@@ -77,7 +78,14 @@ namespace TASK-BASE
 
   : task+ ( B: s) new short ;
   : task: ( B: s " name") task+ source-next-name cur .name b! ;
-  : all 0 begin dup tasks# < while dup tasks[] about cr 1+ repeat drop ;
+  : forall ( action filter)
+      1 begin dup tasks# < while
+        2dup tasks[] swap execute if dup tasks[] ( afip) 4 pick execute then
+      1+ repeat drop 2drop ;
+  : opened? ( p-?) .status @ NORMAL = ;
+  : about-cr about cr ;
+  : ls ['] about-cr ['] opened? forall ;
+  : all 1 begin dup tasks# < while dup tasks[] about cr 1+ repeat drop ;
 
   " Dummy task with zero id" task: null 0 cur .id !
 

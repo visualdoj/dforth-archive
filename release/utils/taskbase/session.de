@@ -5,4 +5,13 @@ include" units\taskbase\taskbase.de"
 
 TASK-BASE
 
-: quit " tasks.de" TASK-BASE-v01 save ^ quit ;
+' quit alias abort
+: flush " tasks.de" TASK-BASE-v01 save ^ ;
+: quit flush quit ;
+
+' ls alias l
+' flush alias w
+' quit alias q
+' task+ alias t
+' task+ alias t+
+' task: alias t:
