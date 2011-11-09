@@ -10,8 +10,19 @@ TASK-BASE
 : quit flush quit ;
 
 ' ls alias l
+' ls-inprogress alias lp
 ' flush alias w
 ' quit alias q
 ' task+ alias t
 ' task+ alias t+
 ' task: alias t:
+
+: usage
+  ." w -------------------- save current state to ^"tasks.de^" file" cr 
+  ." abort ---------------- quit without saving" cr 
+  ." q -------------------- save and quit" cr 
+  ." t+ ( B: s) ----------- create new task with summary s" cr 
+  ." t: ( B: s ^"name^") -- create new task with summary s and name" cr 
+  ." l -------------------- print all opened tasks" cr 
+  ." lp ------------------- print all tasks in progress" cr 
+  ;

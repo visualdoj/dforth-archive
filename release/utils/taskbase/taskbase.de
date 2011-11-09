@@ -86,6 +86,14 @@ namespace TASK-BASE
   : about-cr about cr ;
   : ls ['] about-cr ['] opened? forall ;
   : all 1 begin dup tasks# < while dup tasks[] about cr 1+ repeat drop ;
+  variable pattern pattern off
+
+  : pattern? .short b@ pattern b@ str^? nip bdrop bdrop ;
+  : grep pattern b! ['] about-cr ['] pattern? forall ;
+
+  : forall: ( filter action init) create , , ,
+    does> dup @ execute cell+ dup @ swap cell+ @ forall ;
+  :noname .status @ INPROGRESS = ;  ' about-cr  ' nop  forall: ls-inprogress
 
   " Dummy task with zero id" task: null 0 cur .id !
 
