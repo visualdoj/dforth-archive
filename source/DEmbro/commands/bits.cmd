@@ -4,6 +4,7 @@ DECLARE(false)
       Machine.WUI(BOOL_FALSE);
     end;
   end;
+RUS SUMMARY ( -i) кладёт ячейку со всеми битами установленными в 0 _SUMMARY
 
 DECLARE(true)
   begin
@@ -11,6 +12,7 @@ DECLARE(true)
       Machine.WUI(BOOL_TRUE);
     end;
   end;
+RUS SUMMARY ( -i) кладёт ячейку со всеми битами установленными в 1 _SUMMARY
 
 DECLARE(not)
   begin
@@ -18,6 +20,7 @@ DECLARE(not)
       Machine.WUI(not Machine.WOI);
     end;
   end;
+RUS SUMMARY ( i-i) обращают все биты вырхней ячейки стека _SUMMARY
 
 DECLARE(or)
   begin
@@ -25,6 +28,7 @@ DECLARE(or)
       Machine.WUI(Machine.WOI or Machine.WOI);
     end;
   end;
+RUS SUMMARY ( ii-i) применяет операцию ИЛИ к каждому биту двух верхних элементов стека _SUMMARY
 
 DECLARE(and)
   begin
@@ -32,6 +36,7 @@ DECLARE(and)
       Machine.WUI(Machine.WOI and Machine.WOI);
     end;
   end;
+RUS SUMMARY ( ii-i) применяет операцию И к каждому биту двух верхних элементов стека _SUMMARY
 
 DECLARE(xor)
   begin
@@ -39,6 +44,7 @@ DECLARE(xor)
       Machine.WUU(Machine.WOU xor Machine.WOU);
     end;
   end;
+RUS SUMMARY ( ii-i) применяет операцию исключающее ИЛИ к каждому биту двух верхних элементов стека _SUMMARY
 
 DECLARE(bool., bool_dot)
   var
@@ -52,6 +58,7 @@ DECLARE(bool., bool_dot)
         Write('TRUE ')
     end;
   end;
+RUS SUMMARY ( ?-) печатает TRUE, если ячейка на стеке ненулевая, и FALSE иначе _SUMMARY
 
 DECLARE(bool-false, bool_false)
   body(_false(Machine, Command);)
