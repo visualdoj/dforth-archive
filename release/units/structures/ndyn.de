@@ -57,4 +57,5 @@ namespace NDYN
 : ndyn[] NDYN [] ^ ;
 : ndyn[#] NDYN [#] ^ ;
 : ndyn++ NDYN ++ ^ ;
+: ndyn0+ NDYN 0+ ^ ;
 : ndyn-global NDYN global ^ ;

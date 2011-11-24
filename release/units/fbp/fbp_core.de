@@ -1,0 +1,72 @@
+// 2011.11.24 # Doj
+// Модуль объявляет основные структуры и команды для вычислений в
+// парадигме «flow based programming»
+
+include" units\statements\loops.de"
+include" units\structures\ndyn.de"
+
+namespace FBP
+  0
+    t_ptr -- s-in.ptr
+  struct s-in
+
+  0
+    t_ptr -- s-out.ptr
+  struct s-out
+
+  0
+    t_ptr -- s-dep.atom
+  struct s-dep
+
+  0
+    t_ptr -- .xt ( atom -- )
+    // TODO for ndyn arrays use s-ndyn and ndyn-init commands
+    t_ptr -- .ins
+    t_ptr -- .outs
+    t_ptr -- .deps
+    t_int -- .notifications-need
+    t_int -- .notifications-remaining
+  struct s-atom
+
+  0
+    t_ptr -- .atoms
+    s-atom bytes-- .staratom
+  struct s-scheme
+
+  : atom-deps++ ( atom-dst atom-src ) .deps @ dup ndyn0+ ndyn[#] s-dep.atom ! ;
+  : connect ( atom-src atom-dst out in)
+      swap s-out.ptr @ swap s-in.ptr !
+      swap tuck atom-deps++
+      .notifications-need 1+! ;
+  : atom-prepare ( atom)
+      dup .notifications-need @ swap .notifications-remaining ! ;
+  : atom-in ( index atom -- in) .ins ndyn[] ;
+  : atom-out ( index atom -- out) .outs ndyn[] ;
+  : atom-execute ( atom) dup .xt @ execute ;
+  variable atom-run-recursively // TODO forward word
+
+  : dep-run ( dep) s-dep.atom @ atom-run-recursively @ execute ;
+  : dep-make-ready? ( dep)
+      s-dep.atom @ .notifications-remaining dup @ 1- tuck swap ! 0= ;
+  : dep-make-ready-and-run ( dep) dup dep-make-ready? if dep-run else drop then ;
+  : atom-ondone ( atom) 
+      .deps @ dup ndyn# downto0 2dup swap ndyn[] dep-make-ready-and-run repeat ;
+  :noname  ( atom) dup atom-execute atom-ondone ; atom-run-recursively !
+
+  : scheme-atoms++ ( atom scheme) .atoms @ ndyn++ ;
+  : scheme-connect-star ( scheme) ;
+  : scheme-disconnect-star ( scheme) ;
+  : scheme-prepare ( scheme)
+      .atoms @ dup ndyn# downto0 2dup swap ndyn[] atom-prepare repeat drop ;
+  : scheme-run ( scheme)
+      dup scheme-prepare .staratom atom-run-recursively @ execute ;
+
+  : in-init ( val in) s-in.ptr ! ;
+  : out-init ( val out) s-out.ptr ! ;
+  : atom-init ( atom)
+      // dup .ins s-in ndyn-alloc swap !
+      drop ;
+  : scheme-init ( scheme)
+      // dup .atoms s-atom ndyn-alloc swap !
+      .staratom atom-init ;
+\namespace
