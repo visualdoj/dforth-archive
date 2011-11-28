@@ -1002,5 +1002,28 @@ begin
   str_push(Machine, C);
 end;
 
+DECLARE(str=>=, str_map)
+var
+  X: TXt;
+  I: Integer;
+  B, C: TStr;
+begin
+  X := Machine.WOP;
+  B := str_pop(Machine);
+  if B^.Ref = 1 then
+    C := B
+  else
+    C := CreateStr(B^.Width, B^.Len);
+  for I := 0 to B^.Len - 1 do begin
+    Machine.WUU(StrSymbol(B, I));
+    X^.Code(Machine, X);
+    SetStrSymbol(C, I, Machine.WOU);
+  end;
+  if B^.Ref > 1 then
+    DelRef(B);
+  str_push(Machine, C);
+end;
+RUS SUMMARY ( xt B: x -- B: y) применяет к каждому символу строки определённую команду_SUMMARY
+
 DECLARE(*poststr, poststr) body(WUP(@ConvStr))
 DECLARE(*postname, postname) body(WUP(@ConvName))

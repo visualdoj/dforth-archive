@@ -41,5 +41,6 @@ samebuiltin utf8->unicode
 samebuiltin utf8->raw
 samebuiltin unicode->utf8
 samebuiltin unicode->raw
+samebuiltin str=>=
 samebuiltin *poststr
 samebuiltin *postname

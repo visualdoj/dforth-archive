@@ -12,6 +12,7 @@ var
                  System: String;
                  Error: Boolean;
                  Help: Boolean;
+                 Debug: Boolean;
                end;
 
 procedure ParseCommandLine;
@@ -23,6 +24,7 @@ begin
   CommandLine.Error  := False;
   CommandLine.Repl   := True;
   CommandLine.System := 'core\default\system.de';
+  CommandLine.Debug  := True;
 end;
 
 procedure Error(Param: String);
@@ -101,6 +103,8 @@ begin
         end;
         CommandLine.System := ParamStr(I);
         Inc(I);
+      end else if C = '--debug' then begin
+        CommandLine.Debug := True;
       end else begin
         Unknown(C);
         Exit;
@@ -132,6 +136,8 @@ begin
           Inc(I);
         end else if C[J] = 'h' then begin
           PrintHelp;
+        end else if C[J] = 'd' then begin
+          CommandLine.Debug := True;
         end else begin
           Unknown('flag ' + C);
           Exit;

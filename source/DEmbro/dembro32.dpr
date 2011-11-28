@@ -127,6 +127,8 @@ begin
 end;
 
 begin
+  if CommandLine.Debug then
+    Writeln('Start: ', GetTimer);
   //with TAlien.Create do begin
   //  WP := @Stack[0];
   //  GenerateCallback(@Buffer[0], 64*1024, [4, 4, 4, 4], 4,
@@ -159,6 +161,8 @@ begin
     end else} 
     for I := 0 to High(FileNames) do
       Machine.Interpret(PChar('str" ' + FileNames[I] + '" evaluate-file'));
+    if CommandLine.Debug then
+      Writeln('Initialized: ', GetTimer);
     if Repl then begin
       Writeln('DEmbro v' + IntToStr(DFORTHMACHINE_VERSION div 100) + '.' + 
                            IntToStr(DFORTHMACHINE_VERSION mod 100) + ' built ' +
