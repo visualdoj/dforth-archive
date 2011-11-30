@@ -1016,7 +1016,8 @@ begin
     C := CreateStr(B^.Width, B^.Len);
   for I := 0 to B^.Len - 1 do begin
     Machine.WUU(StrSymbol(B, I));
-    X^.Code(Machine, X);
+    // X^.Code(Machine, X);
+    Machine.CallCommand(X);
     SetStrSymbol(C, I, Machine.WOU);
   end;
   if B^.Ref > 1 then
