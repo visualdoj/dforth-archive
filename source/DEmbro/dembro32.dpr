@@ -127,8 +127,6 @@ begin
 end;
 
 begin
-  if CommandLine.Debug then
-    Writeln('Start: ', GetTimer);
   //with TAlien.Create do begin
   //  WP := @Stack[0];
   //  GenerateCallback(@Buffer[0], 64*1024, [4, 4, 4, 4], 4,
@@ -144,6 +142,8 @@ begin
   //  //Exit;
   //end;
   ParseCommandLine;
+  if CommandLine.Debug then
+    Writeln('Start: ', GetTimer);
   if CommandLine.Error then
     Halt(-1);
   if CommandLine.Help then
