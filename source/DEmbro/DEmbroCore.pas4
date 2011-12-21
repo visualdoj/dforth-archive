@@ -43,6 +43,12 @@ type
   PStrRec = ^TStrRec;
   TStr = PStrRec;
 
+  TFixed = packed record
+    Len: TInt;
+    P: PAnsiChar;
+  end;
+  PFixed = ^TFixed;
+
 function Align(Value: Cardinal; _Unit: Cardinal = CELL_SIZE): Cardinal;
 
 implementation

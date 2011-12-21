@@ -1,0 +1,65 @@
+unit DECommonSource;
+
+interface
+
+uses
+  {$I units.inc};
+
+type
+TCommonPos = packed record
+  SourceId: Cardinal;
+  Pos: Integer;
+  Line: Integer;
+  Row: Integer;
+end;
+
+TCommonSource = object
+  function Id: Cardinal; // source-id
+  function Pos: Integer; // source-pos
+  function Line: Integer; // source-line
+  function Row: Integer; // source-row
+  procedure GetCurrentPos(var Pos: TCommonPos);
+
+  function FullName: PAnsiChar; // source-full-name
+  function ShortName: PAnsiChar; // source-short-name
+
+  procedure SkipSource; // source-skip-full
+  procedure SkipLine; // source-skip-line
+  procedure SkipSpaces; // source-skip-spaces
+
+  function IsEnd: Boolean; // source?
+
+  function SkipToChar(C: Char): TStr; // source-skip-to-char-str
+  function SkipToCharF(C: Char): TFixed; // source-skip-to-char-fixed
+  function SkipToStr(S: TStr): TStr; // source-skip-to-str-str parse
+  function SkipToStrF(S: TStr): TFixed; // source-skip-to-str-fixed parse-fixed
+
+  function NextName: TStr; // source-next-name
+  function NextNameF: TFixed; // source-next-name-fixed
+  function NextNamePassive: TStr; // source-next-name-passive
+  function NextNamePassiveF: TFixed; // source-next-name-passive-fixed
+  function NextChar: TChar; // source-next-char
+  function NextCharPassive: TChar; // source-next-char-passive
+
+  function CurrentLine: TStr; // source-current-line-str
+  function CurrentLineF: TFixed; // source-current-line-fixed
+  function PreLine: TStr; // source-pre-line-str
+  function PreLineF: TFixed; // source-pre-line-fixed
+  function PostLine: TStr; // source-post-line-str
+  function PostLineF: TFixed; // source-post-line-fixed
+  function NextLine: TStr; // source-next-line-str
+  function NextLineF: TFixed; // source-next-line-fixed
+  function NextLinePassive: TStr; // source-next-line-passive
+  function NextLinePassiveF: TFixed; // source-next-line-passive-fixed
+end;
+PCommonSource = ^TCommonSource;
+
+TSourceManager = object
+  function LoadFromFile(FileName: PAnsiChar): PCommonSource;
+  function LoadFromMem(P: Pointer; Len: Integer = 0): PCommonSource;
+  function GetSource(const Pos: TCommonPos): PCommonSource;
+end;
+
+implementation
+
+end.
