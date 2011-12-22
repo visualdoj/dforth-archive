@@ -10,7 +10,7 @@ type
 
 PPage = ^TPage;
 TPage = object
-  P: Pointer;
+  P:  Pointer;
   Size: Integer;
   MaxSize: Integer;
   // Если Stream уже прочитан, то вернёт False, иначе прочитает и вернёт True

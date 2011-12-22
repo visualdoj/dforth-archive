@@ -8,6 +8,38 @@
 .PHONY: DArm
 .PHONY: asm
 .PHONY: commands
+.PHONY: compile
+
+# SOURCES = *.pas4
+SOURCE_PATHS = *.ext \
+               ../DEngine/*.ext \
+               ../DEngine/WINDOWS/*.ext \
+               ../DEngine/WINDOWS/*.ext \
+               ../DEngine/WINSOCK/*.ext \
+               ../DEngine/OPENGL/*.ext \
+               ../DEngine/OPENAL/*.ext \
+               ../DEngine/FPC/*.ext \
+               ../DLocal/*.ext \
+               ../DMachineCode/*.ext
+
+# SOURCES_PAS4 := $(wildcard *.pas4) \
+#                 $(wildcard ../DEngine/*.pas4) \
+#                 $(wildcard ../DEngine/WINDOWS/*.pas4) \
+#                 $(wildcard ../DEngine/WINDOWS/*.pas4) \
+#                 $(wildcard ../DEngine/WINSOCK/*.pas4) \
+#                 $(wildcard ../DEngine/OPENGL/*.pas4) \
+#                 $(wildcard ../DEngine/OPENAL/*.pas4) \
+#                 $(wildcard ../DEngine/FPC/*.pas4) \
+#                 $(wildcard ../DLocal/*.pas4) \
+#                 $(wildcard ../DMachineCode/*.pas4)
+
+SOURCES_PAS4 := $(wildcard $(SOURCE_PATHS:%.ext=%.pas4))
+SOURCES_PAS := $(wildcard $(SOURCE_PATHS:%.ext=%.pas))
+# SOURCES_PAS := $(@:%.pas4=%.pas)
+SOURCES := $(SOURCES_PAS4)
+
+# PAS := temp/*.pas
+PAS := $(wildcard temp/*.pas)
 
 all: clean pas4 pasq
 	dquotes -r .\ *.pasq *.pas
@@ -16,8 +48,12 @@ all: clean pas4 pasq
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
 
-test: clean pas4 pasq
-	fpc -vb test.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FEtemp -FUtemp
+# test: clean pas4 pasq
+# 	fpc -vb test.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FEtemp -FUtemp
+
+sources:
+	echo $(wildcard $(SOURCES))
+#	echo $(SOURCES)
 
 pas4:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
@@ -102,3 +138,21 @@ commands:
 	temp\make_docs.bat
 	m4 ..\m4\cevaluate.m4 commands\groups.list > ..\..\release\core\builtin\all.de
 	m4 ..\m4\c_rusall.m4 commands\groups.list > ..\..\release\docs\rus\all.de
+
+%.pas4: $(SOURCES)
+	cp $(SOURCES) temp
+
+%.pastemp: %.pas4
+	m4 meta.m4 $(@:%.pastemp=%.pas4) > $@
+
+%.pasq: %.pastemp
+	m4 id2.m4 $(@:%.pasq=%.pastemp) > $@
+
+%.pas: %.pasq
+	..\tools\dquotes $(@:%.pas=%.pasq) $@
+
+../../release/dembro32.exe: $(SOURCES) $(PAS)
+	cp dembro32.dpr temp/dembro32.dpr
+	fpc -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
+
+compile: ../../release/dembro32.exe;
