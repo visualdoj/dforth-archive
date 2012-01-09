@@ -9,6 +9,7 @@
 .PHONY: asm
 .PHONY: commands
 .PHONY: compile
+.PHONY: copy
 
 # SOURCES = *.pas4
 SOURCE_PATHS = *.ext \
@@ -38,8 +39,12 @@ SOURCES_PAS := $(wildcard $(SOURCE_PATHS:%.ext=%.pas))
 # SOURCES_PAS := $(@:%.pas4=%.pas)
 SOURCES := $(SOURCES_PAS4)
 
-# PAS := temp/*.pas
-PAS := $(wildcard temp/*.pas)
+BASE_LIST := $(addprefix temp/,$(basename $(notdir $(SOURCES_PAS4))))
+PAS_LIST := $(addsuffix .pas,$(BASE_LIST))
+PASQ_LIST := $(addsuffix .pasq,$(BASE_LIST))
+PASTEMP_LIST := $(addsuffix .pastemp,$(BASE_LIST))
+PAS4COPY_LIST := $(addsuffix .pas4.copy,$(BASE_LIST))
+PAS4_LIST := $(addsuffix .pas4,$(BASE_LIST))
 
 all: clean pas4 pasq
 	dquotes -r .\ *.pasq *.pas
@@ -139,19 +144,29 @@ commands:
 	m4 ..\m4\cevaluate.m4 commands\groups.list > ..\..\release\core\builtin\all.de
 	m4 ..\m4\c_rusall.m4 commands\groups.list > ..\..\release\docs\rus\all.de
 
-%.pas4: $(SOURCES)
+copy: $(SOURCES)
+	echo $(SOURCES)
 	cp $(SOURCES) temp
 
-%.pastemp: %.pas4
+# %.pas4.copy: copy
+# 	echo "PAS4"
+# 	cp $(@:%.pas4.copy=%.pas4) temp
+
+%.pastemp: copy
+	echo "PASTEMP"
 	m4 meta.m4 $(@:%.pastemp=%.pas4) > $@
 
-%.pasq: %.pastemp
+%.pasq: $(PASTEMP_LIST)
+	echo "PASQ"
 	m4 id2.m4 $(@:%.pasq=%.pastemp) > $@
 
-%.pas: %.pasq
+%.pas: $(PASQ_LIST)
+	echo PAS $(@:%.pas=%.pasq)
 	..\tools\dquotes $(@:%.pas=%.pasq) $@
 
-../../release/dembro32.exe: $(SOURCES) $(PAS)
+../../release/dembro32.exe: $(PAS_LIST)
+	echo "EXE"
+	echo $(PAS_LIST)
 	cp dembro32.dpr temp/dembro32.dpr
 	fpc -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
 

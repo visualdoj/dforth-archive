@@ -294,8 +294,10 @@ begin
           IncPos(PtrInt(P) - PtrInt(Pos) + Length(S));
           //Writeln('SourceCut: ', Length(Result));
           Exit;
-        end else
+        end else begin
           Inc(PByte(P),1);
+          Writeln('LOOP');
+        end;
       //Writeln('WAR: UpdateBuffer underdeveloped');
       UpdateBuffer;
     end;
