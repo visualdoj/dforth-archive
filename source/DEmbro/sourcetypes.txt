@@ -1,0 +1,8 @@
+../m4/id -> id2
+	DForthMachine.pas4
+	m4 ..\m4\id.m4 stream.pas4 > temp\stream.temp4
+	
+meta -> id2
+	console.pas4
+	m4 meta.m4 sh.pas4 > temp\sh.temp4
+	m4 meta.m4 pool.pas4 > temp\pool.temp4
