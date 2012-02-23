@@ -11,6 +11,16 @@
 .PHONY: compile
 .PHONY: copy
 
+ifeq ($(OS),Windows_NT)
+  RM := del
+  CHMOD := echo
+  CAT := type
+else
+  RM := rm
+  CHMOD := chmod
+  CAT := cat
+endif
+
 SOURCE_PATHS = *.ext \
                ../DEngine/*.ext \
                ../DEngine/WINDOWS/*.ext \
@@ -21,8 +31,6 @@ SOURCE_PATHS = *.ext \
                ../DEngine/FPC/*.ext \
                ../DLocal/*.ext \
                ../DMachineCode/*.ext
-
-RM = rm
 
 # SOURCES_PAS4 := $(wildcard *.pas4) \
 #                 $(wildcard ../DEngine/*.pas4) \
@@ -127,11 +135,11 @@ asm: clean
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
 commands:
-	$(RM) ../../release/core/builtin/*.de || true
+	$(RM) ../../release/core/builtin/*.de || echo skipped
 	m4 ../m4/ctype.m4 commands/groups.list > temp/make_all.bat
-	chmod 744 temp/make_all.bat
-	temp/make_all.bat
-#	type commands/mem.cmd commands/misc.cmd > temp/all.cmd
+	$(CHMOD) 744 temp/make_all.bat
+	temp\make_all.bat
+#	$(CAT) commands/mem.cmd commands/misc.cmd > temp/all.cmd
 	m4 ../m4/cgroups.m4 commands/groups.list > temp/all.cmd
 	m4 ../m4/cload.m4 temp/all.cmd > temp/load.inc4
 	m4 commands.m4 temp/load.inc4 > temp/load.temp
@@ -142,10 +150,10 @@ commands:
 	m4 commands.m4 temp/body.inc4 > temp/body.incq
 	$(DQUOTES) temp/body.incq body.inc
 	m4 ../m4/g_builtin.m4 commands/groups.list > temp/make_builtin.bat
-	chmod 744 temp/make_builtin.bat
+	$(CHMOD) 744 temp/make_builtin.bat
 	temp/make_builtin.bat
 	m4 ../m4/g_help.m4 commands/groups.list > temp/make_docs.bat
-	chmod 744 temp/make_docs.bat
+	$(CHMOD) 744 temp/make_docs.bat
 	temp/make_docs.bat
 	m4 ../m4/cevaluate.m4 commands/groups.list > ../../release/core/builtin/all.de
 	m4 ../m4/c_rusall.m4 commands/groups.list > ../../release/docs/rus/all.de

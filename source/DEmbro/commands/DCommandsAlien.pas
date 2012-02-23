@@ -17,6 +17,7 @@
 
 
 
+{$ASMMODE INTEL}
 unit DCommandsAlien;
 
 interface
@@ -315,7 +316,7 @@ begin
     Data := Command^.Data;
     Fun := Pointer(Command^.Data^);
     Stack := Machine.WP;
-    {$IFDEF I386}
+    {$IFDEF I386blabla}
     asm
       mov ebx, Stack
       mov ecx, Data
