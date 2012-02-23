@@ -1,5 +1,4 @@
-uses
-  SysUtils,
+uses SysUtils,
   utils;
 
 const
@@ -258,6 +257,7 @@ begin
   BlockWrite(DstFile, Buffer[0], Length(Buffer));
 
   Close(DstFile);
+  Writeln('Wrote ', Dst);
 end;
 
 procedure OnFile(const Folder: String; const Search: TSearchRec);

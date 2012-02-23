@@ -1,5 +1,5 @@
 divert(`-1')
-include(`..\m4\cutils.m4')
+include(`../m4/cutils.m4')
 
 define(`DECLARE',`divert(`0')
 define(`_CUR_NAME_', `$1') divert(`-1')')

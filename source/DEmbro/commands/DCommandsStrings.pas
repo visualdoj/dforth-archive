@@ -82,7 +82,6 @@ uses
   procedure compile_str_dq(Machine: TForthMachine; Command: PForthCommand);
   procedure run_str_dq(Machine: TForthMachine; Command: PForthCommand);
   procedure _str_literal(Machine: TForthMachine; Command: PForthCommand);
-  procedure str_dot(Machine: TForthMachine; Command: PForthCommand);
   procedure str_dollar(Machine: TForthMachine; Command: PForthCommand);
   // procedure str_new(Machine: TForthMachine; Command: PForthCommand);
   procedure str_index_dog(Machine: TForthMachine; Command: PForthCommand);
@@ -907,28 +906,6 @@ begin
   end;
 end;
 
-procedure str_dot(Machine: TForthMachine; Command: PForthCommand);
-var
-  I: Integer;
-  B: TStr;
-begin
-  with Machine^ do begin
-    B := str_pop(Machine);
-    I := 0;
-    while I < PStrRec(B)^.Len do begin
-      if StrSymbol(B, I) = 13{'\'} then begin
-        //if PStrRec(B)^.Sym[I+1] = 'n' then begin
-          Writeln;
-        //  Inc(I);
-        //end;
-      end else
-        Write(Char(char4to1(StrSymbol(B, I))));
-      Inc(I);
-    end;
-    DelRef(B);
-  end;
-end;
-
 procedure str_dollar(Machine: TForthMachine; Command: PForthCommand);
 var
   P: TStr;
@@ -1164,7 +1141,6 @@ begin
   Machine.AddCommand('(str)' + Char(34), run_str_dq);
   Machine.AddCommand('(str-literal)', run_str_dq);
   Machine.AddCommand('str-literal', _str_literal, True);
-  Machine.AddCommand('str.', str_dot);
   Machine.AddCommand('str$', str_dollar);
   Machine.AddCommand('pchar->str', pchar_to_str);  
 

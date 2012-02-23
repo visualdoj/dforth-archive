@@ -94,9 +94,18 @@ DECLARE(evaluate-file, evaluate_file)
     S: TStr;
     FullPath: TString;
     ShortPath: TString;
+    I: Integer;
+    C: String;
   begin
     S := str_pop(Machine);
-    ShortPath := TString(PChar(@(PStrRec(S)^.Sym[0])));
+    ShortPath := '';
+    for I := 0 to S^.Len - 1 do begin
+      C := Chr(StrSymbol(S, I));
+      if C[1] = '\' then
+        C := DirectorySeparator;
+      ShortPath := ShortPath + C;
+    end;
+    // ShortPath := TString(PChar(@(PStrRec(S)^.Sym[0])));
     FullPath := '';
     while True do begin
       if Length(Machine.Directories) > 0 then begin
@@ -104,10 +113,10 @@ DECLARE(evaluate-file, evaluate_file)
         if FileExists(FullPath) then 
           Break;
       end;
-      FullPath := PChar(GetCurrentDirectory) + '\' + ShortPath;
+      FullPath := PChar("./"{GetCurrentDirectory}) + DirectorySeparator + ShortPath;
       if FileExists(FullPath) then 
         Break;
-      FullPath := PChar(GetExeDirectory) + '\' + ShortPath;
+      FullPath := PChar(GetExeDirectory) + DirectorySeparator + ShortPath;
       if FileExists(FullPath) then 
         Break;
       Exit;

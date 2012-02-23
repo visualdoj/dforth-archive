@@ -804,12 +804,14 @@ begin
     B := str_pop(Machine);
     I := 0;
     while I < PStrRec(B)^.Len do begin
-      if StrSymbol(B, I) = 13{'\'} then begin
+      (*if StrSymbol(B, I) = 13{'\'} then begin
         //if PStrRec(B)^.Sym[I+1] = 'n' then begin
           Writeln;
         //  Inc(I);
         //end;
-      end else
+        if StrSymbol(B, I + 1) = 10 then
+          Inc(I);
+      end else*)
         Write(Char(char4to1(StrSymbol(B, I))));
       Inc(I);
     end;

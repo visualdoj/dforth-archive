@@ -3,7 +3,8 @@ unit DLib;
 interface
 
 uses
-  windows;
+  {$IFDEF WIN32}windows{$ENDIF}
+  {$IFDEF UNIX}unix, BaseUnix{$ENDIF};
 
 type
 TLib = class
@@ -26,17 +27,32 @@ end;
 
 constructor TLib.Create(FileName: PChar);
 begin
+  {$IFDEF WIN32}
   FHandle := LoadLibrary(FileName);
+  {$ENDIF}
+  {$IFDEF UNIX}
+  FHandle := 0;
+  {$ENDIF}
 end;
 
 destructor TLib.Destroy;
 begin
+  {$IFDEF WIN32}
   FreeLibrary(FHandle);
+  {$ENDIF}
+  {$IFDEF UNIX}
+  FHandle := 0;
+  {$ENDIF}
 end;
 
 function TLib.GetProcAddress(Name: PChar): Pointer;
 begin
+  {$IFDEF WIN32}
   Result := windows.GetProcAddress(FHandle, Name);
+  {$ENDIF}
+  {$IFDEF UNIX}
+  FHandle := 0;
+  {$ENDIF}
 end;
 
 end.

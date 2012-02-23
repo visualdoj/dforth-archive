@@ -179,7 +179,7 @@ begin
   ExeDir := ParamStr(0);
   while (Length(ExeDir) > 0) and (ExeDir[Length(ExeDir)] <> '\') do
     Delete(ExeDir, Length(ExeDir), 1);
-  GetFileList(ExeDir + 'plugins\', Files, False);
+  // GetFileList(ExeDir + 'plugins\', Files, False);
   SetLength(Plugins, 0);
   for I := 0 to High(Files) do begin
     Files[I] := ExeDir + 'plugins\' + Files[I];

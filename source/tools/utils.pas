@@ -59,7 +59,7 @@ function memnfill(P: PChar; N: Integer; B: Byte): Integer;
 implementation
 
 uses
-  windows;
+  {$IFDEF WIN32}windows{$ENDIF} {$IFDEF UNIX}unix, BaseUnix{$ENDIF};
 
 Function DeleteLeftSpaces(S: TString): TString;
 begin
@@ -282,6 +282,7 @@ begin
   FindClose(Search);
 end;}
 
+{$IFDEF WIN32}
 procedure ProcessFiles;
 var
   Search: TSearchRec;
@@ -303,6 +304,25 @@ begin
   until not FindNextFile(fh, @fd);
   FindClose(fh);
 end;
+{$ENDIF}
+{$IFDEF LINUX}
+procedure ProcessFiles;
+var
+  Search: TSearchRec;
+  Dir: PDir;
+  Entry: PDirEnt;
+begin
+  Dir := FpOpenDir(Folder);
+  repeat 
+    Entry := FpReadDir(Dir^);
+    if (Entry <> nil) then begin
+            // Writeln('Entry: "', PChar(@Entry^.d_name[0]), '" ', Entry^.d_type);
+            Search.Name := PChar(@Entry^.d_name[0]);
+            OnFile(Folder, Search);
+    end;
+  until Entry = nil;
+end;
+{$ENDIF}
 
 function memncmp(P1, P2: PChar; N: Integer): Integer;
 var

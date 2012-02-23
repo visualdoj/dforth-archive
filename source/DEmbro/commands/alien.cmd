@@ -270,6 +270,7 @@ DECLARE(c;, callback_endfun)
       Data := Command^.Data;
       Fun := Pointer(Command^.Data^);
       Stack := Machine.WP;
+      {$IFDEF I386}
       asm
         mov ebx, Stack
         mov ecx, Data
@@ -315,6 +316,7 @@ DECLARE(c;, callback_endfun)
         @endofcall:
           mov Stack, ebx // запоминаем положение стека
       end;
+      {$ENDIF}
       //Log('SUB: ' + IntToStr(TUInt(Machine.WP) - TUInt(Stack)));
       Machine.WP := Stack;
     end;

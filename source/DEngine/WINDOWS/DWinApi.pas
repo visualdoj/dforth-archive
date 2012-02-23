@@ -3,20 +3,19 @@ unit DWinApi;
 interface
 
 uses
-  messages,
-  GL,
+  {$IFDEF WIN32}messages, windows,{$ENDIF}
   DUtils,
   DDebug,
   DParser,
   DMath,
   DClasses,
-  DEvents,
-  windows;
+  DEvents;
 
 const
   KEY_TILDE = 192;
   KEY_ENTER = 13;
 
+{$IFDEF WIN32}
   KEY_LEFT = VK_LEFT;
   KEY_RIGHT = VK_RIGHT;
   KEY_DOWN = VK_DOWN;
@@ -38,6 +37,7 @@ const
   KEY_F10 = VK_F10;
   KEY_F11 = VK_F11;
   KEY_F12 = VK_F12;
+{$ENDIF}
 
   MOD_LCTRL = 0;
   MOD_RCTRL = 1;
@@ -49,7 +49,7 @@ const
   IDM_PASTE     = 40008;
 
 Type
-TWinApi = class;
+{$IFDEF WIN32}TWinApi = class;{$ENDIF}
 
 TKey = Cardinal;
 
@@ -142,6 +142,7 @@ TWinApp = TEntity;
   procedure OnEvent(const Event: TEvent); virtual;
 end;}
 
+{$IFDEF WIN32}
 TWindow = class//{{{
 private
   FWinApi: TWinApi;
@@ -208,9 +209,11 @@ public
   property Mouse: TVec2i read GetMouse;
   property FPS: Integer read FFPS;
 end;
+{$ENDIF}
 
 function GetTimer: Integer;
 
+{$IFDEF WIN32}
 // Сохранение файла в формат ext, возвращает путь к файлу
 Function GetSaveFile(Window: TWindow; ext: TString = '*'): TString;
 // Загрузка файла формата ext, возвращает путь к файлу
@@ -222,6 +225,7 @@ procedure GetDirList(const Folder: TString; var Files: TArrayOfString);
 // Текущие директории
 function GetCurrentDirectory: TString;
 procedure SetCurrentDirectory(const Folder: TString);
+{$ENDIF}
 // Директория, в которой лежит Exe
 function GetExeDirectory: TString;
 
@@ -229,9 +233,7 @@ function GetExeDirectory: TString;
 
 implementation
 
-//Var
-//  Windows: Array Of TWindow;
-
+{$IFDEF WIN32}
 // Обработчик сообщений, приходящих окну//{{{
 function WndProc(hWnd: HWND; Msg: Cardinal; wParam: Integer; lParam: Integer): Integer; stdcall;
   var
@@ -257,6 +259,7 @@ begin
       Exit;
   Result := DefWindowProcA(hWnd, Msg, wParam, lParam);
 end;
+{$ENDIF}
 
 constructor TWinApiMouse.Create;
 begin
@@ -332,6 +335,7 @@ procedure TWinApp.OnEvent;
 begin
 end;}
 //}}}
+{$IFDEF WIN32}
 //  TWindow//{{{
 //
 
@@ -789,7 +793,6 @@ begin
   Result:=Trunc(1000*T.QuadPart/F.QuadPart);
 end;
 
-
 // Dlg//{{{
 Const
   OFN_PATHMUSTEXIST = $00000800;
@@ -981,6 +984,7 @@ procedure SetCurrentDirectory(const Folder: TString);
 begin
   windows.SetCurrentDirectory(PAnsiChar(Folder));
 end;
+{$ENDIF}
 
 function GetExeDirectory: TString;
 var
@@ -989,9 +993,14 @@ var
 begin
   P := ParamStr(0);
   L := Length(P);
-  while (L > 0) and (P[L] <> '\') do
+  while (L > 0) and (P[L] <> DirectorySeparator) do
     Dec(L);
   Result := Copy(P, 1, L - 1);
+end;
+
+function GetTimer: Integer;
+begin
+  Result := 1000;
 end;
 
 end.

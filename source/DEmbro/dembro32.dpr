@@ -51,6 +51,11 @@ var
   S: String;
   I: Integer;
 
+function GetCurrentDirectory: String;
+begin
+  Result := '.';
+end;
+
 procedure quit(Machine: TForthMachine; Command: PForthCommand);
 begin
   Done := True;
@@ -86,18 +91,18 @@ begin
     Exit;
   // 1. command line
   // 2. current dir
-  if FileExist(GetCurrentDirectory + '\' + CommandLine.System) then begin
-    Machine.InterpretFile(GetCurrentDirectory + '\' + CommandLine.System);
+  if FileExist(GetCurrentDirectory + '/' + CommandLine.System) then begin
+    Machine.InterpretFile(GetCurrentDirectory + '/' + CommandLine.System);
     Exit;
   end;
   // 3. exe
-  if FileExist(GetExeDirectory + '\' + CommandLine.System) then begin
-    Machine.InterpretFile(GetExeDirectory + '\' + CommandLine.System);
+  if FileExist(GetExeDirectory + '/' + CommandLine.System) then begin
+    Machine.InterpretFile(GetExeDirectory + '/' + CommandLine.System);
     Exit;
   end;
-  // 3. exe\units
-  if FileExist(GetExeDirectory + '\units\' + CommandLine.System) then begin
-    Machine.InterpretFile(GetExeDirectory + '\units\' + CommandLine.System);
+  // 3. exe/units
+  if FileExist(GetExeDirectory + '/units/' + CommandLine.System) then begin
+    Machine.InterpretFile(GetExeDirectory + '/units/' + CommandLine.System);
     Exit;
   end;
 end;

@@ -1,1 +1,1 @@
-define(`GROUP',`include(commands\$1.cmd)')
+define(`GROUP',`include(commands/$1.cmd)')

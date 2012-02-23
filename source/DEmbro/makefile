@@ -11,7 +11,6 @@
 .PHONY: compile
 .PHONY: copy
 
-# SOURCES = *.pas4
 SOURCE_PATHS = *.ext \
                ../DEngine/*.ext \
                ../DEngine/WINDOWS/*.ext \
@@ -22,6 +21,8 @@ SOURCE_PATHS = *.ext \
                ../DEngine/FPC/*.ext \
                ../DLocal/*.ext \
                ../DMachineCode/*.ext
+
+RM = rm
 
 # SOURCES_PAS4 := $(wildcard *.pas4) \
 #                 $(wildcard ../DEngine/*.pas4) \
@@ -46,9 +47,11 @@ PASTEMP_LIST := $(addsuffix .pastemp,$(BASE_LIST))
 PAS4COPY_LIST := $(addsuffix .pas4.copy,$(BASE_LIST))
 PAS4_LIST := $(addsuffix .pas4,$(BASE_LIST))
 
+DQUOTES = ../tools/dquotes
+
 all: clean pas4 pasq
-	dquotes -r .\ *.pasq *.pas
-	dquotes commands\DCommandsMisc.pasq commands\DCommandsMisc.pas
+	$(DQUOTES) -r .\ *.pasq *.pas
+	$(DQUOTES) commands\DCommandsMisc.pasq commands\DCommandsMisc.pas
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FUtemp
 #	fpc dforth32.dpr -dFLAG_FPC -Sd
 #	fpc example.dpr -dFLAG_FPC -Sd
@@ -86,10 +89,10 @@ pas4:
 	m4 id2.m4 commands\DCommandsNumberArithmetic.temp > commands\DCommandsNumberArithmetic.pasq
 	m4 commands\DCommandsControl.pas4 > commands\DCommandsControl.pasq
 	m4 DCommandsTable.pas4 > DCommandsTable.pasq
-	..\tools\dquotes -r .\ *.pasq *.pas
+	$(DQUOTES) -r .\ *.pasq *.pas
 
 pasq:
-	..\tools\dquotes -r .\ *.pasq *.pas
+	$(DQUOTES) -r .\ *.pasq *.pas
 
 DMachineCode: Dx86 DArm
 
@@ -124,25 +127,28 @@ asm: clean
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
 commands:
-	del ..\..\release\core\builtin\*.de
-	m4 ..\m4\ctype.m4 commands\groups.list > temp\make_all.bat
-	temp\make_all.bat
-#	type commands\mem.cmd commands\misc.cmd > temp\all.cmd
-	m4 ..\m4\cgroups.m4 commands\groups.list > temp\all.cmd
-	m4 ..\m4\cload.m4 temp\all.cmd > temp\load.inc4
-	m4 commands.m4 temp\load.inc4 > temp\load.temp
-	m4 id2.m4 temp\load.temp > temp\load.incq
-	dquotes temp\load.incq load.inc
-	m4 ..\m4\cbody.m4 temp\all.cmd > temp\body.temp
-	m4 id2.m4 temp\body.temp > temp\body.inc4
-	m4 commands.m4 temp\body.inc4 > temp\body.incq
-	dquotes temp\body.incq body.inc
-	m4 ..\m4\g_builtin.m4 commands\groups.list > temp\make_builtin.bat
-	temp\make_builtin.bat
-	m4 ..\m4\g_help.m4 commands\groups.list > temp\make_docs.bat
-	temp\make_docs.bat
-	m4 ..\m4\cevaluate.m4 commands\groups.list > ..\..\release\core\builtin\all.de
-	m4 ..\m4\c_rusall.m4 commands\groups.list > ..\..\release\docs\rus\all.de
+	$(RM) ../../release/core/builtin/*.de || true
+	m4 ../m4/ctype.m4 commands/groups.list > temp/make_all.bat
+	chmod 744 temp/make_all.bat
+	temp/make_all.bat
+#	type commands/mem.cmd commands/misc.cmd > temp/all.cmd
+	m4 ../m4/cgroups.m4 commands/groups.list > temp/all.cmd
+	m4 ../m4/cload.m4 temp/all.cmd > temp/load.inc4
+	m4 commands.m4 temp/load.inc4 > temp/load.temp
+	m4 id2.m4 temp/load.temp > temp/load.incq
+	$(DQUOTES) temp/load.incq load.inc
+	m4 ../m4/cbody.m4 temp/all.cmd > temp/body.temp
+	m4 id2.m4 temp/body.temp > temp/body.inc4
+	m4 commands.m4 temp/body.inc4 > temp/body.incq
+	$(DQUOTES) temp/body.incq body.inc
+	m4 ../m4/g_builtin.m4 commands/groups.list > temp/make_builtin.bat
+	chmod 744 temp/make_builtin.bat
+	temp/make_builtin.bat
+	m4 ../m4/g_help.m4 commands/groups.list > temp/make_docs.bat
+	chmod 744 temp/make_docs.bat
+	temp/make_docs.bat
+	m4 ../m4/cevaluate.m4 commands/groups.list > ../../release/core/builtin/all.de
+	m4 ../m4/c_rusall.m4 commands/groups.list > ../../release/docs/rus/all.de
 
 copy: $(SOURCES)
 	echo $(SOURCES)
@@ -162,12 +168,13 @@ copy: $(SOURCES)
 
 %.pas: $(PASQ_LIST)
 	echo PAS $(@:%.pas=%.pasq)
-	..\tools\dquotes $(@:%.pas=%.pasq) $@
+	$(DQUOTES) $(@:%.pas=%.pasq) $@
 
 ../../release/dembro32.exe: $(PAS_LIST)
 	echo "EXE"
 	echo $(PAS_LIST)
 	cp dembro32.dpr temp/dembro32.dpr
+	cp *.inc temp/
 	fpc -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
 
 compile: ../../release/dembro32.exe;

@@ -1,5 +1,5 @@
 DECLARE(current-directory, current_directory)
-  body(Machine.WUS(GetCurrentDirectory);)
+  body({$IFDEF WIN32}Machine.WUS(GetCurrentDirectory);{$ENDIF})
 RUS SUMMARY ( -- B: s) кладёт путь до текущей деректории без завершающего слеша _SUMMARY
 
 DECLARE(nop)
