@@ -1,6 +1,25 @@
 // 2012.02.24 # Doj
 // Конструкция для создания глобальных массивов
 
+// Создание выглядит так:
+//     <count> <size> array "name" 
+// где
+//     count -- число элементов в массиве
+//     size -- размер одного элемента в массиве
+//     name -- имя переменной для массива
+// После этого доступны следующие команды
+//     name      ( -- ptr) кладёт указатель на начало массива в памяти
+//     name#     ( -- int) кладёт размер массива, т.е. count
+//     name-size ( -- int) кладёт размер элемента, т.е. size
+//     name[]    ( int -- ptr) кладёт указатель на элемент, имеющий заданный номер
+//   
+// |count |size  |el[0] |el[1] | ... ... ... |el[count] |
+
+0
+    t_int -- .size
+    t_int -- .count
+struct s-array-description
+
 : array-make-op ( p "name")
     source-next-name-passive created ,
   does> ( -- ptr) @ [ 2 cells ] literal + ;
@@ -18,10 +37,13 @@
   does> ( int -- ptr) @ tuck @ * + [ 2 cells ] literal + ;
 
 : array ( count size "name" --)
-    source-next-name-passive created here ( count size ptr)
+    source-next-name-passive +" '" created here ( count size ptr)
     rrot ( ptr count size) 2dup , , * allot ( ptr)
     dup array-make-op
     dup array-make-op#
     dup array-make-op-size
     dup array-make-op[]
     drop source-next-name bdrop ;
+
+: buffer ( size --) 1 array ;
+: cell-array ( count --) [ 1 cells ] literal array ;
