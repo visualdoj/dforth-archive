@@ -1,0 +1,27 @@
+// 2012.02.24 # Doj
+// Конструкция для создания глобальных массивов
+
+: array-make-op ( p "name")
+    source-next-name-passive created ,
+  does> ( -- ptr) @ [ 2 cells ] literal + ;
+
+: array-make-op# ( p "name")
+    source-next-name-passive +" #" created ,
+  does> ( -- count) @ cell+ @ ;
+
+: array-make-op-size ( p "name")
+    source-next-name-passive +" -size" created ,
+  does> ( -- size) @ @ ;
+
+: array-make-op[] ( p "name")
+    source-next-name-passive +" []" created ,
+  does> ( int -- ptr) @ tuck @ * + [ 2 cells ] literal + ;
+
+: array ( count size "name" --)
+    source-next-name-passive created here ( count size ptr)
+    rrot ( ptr count size) 2dup , , * allot ( ptr)
+    dup array-make-op
+    dup array-make-op#
+    dup array-make-op-size
+    dup array-make-op[]
+    drop source-next-name bdrop ;
