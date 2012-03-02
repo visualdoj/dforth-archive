@@ -17,7 +17,7 @@
 
 
 
-{$ASMMODE INTEL}
+{ $ASMMODE INTEL}
 unit DCommandsAlien;
 
 interface

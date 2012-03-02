@@ -168,7 +168,7 @@ begin
       Machine.Interpret(PChar('str" ' + FileNames[I] + '" evaluate-file'));
     if CommandLine.Debug then
       Writeln('Initialized: ', GetTimer);
-    if Repl then begin
+    if (Repl and ReplDefined) or (ReplDefault and not ReplDefined) then begin
       Writeln('DEmbro v' + IntToStr(DFORTHMACHINE_VERSION div 100) + '.' + 
                            IntToStr(DFORTHMACHINE_VERSION mod 100) + ' built ' +
               DFORTHMACHINE_DATE +
@@ -190,11 +190,6 @@ begin
     end else begin
     end;
   end;
-  // Writeln('Destroying machine');
-  Machine^.Destroy;
-  // Writeln('Compiler.Free');
   Compiler.Free;
-  // Writeln('Dispose Machine');
   Dispose(Machine, Destroy);
-  // Writeln('dembro32 out');
 end.

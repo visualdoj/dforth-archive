@@ -2,6 +2,9 @@ unit DEmbroCore;
 
 interface
 
+uses
+  DUtils;
+
 const
   BOOL_FALSE                            = 0;
   BOOL_TRUE                             = -1;
@@ -51,6 +54,10 @@ type
 
 function Align(Value: Cardinal; _Unit: Cardinal = CELL_SIZE): Cardinal;
 
+function MemCmp(P, Q: PArrayOfByte; Size: Integer): Integer;
+
+function MakeString(P: PArrayOfByte; Len: Integer): TString;
+
 implementation
 
 function Align;
@@ -62,6 +69,24 @@ begin
     Result := Value
   else
     Result := Value + _Unit - R;
+end;
+
+function MemCmp(P, Q: PArrayOfByte; Size: Integer): Integer;
+begin
+  while Size > 0 do begin
+    Result := Integer(P[0]) - Integer(Q[0]);
+    if Result <> 0 then
+      Exit;
+    Dec(Size);
+    Inc(P);
+    Inc(Q);
+  end;
+end;
+
+function MakeString(P: PArrayOfByte; Len: Integer): TString;
+begin
+  SetLength(Result, Len);
+  Move(P[0], Result[1], Len);
 end;
 
 end.

@@ -12,13 +12,15 @@
 .PHONY: copy
 
 ifeq ($(OS),Windows_NT)
-  RM := del
+  RM := del /Q
   CHMOD := echo
   CAT := type
+  S := \\
 else
-  RM := rm
+  RM := rm -f
   CHMOD := chmod
   CAT := cat
+  S := /
 endif
 
 SOURCE_PATHS = *.ext \
@@ -56,6 +58,8 @@ PAS4COPY_LIST := $(addsuffix .pas4.copy,$(BASE_LIST))
 PAS4_LIST := $(addsuffix .pas4,$(BASE_LIST))
 
 DQUOTES = ../tools/dquotes
+
+compile: ../../release/dembro32.exe;
 
 all: clean pas4 pasq
 	$(DQUOTES) -r .\ *.pasq *.pas
@@ -126,9 +130,9 @@ doc:
 	cd ..\..\wiki & dcut -m _DOC_CUT_ -s DForthMachine
 
 clean:
-	del temp\* /Q
-	del *.o /Q
-	del *.ppu /Q
+	$(RM) temp$(S)*
+	$(RM) *.o
+	$(RM) *.ppu
 
 asm: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
@@ -138,7 +142,7 @@ commands:
 	$(RM) ../../release/core/builtin/*.de || echo skipped
 	m4 ../m4/ctype.m4 commands/groups.list > temp/make_all.bat
 	$(CHMOD) 744 temp/make_all.bat
-	temp\make_all.bat
+	temp$(S)make_all.bat
 #	$(CAT) commands/mem.cmd commands/misc.cmd > temp/all.cmd
 	m4 ../m4/cgroups.m4 commands/groups.list > temp/all.cmd
 	m4 ../m4/cload.m4 temp/all.cmd > temp/load.inc4
@@ -151,10 +155,10 @@ commands:
 	$(DQUOTES) temp/body.incq body.inc
 	m4 ../m4/g_builtin.m4 commands/groups.list > temp/make_builtin.bat
 	$(CHMOD) 744 temp/make_builtin.bat
-	temp/make_builtin.bat
+	temp$(S)make_builtin.bat
 	m4 ../m4/g_help.m4 commands/groups.list > temp/make_docs.bat
 	$(CHMOD) 744 temp/make_docs.bat
-	temp/make_docs.bat
+	temp$(S)make_docs.bat
 	m4 ../m4/cevaluate.m4 commands/groups.list > ../../release/core/builtin/all.de
 	m4 ../m4/c_rusall.m4 commands/groups.list > ../../release/docs/rus/all.de
 
@@ -184,5 +188,3 @@ copy: $(SOURCES)
 	cp dembro32.dpr temp/dembro32.dpr
 	cp *.inc temp/
 	fpc -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
-
-compile: ../../release/dembro32.exe;
