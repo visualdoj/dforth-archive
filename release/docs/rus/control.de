@@ -1,15 +1,17 @@
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+// This file has been generated automatically while DEmbro building
+
+samebuiltin :
+samebuiltin :noname
+samebuiltin ;
+samebuiltin ..:
+samebuiltin ;..
+samebuiltin ...
+samebuiltin branch
+samebuiltin ?branch
+samebuiltin >mark
+samebuiltin >resolve
+samebuiltin <mark
+samebuiltin <resolve
+samebuiltin recurse
+samebuiltin immediate

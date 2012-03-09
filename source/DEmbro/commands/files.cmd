@@ -69,7 +69,7 @@ DECLARE(file-read, file_read)
     F := WOP;
     I := WOI;
     Src := WOP;
-    F^.Data.WriteVar(Src, I);)
+    F^.Data.ReadVar(Src, I);)
 
 DECLARE(byte-file-read, file_byte_read)
   var

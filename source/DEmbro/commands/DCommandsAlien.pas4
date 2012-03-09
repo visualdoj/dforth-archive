@@ -1,4 +1,6 @@
-{ $ASMMODE INTEL}
+{$IFDEF Windows}
+  {$ASMMODE INTEL}
+{$ENDIF}
 unit DCommandsAlien;
 
 interface

@@ -1,15 +1,17 @@
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+// This file has been generated automatically while DEmbro building
+
+samebuiltin b@
+samebuiltin b!
+samebuiltin binc
+samebuiltin bdec
+samebuiltin bdrop
+samebuiltin bdup
+samebuiltin bnip
+samebuiltin bswap
+samebuiltin bover
+samebuiltin btuck
+samebuiltin blrot
+samebuiltin brrot
+samebuiltin b>w
+samebuiltin w>b

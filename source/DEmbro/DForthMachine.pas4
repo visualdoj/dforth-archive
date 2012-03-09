@@ -726,7 +726,8 @@ begin
   Result := FullPath;
   I := Length(FullPath);
   while I > 0 do
-    if Result[I] = "\" then begin
+    // TODO DirectorySeparator or other true pascal function 
+    if (Result[I] = "\") or (Result[I] = "/") then begin
       Result := Copy(Result, 1, I);
       Exit
     end else

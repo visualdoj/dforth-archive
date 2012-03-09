@@ -110,6 +110,7 @@ DECLARE(evaluate-file, evaluate_file)
     while True do begin
       if Length(Machine.Directories) > 0 then begin
         FullPath := Machine.Directories[High(Machine.Directories)] + ShortPath;
+        Writeln("Trying ", FullPath);
         if FileExists(FullPath) then 
           Break;
       end;
@@ -119,6 +120,7 @@ DECLARE(evaluate-file, evaluate_file)
       FullPath := PChar(GetExeDirectory) + DirectorySeparator + ShortPath;
       if FileExists(FullPath) then 
         Break;
+      Writeln("Cannot find file ", ShortPath);
       Exit;
     end;
     SetLength(Machine.Directories, Length(Machine.Directories) + 1);

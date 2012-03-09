@@ -1,17 +1,17 @@
 // 2012.02.24 # Doj
-// Конструкция для создания глобальных массивов
+// РљРѕРЅСЃС‚СЂСѓРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РіР»РѕР±Р°Р»СЊРЅС‹С… РјР°СЃСЃРёРІРѕРІ
 
-// Создание выглядит так:
+// РЎРѕР·РґР°РЅРёРµ РІС‹РіР»СЏРґРёС‚ С‚Р°Рє:
 //     <count> <size> array "name" 
-// где
-//     count -- число элементов в массиве
-//     size -- размер одного элемента в массиве
-//     name -- имя переменной для массива
-// После этого доступны следующие команды
-//     name      ( -- ptr) кладёт указатель на начало массива в памяти
-//     name#     ( -- int) кладёт размер массива, т.е. count
-//     name-size ( -- int) кладёт размер элемента, т.е. size
-//     name[]    ( int -- ptr) кладёт указатель на элемент, имеющий заданный номер
+// РіРґРµ
+//     count -- С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ РІ РјР°СЃСЃРёРІРµ
+//     size -- СЂР°Р·РјРµСЂ РѕРґРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РІ РјР°СЃСЃРёРІРµ
+//     name -- РёРјСЏ РїРµСЂРµРјРµРЅРЅРѕР№ РґР»СЏ РјР°СЃСЃРёРІР°
+// РџРѕСЃР»Рµ СЌС‚РѕРіРѕ РґРѕСЃС‚СѓРїРЅС‹ СЃР»РµРґСѓСЋС‰РёРµ РєРѕРјР°РЅРґС‹
+//     name      ( -- ptr) РєР»Р°РґС‘С‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РЅР°С‡Р°Р»Рѕ РјР°СЃСЃРёРІР° РІ РїР°РјСЏС‚Рё
+//     name#     ( -- int) РєР»Р°РґС‘С‚ СЂР°Р·РјРµСЂ РјР°СЃСЃРёРІР°, С‚.Рµ. count
+//     name-size ( -- int) РєР»Р°РґС‘С‚ СЂР°Р·РјРµСЂ СЌР»РµРјРµРЅС‚Р°, С‚.Рµ. size
+//     name[]    ( int -- ptr) РєР»Р°РґС‘С‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЌР»РµРјРµРЅС‚, РёРјРµСЋС‰РёР№ Р·Р°РґР°РЅРЅС‹Р№ РЅРѕРјРµСЂ
 //   
 // |count |size  |el[0] |el[1] | ... ... ... |el[count] |
 
@@ -20,30 +20,45 @@
     t_int -- .count
 struct s-array-description
 
-: array-make-op ( p "name")
-    source-next-name-passive created ,
-  does> ( -- ptr) @ [ 2 cells ] literal + ;
+: array-make-op ( B: s) created 
+  does> ( -- ptr) [ 2 cells ] literal + ;
 
-: array-make-op# ( p "name")
-    source-next-name-passive +" #" created ,
-  does> ( -- count) @ cell+ @ ;
+: array-make-op# ( p "name") created 
+  does> ( -- count) cell+ @ ;
 
-: array-make-op-size ( p "name")
-    source-next-name-passive +" -size" created ,
-  does> ( -- size) @ @ ;
+: array-make-op-size ( p "name") created 
+  does> ( -- size) @ ;
 
-: array-make-op[] ( p "name")
-    source-next-name-passive +" []" created ,
-  does> ( int -- ptr) @ tuck @ * + [ 2 cells ] literal + ;
+: array-make-op[] ( p "name") created 
+  does> ( int -- ptr) tuck @ * + [ 2 cells ] literal + ;
 
 : array ( count size "name" --)
-    source-next-name-passive +" '" created here ( count size ptr)
-    rrot ( ptr count size) 2dup , , * allot ( ptr)
-    dup array-make-op
-    dup array-make-op#
-    dup array-make-op-size
-    dup array-make-op[]
-    drop source-next-name bdrop ;
+    source-next-name
+    bdup +" '" created ( count size)
+    bdup array-make-op
+    bdup +" #" array-make-op#
+    bdup +" -size" array-make-op-size
+    bdup +" []" array-make-op[]
+    bdrop
+    ( count size) 2dup , , * allot ;
 
 : buffer ( size --) 1 array ;
 : cell-array ( count --) [ 1 cells ] literal array ;
+
+variable wtf
+: make-array-op, ( add-xt B: s -- resolve) created , here 0 ,
+  does> ( ...) dup wtf ! @ execute 
+               wtf @ cell+ @ .count 1+! ; 
+
+: array-start ( add-xt size "name" --)
+    source-next-name
+    bdup +" ," swap ( size add-xt) make-array-op, ( size resolve)
+    bdup +" '" created here ( size resolve ptr) swap ! ( size)
+    bdup array-make-op
+    bdup +" #" array-make-op#
+    bdup +" -size" array-make-op-size
+    bdup +" []" array-make-op[]
+    bdrop
+    , 0 , ( add-xt ptr) ;
+
+: cell-array-start ( "name" --) ['] , [ 1 cells ] literal array-start ;

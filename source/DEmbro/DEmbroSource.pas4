@@ -19,8 +19,10 @@ TSource = object
  public
   procedure SkipSpaces;
   function SourceCut(const S: TString): TString;
-  function NextName: TString;
-  function NextNamePassive: TString;
+  function NextName: TString; overload;
+  function NextNamePassive: TString; overload;
+  function NextName(var P: PAnsiChar): Integer; overload;
+  function NextNamePassive(var P: PAnsiChar): Integer; overload;
   function NextChar: TChar;
   function NextLine: TString;
   function NextLinePassive: TString;
@@ -85,6 +87,24 @@ begin
     INCPOS(Cur);
   Result := MakeString(FPos, PtrInt(Cur) - PtrInt(FPos));
   FEOS := FPos[0] = 0;
+end;
+
+function TSource.NextName(var P: PAnsiChar): Integer;
+begin
+  Result := NextNamePassive(P);
+  INCPOS(FPos, Result);
+end;
+
+function TSource.NextNamePassive(var P: PAnsiChar): Integer;
+var
+  Cur: PArrayOfByte;
+begin
+  SkipSpaces;
+  P := PAnsiChar(FPos);
+  Cur := FPos;
+  while Cur[0] > 32 do
+    INCPOS(Cur);
+  Result := PtrInt(Cur) - PtrInt(FPos);
 end;
 
 function TSource.NextChar: TChar;

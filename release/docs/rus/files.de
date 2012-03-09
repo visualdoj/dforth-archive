@@ -1,30 +1,32 @@
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+// This file has been generated automatically while DEmbro building
+
+samebuiltin file-exists
+samebuiltin file-open
+samebuiltin file-close
+samebuiltin file-w
+samebuiltin file-r
+samebuiltin file-write
+samebuiltin file-read
+samebuiltin byte-file-read
+samebuiltin word-file-read
+samebuiltin dword-file-read
+samebuiltin qword-file-read
+samebuiltin ubyte-file-read
+samebuiltin uword-file-read
+samebuiltin udword-file-read
+samebuiltin uqword-file-read
+samebuiltin byte-file-write
+samebuiltin word-file-write
+samebuiltin dword-file-write
+samebuiltin qword-file-write
+samebuiltin ubyte-file-write
+samebuiltin uword-file-write
+samebuiltin udword-file-write
+samebuiltin uqword-file-write
+samebuiltin str-file-write
+samebuiltin str-file-read
+samebuiltin file-size
+samebuiltin *cr
+samebuiltin *cr#
+samebuiltin file-cr

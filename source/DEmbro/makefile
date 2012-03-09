@@ -163,28 +163,21 @@ commands:
 	m4 ../m4/c_rusall.m4 commands/groups.list > ../../release/docs/rus/all.de
 
 copy: $(SOURCES)
-	echo $(SOURCES)
 	cp $(SOURCES) temp
 
 # %.pas4.copy: copy
-# 	echo "PAS4"
 # 	cp $(@:%.pas4.copy=%.pas4) temp
 
 %.pastemp: copy
-	echo "PASTEMP"
 	m4 meta.m4 $(@:%.pastemp=%.pas4) > $@
 
 %.pasq: $(PASTEMP_LIST)
-	echo "PASQ"
 	m4 id2.m4 $(@:%.pasq=%.pastemp) > $@
 
 %.pas: $(PASQ_LIST)
-	echo PAS $(@:%.pas=%.pasq)
 	$(DQUOTES) $(@:%.pas=%.pasq) $@
 
 ../../release/dembro32.exe: $(PAS_LIST)
-	echo "EXE"
-	echo $(PAS_LIST)
 	cp dembro32.dpr temp/dembro32.dpr
 	cp *.inc temp/
 	fpc -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp

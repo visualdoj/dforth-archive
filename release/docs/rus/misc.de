@@ -1,43 +1,45 @@
 
- " current-directory" "   ( -- B: s) кладёт путь до текущей деректории без завершающего слеша " described 
- " nop" "   ничего не делает " described 
- " timer" "   ( -- i) кладёт счётчик, увеличивающийся на 1 каждую миллисекунду " described 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+// This file has been generated automatically while DEmbro building
+
+samebuiltin current-directory
+samebuiltin nop
+samebuiltin timer
+samebuiltin @wp
+samebuiltin wp
+samebuiltin rp
+samebuiltin lp
+samebuiltin lb
+samebuiltin r@
+samebuiltin r>
+samebuiltin >r
+samebuiltin l@
+samebuiltin l!
+samebuiltin l+
+samebuiltin sys-version
+samebuiltin state
+samebuiltin time
+samebuiltin local
+samebuiltin source-cut
+samebuiltin source-next-char
+samebuiltin source-next-name
+samebuiltin source-next-name-passive
+samebuiltin source-next-line
+samebuiltin source-next-line-passive
+samebuiltin run_source_next_name_passive
+samebuiltin source-read-to-char
+samebuiltin ptr-nil
+samebuiltin compile@
+samebuiltin interpret@
+samebuiltin run@
+samebuiltin opcode->command
+samebuiltin literal
+samebuiltin execute
+samebuiltin does>
+samebuiltin (does>)
+samebuiltin cells
+samebuiltin cell+
+samebuiltin last
+samebuiltin randomize
+samebuiltin random
+samebuiltin align
+samebuiltin palign

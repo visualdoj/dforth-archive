@@ -1,45 +1,49 @@
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- " str-copy" " ( B: x -- B: y) создаёт новую строку  " described 
- " str-new" " ( lcw -- B: s) создаёт строку длинной l шириной w  " described 
- 
- 
- 
- 
- 
- 
- 
- " str=>=" "   ( xt B: x -- B: y) применяет к каждому символу строки определённую команду" described 
- 
- 
+// This file has been generated automatically while DEmbro building
+
+samebuiltin pachar-alloc
+samebuiltin pchar-free
+samebuiltin pchar-len
+samebuiltin pchar-concat
+samebuiltin pchar=
+samebuiltin pchar.
+samebuiltin char
+samebuiltin [char]
+samebuiltin str-drop
+samebuiltin str-dup
+samebuiltin str-over
+samebuiltin str-len
+samebuiltin str-width
+samebuiltin str^
+samebuiltin str^?
+samebuiltin str-
+samebuiltin str-replace
+samebuiltin str-ins
+samebuiltin str-del
+samebuiltin str-cut
+samebuiltin str-split
+samebuiltin str-sub
+samebuiltin str-literal
+samebuiltin str=
+samebuiltin str+
+samebuiltin str0
+samebuiltin str.
+samebuiltin str$
+samebuiltin str@
+samebuiltin str!
+samebuiltin str[]@
+samebuiltin str[]!
+samebuiltin str-copy
+samebuiltin str-new
+samebuiltin pchar->str
+samebuiltin format
+samebuiltin raw->unicode
+samebuiltin utf8->unicode
+samebuiltin utf8->raw
+samebuiltin unicode->utf8
+samebuiltin unicode->raw
+samebuiltin str=>=
+samebuiltin *poststr
+samebuiltin *postname
+samebuiltin p#-name
+samebuiltin p#-name-passive

@@ -1030,3 +1030,13 @@ RUS SUMMARY ( xt B: x -- B: y) применяет к каждому символ
 
 DECLARE(*poststr, poststr) body(WUP(@ConvStr))
 DECLARE(*postname, postname) body(WUP(@ConvName))
+
+DECLARE(p#-name, p_count__name)
+body(
+  TInt(WVar(SizeOf(TPtr))) := Source^.NextName(TPtr(WVar(0)));
+  Inc(WP, SizeOf(TPtr) + SizeOf(TInt));)
+
+DECLARE(p#-name-passive, p_count__name_passive)
+body(
+  TInt(WVar(SizeOf(TPtr))) := Source^.NextNamePassive(TPtr(WVar(0)));
+  Inc(WP, SizeOf(TPtr) + SizeOf(TInt));)

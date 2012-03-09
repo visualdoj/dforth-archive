@@ -1,3 +1,4 @@
+
 // This file has been generated automatically while DEmbro building
 
 samebuiltin pachar-alloc
@@ -44,3 +45,5 @@ samebuiltin unicode->raw
 samebuiltin str=>=
 samebuiltin *poststr
 samebuiltin *postname
+samebuiltin p#-name
+samebuiltin p#-name-passive

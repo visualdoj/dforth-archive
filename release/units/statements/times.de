@@ -1,0 +1,5 @@
+// 2012.03.05 # Doj
+// Многократное выполнение команд
+
+: times ' swap downto0 over execute repeat drop drop ;
+: [times] ' swap downto0 over call literal compile execute repeat drop drop ; immediate

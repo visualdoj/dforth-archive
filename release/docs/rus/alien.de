@@ -1,10 +1,12 @@
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+// This file has been generated automatically while DEmbro building
+
+samebuiltin lib-load
+samebuiltin lib-unload
+samebuiltin lib-fun
+samebuiltin :a
+samebuiltin a;
+samebuiltin :c
+samebuiltin c;
+samebuiltin stdcall
+samebuiltin cdecl
