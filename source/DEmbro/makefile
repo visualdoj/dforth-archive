@@ -179,5 +179,5 @@ copy: $(SOURCES)
 
 ../../release/dembro32.exe: $(PAS_LIST)
 	cp dembro32.dpr temp/dembro32.dpr
-	cp *.inc temp/
+	cp *.inc temp
 	fpc -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp

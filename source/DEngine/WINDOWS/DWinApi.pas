@@ -3,7 +3,7 @@ unit DWinApi;
 interface
 
 uses
-  {$IFDEF WIN32}messages, windows,{$ENDIF}
+  {$IFDEF WIN32}messages, windows, GL,{$ENDIF}
   DUtils,
   DDebug,
   DParser,
@@ -49,6 +49,7 @@ const
   IDM_PASTE     = 40008;
 
 Type
+TRect = windows.TRect;
 {$IFDEF WIN32}TWinApi = class;{$ENDIF}
 
 TKey = Cardinal;
@@ -998,10 +999,12 @@ begin
   Result := Copy(P, 1, L - 1);
 end;
 
+{$IFNDEF WIN32}
 function GetTimer: Integer;
 begin
   Result := 1000;
 end;
+{$ENDIF}
 
 end.
 
