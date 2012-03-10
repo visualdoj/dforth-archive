@@ -301,7 +301,6 @@ begin
     Fun := Pointer(Command^.Data^);
     Stack := Machine.WP;
     {$IFDEF I386}
-    sadfasdf
     asm
       mov ebx, Stack
       mov ecx, Data

@@ -1,7 +1,7 @@
 dnl DCommandInt.pas4
 define(`genname', `ifelse($1, `', $2, len($1), `1', $2, $1-$2)')
-define(`_X86')
-define(`_IA32')
+ifdef(`__windows__', `define(`_X86')',  `define(`NO_X86')')
+ifdef(`__windows__', `define(`_IA32')', `define(`NO_IA32')')
 define(`typed_commands',`
      ifdef(`_IA32',
        `

@@ -24,6 +24,7 @@ else
 endif
 
 SOURCE_PATHS = *.ext \
+	       commands/*.ext \
                ../DEngine/*.ext \
                ../DEngine/WINDOWS/*.ext \
                ../DEngine/WINDOWS/*.ext \
