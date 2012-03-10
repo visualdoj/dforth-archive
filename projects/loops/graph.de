@@ -1,0 +1,35 @@
+// 2011.06.30 # Doj
+// Полезные функции для вывода через OpenGL
+
+include" units\headers\gl.de"
+
+variable *color // текущий цвет
+
+: set-color ( i-) dup *color ! glColor4ub ;
+
+: draw-line2i ( iiii-) GL_LINES glBegin 0 glVertex3i 0 glVertex3i glEnd ;
+: draw-line2f ( ffff-) GL_LINES glBegin glVertex2f glVertex2f glEnd ;
+
+variable w
+variable h
+: draw-recti ( iiii-) h ! w !
+  GL_QUADS glBegin 
+    over over glVertex2i
+    over w @ + over glVertex2i
+    over w @ + over h @ + glVertex2i
+    h @ + glVertex2i
+  glEnd 
+;
+
+// Первые два числа -- координаты, остальные два -- размеры
+: draw-rect ( W: ffff)
+  // | x y w h|
+  // x@ float-w>f w@ float-w>f f+ float-f>w | x+w|
+  // y@ float-w>f h@ float-w>f f+ float-f>w | y+h|
+  // GL_QUADS glBegin
+  // x@  y@ glVertex2f
+  // x+w y@ glVertex2f
+  // x+w y+h glVertex2f
+  // x@  y+h glVertex2f
+  // glEnd
+;

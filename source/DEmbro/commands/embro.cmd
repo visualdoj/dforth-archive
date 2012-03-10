@@ -101,7 +101,7 @@ DECLARE(evaluate-file, evaluate_file)
     ShortPath := '';
     for I := 0 to S^.Len - 1 do begin
       C := Chr(StrSymbol(S, I));
-      if C[1] = '\' then
+      if (C[1] = '\') or (C[1] = '/') then
         C := DirectorySeparator;
       ShortPath := ShortPath + C;
     end;

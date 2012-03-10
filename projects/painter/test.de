@@ -1,0 +1,11 @@
+// 2012.02.27 # Doj
+// Рисовалка
+
+include" ..\loops\graph.de"
+include" ..\loops\graphic-loop-gl.de"
+
+800 600
+:noname
+    h00FF00FF set-color
+    50 50 100 100 draw-recti ;
+start-graphic-loop
