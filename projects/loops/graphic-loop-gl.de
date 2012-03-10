@@ -109,7 +109,7 @@ create PIXELFORMATDESCRIPTOR
 // Функция WindowsProc, в неё будут передаваться сообщения, приходящие
 // окну из системы.
 :noname  ( hWnd:uint Msg:uint wParam:int lParam:int -- )
-     drop drop drop drop
+     // drop drop drop drop
      // 3 pick switch 
      //   WM_DESTROY       of drop drop drop drop *exit? on \of
      //   WM_KEYDOWN       of drop OnKeyDown drop drop \of
@@ -120,7 +120,7 @@ create PIXELFORMATDESCRIPTOR
        // WM_RBUTTONDOWN   of drop drop drop drop OnRButtonDown \of
        // WM_MBUTTONDOWN   of drop drop drop drop OnMButtonDown \of
        // WM_MOVING        of OnMoving drop drop drop \of
-     //   DefWindowProcA 
+        DefWindowProcA 
      // \switch
 ; :c WindowProc t_WindowProc c;
 

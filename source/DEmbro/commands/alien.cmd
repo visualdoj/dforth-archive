@@ -260,6 +260,10 @@ DECLARE(c;, callback_endfun)
     end;
   end;
 
+  {$IFDEF Windows}
+    {$DEFINE I386}
+  {$ENDIF}
+
   procedure invoke_stdcall(Machine: TForthMachine; Command: PForthCommand);
   var
     Fun: Pointer;

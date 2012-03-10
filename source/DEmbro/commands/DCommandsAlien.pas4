@@ -1,5 +1,6 @@
 {$IFDEF Windows}
   {$ASMMODE INTEL}
+  {$DEFINE I386}
 {$ENDIF}
 unit DCommandsAlien;
 
@@ -299,7 +300,8 @@ begin
     Data := Command^.Data;
     Fun := Pointer(Command^.Data^);
     Stack := Machine.WP;
-    {$IFDEF I386blabla}
+    {$IFDEF I386}
+    sadfasdf
     asm
       mov ebx, Stack
       mov ecx, Data
