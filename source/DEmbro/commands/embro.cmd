@@ -110,7 +110,6 @@ DECLARE(evaluate-file, evaluate_file)
     while True do begin
       if Length(Machine.Directories) > 0 then begin
         FullPath := Machine.Directories[High(Machine.Directories)] + ShortPath;
-        Writeln("Trying ", FullPath);
         if FileExists(FullPath) then 
           Break;
       end;
