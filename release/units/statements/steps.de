@@ -1,0 +1,30 @@
+// 2012.03.10 # Doj
+// Разбиение команды на шаги
+
+include" units/statements/var.de"
+
+namespace STEPS
+        0 var a
+        : --step-- call ; a@ dyn+ call :noname ; immediate
+        : steps; call ; a@ dyn+ call ^ ; immediate
+        ' --step-- alias ; immediate
+\namespace
+
+( Из-за особенности ядра следующий код не работает.
+  Команда :noname кладет промежуточные данные в стек L,
+  а он восстанавливается после вызова команды ;
+  Таким образом после выполнения :steps-noname
+  стек оказывается в неконсистентное состояние.
+  Возможно, что стоит выделить отдельный control-стек
+  в ядре DEmbro, чтобы такие фишки работали. Или
+  же даже закрепить информацию о создаваемом словом
+  за словарем. )
+: :steps-noname ( dyn)
+    call STEPS
+    STEPS a! ^
+    call :noname ;
+: :steps ( "name") dyn last execute :steps-noname ;
+
+// Костыли -- первый :noname нужно вызвать самому
+: :steps-noname call STEPS STEPS a! ^ ;
+: :steps dyn last execute :steps-noname ;

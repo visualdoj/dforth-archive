@@ -1,0 +1,15 @@
+// 2012.02.19 # Doj
+// команды для создания переменных в DEmbro-стиле
+
+: make-global-op' ( B: s) created ;
+: make-global-op@ ( B: s) created does> ( -i) @ ;
+: make-global-op! ( B: s) created does> ( i-) ! ;
+
+: var ( i "name")
+    source-next-name
+    bdup make-global-op@
+    bdup +" @" make-global-op@
+    bdup +" !" make-global-op!
+    bdup +" '" make-global-op'
+    bdrop 
+    , ;
