@@ -59,6 +59,7 @@ DECLARE(;, compile_enddef, True)
       Machine.OnUpdateCommand(Index);
       Machine.FLastMnemonic := Index;
       //Writeln('LAST COMMAND ', High(Machine.C), ' ' + Machine.C[High(Machine.C)].Name);
+      // Machine.WUP(Machine.C[Index]);
     end;
   end;
 
