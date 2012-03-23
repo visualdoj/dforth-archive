@@ -2,12 +2,12 @@ unit DCommandLine;
 
 interface
 
-uses
-  {$I units.inc};
+//uses
+//  {$I units.inc};
 
 var
   CommandLine: record
-                 FileNames: array of TString;
+                 FileNames: array of String;
                  Repl: Boolean;
                  ReplDefault: Boolean;
                  ReplDefined: Boolean;
@@ -15,6 +15,7 @@ var
                  Error: Boolean;
                  Help: Boolean;
                  Debug: Boolean;
+                 LibNameDefault: String;
                end;
 
 procedure ParseCommandLine;
@@ -28,7 +29,13 @@ begin
   CommandLine.ReplDefault   := True;
   CommandLine.ReplDefined   := False;
   CommandLine.System        := "core" + DirectorySeparator + "default" + DirectorySeparator + "system.de";
-  CommandLine.Debug         := True;
+  CommandLine.Debug         := False;
+  {$IFDEF WIN32}
+  CommandLine.LibNameDefault := "de32.dll";
+  {$ENDIF}
+  {$IFDEF UNIX}
+  CommandLine.LibNameDefault := "libde32.so";
+  {$ENDIF}
 end;
 
 procedure Error(Param: String);

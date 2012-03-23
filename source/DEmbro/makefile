@@ -2,7 +2,7 @@
 .PHONY: pas4
 .PHONY: release
 .PHONY: doc
-.PHONY: dll
+.PHONY: lib
 .PHONY: DMachineCode
 .PHONY: Dx86
 .PHONY: DArm
@@ -16,11 +16,15 @@ ifeq ($(OS),Windows_NT)
   CHMOD := echo
   CAT := type
   S := \\
+  LIBEXT := .dll
+  EXEEXT := .exe
 else
   RM := rm -f
   CHMOD := chmod
   CAT := cat
   S := /
+  LIBEXT := .so
+  EXEEXT :=
 endif
 
 SOURCE_PATHS = *.ext \
@@ -60,7 +64,8 @@ PAS4_LIST := $(addsuffix .pas4,$(BASE_LIST))
 
 DQUOTES = ../tools/dquotes
 
-compile: ../../release/dembro32.exe;
+compile: ../../release/dembro32$(EXEEXT) \
+         ../../release/de$(EXEEXT);
 
 all: clean pas4 pasq
 	$(DQUOTES) -r .\ *.pasq *.pas
@@ -71,10 +76,6 @@ all: clean pas4 pasq
 
 # test: clean pas4 pasq
 # 	fpc -vb test.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FEtemp -FUtemp
-
-sources:
-	echo $(wildcard $(SOURCES))
-#	echo $(SOURCES)
 
 pas4:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
@@ -117,9 +118,6 @@ DArm:
 	m4 ..\DMachineCode\DArm.pas4 > ..\DMachineCode\DArm.temp1
 	m4 ..\m4\hex.m4 ..\DMachineCode\DArm.temp1 > ..\DMachineCode\DArm.pas
 
-dll:
-	fpc dembro32lib.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
-
 release: clean pas4 pasq
 	fpc dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -FE"..\..\release\" -FU".\temp"
 #	fpc dembro32lib.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -O3 -FE"..\..\release\" -FU".\temp"
@@ -132,19 +130,17 @@ doc:
 
 clean:
 	$(RM) temp$(S)*
-	$(RM) *.o
-	$(RM) *.ppu
 
 asm: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
 	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
+# COMMANDS
 commands:
 	$(RM) ../../release/core/builtin/*.de || echo skipped
 	m4 ../m4/ctype.m4 commands/groups.list > temp/make_all.bat
 	$(CHMOD) 744 temp/make_all.bat
 	temp$(S)make_all.bat
-#	$(CAT) commands/mem.cmd commands/misc.cmd > temp/all.cmd
 	m4 ../m4/cgroups.m4 commands/groups.list > temp/all.cmd
 	m4 ../m4/cload.m4 temp/all.cmd > temp/load.inc4
 	m4 commands.m4 temp/load.inc4 > temp/load.temp
@@ -166,10 +162,7 @@ commands:
 copy: $(SOURCES)
 	cp $(SOURCES) temp
 
-# %.pas4.copy: copy
-# 	cp $(@:%.pas4.copy=%.pas4) temp
-
-%.pastemp: copy
+%.pastemp: $(PAS4_LIST) copy
 	m4 meta.m4 $(@:%.pastemp=%.pas4) > $@
 
 %.pasq: $(PASTEMP_LIST)
@@ -178,7 +171,30 @@ copy: $(SOURCES)
 %.pas: $(PASQ_LIST)
 	$(DQUOTES) $(@:%.pas=%.pasq) $@
 
-../../release/dembro32.exe: $(PAS_LIST)
+../../release/dembro32: $(PAS_LIST) dembro32.dpr body.inc
 	cp dembro32.dpr temp/dembro32.dpr
 	cp *.inc temp
 	fpc -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
+
+../../release/de: $(PAS_LIST) de.dpr body.inc
+	cp de.dpr temp/de.dpr
+	cp *.inc temp
+	fpc -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
+
+../../release/de.exe: $(PAS_LIST) body.inc
+	cp de.dpr temp/de.dpr
+	cp *.inc temp
+	fpc -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
+
+lib: ../../release/de32$(LIBEXT);
+
+../../release/de32.dll:
+	fpc de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
+
+../../release/de32.so: $(PAS_LIST) de32.dpr body.inc
+	cp de32.dpr temp/
+	fpc temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE../../release/ -FU./temp
+
+# UTILS
+paslist:
+	echo $(PAS_LIST)
