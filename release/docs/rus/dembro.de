@@ -1,11 +1,12 @@
 
+// This file has been generated automatically while DEmbro building
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+samebuiltin str-dembro-finded
+samebuiltin pchar-dembro-finded
+samebuiltin #char-dembro-finded
+samebuiltin str-dembro-notfound
+samebuiltin pchar-dembro-notfound
+samebuiltin #char-dembro-notfound
+samebuiltin dembro-compile-step
+samebuiltin dembro-interpret-step
+samebuiltin dembro-step

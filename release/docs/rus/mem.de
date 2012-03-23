@@ -1,8 +1,9 @@
 
+// This file has been generated automatically while DEmbro building
 
- " malloc" "   ( size -- ptr) выделяет переданное число байт, возвращает указатель " described 
- " free" "   ( ptr) освобождает выделенный ранее участок памяти " described 
- " realloc" "   ( ptr1 newsize -- ptr2) перевыделяет память, сохраняя данные " described 
- " move" "   ( src dst size --) переносит size байт из src в dst " described 
- " fill0" "   ( dst size --) заполняет size байт по адресу dst нулями " described 
- " fill" "   ( dst size value --) заполняет size байт по адресу dst значениями Value " described 
+samebuiltin malloc
+samebuiltin free
+samebuiltin realloc
+samebuiltin move
+samebuiltin fill0
+samebuiltin fill

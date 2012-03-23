@@ -49,7 +49,7 @@ const
   IDM_PASTE     = 40008;
 
 Type
-TRect = windows.TRect;
+{$IFDEF WIN32}TRect = windows.TRect;{$ENDIF}
 {$IFDEF WIN32}TWinApi = class;{$ENDIF}
 
 TKey = Cardinal;

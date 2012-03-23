@@ -20,6 +20,12 @@ end;
 
 implementation
 
+{$IFDEF UNIX}
+function dlopen(name: pchar; mode: longint): pointer; cdecl; external 'dl';
+function dlsym(lib: pointer; name: pchar): pointer; cdecl; external 'dl';
+function dlclose(lib: pointer): longint; cdecl; external 'dl';
+{$ENDIF}
+
 function TLib.GetReady: Boolean;
 begin
   Result := FHandle <> 0;
@@ -31,7 +37,8 @@ begin
   FHandle := LoadLibrary(FileName);
   {$ENDIF}
   {$IFDEF UNIX}
-  FHandle := 0;
+  Writeln('Openning ', FileName);
+  FHandle := PtrInt(dlopen(FileName, 1 {RTLD_LAZY??}));
   {$ENDIF}
 end;
 
@@ -41,7 +48,7 @@ begin
   FreeLibrary(FHandle);
   {$ENDIF}
   {$IFDEF UNIX}
-  FHandle := 0;
+  dlclose(Pointer(FHandle));
   {$ENDIF}
 end;
 
@@ -51,7 +58,7 @@ begin
   Result := windows.GetProcAddress(FHandle, Name);
   {$ENDIF}
   {$IFDEF UNIX}
-  FHandle := 0;
+  Result := dlsym(Pointer(FHandle), Name);
   {$ENDIF}
 end;
 

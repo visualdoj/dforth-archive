@@ -1,61 +1,62 @@
 
+// This file has been generated automatically while DEmbro building
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+samebuiltin finit
+samebuiltin fdrop
+samebuiltin fnip
+samebuiltin fdup
+samebuiltin fover
+samebuiltin ftuck
+samebuiltin fswap
+samebuiltin flrot
+samebuiltin frrot
+samebuiltin f0
+samebuiltin f1
+samebuiltin fpi
+samebuiltin flog10
+samebuiltin floge
+samebuiltin f10log2
+samebuiltin fln2
+samebuiltin w>f
+samebuiltin f>w
+samebuiltin float-w>f
+samebuiltin double-w>f
+samebuiltin extended-w>f
+samebuiltin float-f>w
+samebuiltin double-f>w
+samebuiltin extended-f>w
+samebuiltin frandom
+samebuiltin f+
+samebuiltin f-
+samebuiltin fswap-
+samebuiltin f*
+samebuiltin f/
+samebuiltin fswap/
+samebuiltin fabs
+samebuiltin fneg
+samebuiltin fsqrt
+samebuiltin fscale
+samebuiltin fround
+samebuiltin fptan
+samebuiltin fpatan
+samebuiltin flog*
+samebuiltin flog1+mul
+samebuiltin f2pwr1-
+samebuiltin fcos
+samebuiltin fsin
+samebuiltin fsincos
+samebuiltin float-fliteral
+samebuiltin double-fliteral
+samebuiltin extended-fliteral
+samebuiltin float-(fliteral)
+samebuiltin double-(fliteral)
+samebuiltin extended-(fliteral)
+samebuiltin float->str
+samebuiltin double->str
+samebuiltin extended->str
+samebuiltin str->float?
+samebuiltin str->double?
+samebuiltin str->extended?
+samebuiltin str->float!?
+samebuiltin str->double!?
+samebuiltin str->extended!?
