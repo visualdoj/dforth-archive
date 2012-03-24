@@ -278,37 +278,37 @@ DECLARE(c;, callback_endfun)
       asm
         mov ebx, Stack
         mov ecx, Data
-        add ecx, 7 // пропускаем Fun и return-size
+        add ecx, 7 // РїСЂРѕРїСѓСЃРєР°РµРј Fun Рё return-size
         jmp @startcycle
         @cycle:
           add ebx, eax
-          push DWORD [ebx] // переносим очередной параметр на стек
+          push DWORD [ebx] // РїРµСЂРµРЅРѕСЃРёРј РѕС‡РµСЂРµРґРЅРѕР№ РїР°СЂР°РјРµС‚СЂ РЅР° СЃС‚РµРє
           inc ecx
         @startcycle:
-          movsx eax, BYTE [ecx] // получаем знаковое значение текущего байта
+          movsx eax, BYTE [ecx] // РїРѕР»СѓС‡Р°РµРј Р·РЅР°РєРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ С‚РµРєСѓС‰РµРіРѕ Р±Р°Р№С‚Р°
           cmp eax, 0
-          jnz @cycle // если 0, то выходим из цикла
+          jnz @cycle // РµСЃР»Рё 0, С‚Рѕ РІС‹С…РѕРґРёРј РёР· С†РёРєР»Р°
         @endcycle:
           mov Stack, ebx
-          call [Fun] // вызываем функцию
+          call [Fun] // РІС‹Р·С‹РІР°РµРј С„СѓРЅРєС†РёСЋ
           mov ebx,Stack
         @readeax:
           mov ecx,Data
-          movsx ecx, BYTE [ecx+4] // нужно ли читать ecx
+          movsx ecx, BYTE [ecx+4] // РЅСѓР¶РЅРѕ Р»Рё С‡РёС‚Р°С‚СЊ ecx
           cmp ecx, 0
           jz @readedx
           mov [ebx], eax
           add ebx, 4
         @readedx:
           mov ecx,Data
-          movsx ecx, BYTE [ecx+5] // нужно ли читать edx
+          movsx ecx, BYTE [ecx+5] // РЅСѓР¶РЅРѕ Р»Рё С‡РёС‚Р°С‚СЊ edx
           cmp ecx, 0
           jz @readstack
           mov [ebx], edx
           add ebx, 4
         @readstack:
           mov ecx,Data
-          movsx ecx, BYTE [ecx+6] // что читаем со стека
+          movsx ecx, BYTE [ecx+6] // С‡С‚Рѕ С‡РёС‚Р°РµРј СЃРѕ СЃС‚РµРєР°
           cmp ecx, 0
           jz @endofcall
         @readstackloop:
@@ -318,7 +318,7 @@ DECLARE(c;, callback_endfun)
           sub ecx, 4
           jnz @readstackloop
         @endofcall:
-          mov Stack, ebx // запоминаем положение стека
+          mov Stack, ebx // Р·Р°РїРѕРјРёРЅР°РµРј РїРѕР»РѕР¶РµРЅРёРµ СЃС‚РµРєР°
       end;
       {$ENDIF}
       //Log('SUB: ' + IntToStr(TUInt(Machine.WP) - TUInt(Stack)));

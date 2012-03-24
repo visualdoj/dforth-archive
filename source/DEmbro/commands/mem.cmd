@@ -4,11 +4,11 @@ DECLARE(malloc)
   body(
     GetMem(P, WOI);
     WUP(P);)
-RUS SUMMARY ( size -- ptr) выделяет переданное число байт, возвращает указатель _SUMMARY
+RUS SUMMARY ( size -- ptr) РІС‹РґРµР»СЏРµС‚ РїРµСЂРµРґР°РЅРЅРѕРµ С‡РёСЃР»Рѕ Р±Р°Р№С‚, РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ _SUMMARY
 
 DECLARE(free)
   body(FreeMem(WOP))
-RUS SUMMARY ( ptr) освобождает выделенный ранее участок памяти _SUMMARY
+RUS SUMMARY ( ptr) РѕСЃРІРѕР±РѕР¶РґР°РµС‚ РІС‹РґРµР»РµРЅРЅС‹Р№ СЂР°РЅРµРµ СѓС‡Р°СЃС‚РѕРє РїР°РјСЏС‚Рё _SUMMARY
 
 DECLARE(realloc)
   var P: Pointer;
@@ -16,21 +16,21 @@ DECLARE(realloc)
     Dec(WP, SizeOf(Pointer));
     Pointer(WVar(-SizeOf(Pointer))) := 
         ReAllocMem(Pointer(WP^), Integer(WVar(-SizeOf(Pointer))));)
-RUS SUMMARY ( ptr1 newsize -- ptr2) перевыделяет память, сохраняя данные _SUMMARY
+RUS SUMMARY ( ptr1 newsize -- ptr2) РїРµСЂРµРІС‹РґРµР»СЏРµС‚ РїР°РјСЏС‚СЊ, СЃРѕС…СЂР°РЅСЏСЏ РґР°РЅРЅС‹Рµ _SUMMARY
 
 DECLARE(move)
   body( Dec(WP, SizeOf(Pointer)*3); Move(Pointer(WVar(0))^, Pointer(WVar(SizeOf(Pointer)))^, TUint(WVar(2*SizeOf(Pointer)))); )
-RUS SUMMARY ( src dst size --) переносит size байт из src в dst _SUMMARY
+RUS SUMMARY ( src dst size --) РїРµСЂРµРЅРѕСЃРёС‚ size Р±Р°Р№С‚ РёР· src РІ dst _SUMMARY
 
 DECLARE(fill0)
   body(
     Dec(WP, 2*SizeOf(Pointer));
     FillChar(Pointer(WVar(0))^, Integer(WVar(SizeOf(Pointer))), 0);)
-RUS SUMMARY ( dst size --) заполняет size байт по адресу dst нулями _SUMMARY
+RUS SUMMARY ( dst size --) Р·Р°РїРѕР»РЅСЏРµС‚ size Р±Р°Р№С‚ РїРѕ Р°РґСЂРµСЃСѓ dst РЅСѓР»СЏРјРё _SUMMARY
 
 DECLARE(fill)
 body(
   Dec(WP, 3*SizeOf(Pointer));
   FillChar(Pointer(WVar(0))^, Integer(WVar(SizeOf(Pointer))), Integer(WVar(2*SizeOf(Pointer))));
 )
-RUS SUMMARY ( dst size value --) заполняет size байт по адресу dst значениями Value _SUMMARY
+RUS SUMMARY ( dst size value --) Р·Р°РїРѕР»РЅСЏРµС‚ size Р±Р°Р№С‚ РїРѕ Р°РґСЂРµСЃСѓ dst Р·РЅР°С‡РµРЅРёСЏРјРё Value _SUMMARY

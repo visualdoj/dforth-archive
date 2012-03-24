@@ -189,11 +189,12 @@ copy: $(SOURCES)
 lib: ../../release/de32$(LIBEXT);
 
 ../../release/de32.dll:
-	fpc de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
+	cp de32.dpr temp/
+	fpc temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FU./temp
 
 ../../release/de32.so: $(PAS_LIST) de32.dpr body.inc
 	cp de32.dpr temp/
-	fpc temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE../../release/ -FU./temp
+	fpc temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FU./temp
 
 # UTILS
 paslist:
