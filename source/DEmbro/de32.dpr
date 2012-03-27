@@ -20,12 +20,18 @@ uses
   DUtils in '..\DEngine\DUtils.pas',
   DDebug in '..\DEngine\DDebug.pas',
   DParser in '..\DEngine\DParser.pas',
+
+  DMachineCode in '..\DMachineCode\DMachineCode.pas',
   
   DForthMachine;
 
 function deCreateMachine: Pointer; stdcall;
+var
+  M: TForthMachine;
 begin
-  New(TForthMachine(Result), Create);
+  New(M, Create);
+  deCreateMachine := M;
+  Writeln('Created DEmbro machine');
 end;
 
 procedure deFreeMachine(machine: Pointer); stdcall;
@@ -45,17 +51,18 @@ function deInterpret(machine: Pointer; typ: Integer; source: Pointer): Integer; 
 var
   S: PChar;
 begin
-  Result := DE_OK;
+  deInterpret := DE_OK;
   if typ = DE_SOURCE_PCHAR then begin
     // GetMem(S, SizeOf(Char) * (Length(PChar(source)) + 1));
     // Move(source^, S^, SizeOf(Char) * (Length(PChar(source)) + 1));
-    TForthMachine(machine).Interpret(S);
+    TForthMachine(machine).Interpret(source);
     // FreeMem(S);
-  end else if typ = DE_SOURCE_FUNC then begin
+  end else if typ = DE_SOURCE_FILE then begin
+    TForthMachine(machine).InterpretFile(TString(PAnsiChar(source)));
   end else if typ = DE_SOURCE_FUNC then begin
     // underconstruction
   end else
-    Result := DE_ERR_UNKNOWN_SOURCE_TYPE;
+    deInterpret := DE_ERR_UNKNOWN_SOURCE_TYPE;
 end;
 
 procedure deAddCommand(machine: Pointer; 

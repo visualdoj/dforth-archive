@@ -56,17 +56,17 @@ begin
   Writeln('Starting de');
   ParseCommandLine;
   Writeln('Parsed command line');
-  if not LoadLib(CommandLine.LibNameDefault) then begin
-    Writeln('Cannot load library: ', CommandLine.LibNameDefault);
-    Exit;
-  end;
-  Writeln('Loaded lib');
   if CommandLine.Debug then
     Writeln('Start: ', GetTimer);
   if CommandLine.Error then
-    Halt(-1);
+    Halt(Cardinal(-1));
   if CommandLine.Help then
     Halt;
+  if not LoadLib(CommandLine.LibNameReal) then begin
+    Writeln('Cannot load library: ', CommandLine.LibNameReal);
+    //Exit;
+  end;
+  Writeln('Loaded lib');
 
   Writeln('Gogogo');
   Machine := deCreateMachine();

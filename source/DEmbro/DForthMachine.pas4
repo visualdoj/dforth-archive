@@ -2033,9 +2033,9 @@ end;
 
 procedure OForthMachine.Interpret(const Line: PChar);
 begin
-  //Writeln("Interpret ", Line);
   if Line = nil then
     Exit;
+  //Writeln("Interpret ", Line);
   (* Writeln("RB=", Cardinal(RB), *)
   (*         " RP=", Cardinal(RP),  *)
   (*         " SC=", SC,  *)
@@ -2146,7 +2146,6 @@ end;
 procedure OForthMachine.MainLoop;
 begin
   while FSession do begin
-    //Writeln("MainLoop");
     if FRunning then
       RunStep
     else

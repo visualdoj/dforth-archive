@@ -5,7 +5,7 @@ interface
 uses
   Classes,
   SysUtils,
-  Process,
+  //Process,
 
   {$I units.inc},
   strings,
@@ -56,7 +56,7 @@ end;
 // cmd ..
 TShSimple = object(TShBase)
  private
-  FProcess: TProcess;
+  //FProcess: TProcess;
  public
   constructor Init;
   destructor Done; virtual;
@@ -203,19 +203,19 @@ end;
 // {{{ TShSimple
 constructor TShSimple.Init;
 begin
-  FProcess := TProcess.Create(nil);
+  //FProcess := TProcess.Create(nil);
 end;
 
 destructor TShSimple.Done;
 begin
-  FProcess.Free;   
+  //FProcess.Free;   
 end;
 
 procedure TShSimple._Run;
 begin
   // TODO set options here
   // FProcess.Options := AProcess.Options + [poWaitOnExit];
-  FProcess.Execute;
+  //FProcess.Execute;
 end;
 
 procedure TShSimple.ReadFromLine(Line: PAnsiChar);
@@ -232,12 +232,12 @@ end;
 
 procedure TShSimple.ReadFromLineOwn(Line: PAnsiChar);
 begin
-  FProcess.CommandLine := Line;
+  //FProcess.CommandLine := Line;
 end;
 
 procedure TShSimple.ReadFromLineOwn(Line: PAnsiChar; const Options: TShLineOptions);
 begin
-  FProcess.CommandLine := Line;
+  //FProcess.CommandLine := Line;
 end;
 
 procedure TShSimple._Update;

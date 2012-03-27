@@ -15,7 +15,10 @@ var
                  Error: Boolean;
                  Help: Boolean;
                  Debug: Boolean;
-                 LibNameDefault: String;
+                 LibName: String; // value from command line
+                 LibNameDefault: String; // auto value
+                 LibNameDefined: Boolean; // was there lib name in command line
+                 LibNameReal: String; // real name
                end;
 
 procedure ParseCommandLine;
@@ -34,8 +37,9 @@ begin
   CommandLine.LibNameDefault := "de32.dll";
   {$ENDIF}
   {$IFDEF UNIX}
-  CommandLine.LibNameDefault := "libde32.so";
+  CommandLine.LibNameDefault := "./libde32.so";
   {$ENDIF}
+  CommandLine.LibNameDefined := False;
 end;
 
 procedure Error(Param: String);
@@ -119,6 +123,10 @@ begin
         Inc(I);
       end else if C = "--debug" then begin
         CommandLine.Debug := True;
+      end else if C = "--lib" then begin
+        CommandLine.LibName:= ParamStr(I);
+        CommandLine.LibNameDefined := True;
+        Inc(I);
       end else begin
         Unknown(C);
         Exit;
@@ -186,6 +194,11 @@ begin
       CommandLine.ReplDefault := False;
     end;
   end;
+
+  if CommandLine.LibNameDefined then
+      CommandLine.LibNameReal := CommandLine.LibName
+  else
+      CommandLine.LibNameReal := CommandLine.LibNameDefault;
 end;
 
 end.

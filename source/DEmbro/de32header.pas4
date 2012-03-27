@@ -38,7 +38,7 @@ begin
     Result := False;
     Exit;
   end;
-  define(`LOAD', `$1 := Lib.GetProcAddress("$1");')
+  define(`LOAD', `$1 := Lib.GetProcAddress("$1"); if (@$1 = nil) then Error("Can""t find lib function $1");')
   LOAD(deCreateMachine)
   LOAD(deFreeMachine)
   LOAD(deAddCommand)
