@@ -11,11 +11,14 @@
 .PHONY: compile
 .PHONY: copy
 
+FPC := fpc
+
 ifeq ($(OS),Windows_NT)
   RM := del /Q
   CHMOD := echo
   CAT := type
   S := \\
+  LIBPREFIX :=
   LIBEXT := .dll
   EXEEXT := .exe
 else
@@ -23,6 +26,7 @@ else
   CHMOD := chmod
   CAT := cat
   S := /
+  LIBPREFIX := lib
   LIBEXT := .so
   EXEEXT :=
 endif
@@ -70,12 +74,12 @@ compile: ../../release/dembro32$(EXEEXT) \
 all: clean pas4 pasq
 	$(DQUOTES) -r .\ *.pasq *.pas
 	$(DQUOTES) commands\DCommandsMisc.pasq commands\DCommandsMisc.pas
-	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FUtemp
-#	fpc dforth32.dpr -dFLAG_FPC -Sd
-#	fpc example.dpr -dFLAG_FPC -Sd
+	$(FPC) -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FUtemp
+#	$(FPC) dforth32.dpr -dFLAG_FPC -Sd
+#	$(FPC) example.dpr -dFLAG_FPC -Sd
 
 # test: clean pas4 pasq
-# 	fpc -vb test.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FEtemp -FUtemp
+# 	$(FPC) -vb test.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FEtemp -FUtemp
 
 pas4:
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
@@ -119,8 +123,8 @@ DArm:
 	m4 ..\m4\hex.m4 ..\DMachineCode\DArm.temp1 > ..\DMachineCode\DArm.pas
 
 release: clean pas4 pasq
-	fpc dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -FE"..\..\release\" -FU".\temp"
-#	fpc dembro32lib.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -O3 -FE"..\..\release\" -FU".\temp"
+	$(FPC) dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -FE"..\..\release\" -FU".\temp"
+#	$(FPC) dembro32lib.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -O3 -FE"..\..\release\" -FU".\temp"
 	upx ..\..\release\dembro32.exe
 #	upx ..\..\release\dembro32lib.dll
 
@@ -133,7 +137,7 @@ clean:
 
 asm: clean
 	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
-	fpc -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
+	$(FPC) -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
 # COMMANDS
 commands:
@@ -174,27 +178,27 @@ copy: $(SOURCES)
 ../../release/dembro32: $(PAS_LIST) dembro32.dpr body.inc
 	cp dembro32.dpr temp/dembro32.dpr
 	cp *.inc temp
-	fpc -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
+	$(FPC) -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
 
 ../../release/de: $(PAS_LIST) de.dpr body.inc
 	cp de.dpr temp/de.dpr
 	cp *.inc temp
-	fpc -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
+	$(FPC) -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
 
 ../../release/de.exe: $(PAS_LIST) body.inc
 	cp de.dpr temp/de.dpr
 	cp *.inc temp
-	fpc -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
+	$(FPC) -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
 
-lib: ../../release/de32$(LIBEXT);
+lib: ../../release/$(LIBPREFIX)de32$(LIBEXT);
 
 ../../release/de32.dll:
 	cp de32.dpr temp/
-	fpc temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FU./temp
+	$(FPC) de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
-../../release/de32.so: $(PAS_LIST) de32.dpr body.inc
+../../release/libde32.so: $(PAS_LIST) de32.dpr body.inc
 	cp de32.dpr temp/
-	fpc temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FU./temp
+	~/fpc/compiler/ppcarm -Fu~/fpc/rtl/units/arm-linux -Cg temp/de32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -FE../../release/ -FU./temp
 
 # UTILS
 paslist:
