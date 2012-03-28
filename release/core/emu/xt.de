@@ -1,0 +1,5 @@
+// 2011.19.07 # Doj
+//     Команды для работы с xt
+
+: samealiased ( x) dup xt.name@ aliased ;
+: samealias ( x) ' samealiased ;

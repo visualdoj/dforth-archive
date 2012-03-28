@@ -1,0 +1,87 @@
+// 2010.12.06 # Doj
+//     Команды для упрощения работы со строками
+
+// {{{ Встроенный функционал
+samebuiltin str0
+samebuiltin str!
+samebuiltin str@
+samebuiltin [str]"
+samebuiltin (str)"
+samebuiltin str.
+samebuiltin str=
+
+samebuiltin *poststr
+samebuiltin *postname
+// samebuiltin str0
+samebuiltin str#
+samebuiltin str-width
+samebuiltin str+
+// samebuiltin str@
+// samebuiltin str!
+samebuiltin str=
+samebuiltin str^
+samebuiltin str^?
+samebuiltin str-
+samebuiltin str\
+samebuiltin str-ins
+samebuiltin str-del
+samebuiltin str-cut
+samebuiltin str-split
+samebuiltin str-sub
+samebuiltin str-sub
+// samebuiltin str" уже есть в system
+samebuiltin [str]"
+samebuiltin (str)"
+samebuiltin str.
+samebuiltin str$
+samebuiltin str-new
+samebuiltin str[]@
+samebuiltin str[]!
+samebuiltin str-literal
+samebuiltin (str-literal)
+
+// samebuiltin str->pchar
+samebuiltin pchar->str
+samebuiltin pchar"
+// samebuiltin [pchar]"
+samebuiltin (pchar)"
+samebuiltin pchar.
+
+samebuiltin pwidechar"
+samebuiltin [pwidechar]"
+samebuiltin (pwidechar)"
+
+samebuiltin int->str
+samebuiltin str->int
+// }}}
+
+// Универсальная команда для строковых констант.
+// В режиме интерпретации работает как str", а в режиме исполнения как "
+: " ( "xxx""-s) ( C:"xxx""-) ( R:-s) 
+        state @ if ['] [str]" execute else str" then ; immediate
+// Печатает строку
+: .str" ( "xxx"-) str" str. ;
+: [.str]" ( C:"xxx") ( R:-) ['] [str]" execute compile str. ; immediate
+: ." ( "xxx"-) ( C:"xxx") ( R:-) 
+        state @ if ['] [.str]" execute else .str" then ; immediate
+
+: stred ( s-s) ( C:s-) ( R:-s) state @ if ['] str-literal execute then ;
+
+// n — число байт, занимаемое utf8-символом, i - первый байт символа
+// : utf8-size ( i-in) dup 128 > if b00 ;
+
+: str+" str" str+ ;
+: [str+]" postpone [str]" postpone str+ ; immediate
+: +" state @ if postpone [str+]" else str+" then ; immediate
+
+: str-swap+" str" bswap str+ ;
+: [str-swap+]" postpone [str]" postpone bswap postpone str+ ; immediate
+: swap+" state @ if postpone [str-swap+]" else str-swap+" then ; immediate
+
+: str-" str" str- ;
+: [str-]" postpone [str]" postpone str- ; immediate
+: -" state @ if postpone [str-]" else str-" then ; immediate
+
+: str\" str" str\ ;
+: [str\]" postpone [str]" postpone str\ ; immediate
+: \" state @ if postpone [str\]" else str\" then ; immediate

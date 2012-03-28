@@ -1,0 +1,75 @@
+// 2010.12.03 # Doj
+// Модуль, реализующий работу с динамическими массивами
+// (массивами переменной длины).
+
+wp
+
+: dyn.len ( d-p) ;
+: dyn.ptr ( d-p) cell+ ;
+: dyn.max ( d-p) 2 cells + ;
+: dyn.init ( ip-) dup dyn.len 0 swap ! 
+                  dup dyn.max lrot swap !
+                  dup dyn.max @
+                  cells malloc swap dyn.ptr ! ;
+: dyn-struct ( -i) 3 cells ;
+: dyn ( "name" i--) create here 3 cells allot 
+                       dup dyn.len 0 swap ! 
+                       dup dyn.max lrot swap !
+                       dup dyn.max @
+                       cells malloc swap dyn.ptr ptr! ;
+: dyn-new ( i-p) dyn-struct malloc dup rrot dyn.init ;
+: dyn.free ( p-) dup dyn.ptr @ free free ;
+: dyn[] ( id-i) dyn.ptr @ swap cells + ;
+// dyn alloc mem
+: dyn.alloc ( d-p) @ cells malloc ;
+: dyn.move ( dp-) swap dup dyn.ptr @ swap @ lrot swap cells move ;
+// 
+: dyn.realloc? ( d-b) dup @ swap dyn.max @ > ;
+// dyn set length
+: dyn.l! ( id-) dup rrot ! ( d) dup dyn.realloc? ( db) 
+                if ( d) dup dup dyn.alloc ( ddp) dup rrot dyn.move 
+                   ( dp) swap dyn.ptr dup @ free !
+                else drop then ;
+// dyn length get
+: dyn.l@ ( d-i) dyn.len @ ;
+
+: high ( d-i) @ 1- ;
+: dyn.last ( d-i) dup high swap dyn[] ;
+
+// dyn add element
+: dyn.add ( id-) dup dup @ 1+ swap dyn.l! ( id) dyn.last ! ;
+   // dup 1+! dup @ swap ( ild) dyn.ptr @ swap ( ial) 1- cells + ! ;
+// dyn element get
+: dyn.e@ ( id-i) dyn.ptr @ swap cells + @ ;
+
+: dyn+ ( id-) dyn.add ;
+: dyn# ( d-i) dyn.l@ ;
+: dyn- ( d-) dup dyn# 0; 1- swap dyn.l! ;
+: dyn@ ( id-i) dyn[] @ ;
+: dyn! ( iid-) dyn[] ! ;
+: 0dyn+ ( d-) 0 swap dyn+ ;
+: dyn-off ( d-) 0 swap dyn.l! ;
+
+: dyn[]! ( nid-) dyn[] ! ;
+: dyn[]@ ( id-n) dyn[] @ ;
+: dyn.top ( d-i) dup dyn# 1- swap dyn[]@ ;
+
+: str-dyn dyn ;
+: str-dyn# dyn# ;
+: str-dyn.inclen ( d-) dup @ swap dup 1+! dyn[] str0 swap str! ;
+// : str-dyn+ ( sd-) dup str-dyn# swap dup str-dyn.inclen dyn[] str! ;
+: str-0dyn+ str0 b>w swap dyn+ ;
+: str-dyn+ ( d B: s -) b>w swap ( sd) dup dyn# swap ( sid) dup str-0dyn+ dyn[]! ;
+: str-dyn@ ( id-s) dyn[] b@ ;
+: str-dyn! ( sid-) dyn[] b! ;
+
+: bdyn str-dyn ;
+: bdyn# str-dyn# ;
+: bdyn+ str-dyn+ ;
+: bdyn[]@ str-dyn@ ;
+: bdyn[]! str-dyn! ;
+: bdyn.clear ( d) dup bdyn# 1- begin dup 0 >= while 
+             over over swap dyn[]@ bdec 1- repeat drop 0 swap dyn.l! ;
+
+: check-stack wp 1 cells - <> if [str]" WARRING: stack error" str. cr then ;
+check-stack

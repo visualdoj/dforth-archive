@@ -4,6 +4,8 @@ interface
 
 //uses
 //  {$I units.inc};
+uses
+  DWinApi;
 
 var
   CommandLine: record
@@ -37,7 +39,7 @@ begin
   CommandLine.LibNameDefault := "de32.dll";
   {$ENDIF}
   {$IFDEF UNIX}
-  CommandLine.LibNameDefault := "./libde32.so";
+  CommandLine.LibNameDefault := GetExeDirectory + "/libde32.so";
   {$ENDIF}
   CommandLine.LibNameDefined := False;
 end;

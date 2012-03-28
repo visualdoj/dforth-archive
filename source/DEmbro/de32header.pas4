@@ -3,7 +3,7 @@ unit de32header;
 interface
 
 uses
-  DLib;
+  DynLibs;
 
 const
   DE_OK                         = 0;
@@ -14,6 +14,7 @@ const
   DE_SOURCE_FILE                = 3; // исходный код находится в файле
 
 var
+deVersion: procedure (var Version: Cardinal; var Date: PAnsiChar); stdcall;
 deCreateMachine: function: Pointer; stdcall;
 deFreeMachine: procedure (machine: Pointer); stdcall;
 deInterpret: function (machine: Pointer; typ: Integer; source: Pointer): Integer; stdcall;
@@ -24,27 +25,43 @@ deAddCommand: procedure(machine: Pointer;
                       Immediate: Boolean
                      ); stdcall;
 
-function LoadLib(FileName: String): Boolean;
+function deLibReady: Boolean;
+function deLibLoad(const FileName: String): Boolean;
+procedure deLibFree;
 
 implementation
 
 var
-  Lib: TLib;
+  Lib: TLibHandle = NilHandle;
 
-function LoadLib(FileName: String): Boolean;
+function deLibReady: Boolean;
 begin
-  Lib := TLib.Create(PChar(FileName));
-  if not Lib.Ready then begin
+  Result := Lib <> NilHandle;
+end;
+
+function deLibLoad(const FileName: String): Boolean;
+begin
+  Lib := LoadLibrary(FileName);
+  if Lib = NilHandle then begin
     Result := False;
     Exit;
   end;
-  define(`LOAD', `$1 := Lib.GetProcAddress("$1"); if (@$1 = nil) then Error("Can""t find lib function $1");')
+  define(`LOAD', `$1 := GetProcAddress(Lib, "$1"); if (@$1 = nil) then begin deLibFree; Result := False; Exit; end;')
+  LOAD(deVersion)
   LOAD(deCreateMachine)
   LOAD(deFreeMachine)
   LOAD(deAddCommand)
   LOAD(deInterpret)
-  undefine(`LOAD')
+  undefine(`LOAD') //'
   Result := True;
+end;
+
+procedure deLibFree;
+begin
+  if Lib <> NilHandle then begin
+    FreeLibrary(Lib);
+    Lib := NilHandle;
+  end;
 end;
 
 end.

@@ -11,7 +11,7 @@ ifdef(_IA32,,define(`N_IA32'))
 ifdef(_X86,,define(`N_X86'))
 
 ifdef(`__windows__', `define(`_DATE_',`esyscmd(`..\tools\dtime ddd mmm dd hh:nn yyyy')')', 
-                     `define(`_DATE_',`')')
+                     `define(`_DATE_',`esyscmd(`../tools/dtime ddd mmm dd hh:nn yyyy')')') //'
 
 uses
   {$I units.inc},
@@ -26,7 +26,7 @@ uses
 
 const
   DFORTHMACHINE_VERSION = 11;
-  DFORTHMACHINE_DATE: TString = "_DATE_";
+  DFORTHMACHINE_DATE: PAnsiChar = "_DATE_";
 
 dnl define(`_comma', ``,'')
 define(`all_implement', `')
@@ -574,6 +574,7 @@ OForthMachine = object
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
   constructor Create;
   destructor Destroy;
+  procedure LoadCommandsToCurrentVoc;
   procedure AddCommand(Name: PChar; Code: TCode; Immediate: Boolean = False;
                        Builtin: Boolean = True);
   procedure OnUpdateCommand(Opcode: Integer); overload;
@@ -693,7 +694,7 @@ uses
   DCommandsStrings,
   DCommandsVoc;
 
-{$I "`body.inc'"}
+{$I "`body.inc'"} //'
 
 procedure _sq_tick_sq cmdhdr;
 body(
@@ -704,6 +705,16 @@ procedure _tick cmdhdr;
 body(
   Pointer(WP^) := FindCommand(NextName);
   Inc(WP, SizeOf(Pointer)); )
+
+const
+  Codes: array[0..1] of TCode = (@_sq_tick_sq, @_tick);
+  XtConst: TForthCommand = (Code: @_tick; 
+                            Data: nil; 
+                            Flags: 0; 
+                            Name: "thick"; 
+                            Param: nil);
+  XtConsts: array[0..1] of PForthCommand = (@XtConst, @XtConst);
+  
 
 function GetFileName(FullPath: TString): TString;
 var
@@ -1806,6 +1817,80 @@ begin
 end;
 {$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
 
+procedure OForthMachine.LoadCommandsToCurrentVoc;
+begin
+  AddCommand("exit", _exit);
+  AddCommand("_FIND_", _FIND_);
+  AddCommand("(", CompileComment, True); {) для m4}
+  AddCommand("//", CompileLineComment, True);
+  AddCommand("builtin", _builtin);
+  AddCommand("builtedin", _builtedin);
+  AddCommand("_NOTFOUND_", _NOTFOUND_);
+  {$I "load.inc"}
+
+  SetLength(FTypes, 0);
+  all_create;
+  AddType("", 0);
+  AddType("void", 0);
+  AddType("int", SizeOf(TInt));
+  AddType("int8", SizeOf(TInt8));
+  AddType("int16", SizeOf(TInt16));
+  AddType("int32", SizeOf(TInt32));
+  AddType("int64", SizeOf(TInt64));
+  AddType("uint", SizeOf(TUInt));
+  AddType("uint8", SizeOf(TUInt8));
+  AddType("uint16", SizeOf(TUInt16));
+  AddType("uint32", SizeOf(TUInt32));
+  AddType("uint64", SizeOf(TUInt64));
+  AddType("bool", SizeOf(TInt));
+  AddType("ptr", SizeOf(Pointer));
+  AddType("pchar", SizeOf(PChar));
+  AddType("str", SizeOf(TStr));
+  AddType("type", SizeOf(PType));
+  AddType("float", SizeOf(PType));
+  AddType("double", SizeOf(PType));
+  AddType("extended", SizeOf(PType));
+
+  AddCommand("exit", _exit);
+  {$I "load.inc"}
+  AddCommand("""", _tick);
+  AddCommand("[""]", _sq_tick_sq, True);
+  nop := FindCommand("nop");
+
+  ConvStr := nop;
+  ConvName := nop;
+
+{$IFNDEF FLAG_FPC}{$REGION "type commands"}{$ENDIF}
+  AddCommand("typeof", typeof, True);
+  AddCommand("(typeof)", run_type);
+  AddCommand("type-size", type_size);
+  AddCommand("t_void", _void, True);
+  AddCommand("t_int", _int, True);
+  AddCommand("t_int8", _int8, True);
+  AddCommand("t_int16", _int16, True);
+  AddCommand("t_int32", _int32, True);
+  AddCommand("t_int64", _int64, True);
+  AddCommand("t_uint", _uint, True);
+  AddCommand("t_uint8", _uint8, True);
+  AddCommand("t_uint16", _uint16, True);
+  AddCommand("t_uint32", _uint32, True);
+  AddCommand("t_uint64", _uint64, True);
+  AddCommand("t_bool", _bool, True);
+  AddCommand("t_str", _str, True);
+  AddCommand("t_pchar", _pchar, True);
+  AddCommand("t_ptr", _ptr, True);
+  AddCommand("t_type", _type, True);
+  AddCommand("t_float", _float, True);
+  AddCommand("t_single", _float, True);
+  AddCommand("t_double", _double, True);
+  AddCommand("t_extended", _extended, True);
+{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
+  DCommandsStrings.LoadCommands(@Self);
+  DCommandsConsole.LoadCommands(@Self);
+  DCommandsVoc.LoadCommands(@Self);
+  regist_all_commands;
+end;
+
 constructor OForthMachine.Create;
 begin
   GetMem(FStrNil, 3*SizeOf(TInt) + 1);
@@ -1873,84 +1958,17 @@ begin
   UseVoc(vGLOBAL);
   ContextPush(vLOCAL);
   // it must have zero opcode
-  AddCommand("exit", _exit);
-  AddCommand("_FIND_", _FIND_);
-  AddCommand("(", CompileComment, True); {) для m4}
-  AddCommand("//", CompileLineComment, True);
-  AddCommand("builtin", _builtin);
-  AddCommand("builtedin", _builtedin);
+  //AddCommand("exit", _exit);
+  //AddCommand("_FIND_", _FIND_);
+  //AddCommand("(", CompileComment, True); {) для m4}
+  //AddCommand("//", CompileLineComment, True);
+  //AddCommand("builtin", _builtin);
+  //AddCommand("builtedin", _builtedin);
+  //AddCommand("_NOTFOUND_", _NOTFOUND_);
+  LoadCommandsToCurrentVoc;
 
   UseVoc(vBUILTIN);
-
-  AddCommand("exit", _exit);
-  AddCommand("_FIND_", _FIND_);
-  AddCommand("(", CompileComment, True); {) для m4}
-  AddCommand("//", CompileLineComment, True);
-  AddCommand("builtin", _builtin);
-  AddCommand("builtedin", _builtedin);
-  AddCommand("_NOTFOUND_", _NOTFOUND_);
-
-  SetLength(FTypes, 0);
-  all_create;
-  AddType("", 0);
-  AddType("void", 0);
-  AddType("int", SizeOf(TInt));
-  AddType("int8", SizeOf(TInt8));
-  AddType("int16", SizeOf(TInt16));
-  AddType("int32", SizeOf(TInt32));
-  AddType("int64", SizeOf(TInt64));
-  AddType("uint", SizeOf(TUInt));
-  AddType("uint8", SizeOf(TUInt8));
-  AddType("uint16", SizeOf(TUInt16));
-  AddType("uint32", SizeOf(TUInt32));
-  AddType("uint64", SizeOf(TUInt64));
-  AddType("bool", SizeOf(TInt));
-  AddType("ptr", SizeOf(Pointer));
-  AddType("pchar", SizeOf(PChar));
-  AddType("str", SizeOf(TStr));
-  AddType("type", SizeOf(PType));
-  AddType("float", SizeOf(PType));
-  AddType("double", SizeOf(PType));
-  AddType("extended", SizeOf(PType));
-
-  AddCommand("exit", _exit);
-  {$I "load.inc"}
-  AddCommand("""", _tick);
-  AddCommand("[""]", _sq_tick_sq, True);
-  nop := FindCommand("nop");
-
-  ConvStr := nop;
-  ConvName := nop;
-
-{$IFNDEF FLAG_FPC}{$REGION "type commands"}{$ENDIF}
-  AddCommand("typeof", typeof, True);
-  AddCommand("(typeof)", run_type);
-  AddCommand("type-size", type_size);
-  AddCommand("t_void", _void, True);
-  AddCommand("t_int", _int, True);
-  AddCommand("t_int8", _int8, True);
-  AddCommand("t_int16", _int16, True);
-  AddCommand("t_int32", _int32, True);
-  AddCommand("t_int64", _int64, True);
-  AddCommand("t_uint", _uint, True);
-  AddCommand("t_uint8", _uint8, True);
-  AddCommand("t_uint16", _uint16, True);
-  AddCommand("t_uint32", _uint32, True);
-  AddCommand("t_uint64", _uint64, True);
-  AddCommand("t_bool", _bool, True);
-  AddCommand("t_str", _str, True);
-  AddCommand("t_pchar", _pchar, True);
-  AddCommand("t_ptr", _ptr, True);
-  AddCommand("t_type", _type, True);
-  AddCommand("t_float", _float, True);
-  AddCommand("t_single", _float, True);
-  AddCommand("t_double", _double, True);
-  AddCommand("t_extended", _extended, True);
-{$IFNDEF FLAG_FPC}{$ENDREGION}{$ENDIF}
-  DCommandsStrings.LoadCommands(@Self);
-  DCommandsConsole.LoadCommands(@Self);
-  DCommandsVoc.LoadCommands(@Self);
-  regist_all_commands;
+  LoadCommandsToCurrentVoc;
   UnuseVoc;
 end;
 

@@ -5,8 +5,7 @@ unit de32header;
 interface
 
 uses
-  DDebug,
-  DLib;
+  DynLibs;
 
 const
   DE_OK                         = 0;
@@ -17,6 +16,7 @@ const
   DE_SOURCE_FILE                = 3; // исходный код находится в файле
 
 var
+deVersion: procedure (var Version: Cardinal; var Date: PAnsiChar); stdcall;
 deCreateMachine: function: Pointer; stdcall;
 deFreeMachine: procedure (machine: Pointer); stdcall;
 deInterpret: function (machine: Pointer; typ: Integer; source: Pointer): Integer; stdcall;
@@ -27,27 +27,43 @@ deAddCommand: procedure(machine: Pointer;
                       Immediate: Boolean
                      ); stdcall;
 
-function LoadLib(FileName: String): Boolean;
+function deLibReady: Boolean;
+function deLibLoad(const FileName: String): Boolean;
+procedure deLibFree;
 
 implementation
 
 var
-  Lib: TLib;
+  Lib: TLibHandle = NilHandle;
 
-function LoadLib(FileName: String): Boolean;
+function deLibReady: Boolean;
 begin
-  Lib := TLib.Create(PChar(FileName));
-  if not Lib.Ready then begin
+  Result := Lib <> NilHandle;
+end;
+
+function deLibLoad(const FileName: String): Boolean;
+begin
+  Lib := LoadLibrary(FileName);
+  if Lib = NilHandle then begin
     Result := False;
     Exit;
   end;
   
-  deCreateMachine := Lib.GetProcAddress('deCreateMachine'); if (@deCreateMachine = nil) then begin Result := False; Exit; end;
-  deFreeMachine := Lib.GetProcAddress('deFreeMachine'); if (@deFreeMachine = nil) then begin Result := False; Exit; end;
-  deAddCommand := Lib.GetProcAddress('deAddCommand'); if (@deAddCommand = nil) then begin Result := False; Exit; end;
-  deInterpret := Lib.GetProcAddress('deInterpret'); if (@deInterpret = nil) then begin Result := False; Exit; end;
-  
+  deVersion := GetProcAddress(Lib, 'deVersion'); if (@deVersion = nil) then begin deLibFree; Result := False; Exit; end;
+  deCreateMachine := GetProcAddress(Lib, 'deCreateMachine'); if (@deCreateMachine = nil) then begin deLibFree; Result := False; Exit; end;
+  deFreeMachine := GetProcAddress(Lib, 'deFreeMachine'); if (@deFreeMachine = nil) then begin deLibFree; Result := False; Exit; end;
+  deAddCommand := GetProcAddress(Lib, 'deAddCommand'); if (@deAddCommand = nil) then begin deLibFree; Result := False; Exit; end;
+  deInterpret := GetProcAddress(Lib, 'deInterpret'); if (@deInterpret = nil) then begin deLibFree; Result := False; Exit; end;
+   //'
   Result := True;
+end;
+
+procedure deLibFree;
+begin
+  if Lib <> NilHandle then begin
+    FreeLibrary(Lib);
+    Lib := NilHandle;
+  end;
 end;
 
 end.

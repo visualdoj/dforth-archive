@@ -1,0 +1,69 @@
+// 2010.12.03 # Doj
+// Модуль, подключающий все полезные возможности общего назначения
+
+// {{{ Встроенные команды
+( 
+Изначально доступны:
+  exit
+  комментарии
+  builtin
+  builtedin
+  _FIND_
+)
+
+// определение новых слов
+builtin : :
+builtin ; ;
+
+// получение следующего слова в исходнике
+builtin source-next-name source-next-name
+builtin source-next-name-passive source-next-name-passive
+
+: samebuiltin source-next-name-passive source-next-name builtedin ; 
+
+// системное
+samebuiltin _NOTFOUND_
+
+// необходимый минимум для работы со строками
+samebuiltin str"
+
+samebuiltin evaluate-file
+// }}}
+
+// str" core\builtin\all.de" evaluate-file
+
+str" core\emu\w.de" evaluate-file
+builtin inc! 1+!
+builtin dec! 1-!
+: off ( p-) 0 swap ! ;
+: on ( p-) true swap ! ;
+
+: [ false state ! ; immediate
+: ] true state ! ; immediate
+
+: compile? state @ ;
+: interpret? state @ not ;
+
+: ptr! ! ;
+: op! ! ;
+: xt! ! ;
+: embroptr! ! ;
+: cell-allot here 1 cells allot ;
+
+: ,             , ;
+: ptr,          cell-allot ptr! ;
+: op,           cell-allot op! ;
+: xt,           cell-allot xt! ;
+: embroptr,     cell-allot embroptr! ;
+str" core\emu\create.de" evaluate-file
+str" core\emu\op.de" evaluate-file
+str" core\emu\strings.de" evaluate-file
+str" core\emu\dyn.de" evaluate-file
+str" core\emu\source.de" evaluate-file
+str" core\emu\help.de" evaluate-file
+str" core\emu\includes.de" evaluate-file
+str" core\emu\voc.de" evaluate-file
+str" core\emu\f.de" evaluate-file
+str" core\emu\xt.de" evaluate-file
+
+." Loaded emu system file" cr

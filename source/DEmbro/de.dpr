@@ -52,29 +52,37 @@ begin
   end;
 end;
 
+procedure PrintVersion;
+var
+  Version: Cardinal;
+  Date: PAnsiChar;
 begin
-  Writeln('Starting de');
+  deVersion(Version, Date);
+  Writeln('DEmbro v' + IntToStr(Version div 100) + '.' + 
+                       IntToStr(Version mod 100) + ' built ',
+                       Date);
+  //        ' (commands available: ', Length(Machine.C), ')');
+end;
+
+begin
   ParseCommandLine;
-  Writeln('Parsed command line');
   if CommandLine.Debug then
     Writeln('Start: ', GetTimer);
   if CommandLine.Error then
     Halt(Cardinal(-1));
   if CommandLine.Help then
     Halt;
-  if not LoadLib(CommandLine.LibNameReal) then begin
-    Writeln('Cannot load library: ', CommandLine.LibNameReal);
-    //Exit;
+  if not deLibLoad(CommandLine.LibNameReal) then begin
+    Write('Cannot load library: ', CommandLine.LibNameReal);
+    if not CommandLine.LibNameDefined then
+        Write(', try to specify it directly throw --lib parameter');
+    Writeln;
+    Exit;
   end;
-  Writeln('Loaded lib');
 
-  Writeln('Gogogo');
   Machine := deCreateMachine();
-  Writeln('Created machine');
   RunSystem;
-  Writeln('Ran system');
   deAddCommand(Machine, 'quit', @quit, nil, True);
-  Writeln('Added quit command');
 
   with CommandLine do begin
     {if Mode = CMD_EXE then begin
@@ -85,10 +93,7 @@ begin
     if CommandLine.Debug then
       Writeln('Initialized: ', GetTimer);
     if (Repl and ReplDefined) or (ReplDefault and not ReplDefined) then begin
-      //Writeln('DEmbro v' + IntToStr(DFORTHMACHINE_VERSION div 100) + '.' + 
-      //                     IntToStr(DFORTHMACHINE_VERSION mod 100) + ' built ' +
-      //        DFORTHMACHINE_DATE +
-      //        ' (commands available: ', Length(Machine.C), ')');
+      PrintVersion;
       Writeln('Type "quit" to exit');
       while not Done do begin
         Write('dembro> ');
@@ -107,4 +112,5 @@ begin
     end;
   end;
   deFreeMachine(Machine);
+  deLibFree;
 end.

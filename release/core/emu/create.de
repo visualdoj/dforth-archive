@@ -1,0 +1,63 @@
+// 2011.04.19 # Doj
+//      оманды дл€ определени€ новых слов.
+
+// эквиваленты к value, constant и variable, которые берут им€ не из входного
+// потока, а из строки со стека
+: valued ( is-) created , does> @ ;
+: constanted ( is-) valued ;
+: variabled ( s-) created 0 , ;
+
+: bvalued ( B: xs-) created b>w , does> b@ ;
+: bconstanted ( B: xs-) bvalued ;
+: bvariabled ( B: s-) variabled ;
+
+: bvalue    ( B: x "name"-) source-next-name bvalued ;
+: bconstant ( B: x "name"-) source-next-name bconstanted ;
+: bvariable ( B: x "name"-) source-next-name bvariabled ;
+
+// —оздание перечислимых типов
+// ѕример:
+//     5 enum STUDENT
+//     STUDENT IVANOV // создаЄт константу 5 с названием IVANOV
+//     STUDENT SIDOROV // создаЄт константу 6 с названием SIDOROV
+//     STUDENT BELOSHAPKIN // создаЄт константу 7 с названием BELOSHAPKIN
+//     STUDENT PETROV // создаЄт константу 8 с названием PETROV
+: enum ( i "name"-) create , does> ( "name"-) dup @ constant 1+! ;
+
+// ѕримитивный механизм дл€ создани€ структур
+// ѕример
+//      0
+//              t_int -- x
+//              t_int -- y
+//              t_int -- z
+//      struct vec3i
+// —озданы новые слова:
+//      vec3i ( -i) кладЄт на стек размер структуры
+//      x ( p-p) по адресу структуры вычисл€ет адрес пол€ x в ней
+//      y ( p-p) то же дл€ y
+//      z ( p-p) то же дл€ z
+// 
+// ѕример использовани€:
+//      vec3i malloc value a // выдел€ем пам€ть под структуры, запоминаем указатели
+//      vec3i malloc value b
+//      3 a x !   4 a y !   5 a z ! // наполн€ем структуры значени€ми
+//      7 b x !   8 b y !   9 b z !
+//      a x @   b x @   +   a x ! // покоординатно складываем
+//      a y @   b y @   +   a y !
+//      a z @   b z @   +   a z !
+//      a x @ .   a y @ .   a z @ . // печатаем результат сложени€ на экран 
+//  
+// —труктуры можно наследовать, дл€ этого вместо нул€ в самом начале нужно
+// подставить им€ структуры, от которой наследуем
+// ѕример
+//      0
+//              t_int -- x
+//              t_int -- y
+//      struct vec2i
+// 
+//      vec2i
+//              t_int -- z
+//      struct vec3i
+: -- ( t "name"-) create type-size swap dup , + does> ( p-p) @ + ;
+: struct ( "name"-) constant ;
+: bytes-- ( i "name"-) create swap dup , + does> ( p-p) @ + ;

@@ -1,0 +1,6 @@
+// 2011.03.08 # Doj
+//   Функции для работы с входящим потоком.
+
+: source-quote ( " xxx""-s) str" ;
+: source-line ( " xxx\n"-s) [str]" 
+" source-cut ;

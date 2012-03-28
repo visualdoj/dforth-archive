@@ -35,7 +35,6 @@ SOURCE_PATHS = *.ext \
 	       commands/*.ext \
                ../DEngine/*.ext \
                ../DEngine/WINDOWS/*.ext \
-               ../DEngine/WINDOWS/*.ext \
                ../DEngine/WINSOCK/*.ext \
                ../DEngine/OPENGL/*.ext \
                ../DEngine/OPENAL/*.ext \
@@ -56,11 +55,12 @@ SOURCE_PATHS = *.ext \
 
 SOURCES_PAS4 := $(wildcard $(SOURCE_PATHS:%.ext=%.pas4))
 SOURCES_PAS := $(wildcard $(SOURCE_PATHS:%.ext=%.pas))
-# SOURCES_PAS := $(@:%.pas4=%.pas)
-SOURCES := $(SOURCES_PAS4)
+SOURCES_PP := $(wildcard $(SOURCE_PATHS:%.ext=%.pp))
+SOURCES := $(SOURCES_PAS4) $(SOURCES_PAS)
 
 BASE_LIST := $(addprefix temp/,$(basename $(notdir $(SOURCES_PAS4))))
 PAS_LIST := $(addsuffix .pas,$(BASE_LIST))
+PP_LIST := $(addsuffix .pp,$(BASE_LIST))
 PASQ_LIST := $(addsuffix .pasq,$(BASE_LIST))
 PASTEMP_LIST := $(addsuffix .pastemp,$(BASE_LIST))
 PAS4COPY_LIST := $(addsuffix .pas4.copy,$(BASE_LIST))
@@ -68,8 +68,7 @@ PAS4_LIST := $(addsuffix .pas4,$(BASE_LIST))
 
 DQUOTES = ../tools/dquotes
 
-compile: ../../release/dembro32$(EXEEXT) \
-         ../../release/de$(EXEEXT);
+compile: ../../release/de$(EXEEXT);
 
 all: clean pas4 pasq
 	$(DQUOTES) -r .\ *.pasq *.pas
@@ -166,26 +165,27 @@ commands:
 copy: $(SOURCES)
 	cp $(SOURCES) temp
 
-%.pastemp: $(PAS4_LIST) copy
+%.pastemp: $(PAS4_LIST)
 	m4 meta.m4 $(@:%.pastemp=%.pas4) > $@
 
 %.pasq: $(PASTEMP_LIST)
 	m4 id2.m4 $(@:%.pasq=%.pastemp) > $@
 
-%.pas: $(PASQ_LIST)
-	$(DQUOTES) $(@:%.pas=%.pasq) $@
+%.pp: $(PASQ_LIST)
+	$(DQUOTES) $(@:%.pp=%.pasq) $@
+	cp -f $@ $(@:%.pp=%.pas)
 
-../../release/dembro32: $(PAS_LIST) dembro32.dpr body.inc
+../../release/dembro32: $(PP_LIST) dembro32.dpr body.inc
 	cp dembro32.dpr temp/dembro32.dpr
 	cp *.inc temp
 	$(FPC) -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
 
-../../release/de: $(PAS_LIST) de.dpr body.inc
+../../release/de: $(PAS_LIST) $(PP_LIST) de.dpr body.inc
 	cp de.dpr temp/de.dpr
 	cp *.inc temp
 	$(FPC) -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
 
-../../release/de.exe: $(PAS_LIST) body.inc
+../../release/de.exe: $(PP_LIST) body.inc
 	cp de.dpr temp/de.dpr
 	cp *.inc temp
 	$(FPC) -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
@@ -195,11 +195,16 @@ lib: ../../release/$(LIBPREFIX)de32$(LIBEXT);
 ../../release/de32.dll:
 	cp de32.dpr temp/
 	$(FPC) de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
+	cp temp/de32header.pas ../../release/headers/
 
-../../release/libde32.so: $(PAS_LIST) de32.dpr body.inc
+../../release/libde32.so: $(PP_LIST) de32.dpr body.inc
 	cp de32.dpr temp/
-	~/fpc/compiler/ppcarm -Fu~/fpc/rtl/units/arm-linux -Cg temp/de32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -FE../../release/ -FU./temp
+	$(FPC) -Cg temp/de32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -FE../../release/ -FU./temp
+	cp temp/de32header.pas ../../release/headers/
 
 # UTILS
-paslist:
+echopas:
 	echo $(PAS_LIST)
+
+echosources:
+	echo $(SOURCES)

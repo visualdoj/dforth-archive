@@ -25,13 +25,18 @@ uses
   
   DForthMachine;
 
+procedure deVersion(var Version: Cardinal; var Date: PAnsiChar); stdcall;
+begin
+  Version := DFORTHMACHINE_VERSION;
+  Date := DFORTHMACHINE_DATE;
+end;
+
 function deCreateMachine: Pointer; stdcall;
 var
   M: TForthMachine;
 begin
   New(M, Create);
   deCreateMachine := M;
-  Writeln('Created DEmbro machine');
 end;
 
 procedure deFreeMachine(machine: Pointer); stdcall;
@@ -76,6 +81,7 @@ begin
 end;
 
 exports
+  deVersion,
   deCreateMachine,
   deFreeMachine,
   deInterpret,

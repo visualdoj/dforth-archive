@@ -106,6 +106,7 @@ DECLARE(evaluate-file, evaluate_file)
       ShortPath := ShortPath + C;
     end;
     // ShortPath := TString(PChar(@(PStrRec(S)^.Sym[0])));
+    Writeln("Started ", ShortPath, " ", FormatDateTime(S, Now));
     FullPath := '';
     while True do begin
       if Length(Machine.Directories) > 0 then begin
@@ -127,4 +128,5 @@ DECLARE(evaluate-file, evaluate_file)
     DelRef(S);
     Machine.InterpretFile(FullPath);
     SetLength(Machine.Directories, Length(Machine.Directories) - 1);
+    Writeln("Finished ", ShortPath, " ", FormatDateTime("", Now));
   end;

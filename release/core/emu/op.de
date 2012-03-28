@@ -1,0 +1,10 @@
+// 2011.04.19 # Doj
+//     Базовые операторы.
+
+: if compile ?branch >mark ; immediate
+: else compile branch >mark embro-swap >resolve ; immediate
+: then >resolve ; immediate
+: begin <mark ; immediate
+: while compile ?branch >mark embro-swap ; immediate
+: repeat compile branch <resolve >resolve ; immediate
+: until compile ?branch <resolve ; immediate
