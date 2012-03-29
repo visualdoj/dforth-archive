@@ -23,7 +23,7 @@ uses
 
   DMachineCode in '..\DMachineCode\DMachineCode.pas',
   
-  DForthMachine;
+  DForthMachine in 'DForthMachine.pas';
 
 procedure deVersion(var Version: Cardinal; var Date: PAnsiChar); stdcall;
 begin

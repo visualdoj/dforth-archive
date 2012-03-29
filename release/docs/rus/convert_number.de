@@ -1,28 +1,27 @@
 
-// This file has been generated automatically while DEmbro building
 
-samebuiltin int->int8
-samebuiltin int->int16
-samebuiltin int->int32
-samebuiltin int->int64
-samebuiltin int8->int
-samebuiltin int16->int
-samebuiltin int32->int
-samebuiltin int64->int
-samebuiltin uint->uint8
-samebuiltin uint->uint16
-samebuiltin uint->uint32
-samebuiltin uint->uint64
-samebuiltin uint8->uint
-samebuiltin uint16->uint
-samebuiltin uint32->uint
-samebuiltin uint64->uint
-samebuiltin float->double
-samebuiltin double->float
-samebuiltin float->extended
-samebuiltin double->extended
-samebuiltin extended->double
-samebuiltin extended->float
-samebuiltin int->float
-samebuiltin int->double
-samebuiltin int->extended
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

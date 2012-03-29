@@ -192,9 +192,9 @@ copy: $(SOURCES)
 
 lib: ../../release/$(LIBPREFIX)de32$(LIBEXT);
 
-../../release/de32.dll:
+../../release/de32.dll: $(PP_LIST) de32.dpr body.inc
 	cp de32.dpr temp/
-	$(FPC) de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
+	$(FPC) temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FU.\temp
 	cp temp/de32header.pas ../../release/headers/
 
 ../../release/libde32.so: $(PP_LIST) de32.dpr body.inc

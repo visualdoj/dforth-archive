@@ -1,291 +1,402 @@
 
-// This file has been generated automatically while DEmbro building
 
-samebuiltin lrot
-samebuiltin rrot
-samebuiltin lrotn
-samebuiltin rrotn
-samebuiltin pick
-samebuiltin ,
-samebuiltin @
-samebuiltin !
-samebuiltin ptr+
-samebuiltin [to]
-samebuiltin run@to
-samebuiltin interpret@to
-samebuiltin to
-samebuiltin value
-samebuiltin constant
-samebuiltin variable
-samebuiltin literal
-samebuiltin (literal)
-samebuiltin ptr-lrot
-samebuiltin ptr-rrot
-samebuiltin ptr-lrotn
-samebuiltin ptr-rrotn
-samebuiltin ptr-pick
-samebuiltin ptr,
-samebuiltin ptr@
-samebuiltin ptr!
-samebuiltin ptr+ptr
-samebuiltin ptr-[to]
-samebuiltin run@ptr-to
-samebuiltin interpret@ptr-to
-samebuiltin ptr-to
-samebuiltin ptr-value
-samebuiltin ptr-constant
-samebuiltin ptr-variable
-samebuiltin ptr-literal
-samebuiltin ptr-(literal)
-samebuiltin int-lrot
-samebuiltin int-rrot
-samebuiltin int-lrotn
-samebuiltin int-rrotn
-samebuiltin int-pick
-samebuiltin int,
-samebuiltin int@
-samebuiltin int!
-samebuiltin ptr+int
-samebuiltin int-[to]
-samebuiltin run@int-to
-samebuiltin interpret@int-to
-samebuiltin int-to
-samebuiltin int-value
-samebuiltin int-constant
-samebuiltin int-variable
-samebuiltin int-literal
-samebuiltin int-(literal)
-samebuiltin int8-lrot
-samebuiltin int8-rrot
-samebuiltin int8-lrotn
-samebuiltin int8-rrotn
-samebuiltin int8-pick
-samebuiltin int8,
-samebuiltin int8@
-samebuiltin int8!
-samebuiltin ptr+int8
-samebuiltin int8-[to]
-samebuiltin run@int8-to
-samebuiltin interpret@int8-to
-samebuiltin int8-to
-samebuiltin int8-value
-samebuiltin int8-constant
-samebuiltin int8-variable
-samebuiltin int8-literal
-samebuiltin int8-(literal)
-samebuiltin int16-lrot
-samebuiltin int16-rrot
-samebuiltin int16-lrotn
-samebuiltin int16-rrotn
-samebuiltin int16-pick
-samebuiltin int16,
-samebuiltin int16@
-samebuiltin int16!
-samebuiltin ptr+int16
-samebuiltin int16-[to]
-samebuiltin run@int16-to
-samebuiltin interpret@int16-to
-samebuiltin int16-to
-samebuiltin int16-value
-samebuiltin int16-constant
-samebuiltin int16-variable
-samebuiltin int16-literal
-samebuiltin int16-(literal)
-samebuiltin int32-lrot
-samebuiltin int32-rrot
-samebuiltin int32-lrotn
-samebuiltin int32-rrotn
-samebuiltin int32-pick
-samebuiltin int32,
-samebuiltin int32@
-samebuiltin int32!
-samebuiltin ptr+int32
-samebuiltin int32-[to]
-samebuiltin run@int32-to
-samebuiltin interpret@int32-to
-samebuiltin int32-to
-samebuiltin int32-value
-samebuiltin int32-constant
-samebuiltin int32-variable
-samebuiltin int32-literal
-samebuiltin int32-(literal)
-samebuiltin int64-lrot
-samebuiltin int64-rrot
-samebuiltin int64-lrotn
-samebuiltin int64-rrotn
-samebuiltin int64-pick
-samebuiltin int64,
-samebuiltin int64@
-samebuiltin int64!
-samebuiltin ptr+int64
-samebuiltin int64-[to]
-samebuiltin run@int64-to
-samebuiltin interpret@int64-to
-samebuiltin int64-to
-samebuiltin int64-value
-samebuiltin int64-constant
-samebuiltin int64-variable
-samebuiltin int64-literal
-samebuiltin int64-(literal)
-samebuiltin uint-lrot
-samebuiltin uint-rrot
-samebuiltin uint-lrotn
-samebuiltin uint-rrotn
-samebuiltin uint-pick
-samebuiltin uint,
-samebuiltin uint@
-samebuiltin uint!
-samebuiltin ptr+uint
-samebuiltin uint-[to]
-samebuiltin run@uint-to
-samebuiltin interpret@uint-to
-samebuiltin uint-to
-samebuiltin uint-value
-samebuiltin uint-constant
-samebuiltin uint-variable
-samebuiltin uint-literal
-samebuiltin uint-(literal)
-samebuiltin uint8-lrot
-samebuiltin uint8-rrot
-samebuiltin uint8-lrotn
-samebuiltin uint8-rrotn
-samebuiltin uint8-pick
-samebuiltin uint8,
-samebuiltin uint8@
-samebuiltin uint8!
-samebuiltin ptr+uint8
-samebuiltin uint8-[to]
-samebuiltin run@uint8-to
-samebuiltin interpret@uint8-to
-samebuiltin uint8-to
-samebuiltin uint8-value
-samebuiltin uint8-constant
-samebuiltin uint8-variable
-samebuiltin uint8-literal
-samebuiltin uint8-(literal)
-samebuiltin uint16-lrot
-samebuiltin uint16-rrot
-samebuiltin uint16-lrotn
-samebuiltin uint16-rrotn
-samebuiltin uint16-pick
-samebuiltin uint16,
-samebuiltin uint16@
-samebuiltin uint16!
-samebuiltin ptr+uint16
-samebuiltin uint16-[to]
-samebuiltin run@uint16-to
-samebuiltin interpret@uint16-to
-samebuiltin uint16-to
-samebuiltin uint16-value
-samebuiltin uint16-constant
-samebuiltin uint16-variable
-samebuiltin uint16-literal
-samebuiltin uint16-(literal)
-samebuiltin uint32-lrot
-samebuiltin uint32-rrot
-samebuiltin uint32-lrotn
-samebuiltin uint32-rrotn
-samebuiltin uint32-pick
-samebuiltin uint32,
-samebuiltin uint32@
-samebuiltin uint32!
-samebuiltin ptr+uint32
-samebuiltin uint32-[to]
-samebuiltin run@uint32-to
-samebuiltin interpret@uint32-to
-samebuiltin uint32-to
-samebuiltin uint32-value
-samebuiltin uint32-constant
-samebuiltin uint32-variable
-samebuiltin uint32-literal
-samebuiltin uint32-(literal)
-samebuiltin uint64-lrot
-samebuiltin uint64-rrot
-samebuiltin uint64-lrotn
-samebuiltin uint64-rrotn
-samebuiltin uint64-pick
-samebuiltin uint64,
-samebuiltin uint64@
-samebuiltin uint64!
-samebuiltin ptr+uint64
-samebuiltin uint64-[to]
-samebuiltin run@uint64-to
-samebuiltin interpret@uint64-to
-samebuiltin uint64-to
-samebuiltin uint64-value
-samebuiltin uint64-constant
-samebuiltin uint64-variable
-samebuiltin uint64-literal
-samebuiltin uint64-(literal)
-samebuiltin embro-lrot
-samebuiltin embro-rrot
-samebuiltin embro-lrotn
-samebuiltin embro-rrotn
-samebuiltin embro-pick
-samebuiltin embro,
-samebuiltin embro@
-samebuiltin embro!
-samebuiltin ptr+embro
-samebuiltin embro-[to]
-samebuiltin run@embro-to
-samebuiltin interpret@embro-to
-samebuiltin embro-to
-samebuiltin embro-value
-samebuiltin embro-constant
-samebuiltin embro-variable
-samebuiltin embro-literal
-samebuiltin embro-(literal)
-samebuiltin float-lrot
-samebuiltin float-rrot
-samebuiltin float-lrotn
-samebuiltin float-rrotn
-samebuiltin float-pick
-samebuiltin float,
-samebuiltin float@
-samebuiltin float!
-samebuiltin ptr+float
-samebuiltin float-[to]
-samebuiltin run@float-to
-samebuiltin interpret@float-to
-samebuiltin float-to
-samebuiltin float-value
-samebuiltin float-constant
-samebuiltin float-variable
-samebuiltin float-literal
-samebuiltin float-(literal)
-samebuiltin double-lrot
-samebuiltin double-rrot
-samebuiltin double-lrotn
-samebuiltin double-rrotn
-samebuiltin double-pick
-samebuiltin double,
-samebuiltin double@
-samebuiltin double!
-samebuiltin ptr+double
-samebuiltin double-[to]
-samebuiltin run@double-to
-samebuiltin interpret@double-to
-samebuiltin double-to
-samebuiltin double-value
-samebuiltin double-constant
-samebuiltin double-variable
-samebuiltin double-literal
-samebuiltin double-(literal)
-samebuiltin extended-lrot
-samebuiltin extended-rrot
-samebuiltin extended-lrotn
-samebuiltin extended-rrotn
-samebuiltin extended-pick
-samebuiltin extended,
-samebuiltin extended@
-samebuiltin extended!
-samebuiltin ptr+extended
-samebuiltin extended-[to]
-samebuiltin run@extended-to
-samebuiltin interpret@extended-to
-samebuiltin extended-to
-samebuiltin extended-value
-samebuiltin extended-constant
-samebuiltin extended-variable
-samebuiltin extended-literal
-samebuiltin extended-(literal)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
