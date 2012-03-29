@@ -1,0 +1,75 @@
+// 2011.07.31 # Doj
+// ќсновные объ€влени€
+
+include" units\statements\switch.de"
+
+namespace ARM
+  // текуща€ позици€ в ассемблерном коде (дл€ вычислени€ адресов меток)
+  : pos@ ( -p) here ;
+  // записать в ассемблерный код байт
+  : byte<< uint->uint8 uint8, ;
+  : word<< uint->uint16 uint16, ;
+  : dword<<  uint->uint32 uint32, ;
+  // перехват сообщений об ошибках
+  : error ( B: s) ." Error: " str. cr ;
+  : unknown-operand-type " unknown operand type" error ;
+  : underconstruction " underconstruction" error ;
+
+  // автоматически вызывать imm и disp у чисел
+  variable *auto-integers?
+
+// {{{ registers
+  : enum8 0 begin dup 8 < while dup constant 1+ repeat drop ;
+  // registers r*
+  :noname
+    0 begin dup 16 < while " R" dup int->str str+ bdup str. cr dup constanted 1 + repeat drop
+  ; execute
+
+  // Aliasrs
+  R15 constant PC
+  // fiq mode
+  R8 constant R8_fiq
+  R9 constant R9_fiq
+  R10 constant R10_fiq
+  R11 constant R11_fiq
+  R12 constant R12_fiq
+  R13 constant R13_fiq
+  R14 constant R14_fiq
+  // supervisor mode
+  R13 constant R13_svc
+  R14 constant R14_svc
+  // abort mode
+  R13 constant R13_abt
+  R14 constant R14_abt
+  // irq mode
+  R13 constant R13_irq
+  R14 constant R14_irq
+  // undefined
+  R13 constant R13_und
+  R14 constant R14_und
+  // THUMB
+  R13 constant SP
+  R14 constant LR
+  // 
+  16 constant CPSR
+  // SPSR
+
+  0 enum CONDITION
+  CONDITION EQ // Z set                         / equal
+  CONDITION NE // Z clear                       / not equal
+  CONDITION CS // C set                         / unsigned higher or same
+  CONDITION CC // C clear                       / unsigned lower
+  CONDITION MI // N set                         / negative
+  CONDITION PL // N clear                       / positive or zero
+  CONDITION VS // V set                         / overflow
+  CONDITION VC // V clear                       / no overflow
+  CONDITION HI // C set and Z clear             / unsigned higher
+  CONDITION LS // C clear or Z set              / unsigned lower or same
+  CONDITION GE // N equals V                    / greater or equal
+  CONDITION LT // N not equal to V              / less than
+  CONDITION GT // Z clear AND (N equals V)      / greater than
+  CONDITION LE // Z set OR (N not equal to V)   / less than or equal
+  CONDITION AL // (ignored)                     / always
+// }}}
+
+\namespace
