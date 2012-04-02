@@ -1,0 +1,19 @@
+// 2011.07.31 # Doj
+// Команды обработки данных и PSR Transfer
+
+h0 data-processing AND // and
+h1 data-processing EOR // xor
+h2 data-processing SUB // -
+h3 data-processing RSB // swap -
+h4 data-processing ADD // +
+h5 data-processing ADC // + with carry
+h6 data-processing SBC // Op1 - Op2 + C - 1
+h7 data-processing RSC // Op2 - Op1 + C - 1
+h8 data-processing TST // as AND, but result not written
+h9 data-processing TEQ // as EOR
+hA data-processing CMP // as SUB
+hB data-processing CMN // as ADD
+hC data-processing ORR // operand1 or operand2
+hD data-processing MOV // operand2
+hE data-processing BIC // operand1 AND NOT operand2 (bit clear)
+hF data-processing MVN // not operand2

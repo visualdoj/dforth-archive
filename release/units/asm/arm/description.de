@@ -1,0 +1,29 @@
+// 2012.03.29 # Doj
+// Команды для удобного описания ассемблерных команд (таблиц)
+
+include" units/statements/switch.de"
+
+ARM extend-namespace 
+  namespace COMMAND_DESCRIPTION
+    : multi-op ( "name") create ;
+
+    : data-processing ( opcode "name")
+        create ,
+      does>
+        *thumb? @ if
+        else
+          @ ( opcode) 21 shl
+          COND@ 28 shl          or
+          I@ 1 25 shl and       or
+          S@ 1 20 shl and       or
+          Rn@ 16 shl            or
+          Rd@ 12 shl            or
+          I@ if
+            Rotate@ 8 shl or Imm@ or
+          else
+            Shift@ 4 shl or Rm@ or
+          then
+          dword<<
+        then ;
+  \namespace
+\namespace

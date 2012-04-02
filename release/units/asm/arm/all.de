@@ -1,0 +1,8 @@
+// 2012.03.30 # Doj
+// Подключаем все модули arm ассемблеров
+
+include" units/asm/arm/core.de"
+//  include" units/asm/arm/labels.de"
+include" units/asm/arm/description.de"
+include" units/asm/arm/translator.de"
+// include" units/asm/arm/dembro.de"

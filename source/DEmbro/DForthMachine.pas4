@@ -16,7 +16,7 @@ ifdef(`__windows__', `define(`_DATE_',`esyscmd(`..\tools\dtime ddd mmm dd hh:nn 
 uses
   {$I units.inc},
 
-  Math,
+  Math, 
   strings,
   console,
   DAlien,
@@ -55,7 +55,7 @@ define(`body', `begin with Machine^ do begin $1 end; end;')
 {$IFNDEF FLAG_FPC}{$REGION "data_commands"}{$ENDIF}
 define(`data_commands', 
   `
-  procedure $1_to cmdhdr;
+  procedure $1_to cmdhdr; 
   procedure interprete_$1_to cmdhdr;
   procedure compile_$1_to cmdhdr;
   procedure run_$1_to cmdhdr

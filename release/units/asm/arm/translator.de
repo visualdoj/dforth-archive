@@ -1,0 +1,15 @@
+// 2012.03.30 # Doj
+// Транслятор arm ассемблера
+
+include" units/asm/arm/description.de"
+
+ARM extend-namespace 
+  namespace COMMANDS
+    uses COMMAND_DESCRIPTION
+      include" units/asm/arm/tables/data_processing.de"
+    \uses
+  \namespace
+\namespace
+
+namespace TRANSLATOR
+\namespace

@@ -1,31 +1,41 @@
 // 2011.07.31 # Doj
-// Основные объявления
+// РћСЃРЅРѕРІРЅС‹Рµ РѕР±СЉСЏРІР»РµРЅРёСЏ
 
-include" units\statements\switch.de"
+include" units/statements/switch.de"
+include" units/statements/var.de"
 
 namespace ARM
-  // текущая позиция в ассемблерном коде (для вычисления адресов меток)
+// TRANSLATOR OPTIONS
+  // Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р·С‹РІР°С‚СЊ imm Рё disp Сѓ С‡РёСЃРµР»
+  variable *auto-integers?
+  // РєРѕРјРїРёР»РёСЂРѕРІР°С‚СЊ РІ THUMP СЂРµР¶РёРјРµ
+  variable *thumb?
+  // РїРµСЂРµРєР»СЋС‡РµРЅРёРµ СЂРµР¶РёРјР°
+  : CODE16 *thumb? on ;
+  : CODE32 *thumb? off ;
+  // СЂРµР¶РёРј РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+  CODE32
+
+  // С‚РµРєСѓС‰Р°СЏ РїРѕР·РёС†РёСЏ РІ Р°СЃСЃРµРјР±Р»РµСЂРЅРѕРј РєРѕРґРµ (РґР»СЏ РІС‹С‡РёСЃР»РµРЅРёСЏ Р°РґСЂРµСЃРѕРІ РјРµС‚РѕРє)
   : pos@ ( -p) here ;
-  // записать в ассемблерный код байт
+  // Р·Р°РїРёСЃР°С‚СЊ РІ Р°СЃСЃРµРјР±Р»РµСЂРЅС‹Р№ РєРѕРґ Р±Р°Р№С‚
   : byte<< uint->uint8 uint8, ;
   : word<< uint->uint16 uint16, ;
   : dword<<  uint->uint32 uint32, ;
-  // перехват сообщений об ошибках
+  // РїРµСЂРµС…РІР°С‚ СЃРѕРѕР±С‰РµРЅРёР№ РѕР± РѕС€РёР±РєР°С…
   : error ( B: s) ." Error: " str. cr ;
   : unknown-operand-type " unknown operand type" error ;
   : underconstruction " underconstruction" error ;
 
-  // автоматически вызывать imm и disp у чисел
-  variable *auto-integers?
-
-// {{{ registers
+// REGISTERS
   : enum8 0 begin dup 8 < while dup constant 1+ repeat drop ;
-  // registers r*
+  // registers R0-R15
   :noname
-    0 begin dup 16 < while " R" dup int->str str+ bdup str. cr dup constanted 1 + repeat drop
-  ; execute
+    0 begin dup 16 < while 
+      " R" dup int->str str+ dup constanted
+    1+ repeat drop ; execute
 
-  // Aliasrs
+  // Aliases
   R15 constant PC
   // fiq mode
   R8 constant R8_fiq
@@ -52,8 +62,9 @@ namespace ARM
   R14 constant LR
   // 
   16 constant CPSR
-  // SPSR
+  // SPSR?
 
+  // РЈСЃР»РѕРІРёСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РёРЅСЃС‚СЂСѓРєС†РёРё, 4bit
   0 enum CONDITION
   CONDITION EQ // Z set                         / equal
   CONDITION NE // Z clear                       / not equal
@@ -70,6 +81,20 @@ namespace ARM
   CONDITION GT // Z clear AND (N equals V)      / greater than
   CONDITION LE // Z set OR (N not equal to V)   / less than or equal
   CONDITION AL // (ignored)                     / always
-// }}}
+  // РЈСЃР»РѕРІРёРµ С‚РµРєСѓС‰РµР№ РёРЅСЃС‚СЂСѓРєС†РёРё
+  AL var COND
+
+  // РџР°СЂР°РјРµС‚СЂС‹ РёРЅСЃС‚СЂСѓРєС†РёРё
+  0 var S // set conditions
+  0 var I // immediate/register
+  0 var Rd // destination register
+  0 var Rn // 1st operand register
+  0 var Rm // 2nd operand register
+  0 var Shift // 8bit shift for 2nd operand
+  0 var Imm // 8bit immediate value
+  0 var Rotate // 4bit rotation for immediate operand
+
+  : init-parameters
+    AL COND! 0 S! 0 I! 0 Rd! 0 Rn! 0 Rm! 0 Shift! 0 Imm! 0 Rotate! ;
 
 \namespace

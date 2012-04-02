@@ -21,6 +21,7 @@ ifeq ($(OS),Windows_NT)
   LIBPREFIX :=
   LIBEXT := .dll
   EXEEXT := .exe
+  UPDATE := cp
 else
   RM := rm -f
   CHMOD := chmod
@@ -29,6 +30,7 @@ else
   LIBPREFIX := lib
   LIBEXT := .so
   EXEEXT :=
+  UPDATE := cp -u -p
 endif
 
 SOURCE_PATHS = *.ext \
@@ -162,10 +164,13 @@ commands:
 	m4 ../m4/cevaluate.m4 commands/groups.list > ../../release/core/builtin/all.de
 	m4 ../m4/c_rusall.m4 commands/groups.list > ../../release/docs/rus/all.de
 
-copy: $(SOURCES)
-	cp $(SOURCES) temp
+temp/copy.stamp: $(SOURCES)
+	$(UPDATE) $(SOURCES) temp
+	echo copied > $@
 
-%.pastemp: $(PAS4_LIST)
+copy: temp/copy.stamp;
+
+%.pastemp: temp/copy.stamp $(PAS4_LIST)
 	m4 meta.m4 $(@:%.pastemp=%.pas4) > $@
 
 %.pasq: $(PASTEMP_LIST)
@@ -192,14 +197,14 @@ copy: $(SOURCES)
 
 lib: ../../release/$(LIBPREFIX)de32$(LIBEXT);
 
-../../release/de32.dll: $(PP_LIST) de32.dpr body.inc
+../../release/de32.dll: $(PP_LIST) de32.dpr body.inc load.inc
 	cp de32.dpr temp/
 	$(FPC) temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FU.\temp
 	cp temp/de32header.pas ../../release/headers/
 
-../../release/libde32.so: $(PP_LIST) de32.dpr body.inc
+../../release/libde32.so: $(PP_LIST) de32.dpr body.inc load.inc
 	cp de32.dpr temp/
-	$(FPC) -Cg temp/de32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -FE../../release/ -FU./temp
+	$(FPC) -Cg temp/de32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -FE../../release/ -FU./temp
 	cp temp/de32header.pas ../../release/headers/
 
 # UTILS

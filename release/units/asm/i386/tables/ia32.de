@@ -1,5 +1,5 @@
 // 2011.07.31 # Doj
-// Команды множества IA-32
+// РљРѕРјР°РЅРґС‹ РјРЅРѕР¶РµСЃС‚РІР° IA-32
 
 // {{{ Data Transfer Instructions
 // TODO BSWAP
@@ -76,7 +76,7 @@ multi-op XCHG
     h87 32 variant_reg_reg
 
 single-instructions
-    // TODO : нужно ли тут переключение режимов 16/32 ?
+    // TODO : РЅСѓР¶РЅРѕ Р»Рё С‚СѓС‚ РїРµСЂРµРєР»СЋС‡РµРЅРёРµ СЂРµР¶РёРјРѕРІ 16/32 ?
     h60  0 variant PUSHA
     h60  0 variant PUSHAD
     h61  0 variant POPA

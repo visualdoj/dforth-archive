@@ -1,0 +1,15 @@
+// 2012.03.30 # Doj
+// Тест для DEmbro Arm Assembler
+
+include" units/utils/bitdump.de"
+
+include" units/asm/asm.de"
+include" units/asm/arm/all.de"
+
+:asm-noname  uses ARM TRANSLATOR COMMANDS
+  // ORR
+  R15 Rd! R14 Rm! MOV
+\uses asm-noname; // dup execute
+
+dup ." start-ptr = " xt.asm@ . cr
+." 0: " xt.asm@ @ 32 0 int->bits cr
