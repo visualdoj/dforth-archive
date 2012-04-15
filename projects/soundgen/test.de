@@ -1,0 +1,87 @@
+// 2012.04.14 # Doj
+// Генерация звуков
+
+include" units/headers/mmsystem.de"
+include" units/headers/pastypes.de"
+
+uses PASCAL-TYPES
+  0
+    4                   bytes-- .RIFF
+    Longword            bytes-- .RLen
+    4                   bytes-- .WAVE
+    4                   bytes-- .Fmt
+    Longword            bytes-- .FLen
+    PCMWAVEFORMAT       bytes-- .WFmt
+    4                   bytes-- .Data
+    Longword            bytes-- .DLen
+  struct s_mus
+\uses
+
+: .Buf s_mus + ;
+
+: fill-mus-common ( ptr size)
+    swap
+    dup .RIFF               pchar" RIFF" swap 4 move // dword!
+    // dup .RLen
+    dup .WAVE               pchar" WAVE" swap 4 move // dword!
+    dup .Fmt                pchar" fmt " swap 4 move // dword!
+    dup .FLen                         16 swap dword!
+
+    dup .WFmt .wf .wFormatTag          1 swap word!
+    dup .WFmt .wf .nChannels           1 swap word!
+    dup .WFmt .wf .nSamplesPerSec  16000 swap dword!
+    dup .WFmt .wf .nAvgBytesPerSec 32000 swap dword!
+    dup .WFmt .wf .nBlockAlign         1 swap word!
+    dup .WFmt .wBitsPerSample         16 swap word!
+
+    dup .Data               pchar" data" swap 4 move // dword!
+
+    over 44 + 8 - over .RLen                  dword!
+    swap 2 * swap .DLen                       dword! ;
+
+: mus-dump ( ptr)
+    dup .RIFF                          ."  RIFF: " dword@ . cr
+    dup .RLen                          ."  RLen: " dword@ . cr
+    dup .WAVE                          ."  WAVE: " dword@ . cr
+    dup .Fmt                           ."  Fmt:  " dword@ . cr
+    dup .FLen                          ."  FLen: " dword@ . cr
+
+    dup .WFmt .wf .wFormatTag          ."  wFormatTag: " word@ . cr
+    dup .WFmt .wf .nChannels           ."  nChannels:  " word@ . cr
+    dup .WFmt .wf .nSamplesPerSec      ."  nSamplesPerSec: " dword@ . cr
+    dup .WFmt .wf .nAvgBytesPerSec     ."  nAvgBytesPerSec: " dword@ . cr
+    dup .WFmt .wf .nBlockAlign         ."  nBlockAlign: " word@ . cr
+    dup .WFmt .wBitsPerSample          ."  wBitsPerSample: " word@ . cr
+
+    dup .Data                          ."  Data: " dword@ . cr
+
+    dup .DLen                          ."  DLen: " dword@ . cr
+    drop ;
+
+16000 6 * constant SIZE
+
+create mus
+  s_mus allot
+  SIZE 2 * allot
+
+mus SIZE fill-mus-common
+mus mus-dump
+
+finit
+: fill-buffer ( ptr size)
+    2 * begin dup while
+        // swap 2 + ( size ptr)
+        ( swap) 2 - ( ptr size)
+        // 2dup + ( ptr size element)
+        dup 2 div ( ptr size index)
+        6400 mod w>f fsqrt 3 w>f f* fsin 3200 w>f f* f>w ( ptr size val)
+        3 pick 3 pick + word! ( ptr size)
+    repeat drop drop
+;
+
+mus .Buf SIZE fill-buffer
+
+mmsystem-load
+
+mus SND_MEMORY SND_LOOP or SND_ASYNC or sndPlaySoundA .
+str$

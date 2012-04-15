@@ -110,8 +110,8 @@ create PIXELFORMATDESCRIPTOR
 // окну из системы.
 :noname  ( hWnd:uint Msg:uint wParam:int lParam:int -- )
      // drop drop drop drop
-     // 3 pick switch 
-     //   WM_DESTROY       of drop drop drop drop *exit? on \of
+     3 pick switch 
+         WM_DESTROY       of drop drop drop drop *exit? on \of
      //   WM_KEYDOWN       of drop OnKeyDown drop drop \of
        // WM_KEYUP         of drop OnKeyUp drop drop \of
        // WM_CHAR          of drop OnChar drop drop \of
@@ -121,7 +121,7 @@ create PIXELFORMATDESCRIPTOR
        // WM_MBUTTONDOWN   of drop drop drop drop OnMButtonDown \of
        // WM_MOVING        of OnMoving drop drop drop \of
         DefWindowProcA 
-     // \switch
+     \switch
 ; :c WindowProc t_WindowProc c;
 
 // Структура WNDCLASSEX
@@ -157,7 +157,7 @@ create WNDCLASSEX
 // Возвращает HANDLE окна. Если он равен 0, то при создании окна произошла
 // ошибка
 : CreateWindow ( -i) WS_EX_APPWINDOW
-                     DEMBRO_RENDERER_WND pchar" graphic-loop-gl" DEMBRO_STYLE
+                     DEMBRO_RENDERER_WND pchar" graphic-loop-gl" WS_VISIBLE
                      160 0 *width @ *height @ ( xywh) 0 0 0 0
                      CreateWindowExA ;
 
@@ -184,10 +184,15 @@ create *msg*
 
 : start-graphic-loop ( width height renderer-xt)
     *renderer ! *height ! *width !
+    ." HERE" cr
     *not-loaded @ if windows-load opengl-load *not-loaded off then
+    ." HERE" cr
     CreateWindowClass [str]" creating window class" check
+    ." HERE CreateWindowClass done" cr
     CreateWindow dup *handle ! dup [str]" creating window" check
+    ." HERE" cr
     grInit
+    ." HERE" cr
     begin
       grClear gr2D *renderer @ execute
       *dc @ SwapBuffers drop

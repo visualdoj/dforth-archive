@@ -1,0 +1,15 @@
+// 2012.04.14 # Doj
+// Размеры типов в паскале 
+
+namespace PASCAL-TYPES
+  1 constant Byte
+  1 constant Shortint
+  2 constant Smallint
+  2 constant Word
+  1 cells constant Integer
+  4 constant Cardinal
+  4 constant Longint
+  4 constant Longword
+  8 constant Int64
+  8 constant QWord
+\namespace

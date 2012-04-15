@@ -4,6 +4,20 @@
 include" units\headers\windows.de"
 include" units\utils\headers.de"
 
+// {{{ types
+0
+  WORD                  -- .wFormatTag
+  WORD                  -- .nChannels
+  DWORD                 -- .nSamplesPerSec
+  DWORD                 -- .nAvgBytesPerSec
+  WORD                  -- .nBlockAlign
+struct WAVEFORMAT
+
+0
+  WAVEFORMAT       bytes-- .wf
+  WORD                  -- .wBitsPerSample
+struct PCMWAVEFORMAT
+// }}}
 // {{{ constants
 0       constant MMSYSERR_BASE
 32      constant WAVERR_BASE
