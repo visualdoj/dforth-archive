@@ -1,7 +1,7 @@
 // 2012.02.19 # Doj
 // Команды для создания векторных команд
 
-: make-vect-op-execute created does> cr @ execute ;
+: make-vect-op-execute created does> @ execute ;
 : make-vect-op' created ;
 : make-vect-op@ created does> ( -i) @ ;
 : make-vect-op! created does> ( i-) ! ;

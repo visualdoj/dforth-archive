@@ -3,6 +3,8 @@
 
 include" units/headers/mmsystem.de"
 include" units/headers/pastypes.de"
+include" units/statements/var.de"
+include" units/statements/vect.de"
 
 uses PASCAL-TYPES
   0
@@ -58,7 +60,8 @@ uses PASCAL-TYPES
     dup .DLen                          ."  DLen: " dword@ . cr
     drop ;
 
-16000 6 * constant SIZE
+// 16000 6 * constant SIZE
+160 6 * constant SIZE
 
 create mus
   s_mus allot
@@ -67,6 +70,9 @@ create mus
 mus SIZE fill-mus-common
 mus mus-dump
 
+:noname  6400 mod w>f fsqrt 3 w>f f* fsin 3200 w>f f* f>w ; vect! wave
+
+
 finit
 : fill-buffer ( ptr size)
     2 * begin dup while
@@ -74,19 +80,135 @@ finit
         ( swap) 2 - ( ptr size)
         // 2dup + ( ptr size element)
         dup 2 div ( ptr size index)
-        6400 mod w>f fsqrt 3 w>f f* fsin 3200 w>f f* f>w ( ptr size val)
+        wave ( ptr size val)
         3 pick 3 pick + word! ( ptr size)
     repeat drop drop
 ;
 
-mus .Buf SIZE fill-buffer
+:noname  w>f
+         fdup SIZE w>f f/ 10 w>f f* 5 w>f f+
+         f/ ( 2 w>f f*)
+         fsin 6400 w>f f* f>w ; wave!
+
+:noname  12800 mod 6400 - dup 3200 > if 6400 swap - then ; wave!
+
+: SIN ( i a b) lrot w>f swap w>f f/ fsin w>f f* f>w ;
+:noname  10 6400 SIN ; wave!
+
 
 mmsystem-load
 
-mus SND_MEMORY SND_LOOP or SND_ASYNC or sndPlaySoundA .
+: play
+    mus .Buf SIZE fill-buffer
+    mus SND_MEMORY ( SND_LOOP or SND_ASYNC or) sndPlaySoundA drop ( .) ;
 
+4 constant a
+2 constant b
+
+( :noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play play play
+)
+( 
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play play play
+
+:noname  2 6400 SIN ; wave! play play play play
+:noname  4 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play play play play
+:noname  4 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play play play play
+:noname  4 6400 SIN ; wave! play play play
+
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play play play
+)
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play play play play
+
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play play play play
+
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play play play
+:noname  5 6400 SIN ; wave! play
+
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play play
+:noname  5 6400 SIN ; wave! play play
+
+:noname  3 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  3 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  3 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play play
+:noname  6 6400 SIN ; wave! play play
+
+:noname  3 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  3 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  3 6400 SIN ; wave! play play
+:noname  2 6400 SIN ; wave! play play
+:noname  7 6400 SIN ; wave! play play
+:noname  6 6400 SIN ; wave! play
+:noname  2 6400 SIN ; wave! play
+
+:noname  3 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  3 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play
+:noname  3 6400 SIN ; wave! play play
+:noname  4 6400 SIN ; wave! play play
+:noname  6 6400 SIN ; wave! play play
+:noname  7 6400 SIN ; wave! play
+
+( 
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play play play
+
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play
+:noname  a 6400 SIN ; wave! play play play play
+:noname  b 6400 SIN ; wave! play play play
+)
+mus .Buf SIZE fill-buffer
 str" tic.wav" file-w file-open value f
   mus   s_mus SIZE 2 * +   f file-write
 f file-close
 
-str$
+// str$
