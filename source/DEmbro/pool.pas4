@@ -2,30 +2,84 @@ unit pool;
 
 interface
 
+uses
+  DUtils;
+
 type
+PPoolPage = ^TPoolPage;
+TPoolPage = record
+  P: PArrayOfByte;
+  Size: Integer;
+  Pos: Integer;
+  Prev: PPoolPage;
+end;
+
 TPool = object
+private
+  FCapacity: Integer;
+  FFirst: PPoolPage;
+  FLast: PPoolPage;
+  procedure StartPage(Size: Integer);
+public
   constructor Init(Capacity: Integer);
   procedure Clear;
   function Append(Memory: Pointer; Size: Integer): Pointer; overload;
   function Append(S: PAnsiChar): PAnsiChar; overload;
+  property Capacity: Integer read FCapacity;
 end;
 
 implementation
 
+procedure TPool.StartPage;
+var
+  Page: PPoolPage;
+begin
+  New(Page);
+  GetMem(Page^.P, Size);
+  Page^.Size := Size;
+  Page^.Pos := 0;
+  Page^.Prev := FLast;
+  FLast := Page;
+end;
+
 constructor TPool.Init(Capacity: Integer);
 begin
+  FCapacity = Capacity;
+  FFirst := nil;
+  FPrev = nil;
+  StartPage(FCapacity);
+  FFirst := FLast;
 end;
 
 procedure TPool.Clear;
+var
+  Prev: PPoolPage;
 begin
+  while FLast <> FFirst do begin
+    Prev := FLast^.Prev;
+    FreeMem(FLast^.P);
+    Dispose(FLast);
+    FLast := Prev;
+  end;
+  FFirst^.Pos := 0;
 end;
 
 function TPool.Append(Memory: Pointer; Size: Integer): Pointer;
+var
+  I: Integer;
 begin
+  if Size >= FLast^.Size - FLast^.Pos then begin
+    I := FCapacity;
+    StartPage(FCapacity * ((Size div FCapacity) + 1));
+  end;
+  Move(Memory^, FLast^.P[FLast^.Pos], Size);
+  FLast^.Pos := FLast^.Pos + Size;
+  Result := @FLast^.P[FLast^.Pos];
 end;
 
 function TPool.Append(S: PAnsiChar): PAnsiChar;
 begin
+  Result := Append(S, StrLen(S) + 1);
 end;
 
 end.
