@@ -1,0 +1,11 @@
+// 2011.10.25 # Doj
+// Важные команды по работе с символами
+
+13 constant CR ( h0D)
+10 constant LF ( h0A)
+h0085 constant NEL // unicode next line
+h2028 constant LS // unicode line separator
+h2029 constant PS // paragraph separator
+
+: CR->CR+LF ;
+: LF->CR+LF ;
