@@ -10,6 +10,7 @@
 .PHONY: commands
 .PHONY: compile
 .PHONY: copy
+.PHONY: help
 
 FPC := fpc
 
@@ -22,6 +23,7 @@ ifeq ($(OS),Windows_NT)
   LIBEXT := .dll
   EXEEXT := .exe
   UPDATE := cp
+  M4 := ..\windows\m4.exe
 else
   RM := rm -f
   CHMOD := chmod
@@ -31,6 +33,7 @@ else
   LIBEXT := .so
   EXEEXT :=
   UPDATE := cp -u -p
+  M4 := m4
 endif
 
 SOURCE_PATHS = *.ext \
@@ -70,6 +73,9 @@ PAS4_LIST := $(addsuffix .pas4,$(BASE_LIST))
 
 DQUOTES = ../tools/dquotes
 
+help:
+	$(CAT) README
+
 compile: ../../release/de$(EXEEXT);
 
 all: clean pas4 pasq
@@ -83,31 +89,31 @@ all: clean pas4 pasq
 # 	$(FPC) -vb test.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FEtemp -FUtemp
 
 pas4:
-	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
-	m4 id2.m4 DForthMachine.temp4 > DForthMachine.pas 
-	m4 meta.m4 console.pas4 > temp\console.temp4
-	m4 id2.m4 temp\console.temp4 > console.pas
-	m4 meta.m4 sh.pas4 > temp\sh.temp4
-	m4 id2.m4 temp\sh.temp4 > sh.pas
-	m4 meta.m4 pool.pas4 > temp\pool.temp4
-	m4 id2.m4 temp\pool.temp4 > pool.pas
-	m4 ..\m4\id.m4 stream.pas4 > temp\stream.temp4
-	m4 id2.m4 temp\stream.temp4 > stream.pas
-	m4 DEmbroSpace.pas4 > DEmbroSpace.pas
-	m4 DEmbroCore.pas4 > DEmbroCore.pas
-	m4 DEmbroManager.pas4 > DEmbroManager.pas
-	m4 DMemMeta.pas4 > DMemMeta.pas
-	m4 ..\m4\metapascal.m4 DEmbroSource.pas4 > DEmbroSource.pasq
-	m4 ..\m4\metapascal.m4 DEmbroChunk.pas4 > DEmbroChunk.pasq
-	m4 commands.m4 commands\DCommandsAlien.pas4 > commands\DCommandsAlien.pasq
-	m4 commands.m4 commands\DCommandsConsole.pas4 > commands\DCommandsConsole.pasq
-	m4 commands.m4 commands\DCommandsMisc.pas4 > commands\DCommandsMisc.pasq
-	m4 commands.m4 commands\DCommandsStrings.pas4 > commands\DCommandsStrings.pasq
-	m4 commands.m4 commands\DCommandsVoc.pas4 > commands\DCommandsVoc.pasq
-	m4 commands.m4 commands\DCommandsNumberArithmetic.pas4 > commands\DCommandsNumberArithmetic.temp
-	m4 id2.m4 commands\DCommandsNumberArithmetic.temp > commands\DCommandsNumberArithmetic.pasq
-	m4 commands\DCommandsControl.pas4 > commands\DCommandsControl.pasq
-	m4 DCommandsTable.pas4 > DCommandsTable.pasq
+	$(M4) ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
+	$(M4) id2.m4 DForthMachine.temp4 > DForthMachine.pas 
+	$(M4) meta.m4 console.pas4 > temp\console.temp4
+	$(M4) id2.m4 temp\console.temp4 > console.pas
+	$(M4) meta.m4 sh.pas4 > temp\sh.temp4
+	$(M4) id2.m4 temp\sh.temp4 > sh.pas
+	$(M4) meta.m4 pool.pas4 > temp\pool.temp4
+	$(M4) id2.m4 temp\pool.temp4 > pool.pas
+	$(M4) ..\m4\id.m4 stream.pas4 > temp\stream.temp4
+	$(M4) id2.m4 temp\stream.temp4 > stream.pas
+	$(M4) DEmbroSpace.pas4 > DEmbroSpace.pas
+	$(M4) DEmbroCore.pas4 > DEmbroCore.pas
+	$(M4) DEmbroManager.pas4 > DEmbroManager.pas
+	$(M4) DMemMeta.pas4 > DMemMeta.pas
+	$(M4) ..\m4\metapascal.m4 DEmbroSource.pas4 > DEmbroSource.pasq
+	$(M4) ..\m4\metapascal.m4 DEmbroChunk.pas4 > DEmbroChunk.pasq
+	$(M4) commands.m4 commands\DCommandsAlien.pas4 > commands\DCommandsAlien.pasq
+	$(M4) commands.m4 commands\DCommandsConsole.pas4 > commands\DCommandsConsole.pasq
+	$(M4) commands.m4 commands\DCommandsMisc.pas4 > commands\DCommandsMisc.pasq
+	$(M4) commands.m4 commands\DCommandsStrings.pas4 > commands\DCommandsStrings.pasq
+	$(M4) commands.m4 commands\DCommandsVoc.pas4 > commands\DCommandsVoc.pasq
+	$(M4) commands.m4 commands\DCommandsNumberArithmetic.pas4 > commands\DCommandsNumberArithmetic.temp
+	$(M4) id2.m4 commands\DCommandsNumberArithmetic.temp > commands\DCommandsNumberArithmetic.pasq
+	$(M4) commands\DCommandsControl.pas4 > commands\DCommandsControl.pasq
+	$(M4) DCommandsTable.pas4 > DCommandsTable.pasq
 	$(DQUOTES) -r .\ *.pasq *.pas
 
 pasq:
@@ -116,12 +122,12 @@ pasq:
 DMachineCode: Dx86 DArm
 
 Dx86:
-	m4 ..\DMachineCode\Dx86.pas4 > ..\DMachineCode\Dx86.temp1
-	m4 ..\m4\hex.m4 ..\DMachineCode\Dx86.temp1 > ..\DMachineCode\Dx86.pas
+	$(M4) ..\DMachineCode\Dx86.pas4 > ..\DMachineCode\Dx86.temp1
+	$(M4) ..\m4\hex.m4 ..\DMachineCode\Dx86.temp1 > ..\DMachineCode\Dx86.pas
 
 DArm:
-	m4 ..\DMachineCode\DArm.pas4 > ..\DMachineCode\DArm.temp1
-	m4 ..\m4\hex.m4 ..\DMachineCode\DArm.temp1 > ..\DMachineCode\DArm.pas
+	$(M4) ..\DMachineCode\DArm.pas4 > ..\DMachineCode\DArm.temp1
+	$(M4) ..\m4\hex.m4 ..\DMachineCode\DArm.temp1 > ..\DMachineCode\DArm.pas
 
 release: clean pas4 pasq
 	$(FPC) dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -FE"..\..\release\" -FU".\temp"
@@ -130,39 +136,39 @@ release: clean pas4 pasq
 #	upx ..\..\release\dembro32lib.dll
 
 doc:
-	m4 ..\m4\googlecode.m4 DForthMachine.pas4 > ..\..\wiki\DForthMachine
+	$(M4) ..\m4\googlecode.m4 DForthMachine.pas4 > ..\..\wiki\DForthMachine
 	cd ..\..\wiki & dcut -m _DOC_CUT_ -s DForthMachine
 
 clean:
 	$(RM) temp$(S)*
 
 asm: clean
-	m4 ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
+	$(M4) ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
 	$(FPC) -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
 # COMMANDS
 commands:
 	$(RM) ../../release/core/builtin/*.de || echo skipped
-	m4 ../m4/ctype.m4 commands/groups.list > temp/make_all.bat
+	$(M4) ../m4/ctype.m4 commands/groups.list > temp/make_all.bat
 	$(CHMOD) 744 temp/make_all.bat
 	temp$(S)make_all.bat
-	m4 ../m4/cgroups.m4 commands/groups.list > temp/all.cmd
-	m4 ../m4/cload.m4 temp/all.cmd > temp/load.inc4
-	m4 commands.m4 temp/load.inc4 > temp/load.temp
-	m4 id2.m4 temp/load.temp > temp/load.incq
+	$(M4) ../m4/cgroups.m4 commands/groups.list > temp/all.cmd
+	$(M4) ../m4/cload.m4 temp/all.cmd > temp/load.inc4
+	$(M4) commands.m4 temp/load.inc4 > temp/load.temp
+	$(M4) id2.m4 temp/load.temp > temp/load.incq
 	$(DQUOTES) temp/load.incq load.inc
-	m4 ../m4/cbody.m4 temp/all.cmd > temp/body.temp
-	m4 id2.m4 temp/body.temp > temp/body.inc4
-	m4 commands.m4 temp/body.inc4 > temp/body.incq
+	$(M4) ../m4/cbody.m4 temp/all.cmd > temp/body.temp
+	$(M4) id2.m4 temp/body.temp > temp/body.inc4
+	$(M4) commands.m4 temp/body.inc4 > temp/body.incq
 	$(DQUOTES) temp/body.incq body.inc
-	m4 ../m4/g_builtin.m4 commands/groups.list > temp/make_builtin.bat
+	$(M4) ../m4/g_builtin.m4 commands/groups.list > temp/make_builtin.bat
 	$(CHMOD) 744 temp/make_builtin.bat
 	temp$(S)make_builtin.bat
-	m4 ../m4/g_help.m4 commands/groups.list > temp/make_docs.bat
+	$(M4) ../m4/g_help.m4 commands/groups.list > temp/make_docs.bat
 	$(CHMOD) 744 temp/make_docs.bat
 	temp$(S)make_docs.bat
-	m4 ../m4/cevaluate.m4 commands/groups.list > ../../release/core/builtin/all.de
-	m4 ../m4/c_rusall.m4 commands/groups.list > ../../release/docs/rus/all.de
+	$(M4) ../m4/cevaluate.m4 commands/groups.list > ../../release/core/builtin/all.de
+	$(M4) ../m4/c_rusall.m4 commands/groups.list > ../../release/docs/rus/all.de
 
 temp/copy.stamp: $(SOURCES)
 	$(UPDATE) $(SOURCES) temp
@@ -171,10 +177,10 @@ temp/copy.stamp: $(SOURCES)
 copy: temp/copy.stamp;
 
 %.pastemp: temp/copy.stamp $(PAS4_LIST)
-	m4 meta.m4 $(@:%.pastemp=%.pas4) > $@
+	$(M4) meta.m4 $(@:%.pastemp=%.pas4) > $@
 
 %.pasq: $(PASTEMP_LIST)
-	m4 id2.m4 $(@:%.pasq=%.pastemp) > $@
+	$(M4) id2.m4 $(@:%.pasq=%.pastemp) > $@
 
 %.pp: $(PASQ_LIST)
 	$(DQUOTES) $(@:%.pp=%.pasq) $@
@@ -198,14 +204,14 @@ copy: temp/copy.stamp;
 lib: ../../release/$(LIBPREFIX)de32$(LIBEXT);
 
 ../../release/de32.dll: $(PP_LIST) de32.dpr body.inc load.inc
-	cp de32.dpr temp/
+	cp de32.dpr temp
 	$(FPC) temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FU.\temp
-	cp temp/de32header.pas ../../release/headers/
+	cp temp/de32header.pas ../../release/headers
 
 ../../release/libde32.so: $(PP_LIST) de32.dpr body.inc load.inc
-	cp de32.dpr temp/
+	cp de32.dpr temp
 	$(FPC) -Cg temp/de32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -FE../../release/ -FU./temp
-	cp temp/de32header.pas ../../release/headers/
+	cp temp/de32header.pas ../../release/headers
 
 # UTILS
 echopas:

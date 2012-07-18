@@ -11,9 +11,12 @@ const
   DE_OK                         = 0;
   DE_ERR_UNKNOWN_SOURCE_TYPE    = -1;
 
-  DE_SOURCE_PCHAR               = 1; // исполняемый код находится в строке с завершающим нулём
-  DE_SOURCE_FUNC                = 2; // исходный код нужно получать из функции до тех пор, пока она не вернёт nil
-  DE_SOURCE_FILE                = 3; // исходный код находится в файле
+  // исполняемый код находится в строке с завершающим нулём
+  DE_SOURCE_PCHAR               = 1;
+  // исходный код нужно получать из функции до тех пор, пока она не вернёт nil
+  DE_SOURCE_FUNC                = 2;
+  // исходный код находится в файле
+  DE_SOURCE_FILE                = 3;
 
 var
 deVersion: procedure (var Version: Cardinal; var Date: PAnsiChar); stdcall;

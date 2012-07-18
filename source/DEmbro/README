@@ -1,0 +1,5 @@
+  make clean
+  make commands
+  make copy
+  make compile
+  make lib

@@ -158,7 +158,7 @@ TData = class
   property Ready: Boolean read FReady;
 end;
 
-{$IFDEF FLAG_FPC}generic{$ENDIF} TList<TItem> = class(TObject)
+TList<TItem> = class(TObject)
  var private
   FItems: Array Of TItem;
 {$IFDEF FLAG_FPC}
@@ -182,11 +182,11 @@ end;
   property Items[Index: Integer]: TItem read GetItem write SetItem; default;
   property Count: Integer read GetCount write SetCount;
 end;
-TListOfInteger = {$IFDEF FLAG_FPC}specialize{$ENDIF} TList<Integer>;
-TListOfTString = {$IFDEF FLAG_FPC}specialize{$ENDIF} TList<TString>;
-TListOfObject = {$IFDEF FLAG_FPC}specialize{$ENDIF} TList<TObject>;
+TListOfInteger = TList<Integer>;
+TListOfTString = TList<TString>;
+TListOfObject = TList<TObject>;
 
-TListOfCStreamable = {$IFDEF FLAG_FPC}specialize{$ENDIF} TList<CStreamable>;
+TListOfCStreamable = TList<CStreamable>;
 TStreamableFactory = class
 private
   FClasses: TListOfCStreamable;
@@ -354,12 +354,12 @@ end;
 
 //  generic TList//{{{
 //
-//function TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.Compare{$IFNDEF FLAG_FPC}<T>{$ENDIF}(A, B: T): Boolean;
+//function TList<TItem>.Compare<T>(A, B: T): Boolean;
 //begin
 //  Result := A = B;
 //end;
 
-constructor TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.Create;
+constructor TList<TItem>.Create;
 begin
   {  if @Compare = nil then
     FCompare := DefaultCompare
@@ -367,7 +367,7 @@ begin
     FCompare := Compare;}
 end;
 
-(*function TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.DefaultCompare(const A, B: TItem): Integer;
+(*function TList<TItem>.DefaultCompare(const A, B: TItem): Integer;
   var
     I: Integer;
 begin
@@ -378,17 +378,17 @@ begin
   Result := 0;
 end;*)
 
-procedure TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.SetCount;
+procedure TList<TItem>.SetCount;
 begin
   SetLength(FItems, NewCount);
 end;
 
-function TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.Last: Integer;
+function TList<TItem>.Last: Integer;
 begin
   Result := High(FItems);
 end;
 
-function TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.GetCount: Integer;
+function TList<TItem>.GetCount: Integer;
 begin
   Result := Length(FItems);
 end;
@@ -396,13 +396,13 @@ end;
 //{$DEFINE Length:=L}
 //{$DEFINE High:=H}
 //{$DEFINE SetLength:=S}
-procedure TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.Add(Item: TItem);
+procedure TList<TItem>.Add(Item: TItem);
 begin
   Count := Count + 1;
   FItems[Last] := Item;
 end;
 
-(*procedure TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.Del(Item: TItem; All: Boolean = True);
+(*procedure TList<TItem>.Del(Item: TItem; All: Boolean = True);
   var
     I: Integer;
 begin
@@ -418,7 +418,7 @@ begin
       Inc(I);
 end;*)
 
-function TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.Find(Item: TItem): Integer;
+function TList<TItem>.Find(Item: TItem): Integer;
   var
     I: Integer;
 begin
@@ -430,17 +430,17 @@ begin
   Result := -1;
 end;
 
-procedure TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.ClearList;
+procedure TList<TItem>.ClearList;
 begin
   Count := 0;
 end;
 
-function TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.GetItem(Index: Integer): TItem;
+function TList<TItem>.GetItem(Index: Integer): TItem;
 begin
   Result := FItems[Index];
 end;
 
-procedure TList{$IFNDEF FLAG_FPC}<TItem>{$ENDIF}.SetItem(Index: Integer; Item: TItem);
+procedure TList<TItem>.SetItem(Index: Integer; Item: TItem);
 begin
   FItems[Index] := Item;
 end;
