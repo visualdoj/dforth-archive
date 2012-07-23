@@ -23,7 +23,7 @@ ifeq ($(OS),Windows_NT)
   LIBEXT := .dll
   EXEEXT := .exe
   UPDATE := cp
-  M4 := ..\windows\m4.exe
+  M4 := m4
 else
   RM := rm -f
   CHMOD := chmod
