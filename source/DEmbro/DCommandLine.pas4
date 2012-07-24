@@ -7,6 +7,14 @@ interface
 uses
   DWinApi;
 
+type
+  TStrOption = record
+    Man: String;  // value from command line
+    Auto: String; // default value
+    Def: Boolean; // is value defined in command line
+    Res: String;  // result value
+  end;
+
 var
   CommandLine: record
                  FileNames: array of String;
@@ -21,6 +29,7 @@ var
                  LibNameDefault: String; // auto value
                  LibNameDefined: Boolean; // was there lib name in command line
                  LibNameReal: String; // real name
+                 HelpName: TStrOption;
                end;
 
 procedure ParseCommandLine;
@@ -42,6 +51,9 @@ begin
   CommandLine.LibNameDefault := GetExeDirectory + "/libde32.so";
   {$ENDIF}
   CommandLine.LibNameDefined := False;
+
+  CommandLine.HelpName.Def := False;
+  CommandLine.HelpName.Auto := "docs/rus/all.utf8.de";
 end;
 
 procedure Error(Param: String);
@@ -74,8 +86,8 @@ begin
   Writeln("           --help                  print this help");
   Writeln("           --subhelp               print help for subprograms");
   Writeln("           <other>                 uses as filename to evaluate");  
-  Writeln("Examples: dembro32");  
-  Writeln("          dembro32 source1.de source2.de -r");  
+  Writeln("Examples: de");  
+  Writeln("          de source1.de source2.de");  
   CommandLine.Help := True;
 end;
 
@@ -201,6 +213,11 @@ begin
       CommandLine.LibNameReal := CommandLine.LibName
   else
       CommandLine.LibNameReal := CommandLine.LibNameDefault;
+
+  if CommandLine.HelpName.Def then
+      CommandLine.HelpName.Res := CommandLine.HelpName.Man
+  else
+      CommandLine.HelpName.Res := CommandLine.HelpName.Auto;
 end;
 
 end.

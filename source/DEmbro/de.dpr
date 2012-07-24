@@ -52,6 +52,12 @@ begin
   end;
 end;
 
+procedure RunHelp;
+begin
+  if CommandLine.HelpName.Res <> '' then
+    deInterpret(Machine, DE_SOURCE_FILE, PAnsiChar(CommandLine.HelpName.Res));
+end;
+
 procedure PrintVersion;
 var
   Version: Cardinal;
@@ -82,6 +88,7 @@ begin
 
   Machine := deCreateMachine();
   RunSystem;
+  RunHelp;
   deAddCommand(Machine, 'quit', @quit, nil, True);
 
   with CommandLine do begin
