@@ -15,25 +15,25 @@
 FPC := fpc
 
 ifeq ($(OS),Windows_NT)
-  RM := del /Q
-  CHMOD := echo
-  CAT := type
-  S := \\
-  LIBPREFIX :=
-  LIBEXT := .dll
-  EXEEXT := .exe
-  UPDATE := cp
-  M4 := m4
+  RM = del /Q
+  CHMOD = echo
+  CAT = type
+  S = \\
+  LIBPREFIX =
+  LIBEXT = .dll
+  EXEEXT = .exe
+  UPDATE = cp
+  M4 = m4
 else
-  RM := rm -f
-  CHMOD := chmod
-  CAT := cat
-  S := /
-  LIBPREFIX := lib
-  LIBEXT := .so
-  EXEEXT :=
-  UPDATE := cp -u -p
-  M4 := m4
+  RM = rm -f
+  CHMOD = chmod
+  CAT = cat
+  S = /
+  LIBPREFIX = lib
+  LIBEXT = .so
+  EXEEXT =
+  UPDATE = cp -u -p
+  M4 = m4
 endif
 
 SOURCE_PATHS = *.ext \
@@ -72,6 +72,9 @@ PAS4COPY_LIST := $(addsuffix .pas4.copy,$(BASE_LIST))
 PAS4_LIST := $(addsuffix .pas4,$(BASE_LIST))
 
 DQUOTES = ../tools/dquotes
+
+# m4 usecases
+M4_CMD = $(M4)
 
 help:
 	$(CAT) README
