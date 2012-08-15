@@ -1,0 +1,12 @@
+// 2012.08.15 # Doj
+// Парсинг и обработка http-пакетов
+// Сейчас тут лишь мои эксперименты и тесты :)
+
+include" units/lib/http/http.de"
+
+pchar" GET /game/board?id=fa56 HTTP/1.0" GET? bool. pchar. cr
+pchar" POST /game/board?id=fa56 HTTP/0.9" GET? bool. pchar. cr
+pchar" GET /about.html HTTP/1.1
+Host: example.org
+User-Agent: MyLonelyBrowser/5.0" GET? bool. pchar. cr
+

@@ -1,0 +1,65 @@
+// 2012.08.15 # Doj
+// Константы протокола HTTP
+
+// Создаёт константу с числом и стандартной расшифровкой
+: http-constant ( int " name") constant ;
+
+: HTTP_STATE_ http-constant ;
+
+// Коды состояний
+100 pchar" Continue"                            HTTP_STATE_ CONTINUE
+101 pchar" Switching Protocols"                 HTTP_STATE_ SWITCHING_PROTOCOLS
+102 pchar" Processing"                          HTTP_STATE_ PROCESSING
+200 pchar" OK"                                  HTTP_STATE_ OK
+201 pchar" Created"                             HTTP_STATE_ CREATED
+202 pchar" Accepted"                            HTTP_STATE_ ACCEPTED
+203 pchar" Non-Authoritative Information"       HTTP_STATE_ NON_AUTH_INFO
+204 pchar" No Content"                          HTTP_STATE_ NO_CONTENT
+205 pchar" Reset Content"                       HTTP_STATE_ RESET_CONTENT
+206 pchar" Partial Content"                     HTTP_STATE_ PARTIAL_CONTENT
+207 pchar" Multi-Status"                        HTTP_STATE_ MULTI_STATUS
+226 pchar" IM Used"                             HTTP_STATE_ IM_USED
+300 pchar" Multiple Choices"                    HTTP_STATE_ MULTIPLE_CHOICES
+301 pchar" Moved Permanently"                   HTTP_STATE_ MOVED_PERMANENTLY
+302 pchar" Moved Temporarily"                   HTTP_STATE_ MOVED_TEMPORARILY
+302 pchar" Found"                               HTTP_STATE_ FOUND
+303 pchar" See Other"                           HTTP_STATE_ SEE_OTHER
+304 pchar" Not Modified"                        HTTP_STATE_ NOT_MODIFIED
+305 pchar" Use Proxy"                           HTTP_STATE_ USE_PROXY
+307 pchar" Temporary Redirect"                  HTTP_STATE_ TEMPORARY_REDIRECT
+//    400 Bad Request («плохой, неверный запрос»)[1][4][5].
+//    401 Unauthorized («неавторизован»)[1][4].
+//    402 Payment Required («необходима оплата»)[1][4].
+//    403 Forbidden («запрещено»)[1][4].
+//    404 Not Found («не найдено»)[1][4].
+//    405 Method Not Allowed («метод не поддерживается»)[1][4].
+//    406 Not Acceptable («не приемлемо»)[1][4].
+//    407 Proxy Authentication Required («необходима аутентификация прокси»)[1][4].
+//    408 Request Timeout («истекло время ожидания»)[1][4].
+//    409 Conflict («конфликт»)[1][4][5].
+//    410 Gone («удалён»)[1][4].
+//    411 Length Required («необходима длина»)[1][4].
+//    412 Precondition Failed («условие ложно»)[1][4][8].
+//    413 Request Entity Too Large («размер запроса слишком велик»)[1][4].
+//    414 Request-URI Too Large («запрашиваемый URI слишком длинный»)[1][4].
+//    415 Unsupported Media Type («неподдерживаемый тип данных»)[1][4].
+//    416 Requested Range Not Satisfiable («запрашиваемый диапазон не достижим»)[4].
+//    417 Expectation Failed («ожидаемое неприемлемо»)[4].
+//    422 Unprocessable Entity («необрабатываемый экземпляр»).
+//    423 Locked («заблокировано»).
+//    424 Failed Dependency («невыполненная зависимость»).
+//    425 Unordered Collection («неупорядоченный набор»)[9].
+//    426 Upgrade Required («необходимо обновление»).
+//    449 Retry With («повторить с»)[2].
+//    456 Unrecoverable Error («некорректируемая ошибка»).
+//    500 Internal Server Error («внутренняя ошибка сервера»)[1][4].
+//    501 Not Implemented («не реализовано»)[1][4].
+//    502 Bad Gateway («плохой, ошибочный шлюз»)[1][4].
+//    503 Service Unavailable («сервис недоступен»)[1][4].
+//    504 Gateway Timeout («шлюз не отвечает»)[1][4].
+//    505 HTTP Version Not Supported («версия HTTP не поддерживается»)[1][4].
+//    506 Variant Also Negotiates («вариант тоже проводит согласование»)[10]
+//    507 Insufficient Storage («переполнение хранилища»).
+//    508 Loop Detected («обнаружена петля»)[11]
+//    509 Bandwidth Limit Exceeded («исчерпана пропускная ширина канала»).
+//    510 Not Extended («не расширено»).
