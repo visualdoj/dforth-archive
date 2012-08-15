@@ -31,7 +31,7 @@ deAddCommand: procedure(machine: Pointer;
                      ); stdcall;
 
 function deLibReady: Boolean;
-function deLibLoad(const FileName: String): Boolean;
+function deLibLoad(const FileName: String; out Error: String): Boolean;
 procedure deLibFree;
 
 implementation
@@ -44,19 +44,21 @@ begin
   Result := Lib <> NilHandle;
 end;
 
-function deLibLoad(const FileName: String): Boolean;
+function deLibLoad(const FileName: String; out Error: String): Boolean;
 begin
+  Error := '';
   Lib := LoadLibrary(FileName);
   if Lib = NilHandle then begin
     Result := False;
+    Error := 'getting lib handle was failed';
     Exit;
   end;
   
-  deVersion := GetProcAddress(Lib, 'deVersion'); if (@deVersion = nil) then begin deLibFree; Result := False; Exit; end;
-  deCreateMachine := GetProcAddress(Lib, 'deCreateMachine'); if (@deCreateMachine = nil) then begin deLibFree; Result := False; Exit; end;
-  deFreeMachine := GetProcAddress(Lib, 'deFreeMachine'); if (@deFreeMachine = nil) then begin deLibFree; Result := False; Exit; end;
-  deAddCommand := GetProcAddress(Lib, 'deAddCommand'); if (@deAddCommand = nil) then begin deLibFree; Result := False; Exit; end;
-  deInterpret := GetProcAddress(Lib, 'deInterpret'); if (@deInterpret = nil) then begin deLibFree; Result := False; Exit; end;
+  deVersion := GetProcAddress(Lib, 'deVersion'); if (@deVersion = nil) then begin deLibFree; Result := False; Error := 'not loaded function deVersion'; Exit; end;
+  deCreateMachine := GetProcAddress(Lib, 'deCreateMachine'); if (@deCreateMachine = nil) then begin deLibFree; Result := False; Error := 'not loaded function deCreateMachine'; Exit; end;
+  deFreeMachine := GetProcAddress(Lib, 'deFreeMachine'); if (@deFreeMachine = nil) then begin deLibFree; Result := False; Error := 'not loaded function deFreeMachine'; Exit; end;
+  deAddCommand := GetProcAddress(Lib, 'deAddCommand'); if (@deAddCommand = nil) then begin deLibFree; Result := False; Error := 'not loaded function deAddCommand'; Exit; end;
+  deInterpret := GetProcAddress(Lib, 'deInterpret'); if (@deInterpret = nil) then begin deLibFree; Result := False; Error := 'not loaded function deInterpret'; Exit; end;
    //'
   Result := True;
 end;

@@ -1,10 +1,11 @@
+{$I platform.inc}
 unit DLib;
 
 interface
 
 uses
   {$IFDEF WIN32}windows{$ENDIF}
-  {$IFDEF UNIX}DynLibs, unix, BaseUnix, dl{$ENDIF};
+  {$IFDEF LINUX_or_BSD}DynLibs, unix, BaseUnix, dl{$ENDIF};
 
 type
 TLib = class
@@ -12,7 +13,7 @@ TLib = class
   {$IFDEF WIN32}
   FHandle: Integer;
   {$ENDIF}
-  {$IFDEF UNIX}
+  {$IFDEF LINUX_or_BSD}
   FHandle: TLibHandle;
   {$ENDIF}
   function GetReady: Boolean;
@@ -25,7 +26,7 @@ end;
 
 implementation
 
-{$IFDEF UNIX}
+{$IFDEF LINUX_or_BSD}
 //function dlopen(name: pchar; mode: longint): pointer; cdecl; external 'dl';
 //function dlsym(lib: pointer; name: pchar): pointer; cdecl; external 'dl';
 //function dlclose(lib: pointer): longint; cdecl; external 'dl';
@@ -36,7 +37,7 @@ begin
   {$IFDEF WIN32}
   Result := FHandle <> 0;
   {$ENDIF}
-  {$IFDEF UNIX}
+  {$IFDEF LINUX_or_BSD}
   Result := FHandle <> NilHandle;
   {$ENDIF}
 end;
@@ -46,7 +47,7 @@ begin
   {$IFDEF WIN32}
   FHandle := LoadLibrary(FileName);
   {$ENDIF}
-  {$IFDEF UNIX}
+  {$IFDEF LINUX_or_BSD}
   Writeln('Openning ', FileName);
   //FHandle := PtrInt(dlopen(FileName, 1 {RTLD_LAZY??}));
   FHandle := LoadLibrary(FileName);
@@ -58,7 +59,7 @@ begin
   {$IFDEF WIN32}
   FreeLibrary(FHandle);
   {$ENDIF}
-  {$IFDEF UNIX}
+  {$IFDEF LINUX_or_BSD}
   //dlclose(Pointer(FHandle));
   FreeLibrary(FHandle);
   {$ENDIF}
@@ -69,7 +70,7 @@ begin
   {$IFDEF WIN32}
   Result := windows.GetProcAddress(FHandle, Name);
   {$ENDIF}
-  {$IFDEF UNIX}
+  {$IFDEF LINUX_or_BSD}
   //Result := dlsym(Pointer(FHandle), Name);
   Result := GetProcedureAddress(FHandle, Name);
   {$ENDIF}

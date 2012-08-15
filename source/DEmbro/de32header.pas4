@@ -29,7 +29,7 @@ deAddCommand: procedure(machine: Pointer;
                      ); stdcall;
 
 function deLibReady: Boolean;
-function deLibLoad(const FileName: String): Boolean;
+function deLibLoad(const FileName: String; out Error: String): Boolean;
 procedure deLibFree;
 
 implementation
@@ -42,14 +42,16 @@ begin
   Result := Lib <> NilHandle;
 end;
 
-function deLibLoad(const FileName: String): Boolean;
+function deLibLoad(const FileName: String; out Error: String): Boolean;
 begin
+  Error := "";
   Lib := LoadLibrary(FileName);
   if Lib = NilHandle then begin
     Result := False;
+    Error := "getting lib handle was failed";
     Exit;
   end;
-  define(`LOAD', `$1 := GetProcAddress(Lib, "$1"); if (@$1 = nil) then begin deLibFree; Result := False; Exit; end;')
+  define(`LOAD', `$1 := GetProcAddress(Lib, "$1"); if (@$1 = nil) then begin deLibFree; Result := False; Error := "not loaded function $1"; Exit; end;')
   LOAD(deVersion)
   LOAD(deCreateMachine)
   LOAD(deFreeMachine)

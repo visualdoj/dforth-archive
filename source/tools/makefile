@@ -9,6 +9,9 @@ dquotes.exe: dquotes.dpr utils.pas
 	fpc dquotes.dpr -dFLAG_FPC -Sd
 	$(UPX) dquotes
 
+dquotes: dquotes.dpr utils.pas
+	fpc dquotes.dpr -dFLAG_FPC -Sd
+
 drecursive.exe: drecursive.dpr utils.pas
 	fpc drecursive.dpr -dFLAG_FPC -Sd
 	$(UPX) drecursive

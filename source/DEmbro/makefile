@@ -32,7 +32,7 @@ else
   LIBPREFIX = lib
   LIBEXT = .so
   EXEEXT =
-  UPDATE = cp -u -p
+  UPDATE = cp
   M4 = m4
 endif
 
@@ -81,7 +81,9 @@ help:
 
 compile: ../../release/de$(EXEEXT);
 
-all: clean pas4 pasq
+all: clean commands copy lib compile
+
+oldall: clean pas4 pasq
 	$(DQUOTES) -r .\ *.pasq *.pas
 	$(DQUOTES) commands\DCommandsMisc.pasq commands\DCommandsMisc.pas
 	$(FPC) -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FUtemp
@@ -175,6 +177,7 @@ commands:
 
 temp/copy.stamp: $(SOURCES)
 	$(UPDATE) $(SOURCES) temp
+	$(UPDATE) *.inc temp
 	echo copied > $@
 
 copy: temp/copy.stamp;

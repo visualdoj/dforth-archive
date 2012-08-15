@@ -1,3 +1,4 @@
+{$I platform.inc}
 unit DCommandLine;
 
 interface
@@ -47,7 +48,7 @@ begin
   {$IFDEF WIN32}
   CommandLine.LibNameDefault := "de32.dll";
   {$ENDIF}
-  {$IFDEF UNIX}
+  {$IFDEF LINUX_or_BSD}
   CommandLine.LibNameDefault := GetExeDirectory + "/libde32.so";
   {$ENDIF}
   CommandLine.LibNameDefined := False;

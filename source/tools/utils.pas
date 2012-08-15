@@ -1,3 +1,5 @@
+{$IFDEF LINUX} {$DEFINE LINUX_or_BSD} {$ENDIF}
+{$IFDEF BSD} {$DEFINE LINUX_or_BSD} {$ENDIF}
 unit utils;
 
 interface
@@ -305,7 +307,7 @@ begin
   FindClose(fh);
 end;
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF LINUX_or_BSD}
 procedure ProcessFiles;
 var
   Search: TSearchRec;

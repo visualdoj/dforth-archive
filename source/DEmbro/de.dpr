@@ -16,6 +16,7 @@ uses
 
 var
   Machine: Pointer;
+  Error: String;
   Done: Boolean = False;
   S: String;
   I: Integer;
@@ -78,8 +79,8 @@ begin
     Halt(Cardinal(-1));
   if CommandLine.Help then
     Halt;
-  if not deLibLoad(CommandLine.LibNameReal) then begin
-    Write('Cannot load library: ', CommandLine.LibNameReal);
+  if not deLibLoad(CommandLine.LibNameReal, Error) then begin
+    Write('Cannot load library: ', CommandLine.LibNameReal, ' (', Error, ')');
     if not CommandLine.LibNameDefined then
         Write(', try to specify it directly throw --lib parameter');
     Writeln;

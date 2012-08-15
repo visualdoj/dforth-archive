@@ -1,156 +1,157 @@
 
+// This file has been generated automatically while DEmbro building
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+samebuiltin -push
+samebuiltin interpret@push
+samebuiltin compile@push
+samebuiltin run@push
+samebuiltin 1+
+samebuiltin 1-
+samebuiltin div
+samebuiltin mod
+samebuiltin divmod
+samebuiltin shl
+samebuiltin shr
+samebuiltin **
+samebuiltin inc!
+samebuiltin dec!
+samebuiltin int-push
+samebuiltin int-interpret@push
+samebuiltin int-compile@push
+samebuiltin int-run@push
+samebuiltin int-1+
+samebuiltin int-1-
+samebuiltin int-div
+samebuiltin int-mod
+samebuiltin int-divmod
+samebuiltin int-shl
+samebuiltin int-shr
+samebuiltin int**
+samebuiltin int-inc!
+samebuiltin int-dec!
+samebuiltin int8-push
+samebuiltin int8-interpret@push
+samebuiltin int8-compile@push
+samebuiltin int8-run@push
+samebuiltin int8-1+
+samebuiltin int8-1-
+samebuiltin int8-div
+samebuiltin int8-mod
+samebuiltin int8-divmod
+samebuiltin int8-shl
+samebuiltin int8-shr
+samebuiltin int8**
+samebuiltin int8-inc!
+samebuiltin int8-dec!
+samebuiltin int16-push
+samebuiltin int16-interpret@push
+samebuiltin int16-compile@push
+samebuiltin int16-run@push
+samebuiltin int16-1+
+samebuiltin int16-1-
+samebuiltin int16-div
+samebuiltin int16-mod
+samebuiltin int16-divmod
+samebuiltin int16-shl
+samebuiltin int16-shr
+samebuiltin int16**
+samebuiltin int16-inc!
+samebuiltin int16-dec!
+samebuiltin int32-push
+samebuiltin int32-interpret@push
+samebuiltin int32-compile@push
+samebuiltin int32-run@push
+samebuiltin int32-1+
+samebuiltin int32-1-
+samebuiltin int32-div
+samebuiltin int32-mod
+samebuiltin int32-divmod
+samebuiltin int32-shl
+samebuiltin int32-shr
+samebuiltin int32**
+samebuiltin int32-inc!
+samebuiltin int32-dec!
+samebuiltin int64-push
+samebuiltin int64-interpret@push
+samebuiltin int64-compile@push
+samebuiltin int64-run@push
+samebuiltin int64-1+
+samebuiltin int64-1-
+samebuiltin int64-div
+samebuiltin int64-mod
+samebuiltin int64-divmod
+samebuiltin int64-shl
+samebuiltin int64-shr
+samebuiltin int64**
+samebuiltin int64-inc!
+samebuiltin int64-dec!
+samebuiltin uint-push
+samebuiltin uint-interpret@push
+samebuiltin uint-compile@push
+samebuiltin uint-run@push
+samebuiltin uint-1+
+samebuiltin uint-1-
+samebuiltin uint-div
+samebuiltin uint-mod
+samebuiltin uint-divmod
+samebuiltin uint-shl
+samebuiltin uint-shr
+samebuiltin uint**
+samebuiltin uint-inc!
+samebuiltin uint-dec!
+samebuiltin uint8-push
+samebuiltin uint8-interpret@push
+samebuiltin uint8-compile@push
+samebuiltin uint8-run@push
+samebuiltin uint8-1+
+samebuiltin uint8-1-
+samebuiltin uint8-div
+samebuiltin uint8-mod
+samebuiltin uint8-divmod
+samebuiltin uint8-shl
+samebuiltin uint8-shr
+samebuiltin uint8**
+samebuiltin uint8-inc!
+samebuiltin uint8-dec!
+samebuiltin uint16-push
+samebuiltin uint16-interpret@push
+samebuiltin uint16-compile@push
+samebuiltin uint16-run@push
+samebuiltin uint16-1+
+samebuiltin uint16-1-
+samebuiltin uint16-div
+samebuiltin uint16-mod
+samebuiltin uint16-divmod
+samebuiltin uint16-shl
+samebuiltin uint16-shr
+samebuiltin uint16**
+samebuiltin uint16-inc!
+samebuiltin uint16-dec!
+samebuiltin uint32-push
+samebuiltin uint32-interpret@push
+samebuiltin uint32-compile@push
+samebuiltin uint32-run@push
+samebuiltin uint32-1+
+samebuiltin uint32-1-
+samebuiltin uint32-div
+samebuiltin uint32-mod
+samebuiltin uint32-divmod
+samebuiltin uint32-shl
+samebuiltin uint32-shr
+samebuiltin uint32**
+samebuiltin uint32-inc!
+samebuiltin uint32-dec!
+samebuiltin uint64-push
+samebuiltin uint64-interpret@push
+samebuiltin uint64-compile@push
+samebuiltin uint64-run@push
+samebuiltin uint64-1+
+samebuiltin uint64-1-
+samebuiltin uint64-div
+samebuiltin uint64-mod
+samebuiltin uint64-divmod
+samebuiltin uint64-shl
+samebuiltin uint64-shr
+samebuiltin uint64**
+samebuiltin uint64-inc!
+samebuiltin uint64-dec!
