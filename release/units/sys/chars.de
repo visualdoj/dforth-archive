@@ -1,8 +1,9 @@
 // 2011.10.25 # Doj
-// Важные команды по работе с символами
+// Р’Р°Р¶РЅС‹Рµ РєРѕРјР°РЅРґС‹ РїРѕ СЂР°Р±РѕС‚Рµ СЃ СЃРёРјРІРѕР»Р°РјРё
 
-13 constant CR ( h0D)
-10 constant LF ( h0A)
+32 constant SP // space
+13 constant CR ( h0D) // aka \r
+10 constant LF ( h0A) // aka \n
 h0085 constant NEL // unicode next line
 h2028 constant LS // unicode line separator
 h2029 constant PS // paragraph separator

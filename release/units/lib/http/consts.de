@@ -6,6 +6,16 @@
 
 : HTTP_STATE_ http-constant ;
 
+// Версии
+0 constant HTTP/?.?
+1 constant HTTP/0.9
+2 constant HTTP/1.0
+3 constant HTTP/1.1
+
+// Методы
+0 constant METHOD_UNKNOWN
+1 constant METHOD_GET
+
 // Коды состояний
 100 pchar" Continue"                            HTTP_STATE_ CONTINUE
 101 pchar" Switching Protocols"                 HTTP_STATE_ SWITCHING_PROTOCOLS

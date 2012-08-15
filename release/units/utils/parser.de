@@ -2,7 +2,7 @@
 // Команды для обработки строк.
 
 : 4chars ( " abcd" -- i) char  char 8 shl or  char 16 shl or  char 24 shl or ;
-: [4chars] ( C: " abcd" --  ) ( R: -- i) 4chars call literal ; immediate
+: [4chars] ( C: " abcd" --  ) ( R: -- i) dup . wp . 4chars wp .  call literal wp . dup . cr ; immediate
 
 : str-right str# over - str-cut ;
 RUS summary ( p B: s -- B: r) ( -s ^^r) оставляет фрагмент s[p..s#-1]

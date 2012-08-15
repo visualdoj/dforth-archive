@@ -1,12 +1,58 @@
 // 2012.08.15 # Doj
 // Парсинг и обработка http-пакетов
 // Сейчас тут лишь мои эксперименты и тесты :)
+// File must be in DOS format for CR+LF EOL!!!
 
 include" units/lib/http/http.de"
 
 pchar" GET /game/board?id=fa56 HTTP/1.0" GET? bool. pchar. cr
 pchar" POST /game/board?id=fa56 HTTP/0.9" GET? bool. pchar. cr
+
+pchar" GET /about.html
+" constant simple0.9
+
 pchar" GET /about.html HTTP/1.1
 Host: example.org
-User-Agent: MyLonelyBrowser/5.0" GET? bool. pchar. cr
+User-Agent: MyLonelyBrowser/5.0
+" constant simple
 
+simple GET? bool. pchar. cr
+
+." ==== simple ====" cr
+simple GET? ." Is GET? " bool. cr
+skip-spaces ." Spaces skipped" cr
+read-word ." Request: " lrot pchar. :noname  if ."  \r\n" then ; execute cr
+
+." ==== simple0.9 ====" cr
+simple0.9 GET? ." Is GET? " bool. cr
+skip-spaces ." Spaces skipped" cr
+read-word ." Request: " lrot pchar. :noname  if ."  \r\n" then ; execute cr
+
+." ==== memchr ====" cr
+char $  pchar" abc$defghkj"  dup 5 + swap memchr bool. pchar. cr
+char $  pchar" abcdefgh$kj"  dup 5 + swap memchr bool. pchar. cr
+
+pchar" GET / HTTP/1.1
+Host: example.com
+User-Agent: MyLonelyBrowser/5.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: ru,en-us;q=0.7,en;q=0.3
+Accept-Charset: windows-1251,utf-8;q=0.7,*;q=0.7
+" constant complexive
+
+." ==== parse-option? ====" cr
+pchar" Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: ru-ru,ru;q=0.8,en-us;q=0.5,en;q=0.3
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+"
+parse-option? dup bool.
+:noname  if swap pchar. ." | " pchar. ." | " then ; execute cr
+parse-option? dup bool.
+:noname  if swap pchar. ." | " pchar. ." | " then ; execute cr
+parse-option? dup bool.
+:noname  if swap pchar. ." | " pchar. ." | " then ; execute cr
+parse-option? dup bool.
+:noname  if swap pchar. ." | " pchar. ." | " then ; execute cr
+
+// simple http-read-header bool. cr pchar. cr . cr pchar. cr . cr

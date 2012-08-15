@@ -2,11 +2,12 @@
 // Утилиты для парсинга http-пакетов
 
 include" units/utils/parser.de"
+include" units/sys/chars.de"
 
 // Определение HTTP Method
 // Если тест положителен, то указатель сдвигается за первый пробел
 : OPTIONS? ( p -- p?) false ;
-: GET? ( p -- p?) dup @ [4chars] GET  = if cell+ true else false then ;
+: GET? ( p -- p?) dup udword@ [4chars] GET  = if cell+ true else false then ;
 : HEAD? ( p -- p?) false ;
 : POST? ( p -- p?) false ;
 : PUT? ( p -- p?) false ;
@@ -16,6 +17,52 @@ include" units/utils/parser.de"
 : LINK? ( p -- p?) false ;
 : UNLINK? ( p -- p?) false ;
 : CONNECT? ( p -- p?) false ;
+
+// Ищет символ c
+//   ? указывает на то был ли найден символ c или достигнут конец буфера
+ : memchr ( c end p -- p ?)
+     begin 2dup > while 
+       lrot 2dup swap ubyte@ = if drop nip true exit then
+       rrot 1+
+     repeat nip nip false ;
+
+// Пропускает пробелы
+: skip-spaces ( p-p) begin dup ubyte@ SP = while 1+ repeat ;
+// Пропускаем перенос строк (CR+LF)
+: skip-newline ( p-p) 2 + ;
+
+: SP-or-CR? ( c -- CR? SPorCR?) dup  CR = dup bool.
+                                swap SP =
+                                over or ;
+                           
+
+// Пропускает символы до первого встреченного пробела или символа переноса строк
+//   p устанавливает сразу после пробела или переноса строк
+//   w равно начальному значению p
+//   ? указывает на то, имел ли место перенос строк
+// Сразу после последовательности записывается 0, поэтому w можно использовать
+// как pchar
+: read-word ( p-wp?)
+    dup // wp
+    begin dup ubyte@ SP-or-CR? not while drop 1+ repeat // wp?
+    swap dup 0 swap ubyte! // w?p
+    over if skip-newline else ( skip space) 1+ then // w?p
+    swap ;
+
+// Читает версию HTTP протокола
+//   ? указывает был ли перенос строки после версии
+: read-http-version ( p -- httpversion p ?)
+    read-word lrot
+    dup pchar" HTTP/0.9" pchar= if drop HTTP/0.9 rrot exit then
+    dup pchar" HTTP/1.0" pchar= if drop HTTP/1.0 rrot exit then
+    dup pchar" HTTP/1.1" pchar= if drop HTTP/1.1 rrot exit then
+    drop HTTP/?.? rrot ;
+
+// Читает заголовок HTTP пакета
+: http-read-header ( p -- method request httpversion p T | p F)
+    GET? not if  false exit  else  METHOD_GET swap  then
+    skip-spaces read-word if HTTP/0.9 swap true exit then
+    skip-spaces read-http-version drop true ;
 
 // Ищет конец HTTP пакета
 //   p --- начало буфера
@@ -35,5 +82,13 @@ include" units/utils/parser.de"
 //   p указывает на следующую опцию
 //   name указывает на pchar-строку с именем опции
 //   value указывает на pchar-строку со значением опции
+// TODO придумать как упростить эту жесть
 : parse-option? ( p -- p F | p name value T)
-    false ;
+    dup CR swap ( p CR p)
+    9999 over + swap // p CR end p ;)
+    memchr not if drop false ( p F) exit then ( p eol)
+    dup 0 swap ubyte! skip-newline tuck ( eol p eol)
+    over [char] : rrot ( eol p : eol p)
+    memchr not if drop drop false ( eol F) exit then ( eol p p:)
+    dup 0 swap ubyte! ( eol p p:)
+    1+ skip-spaces ( eol name value) true ;
