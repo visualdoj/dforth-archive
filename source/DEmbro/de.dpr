@@ -1,3 +1,4 @@
+{$I platform.inc}
 uses
   {$IFDEF FLAG_FPC}
     DMath in '..\DEngine\FPC\DMath.pas',
@@ -12,7 +13,9 @@ uses
   DParser,
 
   DCommandLine,
-  de32header;
+  de32header,
+  
+  subprograms;
 
 var
   Machine: Pointer;
@@ -72,6 +75,8 @@ begin
 end;
 
 begin
+  if RunSubprogram then
+    Halt;
   ParseCommandLine;
   if CommandLine.Debug then
     Writeln('Start: ', GetTimer);

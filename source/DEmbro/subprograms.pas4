@@ -1,0 +1,66 @@
+{$I platform.inc}
+unit subprograms;
+
+interface
+
+uses
+  SysUtils;
+
+function RunSubprogram: Boolean;
+
+implementation
+
+procedure dirs;
+begin
+  WriteLn("GetAppConfigDir(True):   ", GetAppConfigDir(True));
+  WriteLn("GetAppConfigDir(False):  ", GetAppConfigDir(False));
+  WriteLn("GetAppConfigFile(True):  ", GetAppConfigFile(True));
+  WriteLn("GetAppConfigFile(False): ", GetAppConfigFile(False));
+  define(`env', `GetEnvironmentVariable("$1")');
+  WriteLn("Hex()DEMBRO: ", env(DEMBRO));
+  WriteLn("Hex()DEMBROSVN: ", env(DEMBROSVN));
+  WriteLn("Hex()DEMBROTRUNK: ", env(DEMBROTRUNK));
+end;
+
+procedure config;
+begin
+  define(`DEFINE2STR', `{Hex()IFDEF $1}"+"{$ELSE}"-"{$ENDIF}, "$1 "')
+  Write("OS: ");
+  Write(DEFINE2STR(WINDOWS));
+  Write(DEFINE2STR(WIN32));
+  Write(DEFINE2STR(WIN64));
+  Write(DEFINE2STR(WINCE));
+  Write(DEFINE2STR(LINUX));
+  Write(DEFINE2STR(BSD));
+  Write(DEFINE2STR(LINUX_or_BSD));
+  Write(DEFINE2STR(UNIX));
+  Write(DEFINE2STR(DARWIN));
+  Writeln;
+  Write("CPU: ");
+  Write(DEFINE2STR(CPUI386));
+  Write(DEFINE2STR(CPUX86_64));
+  Write(DEFINE2STR(ARM));
+  Write(DEFINE2STR(POWERPC));
+  Write(DEFINE2STR(POWERPC64));
+  Write(DEFINE2STR(M68K));
+  Write(DEFINE2STR(SPARC));
+  Write(DEFINE2STR(SPARC64));
+  Writeln;
+  Write("BITS: ");
+  Write(DEFINE2STR(CPU32));
+  Write(DEFINE2STR(CPU64));
+  Write(DEFINE2STR(BITS_32));
+  Write(DEFINE2STR(BITS_64));
+  Write(DEFINE2STR(BITS_ELSE));
+  Write(DEFINE2STR(ENDIAN_LITTLE));
+  Write(DEFINE2STR(ENDIAN_BIG));
+  Writeln;
+end;
+
+function RunSubprogram: Boolean;
+begin
+  if ParamStr(1) = "dirs" then begin dirs; RETURN(True); end else
+  if ParamStr(1) = "config" then begin config; RETURN(True); end else
+end;
+
+end.

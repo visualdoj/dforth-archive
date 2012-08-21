@@ -13,6 +13,9 @@ define(`GLOBAL_NAME', `')
 dnl Имя команды для ядра в паскале хранится в GLOBAL_SAFENAME
 define(`GLOBAL_SAFENAME', `')
 
+dnl Стековый рисунок
+define(`GLOBAL_NOTATION', `')
+
 dnl В первую очередь определяем макрос объявления команд
 define(`DECLARE',`OFF
   define(`GLOBAL_NAME', `$1')
@@ -20,6 +23,10 @@ define(`DECLARE',`OFF
   ON DECLARE_ACTION OFF')
 define(`ENDDECLARE',`ON
 OFF')
+
+dnl Определение стекового рисунка
+define(`NOTATION',`OFF
+  define(`GLOBAL_NOTATION', `$1')')
 
 dnl Любую команду ниже можно отключить вызовом
 dnl define(`MAKROSNAME', `OFF')

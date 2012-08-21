@@ -36,7 +36,7 @@ samebuiltin str[]!
 samebuiltin str-copy
 samebuiltin str-new
 samebuiltin pchar->str
-samebuiltin format
+samebuiltin 
 samebuiltin raw->unicode
 samebuiltin utf8->unicode
 samebuiltin utf8->raw
