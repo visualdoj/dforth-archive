@@ -166,14 +166,14 @@ define(`typed_commands',`
        body(
          if State <> FS_INTERPRET then _compile_to_$1(Machine, Command) else _interpret_to_$1(Machine, Command); )
 
-     procedure RunValue_$1 cmdhdr;
+     procedure RunValue_$1 cmdhdr; register;
        body( Move(Command.Data^, WP^, $2); Inc(WP, $2); )
 
      DECLARE(genname($1,value), _value_$1)
-       body( with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_$1; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); Flags := Flags and not 1; end; )
+       body( with ReserveName(SNN)^ do begin Data := Here; Code := @RunValue_$1; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); Flags := Flags and not 1; end; )
 
      DECLARE(genname($1, constant), _constant_$1)
-       body( with ReserveName(SNN)^ do begin Data := Here; Code := RunValue_$1; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); Flags := Flags and not 1; end; )
+       body( with ReserveName(SNN)^ do begin Data := Here; Code := @RunValue_$1; Move(WVar(-$2), Here^, $2); Dec(WP, $2); EA($2); Flags := Flags and not 1; end; )
 
      DECLARE(genname($1, variable), _variable_$1)
        body( with ReserveName(SNN)^ do begin Data := Here; Code := PutDataPtr; {Dec(WP, $2); Move(WP^, Here^, $2);} EA($2); end; )
