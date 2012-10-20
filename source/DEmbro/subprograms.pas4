@@ -61,6 +61,7 @@ function RunSubprogram: Boolean;
 begin
   if ParamStr(1) = "dirs" then begin dirs; RETURN(True); end else
   if ParamStr(1) = "config" then begin config; RETURN(True); end else
+  RETURN(False);
 end;
 
 end.

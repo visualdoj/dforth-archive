@@ -1,6 +1,3 @@
-.PHONY: all
-.PHONY: pas4
-.PHONY: release
 .PHONY: doc
 .PHONY: lib
 .PHONY: DMachineCode
@@ -11,6 +8,7 @@
 .PHONY: compile
 .PHONY: copy
 .PHONY: help
+.PHONY: makepp
 
 FPC := fpc
 
@@ -47,21 +45,21 @@ SOURCE_PATHS = *.ext \
                ../DLocal/*.ext \
                ../DMachineCode/*.ext
 
-# SOURCES_PAS4 := $(wildcard *.pas4) \
-#                 $(wildcard ../DEngine/*.pas4) \
-#                 $(wildcard ../DEngine/WINDOWS/*.pas4) \
-#                 $(wildcard ../DEngine/WINDOWS/*.pas4) \
-#                 $(wildcard ../DEngine/WINSOCK/*.pas4) \
-#                 $(wildcard ../DEngine/OPENGL/*.pas4) \
-#                 $(wildcard ../DEngine/OPENAL/*.pas4) \
-#                 $(wildcard ../DEngine/FPC/*.pas4) \
-#                 $(wildcard ../DLocal/*.pas4) \
-#                 $(wildcard ../DMachineCode/*.pas4)
-
 SOURCES_PAS4 := $(wildcard $(SOURCE_PATHS:%.ext=%.pas4))
 SOURCES_PAS := $(wildcard $(SOURCE_PATHS:%.ext=%.pas))
 SOURCES_PP := $(wildcard $(SOURCE_PATHS:%.ext=%.pp))
+SOURCES_INC := $(wildcard $(SOURCE_PATHS:%.ext=%.inc))
 SOURCES := $(SOURCES_PAS4) $(SOURCES_PAS)
+
+BUILD_DIR=../.release
+# TODO release : BUILD_DIR= ../.release
+# TODO debug   : BUILD_DIR= ../.debug
+BUILD_DIRS = $(dir $(addprefix $(BUILD_DIR)/DEmbro/,$(SOURCE_PATHS)))
+BUILD_PAS4 = $(wildcard $(SOURCE_PATHS:%.ext=$(BUILD_DIR)/%.pas4))
+BUILD_PASTEMP = $(addprefix $(BUILD_DIR)/DEmbro/,$(SOURCES_PAS4:%.pas4=%.pastemp))
+BUILD_PASTEMP = $(addprefix $(BUILD_DIR)/DEmbro/,$(SOURCES_PAS4:%.pas4=%.pasq))
+BUILD_PP = $(addprefix $(BUILD_DIR)/DEmbro/,$(SOURCES_PAS4:%.pas4=%.pp))
+BUILD_INC = $(addprefix $(BUILD_DIR)/DEmbro/,$(SOURCES_INC:%.pas4=%.pp))
 
 BASE_LIST := $(addprefix temp/,$(basename $(notdir $(SOURCES_PAS4))))
 PAS_LIST := $(addsuffix .pas,$(BASE_LIST))
@@ -81,50 +79,30 @@ help:
 
 compile: ../../release/de$(EXEEXT);
 
-all: clean commands copy lib compile
+clean:
+	$(RM) temp$(S)*
+	$(RM) -rf ../.build/*
+	$(RM) -rf ../.debug/*
+	$(RM) -rf ../.release/*
 
-oldall: clean pas4 pasq
-	$(DQUOTES) -r .\ *.pasq *.pas
-	$(DQUOTES) commands\DCommandsMisc.pasq commands\DCommandsMisc.pas
-	$(FPC) -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FUtemp
-#	$(FPC) dforth32.dpr -dFLAG_FPC -Sd
-#	$(FPC) example.dpr -dFLAG_FPC -Sd
+../.build/DEmbro/%.pp : %.pas4 $(BUILD_DIRS)
+	$(M4) meta.m4 $< > $(@:%.pp=%.pastemp)
+	$(M4) id2.m4 $(@:%.pp=%.pastemp) > $(@:%.pp=%.pasq)
+	$(DQUOTES) $(@:%.pp=%.pasq) $@
 
-# test: clean pas4 pasq
-# 	$(FPC) -vb test.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FEtemp -FUtemp
+../.release/DEmbro/%.pp : %.pas4 $(BUILD_DIRS)
+	$(M4) meta.m4 $< > $(@:%.pp=%.pastemp)
+	$(M4) id2.m4 $(@:%.pp=%.pastemp) > $(@:%.pp=%.pasq)
+	$(DQUOTES) $(@:%.pp=%.pasq) $@
 
-pas4:
-	$(M4) ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.temp4
-	$(M4) id2.m4 DForthMachine.temp4 > DForthMachine.pas 
-	$(M4) meta.m4 console.pas4 > temp\console.temp4
-	$(M4) id2.m4 temp\console.temp4 > console.pas
-	$(M4) meta.m4 sh.pas4 > temp\sh.temp4
-	$(M4) id2.m4 temp\sh.temp4 > sh.pas
-	$(M4) meta.m4 pool.pas4 > temp\pool.temp4
-	$(M4) id2.m4 temp\pool.temp4 > pool.pas
-	$(M4) ..\m4\id.m4 stream.pas4 > temp\stream.temp4
-	$(M4) id2.m4 temp\stream.temp4 > stream.pas
-	$(M4) DEmbroSpace.pas4 > DEmbroSpace.pas
-	$(M4) DEmbroCore.pas4 > DEmbroCore.pas
-	$(M4) DEmbroManager.pas4 > DEmbroManager.pas
-	$(M4) DMemMeta.pas4 > DMemMeta.pas
-	$(M4) ..\m4\metapascal.m4 DEmbroSource.pas4 > DEmbroSource.pasq
-	$(M4) ..\m4\metapascal.m4 DEmbroChunk.pas4 > DEmbroChunk.pasq
-	$(M4) commands.m4 commands\DCommandsAlien.pas4 > commands\DCommandsAlien.pasq
-	$(M4) commands.m4 commands\DCommandsConsole.pas4 > commands\DCommandsConsole.pasq
-	$(M4) commands.m4 commands\DCommandsMisc.pas4 > commands\DCommandsMisc.pasq
-	$(M4) commands.m4 commands\DCommandsStrings.pas4 > commands\DCommandsStrings.pasq
-	$(M4) commands.m4 commands\DCommandsVoc.pas4 > commands\DCommandsVoc.pasq
-	$(M4) commands.m4 commands\DCommandsNumberArithmetic.pas4 > commands\DCommandsNumberArithmetic.temp
-	$(M4) id2.m4 commands\DCommandsNumberArithmetic.temp > commands\DCommandsNumberArithmetic.pasq
-	$(M4) commands\DCommandsControl.pas4 > commands\DCommandsControl.pasq
-	$(M4) DCommandsTable.pas4 > DCommandsTable.pasq
-	$(DQUOTES) -r .\ *.pasq *.pas
+../.release/DEmbro/%.inc : %.inc $(BUILD_DIRS)
+	cp $< $@
 
-pasq:
-	$(DQUOTES) -r .\ *.pasq *.pas
+makepp: $(BUILD_PP) $(BUILD_INC) $(BUILD_DIRS);
 
-DMachineCode: Dx86 DArm
+release: makepp lib headers;
+
+debug: makepp lib headers;
 
 Dx86:
 	$(M4) ..\DMachineCode\Dx86.pas4 > ..\DMachineCode\Dx86.temp1
@@ -134,18 +112,9 @@ DArm:
 	$(M4) ..\DMachineCode\DArm.pas4 > ..\DMachineCode\DArm.temp1
 	$(M4) ..\m4\hex.m4 ..\DMachineCode\DArm.temp1 > ..\DMachineCode\DArm.pas
 
-release: clean pas4 pasq
-	$(FPC) dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -FE"..\..\release\" -FU".\temp"
-#	$(FPC) dembro32lib.dpr -dFLAG_FPC -dFLAG_NOLOG -Sd -O3 -FE"..\..\release\" -FU".\temp"
-	upx ..\..\release\dembro32.exe
-#	upx ..\..\release\dembro32lib.dll
-
 doc:
 	$(M4) ..\m4\googlecode.m4 DForthMachine.pas4 > ..\..\wiki\DForthMachine
 	cd ..\..\wiki & dcut -m _DOC_CUT_ -s DForthMachine
-
-clean:
-	$(RM) temp$(S)*
 
 asm: clean
 	$(M4) ..\m4\id.m4 DForthMachine.pas4 > DForthMachine.pas
@@ -182,8 +151,8 @@ temp/copy.stamp: $(SOURCES)
 
 copy: temp/copy.stamp;
 
-%.pastemp: temp/copy.stamp $(PAS4_LIST)
-	$(M4) meta.m4 $(@:%.pastemp=%.pas4) > $@
+#%.pastemp: temp/copy.stamp $(PAS4_LIST)
+#	$(M4) meta.m4 $(@:%.pastemp=%.pas4) > $@
 
 %.pasq: $(PASTEMP_LIST)
 	$(M4) id2.m4 $(@:%.pasq=%.pastemp) > $@
@@ -191,6 +160,9 @@ copy: temp/copy.stamp;
 %.pp: $(PASQ_LIST)
 	$(DQUOTES) $(@:%.pp=%.pasq) $@
 	cp -f $@ $(@:%.pp=%.pas)
+
+%/:
+	mkdir -p $@
 
 ../../release/dembro32: $(PP_LIST) dembro32.dpr body.inc
 	cp dembro32.dpr temp/dembro32.dpr
@@ -212,12 +184,15 @@ lib: ../../release/$(LIBPREFIX)de32$(LIBEXT);
 ../../release/de32.dll: $(PP_LIST) de32.dpr body.inc load.inc
 	cp de32.dpr temp
 	$(FPC) temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FU.\temp
-	cp temp/de32header.pas ../../release/headers
 
-../../release/libde32.so: $(PP_LIST) de32.dpr body.inc load.inc
-	cp de32.dpr temp
-	$(FPC) -Cg temp/de32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -FE../../release/ -FU./temp
-	cp temp/de32header.pas ../../release/headers
+../../release/libde32.so: $(BUILD_PP) de32.dpr body.inc load.inc
+	cd $(BUILD_DIR)/DEmbro && mkdir -p temp
+	cd $(BUILD_DIR)/DEmbro && $(FPC) -Cg de32.pp -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -FE../../../release/ -FU./temp
+
+headers: ../../release/headers/de32header.pp;
+
+../../release/headers/de32header.pp: $(BUILD_DIR)/DEmbro/de32header.pp
+	cp $(BUILD_DIR)/DEmbro/de32header.pp ../../release/headers
 
 # UTILS
 echopas:
@@ -225,3 +200,9 @@ echopas:
 
 echosources:
 	echo $(SOURCES)
+
+echodirs:
+	echo $(SOURCES_DIRS)
+
+echobuildtemppas:
+	echo $(BUILD_PASTEMP)

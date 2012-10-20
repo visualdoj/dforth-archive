@@ -17,6 +17,7 @@ uses
   {$I units.inc},
 
   Math, 
+  Sockets,
   strings,
   console,
   DAlien,
