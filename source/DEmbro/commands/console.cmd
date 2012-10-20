@@ -63,6 +63,10 @@ DECLARE(set-blink, set_blink)
     body()
   RUS SUMMARY ( f) устанавливает флаг мигания выводимого далее текста _SUMMARY
 
+DECLARE(flush)
+  body(Flush(Output))
+  RUS SUMMARY ( ) принудительно выводит текст на консоль _SUMMARY
+
 define(`COLOR', `
   DECLARE(`CONSOLE_$1')
       body(WUI(COLOR_$1))
