@@ -45,11 +45,14 @@ SOURCE_PATHS = *.ext \
                ../DLocal/*.ext \
                ../DMachineCode/*.ext
 
+SOURCE_PATHS_CMD = commands/*.ext
+
 SOURCES_PAS4 := $(wildcard $(SOURCE_PATHS:%.ext=%.pas4))
 SOURCES_PAS := $(wildcard $(SOURCE_PATHS:%.ext=%.pas))
 SOURCES_PP := $(wildcard $(SOURCE_PATHS:%.ext=%.pp))
 SOURCES_INC := $(wildcard $(SOURCE_PATHS:%.ext=%.inc))
 SOURCES := $(SOURCES_PAS4) $(SOURCES_PAS)
+SOURCES_CMD := $(wildcard $(SOURCE_PATHS_CMD:%.ext=%.cmd))
 
 BUILD_DIR=../.release
 # TODO release : BUILD_DIR= ../.release
@@ -100,9 +103,9 @@ clean:
 
 makepp: $(BUILD_PP) $(BUILD_INC) $(BUILD_DIRS);
 
-release: makepp lib headers;
+release: makepp lib compile headers;
 
-debug: makepp lib headers;
+debug: makepp lib compile headers;
 
 Dx86:
 	$(M4) ..\DMachineCode\Dx86.pas4 > ..\DMachineCode\Dx86.temp1
@@ -121,7 +124,7 @@ asm: clean
 	$(FPC) -vb dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -Sd -O3 -Anasmobj -al -an -ar -at -gl -FE..\..\release\ -FU.\temp
 
 # COMMANDS
-commands:
+commands: $(SOURCES_CMD)
 	$(RM) ../../release/core/builtin/*.de || echo skipped
 	$(M4) ../m4/ctype.m4 commands/groups.list > temp/make_all.bat
 	$(CHMOD) 744 temp/make_all.bat
@@ -169,15 +172,13 @@ copy: temp/copy.stamp;
 	cp *.inc temp
 	$(FPC) -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
 
-../../release/de: $(PAS_LIST) $(PP_LIST) de.dpr body.inc
-	cp de.dpr temp/de.dpr
-	cp *.inc temp
-	$(FPC) -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
+../../release/de: $(BUILD_PP) de.dpr body.inc
+	cd $(BUILD_DIR)/DEmbro && mkdir -p temp
+	cd $(BUILD_DIR)/DEmbro && $(FPC) -vb de.pp -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../../release/" -FUtemp
 
 ../../release/de.exe: $(PP_LIST) body.inc
-	cp de.dpr temp/de.dpr
-	cp *.inc temp
-	$(FPC) -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
+	cd $(BUILD_DIR)/DEmbro && mkdir -p temp
+	cd $(BUILD_DIR)/DEmbro && $(FPC) -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../../release/" -FUtemp
 
 lib: ../../release/$(LIBPREFIX)de32$(LIBEXT);
 
