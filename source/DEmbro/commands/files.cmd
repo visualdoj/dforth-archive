@@ -10,25 +10,56 @@ DECLARE(file-exists, file_exists)
   type
     PdfFile = ^TdfFile;
     TdfFile = record
-      Data: TData;
       Name: String;
       Mode: TInt;
+      F: File of Byte;
     end;
+
+define(`FILEOPENR',`
+    begin
+        Assign(PdfFile($1)^.F, $2);
+        {$I-}
+        Reset(PdfFile($1)^.F);
+        {$I+}
+        // if IOResult <> 0 then
+        //   Exit;
+        Writeln("filesize: ", FileSize(PdfFile($1)^.F));
+    end;
+  ')
+define(`FILEOPENW',`
+    begin
+        Assign(PdfFile($1)^.F, $2);
+        {$I-}
+        Rewrite(PdfFile($1)^.F);
+        {$I+}
+        // if IOResult <> 0 then
+        //   Exit;
+    end;
+  ')
+define(`FILECLOSE',`Close(PdfFile($1)^.F)')
+define(`FILEREAD',`BlockRead(PdfFile($1)^.F, ($2)^, $3);')
+define(`FILEWRITE',`BlockWrite(PdfFile($1)^.F, ($2)^, $3);')
+define(`FILEEMPTY',`Eof(PdfFile($1)^.F)')
+define(`FILESIZE',`FileSize(PdfFile($1)^.F)')
 
 DECLARE(file-open, file_open) 
   var 
-    F: PdfFile;
+    F: Pointer;
     B: TStr;
   body( 
-     New(F);
-     F^.Mode := WOI; 
+     Writeln("New file");
+     New(PdfFile(F));
+     PdfFile(F)^.Mode := WOI; 
      B := str_pop(Machine); 
-     F^.Name := PChar(@(PStrRec(B)^.Sym[0]));
-     if F^.Mode = DF_FILE_R then
-       F^.Data := TData.Create(F^.Name)
-     else
-       F^.Data := TData.Create;
+     PdfFile(F)^.Name := PChar(@(PStrRec(B)^.Sym[0]));
+     Writeln("TData.Create ", PdfFile(F)^.Name, PdfFile(F)^.Mode = DF_FILE_R);
+     if PdfFile(F)^.Mode = DF_FILE_R then begin
+       Writeln("Inside if");
+       FILEOPENR(F, PdfFile(F)^.Name);
+     end else
+       FILEOPENW(F, PdfFile(F)^.Name);
      WUP(F); 
+     Writeln("DelRef ");
      DelRef(B);)
 
 DECLARE(file-close, file_close) 
@@ -36,9 +67,7 @@ DECLARE(file-close, file_close)
     F: PdfFile;
   body( 
     F := WOP;
-    if F^.Mode = DF_FILE_W then
-      F^.Data.WriteToFile(F^.Name);
-    F^.Data.Free;
+    FILECLOSE(F);
     Dispose(F); )
 
 DECLARE(file-w, file_w)
@@ -58,7 +87,7 @@ DECLARE(file-write, file_write)
     F := WOP;
     I := WOI;
     Src := WOP;
-    F^.Data.WriteVar(Src, I);)
+    FILEWRITE(F, Src, I);)
 
 DECLARE(file-read, file_read)
   var
@@ -69,7 +98,7 @@ DECLARE(file-read, file_read)
     F := WOP;
     I := WOI;
     Src := WOP;
-    F^.Data.ReadVar(Src, I);)
+    FILEREAD(F, Src, I);)
 
 DECLARE(byte-file-read, file_byte_read)
   var
@@ -77,7 +106,7 @@ DECLARE(byte-file-read, file_byte_read)
     V: TInt8;
   body( 
     F := WOP;
-    F^.Data.ReadVar(@V, SizeOf(V));
+    FILEREAD(F, @V, SizeOf(V));
     WUI(V);)
 
 DECLARE(word-file-read, file_word_read)
@@ -86,7 +115,7 @@ DECLARE(word-file-read, file_word_read)
     V: TInt16;
   body( 
     F := WOP;
-    F^.Data.ReadVar(@V, SizeOf(V));
+    FILEREAD(F, @V, SizeOf(V));
     WUI(V);)
 
 DECLARE(dword-file-read, file_dword_read)
@@ -95,7 +124,7 @@ DECLARE(dword-file-read, file_dword_read)
     V: TInt32;
   body( 
     F := WOP;
-    F^.Data.ReadVar(@V, SizeOf(V));
+    FILEREAD(F, @V, SizeOf(V));
     WUI(V);)
 
 DECLARE(qword-file-read, file_qword_read)
@@ -104,7 +133,7 @@ DECLARE(qword-file-read, file_qword_read)
     V: TInt64;
   body( 
     F := WOP;
-    F^.Data.ReadVar(@V, SizeOf(V));
+    FILEREAD(F, @V, SizeOf(V));
     WUI(V);)
 
 DECLARE(ubyte-file-read, file_ubyte_read)
@@ -113,7 +142,7 @@ DECLARE(ubyte-file-read, file_ubyte_read)
     V: TUInt8;
   body( 
     F := WOP;
-    F^.Data.ReadVar(@V, SizeOf(V));
+    FILEREAD(F, @V, SizeOf(V));
     WUU(V);)
 
 DECLARE(uword-file-read, file_uword_read)
@@ -122,7 +151,7 @@ DECLARE(uword-file-read, file_uword_read)
     V: TUInt16;
   body( 
     F := WOP;
-    F^.Data.ReadVar(@V, SizeOf(V));
+    FILEREAD(F, @V, SizeOf(V));
     WUU(V);)
 
 DECLARE(udword-file-read, file_udword_read)
@@ -131,7 +160,7 @@ DECLARE(udword-file-read, file_udword_read)
     V: TUInt32;
   body( 
     F := WOP;
-    F^.Data.ReadVar(@V, SizeOf(V));
+    FILEREAD(F, @V, SizeOf(V));
     WUU(V);)
 
 DECLARE(uqword-file-read, file_uqword_read)
@@ -140,7 +169,7 @@ DECLARE(uqword-file-read, file_uqword_read)
     V: TUInt64;
   body( 
     F := WOP;
-    F^.Data.ReadVar(@V, SizeOf(V));
+    FILEREAD(F, @V, SizeOf(V));
     WUU(V);)
 
 DECLARE(byte-file-write, file_byte_write)
@@ -150,7 +179,7 @@ DECLARE(byte-file-write, file_byte_write)
   body( 
     F := WOP;
     V := WOI;
-    F^.Data.WriteVar(@V, SizeOf(V));)
+    FILEWRITE(F, @V, SizeOf(V));)
 
 DECLARE(word-file-write, file_word_write)
   var
@@ -159,7 +188,7 @@ DECLARE(word-file-write, file_word_write)
   body( 
     F := WOP;
     V := WOI;
-    F^.Data.WriteVar(@V, SizeOf(V));)
+    FILEWRITE(F, @V, SizeOf(V));)
 
 DECLARE(dword-file-write, file_dword_write)
   var
@@ -168,7 +197,7 @@ DECLARE(dword-file-write, file_dword_write)
   body( 
     F := WOP;
     V := WOI;
-    F^.Data.WriteVar(@V, SizeOf(V));)
+    FILEWRITE(F, @V, SizeOf(V));)
 
 DECLARE(qword-file-write, file_qword_write)
   var
@@ -177,7 +206,7 @@ DECLARE(qword-file-write, file_qword_write)
   body( 
     F := WOP;
     V := WOI;
-    F^.Data.WriteVar(@V, SizeOf(V));)
+    FILEWRITE(F, @V, SizeOf(V));)
 
 DECLARE(ubyte-file-write, file_ubyte_write)
   var
@@ -186,7 +215,7 @@ DECLARE(ubyte-file-write, file_ubyte_write)
   body( 
     F := WOP;
     V := WOI;
-    F^.Data.WriteVar(@V, SizeOf(V));)
+    FILEWRITE(F, @V, SizeOf(V));)
 
 DECLARE(uword-file-write, file_uword_write)
   var
@@ -195,7 +224,7 @@ DECLARE(uword-file-write, file_uword_write)
   body( 
     F := WOP;
     V := WOI;
-    F^.Data.WriteVar(@V, SizeOf(V));)
+    FILEWRITE(F, @V, SizeOf(V));)
 
 DECLARE(udword-file-write, file_udword_write)
   var
@@ -204,7 +233,7 @@ DECLARE(udword-file-write, file_udword_write)
   body( 
     F := WOP;
     V := WOI;
-    F^.Data.WriteVar(@V, SizeOf(V));)
+    FILEWRITE(F, @V, SizeOf(V));)
 
 DECLARE(uqword-file-write, file_uqword_write)
   var
@@ -213,7 +242,7 @@ DECLARE(uqword-file-write, file_uqword_write)
   body( 
     F := WOP;
     V := WOI;
-    F^.Data.WriteVar(@V, SizeOf(V));)
+    FILEWRITE(F, @V, SizeOf(V));)
 
 DECLARE(str-file-write, file_str_write)
   var
@@ -222,7 +251,7 @@ DECLARE(str-file-write, file_str_write)
   body( 
     F := WOP;
     B := str_pop(Machine);
-    F^.Data.WriteVar(@B^.Sym[0], B^.Len * B^.Width);)
+    FILEWRITE(F, @B^.Sym[0], B^.Len * B^.Width);)
 
 DECLARE(str-file-read, file_str_read)
   var
@@ -234,12 +263,12 @@ DECLARE(str-file-read, file_str_read)
     F := WOP;
     SetLength(Buffer, 80);
     Len := 0;
-    Buffer[Len] := F^.Data.ReadByte;
-    while (Buffer[Len] <> 13) and not F^.Data.IsEmpty do begin
+    FILEREAD(F, @Buffer[Len], Sizeof(Buffer[Len]));
+    while (Buffer[Len] <> 13) and not FILEEMPTY(F) do begin
       Inc(Len);
       if Len > High(Buffer) then
         SetLength(Buffer, Length(Buffer)*2);
-      Buffer[Len] := F^.Data.ReadByte;
+      FILEREAD(F, @Buffer[Len], Sizeof(Buffer[Len]));
     end;
     B := CreateStr(1, Len);
     Move(Buffer[0], B^.Sym[0], Len);
@@ -247,7 +276,7 @@ DECLARE(str-file-read, file_str_read)
     str_push(Machine, B);)
 
 DECLARE(file-size, file_size)
-  body(WUI(PdfFile(WOP)^.Data.Size);)
+  body(WUI(FILESIZE(WOP));)
 
 DECLARE(*cr, star_cr)
   body(WUP(@CR_windows[0]))
@@ -260,4 +289,4 @@ DECLARE(file-cr, file_cr)
     F: PdfFile; 
   body(  
     F := WOP;
-    F^.Data.WriteVar(@CR_windows[0], SizeOf(CR_windows));)
+    FILEWRITE(F, @CR_windows[0], SizeOf(CR_windows));)
