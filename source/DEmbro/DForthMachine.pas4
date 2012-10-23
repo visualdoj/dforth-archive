@@ -23,6 +23,7 @@ uses
   DAlien,
   DVocabulary,
   DEmbroSource,
+  DEmbroMeta,
   DCommandsTable;
 
 const

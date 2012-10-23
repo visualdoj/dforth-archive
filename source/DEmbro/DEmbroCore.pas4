@@ -25,6 +25,7 @@ type
   TInt                                  = Integer;
   TUInt                                 = Cardinal;
   TPtr                                  = Pointer;
+  TEmbroPtr                             = Pointer;
 
   PForthCommand = ^TForthCommand;
   TCode = procedure (Machine: Pointer; Command: PForthCommand); register;

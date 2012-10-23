@@ -1,0 +1,61 @@
+unit DEmbroMeta;
+
+interface
+
+uses
+  DEmbroCore;
+
+type
+PMetaEmbroIterator = ^TMetaEmbroIterator;
+PMetaEmbro = ^TMetaEmbro;
+
+TMetaEmbro = object
+public
+  procedure StartXt;
+  procedure WriteCall(Xt: TXt);
+  procedure WriteRaw(P: TPtr; Size: Integer);
+  procedure WritePtr(P: TPtr);
+  procedure WriteEmbro(E: TEmbroPtr);
+  function ClearLast: TError;
+  function ClearTo(E: TEmbroPtr): TError;
+  function GetIterator(Embro: TEmbroPtr; Iterator: PMetaEmbroIterator): TError;
+end;
+
+TMetaEmbroIterator = object
+end;
+
+implementation
+
+procedure TMetaEmbro.StartXt;
+begin
+end;
+
+procedure TMetaEmbro.WriteCall(Xt: TXt);
+begin
+end;
+
+procedure TMetaEmbro.WriteRaw(P: TPtr; Size: Integer);
+begin
+end;
+
+procedure TMetaEmbro.WritePtr(P: TPtr);
+begin
+end;
+
+procedure TMetaEmbro.WriteEmbro(E: TEmbroPtr);
+begin
+end;
+
+function TMetaEmbro.ClearLast: TError;
+begin
+end;
+
+function TMetaEmbro.ClearTo(E: TEmbroPtr): TError;
+begin
+end;
+
+function TMetaEmbro.GetIterator(Embro: TEmbroPtr; Iterator: PMetaEmbroIterator): TError;
+begin
+end;
+
+end.
