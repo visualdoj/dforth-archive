@@ -40,6 +40,13 @@ DECLARE(serror)
   EPO( ) ENDEPO
   PASCAL body( WUI(SocketError); ) ENDPASCAL
 
+DECLARE(sgetsockopt)
+  NOTATION(( socket level optname optval optlen -- error?))
+  RUS( возвращает опции соединения для сокета.) ENDRUS
+  ENG( gets the connection options for socket.) ENDENG
+  EPO( ) ENDEPO
+  PASCAL body( WDec(4*CELL); TInt(WVar(-CELL)) := fpGetSockOpt(TInt(WVar(-CELL)), TInt(WVar(0)), TInt(WVar(CELL)), Pointer(WVar(2*CELL)), Pointer(WVar(3*CELL)));) ENDPASCAL
+
 DECLARE(slisten)
   NOTATION(( socket backlog -- error))
   RUS( переводит сокет в режим прослушивания не более backlog соединений единовременно.) ENDRUS
@@ -81,6 +88,13 @@ DECLARE(ssendto)
   ENG( sends data from buffer message with length message# through socket.) ENDENG
   EPO( ) ENDEPO
   PASCAL body( WDec(5*CELL); TInt(WVar(-CELL)) := fpSendTo(TInt(WVar(-CELL)), Pointer(WVar(0)), TInt(WVar(CELL)), TInt(WVar(2*CELL)), Pointer(WVar(3*CELL)), TInt(WVar(4*CELL)));) ENDPASCAL
+
+DECLARE(ssetsockopt)
+  NOTATION(( socket level optname optval optlen -- error?))
+  RUS( устанавливает опции соединения для сокета.) ENDRUS
+  ENG( sets the connection options for socket.) ENDENG
+  EPO( ) ENDEPO
+  PASCAL body( WDec(4*CELL); TInt(WVar(-CELL)) := fpSetSockOpt(TInt(WVar(-CELL)), TInt(WVar(0)), TInt(WVar(CELL)), Pointer(WVar(2*CELL)), TInt(WVar(3*CELL)));) ENDPASCAL
 
 DECLARE(htonl)
   NOTATION(( hostcell -- netcell))

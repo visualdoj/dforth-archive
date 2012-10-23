@@ -22,29 +22,29 @@ include" units\statements\locals.de"
   ( switch-local-offset) dup postpone literal postpone l!
 ; immediate
 
-RUS summary начинает объявление оператора switch
-detail <inline>( C: -di) ( R: i-) </inline>
-  Семантика компиляции
-    Создаёт <inline>d</inline> - динамический массив ячеек.
-    Кладёт <inline>i</inline> - значение переменной <inline>*local-offset</inline>.
-    Увеличивает <inline>*local-offset</inline> на размер ячейки.
-  Семантика исполнения
-    Выделяет локальную память. Снимает значение со стека, сохраняет его в
-    выделенной памяти.
-  Пример использования
-  <code>
-    : test 
-      switch
-        0 of ." zero" \of
-        1 of ." one" \of
-        7 of ." seven" \of
-        ." unknown"
-      \switch
-      cr
-    ;
-  </code>
-  См. также <article>of</article> <article>\of</article> <article>\switch</article>
-\detail
+// RUS summary начинает объявление оператора switch
+// detail <inline>( C: -di) ( R: i-) </inline>
+//   Семантика компиляции
+//     Создаёт <inline>d</inline> - динамический массив ячеек.
+//     Кладёт <inline>i</inline> - значение переменной <inline>*local-offset</inline>.
+//     Увеличивает <inline>*local-offset</inline> на размер ячейки.
+//   Семантика исполнения
+//     Выделяет локальную память. Снимает значение со стека, сохраняет его в
+//     выделенной памяти.
+//   Пример использования
+//   <code>
+//     : test 
+//       switch
+//         0 of ." zero" \of
+//         1 of ." one" \of
+//         7 of ." seven" \of
+//         ." unknown"
+//       \switch
+//       cr
+//     ;
+//   </code>
+//   См. также <article>of</article> <article>\of</article> <article>\switch</article>
+// \detail
 
 : of ( di-dim)
   dup postpone literal postpone l@
@@ -53,9 +53,9 @@ detail <inline>( C: -di) ( R: i-) </inline>
   >mark
 ; immediate
 
-RUS summary проверяет на равенство числу со стека значению, снятого при вызове switch
-detail ( C: di-dim) ( R: i-)
-\detail
+// RUS summary проверяет на равенство числу со стека значению, снятого при вызове switch
+// detail ( C: di-dim) ( R: i-)
+// \detail
 
 : \of ( dim-di)
   rrot

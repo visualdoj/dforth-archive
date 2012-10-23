@@ -1,7 +1,7 @@
 // 2011.02.02 # Doj
 // Команды для работы с локальными переменными
 
-include" units\utils\parser.de"
+include" units/utils/parser.de"
 
 0 variable *local-offset
 8 bdyn *local-names

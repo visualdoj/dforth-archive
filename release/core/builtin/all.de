@@ -17,6 +17,7 @@ str" mem.de" evaluate-file
 str" misc.de" evaluate-file
 str" num.de" evaluate-file
 str" signed.de" evaluate-file
+str" sockets.de" evaluate-file
 str" strings.de" evaluate-file
 str" value.de" evaluate-file
 str" vm.de" evaluate-file

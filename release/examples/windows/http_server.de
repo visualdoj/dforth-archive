@@ -35,7 +35,7 @@ s *addr_another *size accept value client
 create *buffer 1024 allot
 variable *pos
 *buffer *pos !
-: pchar-write ( p-) dup pchar-len *pos @ 2dup + *pos ! swap move ;
+: pchar-write ( p-) dup pchar-len ( p #) *pos @ 2dup ( p # ^ # ^) + *pos ! swa ( p ^ #) move ;
 : char-write ( c-) *pos @ byte! *pos 1+! ;
 : \n h0D char-write h0A char-write ;
 

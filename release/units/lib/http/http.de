@@ -1,13 +1,14 @@
 // 2012.08.15 # Doj
 // Утилиты для парсинга http-пакетов
 
+include" units/lib/http/consts.de"
 include" units/utils/parser.de"
 include" units/sys/chars.de"
 
 // Определение HTTP Method
 // Если тест положителен, то указатель сдвигается за первый пробел
 : OPTIONS? ( p -- p?) false ;
-: GET? ( p -- p?) dup udword@ [4chars] GET  = if cell+ true else false then ;
+: GET? ( p -- p?) dup udword@ [4chars] GET  = if 4 + true else false then ;
 : HEAD? ( p -- p?) false ;
 : POST? ( p -- p?) false ;
 : PUT? ( p -- p?) false ;
@@ -31,7 +32,7 @@ include" units/sys/chars.de"
 // Пропускаем перенос строк (CR+LF)
 : skip-newline ( p-p) 2 + ;
 
-: SP-or-CR? ( c -- CR? SPorCR?) dup  CR = dup bool.
+: SP-or-CR? ( c -- CR? SPorCR?) dup  CR =
                                 swap SP =
                                 over or ;
                            
@@ -46,7 +47,7 @@ include" units/sys/chars.de"
     dup // wp
     begin dup ubyte@ SP-or-CR? not while drop 1+ repeat // wp?
     swap dup 0 swap ubyte! // w?p
-    over if skip-newline else ( skip space) 1+ then // w?p
+    // over if skip-newline else ( skip space) 1+ then // w?p
     swap ;
 
 // Читает версию HTTP протокола

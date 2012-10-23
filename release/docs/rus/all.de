@@ -17,6 +17,7 @@ str" docs\rus\mem.de" evaluate-file
 str" docs\rus\misc.de" evaluate-file
 str" docs\rus\num.de" evaluate-file
 str" docs\rus\signed.de" evaluate-file
+str" docs\rus\sockets.de" evaluate-file
 str" docs\rus\strings.de" evaluate-file
 str" docs\rus\value.de" evaluate-file
 str" docs\rus\vm.de" evaluate-file

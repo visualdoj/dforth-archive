@@ -11,6 +11,7 @@ samebuiltin clear-screen
 samebuiltin set-font-color
 samebuiltin set-background-color
 samebuiltin set-blink
+samebuiltin flush
 samebuiltin CONSOLE_WHITE
 samebuiltin CONSOLE_BLACK
 samebuiltin CONSOLE_GRAY
