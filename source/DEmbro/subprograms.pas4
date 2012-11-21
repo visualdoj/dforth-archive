@@ -4,6 +4,7 @@ unit subprograms;
 interface
 
 uses
+  DEmbroMeta,
   SysUtils;
 
 function RunSubprogram: Boolean;
@@ -61,6 +62,7 @@ function RunSubprogram: Boolean;
 begin
   if ParamStr(1) = "dirs" then begin dirs; RETURN(True); end else
   if ParamStr(1) = "config" then begin config; RETURN(True); end else
+  if ParamStr(1) = "test_meta" then begin test_meta; RETURN(True); end else
   RETURN(False);
 end;
 

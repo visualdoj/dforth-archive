@@ -1,0 +1,67 @@
+unit DEmbroPool;
+
+interface
+
+uses
+  DMath,
+  DUtils,
+  DEmbroCore,
+  DEmbroPage;
+
+type
+PPool = ^TPool;
+
+TPool = object
+private
+  FManager: PEmbroPageManager;
+  FCapacity: TUInt;
+  FFirst: PEmbroPage;
+  FPage: PEmbroPage;
+  FPos: PByte;
+public
+  constructor Init(Manager: PEmbroPageManager; Capacity: TUInt);
+  destructor Done;
+  function _Append(Size: TUInt): Pointer;
+  procedure Bookmark;
+  procedure Forget;
+end;
+
+implementation
+
+constructor TPool.Init;
+begin
+  FManager := Manager;
+  FCapacity := Capacity;
+  FFirst := FManager^.NewPage(FCapacity);
+  FPage := FFirst;
+end;
+
+destructor TPool.Done;
+var
+  Next: PEmbroPage;
+begin
+  while FFirst <> nil do begin
+      Next := FFirst^.Next;
+      FManager^.FreePage(FFirst);
+      FFirst := Next;
+  end;
+end;
+
+function TPool._Append(Size: TUInt): Pointer;
+begin
+  if Size < FPage^._End - FPos then
+      RETURN(FPos; Inc(FPos, Size););
+  FPage := FManager^.NewPage(Align(Size, FCapacity), FPage);
+  FPos := FPage._Begin;
+  Result := FPos;
+end;
+
+procedure TPool.Bookmark;
+begin
+end;
+
+procedure TPool.Forget;
+begin
+end;
+
+end.

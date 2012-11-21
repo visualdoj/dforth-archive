@@ -3,31 +3,310 @@ unit DEmbroMeta;
 interface
 
 uses
-  DEmbroCore;
+  DMath,
+  DUtils,
+  DEmbroCore,
+  DEmbroPage,
+  DEmbroCode,
+  DEmbroPool;
+
+const
+// {{{ Meta record type identifiers
+  // low part - only 4 bits
+  LOW_MASK      = Hex()0F;
+  LOW_CALL      = 0;
+  LOW_RAW       = 1;
+  LOW_XT        = 2;
+  LOW_INT       = 3;
+  LOW_PTR       = 4;
+  LOW_EMBRO     = 5;
+  LOW_BLOCKEND  = 6;
+  LOW_END       = 7;
+  LOW_SYS       = 8;
+  // {{{ high part - only 4 bits
+    HIGH_MASK           = Hex()F0;
+    // sys types
+    HIGH_SYS_END        = 0 shl 4; // end of metacode
+    HIGH_SYS_BLK        = 1 shl 4; // end of block
+    // raw types
+    HIGH_RAW_UND        = 0 shl 4; // undefined
+    HIGH_RAW_INT        = 1 shl 4; // int
+    HIGH_RAW_UNT        = 2 shl 4; // uint
+    HIGH_RAW_ANS        = 3 shl 4; // ansistring
+    HIGH_RAW_UNI        = 4 shl 4; // unicode
+    HIGH_RAW_WID        = 5 shl 4; // widestring
+  // }}}
+  // {{{ low + high = meta
+    META_END = LOW_SYS or HIGH_SYS_END;
+    META_BLK = LOW_SYS or HIGH_SYS_BLK;
+    META_UND = LOW_RAW or HIGH_RAW_UND;
+    META_INT = LOW_RAW or HIGH_RAW_INT;
+    META_UNT = LOW_RAW or HIGH_RAW_UNT;
+    META_ANS = LOW_RAW or HIGH_RAW_ANS;
+    META_UNI = LOW_RAW or HIGH_RAW_UNI;
+    META_WID = LOW_RAW or HIGH_RAW_WID;
+  // }}}
+// }}}
 
 type
-PMetaEmbroIterator = ^TMetaEmbroIterator;
+// {{{ Pointers
+PMeta= ^TMeta;
+PMetaEmbroRecord = ^TMetaEmbroRecord;
+PMetaIterator = ^TMetaIterator;
 PMetaEmbro = ^TMetaEmbro;
+// }}}
+//{{{ TMetaEmbroRecord - minimal data in metaembro code
+TMetaEmbroRecord = object
+  _Type: TUInt;
+  constructor Init(TheType: TUInt);
+  function Size(Data: Pointer): TUInt; virtual; abstract;
+  procedure Write(Data: Pointer; Param: TCell; Buffer: Pointer = nil); virtual; abstract;
+  function ToStr(Data: Pointer; Buffer: PAnsiChar; MaxLen: TInt): TInt; overload; virtual;
+  function ToStr(Data: Pointer): TString; overload; virtual; abstract;
+  procedure Dump(Data: Pointer; Offset: Cardinal); virtual; abstract;
+end;
+//}}}
+//{{{ meta code records
+define(`REC', `PMetaEmbro$1 = ^TMetaEmbro$1;
+TMetaEmbro$1 = object(TMetaEmbroRecord)')
 
+REC(Call)
+  function Size(Data: Pointer): TUInt; virtual;
+  procedure Write(Data: Pointer; Param: TCell; Buffer: Pointer = nil); virtual;
+  function ToStr(Data: Pointer): TString; overload; virtual;
+  procedure Dump(Data: Pointer; Offset: Cardinal); virtual;
+end;
+
+REC(Int)
+  function Size(Data: Pointer): TUInt; virtual;
+  procedure Write(Data: Pointer; Param: TCell; Buffer: Pointer = nil); virtual;
+  function ToStr(Data: Pointer): TString; overload; virtual;
+  procedure Dump(Data: Pointer; Offset: Cardinal); virtual;
+end;
+
+REC(Raw)
+end;
+
+REC(Xt)
+end;
+//}}}
+//{{{ TMetaEmbro - use it for generating meta code
 TMetaEmbro = object
+private
+  FMaxXtSize: Integer;
+  FCapacity: Integer;
+  FFirst: PEmbroPage;
+  FBlock: PEmbroPage;
+  FPos: PByte;
+  FMetaPool: PPool;
+  FPool: PPool;
+  procedure AllocNewBlock;
 public
-  procedure StartXt;
+  constructor Init(MaxXtSize: TUInt = 8 * KB; Capacity: TUInt = 64 * KB);
+  function StartXt: TEmbroPtr;
+  function Current: TEmbroPtr;
+  procedure Write(_Type: TUInt; const Param; P: Pointer = nil); overload; inline;
   procedure WriteCall(Xt: TXt);
   procedure WriteRaw(P: TPtr; Size: Integer);
   procedure WritePtr(P: TPtr);
   procedure WriteEmbro(E: TEmbroPtr);
   function ClearLast: TError;
   function ClearTo(E: TEmbroPtr): TError;
-  function GetIterator(Embro: TEmbroPtr; Iterator: PMetaEmbroIterator): TError;
+  function GetIterator(Embro: TEmbroPtr; Iterator: PMetaIterator): TError; overload;
+  function GetIterator(Iterator: PMetaIterator): TError; overload;
+  procedure Dump;
 end;
+//}}}
+//{{{ TMetaIterator - object for iterating records in metaembro
+TMetaIterator = object
+private
+  FMeta: PMetaEmbro;
+  FBlock: PEmbroPage;
+  FRec: Pointer;
+public
+  constructor Init(Meta: PMetaEmbro; Block: PEmbroPage; EmbroPtr: TEmbroPtr);
+  function Next: Boolean;
+  function GetEmbroPtr: TEmbroPtr;
+  function GetOffset: TInt;
+  property Rec: Pointer read FRec;
+  property EmbroPtr: TEmbroPtr read GetEmbroPtr;
+end;
+//}}}
+//{{{ TMeta - main class, use for manipulation with meta code
+TMeta = object
+public
+  Embros: array of PMetaEmbro;
+private
+  constructor Init;
+  destructor Destroy;
+  function CreateMetaEmbro(): PMetaEmbro;
+  function SaveToFile(FileName: TString): Boolean;
+  function LoadFromFile(FileName: TString): Boolean;
+  function Dump(FileName: TString = ''): Boolean;
+  procedure RestorePointers;
+  function DeleteEmbroFragment(_Begin, _End: PMetaIterator): Boolean;
+  function MoveEmbroFragment(_Begin, _End, _NewBegin: PMetaIterator): Boolean;
+end;
+//}}}
 
-TMetaEmbroIterator = object
-end;
+procedure test_meta;
 
 implementation
 
-procedure TMetaEmbro.StartXt;
+var
+  RECORDS: array[0..15] of PMetaEmbroRecord;
+
+//{{{ TMetaEmbroRecord
+function TMetaEmbroRecord.ToStr(Data: Pointer; Buffer: PAnsiChar; MaxLen: TInt): TInt;
+var
+  S: TString;
 begin
+  S := ToStr(Data);
+  Result := Length(S);
+  if Buffer <> nil then
+      Move(S[1], Buffer[0], Min(Result, MaxLen));
+end;
+
+constructor TMetaEmbroRecord.Init(TheType: TUInt);
+begin
+  _Type := TheType;
+end;
+//}}}
+//{{{ TMetaEmbroCall
+function TMetaEmbroCall.Size(Data: Pointer): TUInt;
+begin
+  Result := SizeOf(TXt);
+end;
+
+procedure TMetaEmbroCall.Write(Data: Pointer; Param: TCell; Buffer: Pointer = nil);
+begin
+  TCells(Data^)[0] := Param;
+end;
+
+function TMetaEmbroCall.ToStr(Data: Pointer): TString; overload;
+begin
+  Result := PAnsiChar(TXt(TCells(Data^)[0])^.Name);
+end;
+
+procedure TMetaEmbroCall.Dump(Data: Pointer; Offset: Cardinal);
+begin
+  System.Writeln("[+h", IntToHex(Offset, 12), "]"#9"c"#9, ToStr(Data));
+end;
+//}}}
+//{{{ TMetaEmbroInt
+function TMetaEmbroInt.Size(Data: Pointer): TUInt;
+begin
+  Result := SizeOf(TCell);
+end;
+
+procedure TMetaEmbroInt.Write(Data: Pointer; Param: TCell; Buffer: Pointer = nil);
+begin
+  TCell(Data^) := Param;
+end;
+
+function TMetaEmbroInt.ToStr(Data: Pointer): TString;
+begin
+  Result := "h" + IntToHex(TCell(Data^));
+end;
+
+procedure TMetaEmbroInt.Dump(Data: Pointer; Offset: Cardinal);
+begin
+  System.Writeln("[+h", IntToHex(Offset, 12), "]"#9"i"#9"  ", ToStr(Data), #9"// ", IntToStr(TCell(Data^)));
+end;
+//}}}
+//{{{ Function for general using records
+function RecHeader(Rec: Pointer): TUInt; inline;
+begin
+  Result := TUInts(Rec^)[0];
+end;
+
+function RecLow(Rec: Pointer): TUInt; inline;
+begin
+  Result := RecHeader(Rec) and LOW_MASK;
+end;
+
+function RecData(Rec: Pointer): Pointer; inline;
+begin
+  Result := PByte(Rec) + SizeOf(TUInt);
+end;
+
+function RecSize(Rec: Pointer): TUInt; inline;
+begin
+  Result := SizeOf(TUInt) + RECORDS[RecLow(Rec)].Size(PByte(Rec) + SizeOf(TUInt));
+end;
+
+procedure RecWrite(Rec: Pointer; Param: TCell; Buffer: Pointer); overload; inline;
+begin
+  RECORDS[RecLow(Rec)].Write(PByte(Rec) + SizeOf(TUInt), Param, Buffer);
+end;
+
+procedure RecWrite(Rec: Pointer; _Type: TUInt; Param: TCell; Buffer: Pointer); overload; inline;
+begin
+  TUInts(Rec^)[0] := _Type;
+  RecWrite(Rec, Param, Buffer);
+end;
+
+function RecToStr(Rec: Pointer): TString; overload; inline;
+begin
+  Result := RECORDS[RecLow(Rec)].ToStr(RecData(Rec));
+end;
+
+procedure RecDump(Rec: Pointer; Offset: Cardinal);
+begin
+  RECORDS[RecLow(Rec)].Dump(RecData(Rec), Offset);
+end;
+//}}}
+//{{{ TMetaEmbro
+procedure TMetaEmbro.AllocNewBlock;
+var
+  B: PEmbroPage;
+begin
+  New(B);
+  B^.Next := nil;
+  B^.Prev := FBlock;
+  GetMem(B^._Begin, FCapacity);
+  B^._End := B^._Begin + FCapacity;
+
+  FBlock^.Next := B;
+  FBlock := B;
+end;
+
+constructor TMetaEmbro.Init(MaxXtSize: TUInt = 8 * KB; Capacity: TUInt = 64 * KB);
+begin
+  FMaxXtSize := MaxXtSize;
+  FCapacity := Capacity;
+  
+  New(FFirst);
+  FFirst^.Next := nil;
+  FFirst^.Prev := nil;
+  GetMem(FFirst^._Begin, FCapacity);
+  FFirst^._End := FFirst^._Begin + FCapacity;
+
+  FBlock := FFirst;
+  FPos := FBlock._Begin;
+end;
+
+function TMetaEmbro.StartXt: TEmbroPtr;
+begin
+  Inc(FPos, FMaxXtSize);
+  if FPos >= FBlock^._End then begin
+      AllocNewBlock;
+      FPos := FBlock^._Begin;
+  end;
+  Result := Current;
+end;
+
+function TMetaEmbro.Current: TEmbroPtr;
+begin
+  Result := FPos;
+end;
+
+procedure TMetaEmbro.Write(_Type: TUInt; const Param; P: Pointer);
+begin
+  RecWrite(FPos, _Type, TCell(Param), P);
+  Inc(FPos, RecSize(FPos));
+  TUInt(Pointer(FPos)^) := LOW_END;
+  // TODO Checking FPos bounds
 end;
 
 procedure TMetaEmbro.WriteCall(Xt: TXt);
@@ -48,14 +327,162 @@ end;
 
 function TMetaEmbro.ClearLast: TError;
 begin
+  // TODO
 end;
 
 function TMetaEmbro.ClearTo(E: TEmbroPtr): TError;
 begin
+  // TODO
 end;
 
-function TMetaEmbro.GetIterator(Embro: TEmbroPtr; Iterator: PMetaEmbroIterator): TError;
+function TMetaEmbro.GetIterator(Embro: TEmbroPtr; Iterator: PMetaIterator): TError;
+begin
+  Iterator.Init(@Self, FFirst, Embro);
+  // TODO cheking Embro parameter
+end;
+
+function TMetaEmbro.GetIterator(Iterator: PMetaIterator): TError;
+begin
+  Iterator.Init(@Self, FFirst, FFirst^._Begin);
+end;
+
+procedure TMetaEmbro.Dump;
+var
+  I: TMetaIterator;
+begin
+  GetIterator(@I);
+  while I.Rec <> nil do begin
+      RecDump(I.Rec, I.GetOffset);
+      I.Next;
+  end;
+end;
+//}}}
+//{{{ TMetaIterator
+constructor TMetaIterator.Init(Meta: PMetaEmbro; Block: PEmbroPage; EmbroPtr: TEmbroPtr);
+begin
+  FMeta := Meta;
+  FBlock := Block;
+  FRec := EmbroPtr;
+end;
+
+function TMetaIterator.Next: Boolean;
+begin
+  if FRec = nil then
+      RETURN(False);
+  FRec := PByte(FRec) + RecSize(FRec);
+  while RecHeader(FRec) = LOW_BLOCKEND do begin
+      FBlock := FBlock^.Next;
+      if FBlock = nil then
+          RETURN(False; FRec := nil);
+      FRec := FBlock^._Begin;
+  end;
+  if RecHeader(FRec) = LOW_END then
+      RETURN(False; FRec := nil);
+end;
+
+function TMetaIterator.GetOffset: TInt;
+begin
+  if FRec <> nil then
+      Result := FRec - FBlock^._Begin
+  else
+      Result := -1;
+end;
+
+function TMetaIterator.GetEmbroPtr: TEmbroPtr;
+begin
+  Result := FRec;
+end;
+//}}}
+//{{{ TMeta
+constructor TMeta.Init;
 begin
 end;
 
+destructor TMeta.Destroy;
+var
+  I: Integer;
+begin
+  for I := 0 to High(Embros) do
+    Dispose(Embros[I]);
+end;
+
+function TMeta.CreateMetaEmbro(): PMetaEmbro;
+begin
+  Result := New(PMetaEmbro, Init);
+  SetLength(Embros, Length(Embros) + 1);
+  Embros[High(Embros)] := Result;
+end;
+
+function TMeta.SaveToFile(FileName: TString): Boolean;
+begin
+  Result := True;
+end;
+
+function TMeta.LoadFromFile(FileName: TString): Boolean;
+begin
+  Result := False;
+end;
+
+function TMeta.Dump(FileName: TString = ''): Boolean;
+var
+  I: Integer;
+begin
+  if FileName = '' then begin
+    for I := 0 to High(Embros) do begin
+      Embros[I]^.Dump;
+    end;
+    Result := True;
+  end else
+    Result := False;
+end;
+
+procedure TMeta.RestorePointers;
+begin
+end;
+
+function TMeta.DeleteEmbroFragment(_Begin, _End: PMetaIterator): Boolean;
+begin
+  Result := True;
+end;
+
+function TMeta.MoveEmbroFragment(_Begin, _End, _NewBegin: PMetaIterator): Boolean;
+begin
+  Result := True;
+end;
+//}}}
+//{{{ tests
+const
+  LOL: TForthCommand = (Code: nil;
+                        Data: Pointer(5);
+                        Flags: 0;
+                        Name: 'LOL';
+                        Param: Pointer(100));
+  XtLOL: Pointer = @LOL;
+  VALUES: array[0..2] of TCell = (555, 777, 999);
+
+procedure test_meta;
+var
+  Meta: TMeta;
+  Embro: PMetaEmbro;
+  I: TMetaIterator;
+begin
+  Meta.Init;
+  Embro := Meta.CreateMetaEmbro;
+  Embro^.Write(LOW_CALL, XtLOL);
+  Embro^.Write(LOW_INT,  VALUES[0]);
+  Embro^.Write(LOW_INT,  VALUES[1]);
+  Embro^.Write(LOW_INT,  VALUES[2]);
+  Embro^.Write(LOW_CALL, XtLOL);
+  Embro^.Write(LOW_INT,  VALUES[1]);
+  Embro^.Write(LOW_CALL, XtLOL);
+  Embro^.Write(LOW_INT,  VALUES[2]);
+  Meta.Dump;
+end;
+//}}}
+
+initialization
+  RECORDS[LOW_CALL]     := New(PMetaEmbroCall,  Init(LOW_CALL));
+  RECORDS[LOW_RAW]      := New(PMetaEmbroRaw,   Init(LOW_RAW));
+  RECORDS[LOW_XT]       := New(PMetaEmbroXt,    Init(LOW_XT));
+  RECORDS[LOW_INT]      := New(PMetaEmbroInt,   Init(LOW_INT));
 end.

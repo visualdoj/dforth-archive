@@ -1,0 +1,27 @@
+unit DEmbroCode;
+
+interface
+
+uses
+  DMath,
+  DUtils,
+  DEmbroCore,
+  DEmbroPage,
+  DEmbroPool;
+
+type
+PEmbro = ^TEmbro;
+
+TEmbro = object
+  FManager: PEmbroPageManager;
+  FMaxXtSize: Integer;
+  FCapacity: Integer;
+  //procedure _Create;
+  //procedure Allot(Size: TInt);
+  //procedure Clear(Size: TInt);
+  //function Here: Pointer;
+end;
+
+implementation
+
+end.

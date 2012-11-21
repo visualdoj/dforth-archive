@@ -1,0 +1,95 @@
+unit DEmbroPage;
+
+interface
+
+uses
+  DMath,
+  DUtils,
+  DEmbroCore;
+
+type
+PEmbroPage = ^TEmbroPage;
+//{{{ TEmbroPage - block of memory for metaembro code
+TEmbroPage = object
+  Id: TUInt;
+  _Begin: PByte;
+  _End: PByte;
+  Prev: PEmbroPage; // do we really need it?
+  Next: PEmbroPage;
+end;
+//}}}
+
+PEmbroPageManager = ^TEmbroPageManager;
+TEmbroPageManager = object
+private
+  FTable: array of PEmbroPage;
+public
+  constructor Init;
+  function NewPage(Size: TUInt; Prev: PEmbroPage = nil): PEmbroPage;
+  procedure FreePage(Page: PEmbroPage);
+  function GetPage(Id: TUInt): PEmbroPage;
+  function Abs2Rel(P: PByte; out Id: TUInt; out Offset: TUInt): Boolean;
+  function Rel2Abs(Id: TUInt; Offset: TUInt): PByte;
+end;
+
+implementation
+
+constructor TEmbroPageManager.Init;
+begin
+  SetLength(FTable, 0);
+end;
+
+function TEmbroPageManager.NewPage(Size: TUInt; Prev: PEmbroPage = nil): PEmbroPage;
+var
+  P: Pointer;
+begin
+  GetMem(P, Size);
+  SetLength(FTable, Length(FTable) + 1);
+  New(FTable[High(FTable)]);
+  Result := FTable[High(FTable)];
+  Result^.Id := High(FTable);
+  Result^._Begin := P;
+  Result^._End := Result^._Begin + Size;
+  Result^.Prev := Prev;
+  Result^.Next := nil;
+  if Prev <> nil then
+      Prev^.Next := Result;
+end;
+
+procedure TEmbroPageManager.FreePage(Page: PEmbroPage);
+begin
+  FreeMem(Page^._Begin);
+  Dispose(Page);
+end;
+
+function TEmbroPageManager.GetPage(Id: TUInt): PEmbroPage;
+var
+  I: Integer;
+begin
+  for I := 0 to High(FTable) do
+      if FTable[I]^.Id = Id then
+          RETURN(FTable[I]);
+  RETURN(nil);
+end;
+
+function TEmbroPageManager.Abs2Rel(P: PByte; out Id: TUInt; out Offset: TUInt): Boolean;
+var
+  I: Integer;
+begin
+  for I := 0 to High(FTable) do
+      if (FTable[I]._Begin <= P) and (P < FTable[I]._End) then
+          RETURN(True; Id := FTable[I]^.Id; Offset := P - FTable[I]^._Begin);
+  RETURN(False);
+end;
+
+function TEmbroPageManager.Rel2Abs(Id: TUInt; Offset: TUInt): PByte;
+var
+  Page: PEmbroPage;
+begin
+  Page := GetPage(Id);
+  if Page = nil then
+      RETURN(nil);
+  Result := Page^._Begin + Offset;
+end;
+
+end.

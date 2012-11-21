@@ -10,6 +10,9 @@ const
   BOOL_TRUE                             = -1;
   
   CELL_SIZE                             = SizeOf(Integer);
+  KB                                    = 1024;
+  MB                                    = 1024 * KB;
+  GB                                    = 1024 * MB;
 
   OK                                    = 0;
   ERROR_EMBRO_NOT_ALIGNED_ALLOT         = 1;
@@ -26,6 +29,8 @@ type
   TUInt                                 = Cardinal;
   TPtr                                  = Pointer;
   TEmbroPtr                             = Pointer;
+  TCells                                = array[0..1] of TCell;
+  TUInts                                = array[0..1] of TUInt;
 
   PForthCommand = ^TForthCommand;
   TCode = procedure (Machine: Pointer; Command: PForthCommand); register;
