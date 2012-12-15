@@ -106,6 +106,7 @@ public
   function StartXt: TEmbroPtr;
   function Current: TEmbroPtr;
   procedure Write(_Type: TUInt; const Param; P: Pointer = nil); overload; inline;
+  procedure WriteConst(_Type: TUInt; const Param; const C); overload; inline;
   procedure WriteCall(Xt: TXt);
   procedure WriteRaw(P: TPtr; Size: Integer);
   procedure WritePtr(P: TPtr);
@@ -307,6 +308,11 @@ begin
   Inc(FPos, RecSize(FPos));
   TUInt(Pointer(FPos)^) := LOW_END;
   // TODO Checking FPos bounds
+end;
+
+procedure TMetaEmbro.WriteConst(_Type: TUInt; const Param; const C);
+begin
+  Write(_Type, Param, @C);
 end;
 
 procedure TMetaEmbro.WriteCall(Xt: TXt);
