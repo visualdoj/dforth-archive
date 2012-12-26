@@ -144,9 +144,12 @@ private
   function SaveToFile(FileName: TString): Boolean;
   function LoadFromFile(FileName: TString): Boolean;
   function Dump(FileName: TString = ''): Boolean;
-  procedure RestorePointers;
   function DeleteEmbroFragment(_Begin, _End: PMetaIterator): Boolean;
   function MoveEmbroFragment(_Begin, _End, _NewBegin: PMetaIterator): Boolean;
+  // embro pointers -> meta pointers, use it before saving to a stream
+  procedure StorePointers;
+  // meta pointers -> embra pointers, use it after loading from a stream
+  procedure PatchPointers;
 end;
 //}}}
 
@@ -442,10 +445,6 @@ begin
     Result := False;
 end;
 
-procedure TMeta.RestorePointers;
-begin
-end;
-
 function TMeta.DeleteEmbroFragment(_Begin, _End: PMetaIterator): Boolean;
 begin
   Result := True;
@@ -454,6 +453,14 @@ end;
 function TMeta.MoveEmbroFragment(_Begin, _End, _NewBegin: PMetaIterator): Boolean;
 begin
   Result := True;
+end;
+
+procedure TMeta.StorePointers;
+begin
+end;
+
+procedure TMeta.PatchPointers;
+begin
 end;
 //}}}
 //{{{ tests
@@ -486,9 +493,30 @@ begin
 end;
 //}}}
 
+var
+  RECORDS_OBJECTS : record
+    CALL : TMetaEmbroCall;
+    RAW  : TMetaEmbroRaw;
+    XT   : TMetaEmbroXt;
+    INT  : TMetaEmbroInt;
+  end;
+
+procedure InitRecords;
+var
+  I: Integer;
+begin
+  RECORDS[LOW_CALL]     := @RECORDS_DATA.CALL;
+  RECORDS[LOW_RAW]      := @RECORDS_DATA.RAW;
+  RECORDS[LOW_XT]       := @RECORDS_DATA.XT;
+  RECORDS[LOW_INT]      := @RECORDS_DATA.INT;
+  for I := LOW_CALL to LOW_INT do
+    RECORDS[I]^.Init(I);
+end;
+
 initialization
-  RECORDS[LOW_CALL]     := New(PMetaEmbroCall,  Init(LOW_CALL));
-  RECORDS[LOW_RAW]      := New(PMetaEmbroRaw,   Init(LOW_RAW));
-  RECORDS[LOW_XT]       := New(PMetaEmbroXt,    Init(LOW_XT));
-  RECORDS[LOW_INT]      := New(PMetaEmbroInt,   Init(LOW_INT));
+  InitRecords;
+  //RECORDS[LOW_CALL]     := New(PMetaEmbroCall,  Init(LOW_CALL));
+  //RECORDS[LOW_RAW]      := New(PMetaEmbroRaw,   Init(LOW_RAW));
+  //RECORDS[LOW_XT]       := New(PMetaEmbroXt,    Init(LOW_XT));
+  //RECORDS[LOW_INT]      := New(PMetaEmbroInt,   Init(LOW_INT));
 end.
