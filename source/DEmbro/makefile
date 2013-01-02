@@ -74,9 +74,6 @@ PAS4_LIST := $(addsuffix .pas4,$(BASE_LIST))
 
 DQUOTES = ../tools/dquotes
 
-# m4 usecases
-M4_CMD = $(M4)
-
 help:
 	$(CAT) README
 
@@ -101,7 +98,9 @@ clean:
 ../.release/DEmbro/%.inc : %.inc $(BUILD_DIRS)
 	cp $< $@
 
-makepp: $(BUILD_PP) $(BUILD_INC) $(BUILD_DIRS);
+#$(BUILD_DIR)/%.inc: commands;
+
+makepp: commands $(BUILD_PP) $(BUILD_INC) $(BUILD_DIRS);
 
 release: makepp lib compile headers;
 
@@ -167,26 +166,26 @@ copy: temp/copy.stamp;
 %/:
 	mkdir -p $@
 
-../../release/dembro32: $(PP_LIST) dembro32.dpr body.inc
+../../release/dembro32: $(PP_LIST) dembro32.dpr $(BUILD_DIR)/DEmbro/body.inc
 	cp dembro32.dpr temp/dembro32.dpr
 	cp *.inc temp
 	$(FPC) -vb temp/dembro32.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../release/" -FUtemp
 
-../../release/de: $(BUILD_PP) de.dpr body.inc
+../../release/de: $(BUILD_PP) de.dpr $(BUILD_DIR)/DEmbro/body.inc
 	cd $(BUILD_DIR)/DEmbro && mkdir -p temp
 	cd $(BUILD_DIR)/DEmbro && $(FPC) -vb de.pp -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../../release/" -FUtemp
 
-../../release/de.exe: $(PP_LIST) body.inc
+../../release/de.exe: $(PP_LIST) $(BUILD_DIR)/body.inc
 	cd $(BUILD_DIR)/DEmbro && mkdir -p temp
 	cd $(BUILD_DIR)/DEmbro && $(FPC) -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../../release/" -FUtemp
 
 lib: ../../release/$(LIBPREFIX)de32$(LIBEXT);
 
-../../release/de32.dll: $(PP_LIST) de32.dpr body.inc load.inc
+../../release/de32.dll: $(PP_LIST) de32.dpr $(BUILD_DIR)/body.inc $(BUILD_DIR)/load.inc
 	cp de32.dpr temp
 	$(FPC) temp/de32.dpr -dFLAG_FPC -Sd -O3 -al -an -ar -at -gl -FE"..\..\release\" -FU.\temp
 
-../../release/libde32.so: $(BUILD_PP) de32.dpr body.inc load.inc
+../../release/libde32.so: $(BUILD_PP) de32.dpr $(BUILD_DIR)/DEmbro/body.inc $(BUILD_DIR)/DEmbro/load.inc
 	cd $(BUILD_DIR)/DEmbro && mkdir -p temp
 	cd $(BUILD_DIR)/DEmbro && $(FPC) -Cg de32.pp -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -FE../../../release/ -FU./temp
 

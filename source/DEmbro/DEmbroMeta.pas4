@@ -8,88 +8,15 @@ uses
   DEmbroCore,
   DEmbroPage,
   DEmbroCode,
-  DEmbroPool;
-
-const
-// {{{ Meta record type identifiers
-  // low part - only 4 bits
-  LOW_MASK      = Hex()0F;
-  LOW_CALL      = 0;
-  LOW_RAW       = 1;
-  LOW_XT        = 2;
-  LOW_INT       = 3;
-  LOW_PTR       = 4;
-  LOW_EMBRO     = 5;
-  LOW_BLOCKEND  = 6;
-  LOW_END       = 7;
-  LOW_SYS       = 8;
-  // {{{ high part - only 4 bits
-    HIGH_MASK           = Hex()F0;
-    // sys types
-    HIGH_SYS_END        = 0 shl 4; // end of metacode
-    HIGH_SYS_BLK        = 1 shl 4; // end of block
-    // raw types
-    HIGH_RAW_UND        = 0 shl 4; // undefined
-    HIGH_RAW_INT        = 1 shl 4; // int
-    HIGH_RAW_UNT        = 2 shl 4; // uint
-    HIGH_RAW_ANS        = 3 shl 4; // ansistring
-    HIGH_RAW_UNI        = 4 shl 4; // unicode
-    HIGH_RAW_WID        = 5 shl 4; // widestring
-  // }}}
-  // {{{ low + high = meta
-    META_END = LOW_SYS or HIGH_SYS_END;
-    META_BLK = LOW_SYS or HIGH_SYS_BLK;
-    META_UND = LOW_RAW or HIGH_RAW_UND;
-    META_INT = LOW_RAW or HIGH_RAW_INT;
-    META_UNT = LOW_RAW or HIGH_RAW_UNT;
-    META_ANS = LOW_RAW or HIGH_RAW_ANS;
-    META_UNI = LOW_RAW or HIGH_RAW_UNI;
-    META_WID = LOW_RAW or HIGH_RAW_WID;
-  // }}}
-// }}}
+  DEmbroPool,
+  DEmbroItem;
 
 type
 // {{{ Pointers
 PMeta= ^TMeta;
-PMetaEmbroRecord = ^TMetaEmbroRecord;
 PMetaIterator = ^TMetaIterator;
 PMetaEmbro = ^TMetaEmbro;
 // }}}
-//{{{ TMetaEmbroRecord - minimal data in metaembro code
-TMetaEmbroRecord = object
-  _Type: TUInt;
-  constructor Init(TheType: TUInt);
-  function Size(Data: Pointer): TUInt; virtual; abstract;
-  procedure Write(Data: Pointer; Param: TCell; Buffer: Pointer = nil); virtual; abstract;
-  function ToStr(Data: Pointer; Buffer: PAnsiChar; MaxLen: TInt): TInt; overload; virtual;
-  function ToStr(Data: Pointer): TString; overload; virtual; abstract;
-  procedure Dump(Data: Pointer; Offset: Cardinal); virtual; abstract;
-end;
-//}}}
-//{{{ meta code records
-define(`REC', `PMetaEmbro$1 = ^TMetaEmbro$1;
-TMetaEmbro$1 = object(TMetaEmbroRecord)')
-
-REC(Call)
-  function Size(Data: Pointer): TUInt; virtual;
-  procedure Write(Data: Pointer; Param: TCell; Buffer: Pointer = nil); virtual;
-  function ToStr(Data: Pointer): TString; overload; virtual;
-  procedure Dump(Data: Pointer; Offset: Cardinal); virtual;
-end;
-
-REC(Int)
-  function Size(Data: Pointer): TUInt; virtual;
-  procedure Write(Data: Pointer; Param: TCell; Buffer: Pointer = nil); virtual;
-  function ToStr(Data: Pointer): TString; overload; virtual;
-  procedure Dump(Data: Pointer; Offset: Cardinal); virtual;
-end;
-
-REC(Raw)
-end;
-
-REC(Xt)
-end;
-//}}}
 //{{{ TMetaEmbro - use it for generating meta code
 TMetaEmbro = object
 private
@@ -157,109 +84,6 @@ procedure test_meta;
 
 implementation
 
-var
-  RECORDS: array[0..15] of PMetaEmbroRecord;
-
-//{{{ TMetaEmbroRecord
-function TMetaEmbroRecord.ToStr(Data: Pointer; Buffer: PAnsiChar; MaxLen: TInt): TInt;
-var
-  S: TString;
-begin
-  S := ToStr(Data);
-  Result := Length(S);
-  if Buffer <> nil then
-      Move(S[1], Buffer[0], Min(Result, MaxLen));
-end;
-
-constructor TMetaEmbroRecord.Init(TheType: TUInt);
-begin
-  _Type := TheType;
-end;
-//}}}
-//{{{ TMetaEmbroCall
-function TMetaEmbroCall.Size(Data: Pointer): TUInt;
-begin
-  Result := SizeOf(TXt);
-end;
-
-procedure TMetaEmbroCall.Write(Data: Pointer; Param: TCell; Buffer: Pointer = nil);
-begin
-  TCells(Data^)[0] := Param;
-end;
-
-function TMetaEmbroCall.ToStr(Data: Pointer): TString; overload;
-begin
-  Result := PAnsiChar(TXt(TCells(Data^)[0])^.Name);
-end;
-
-procedure TMetaEmbroCall.Dump(Data: Pointer; Offset: Cardinal);
-begin
-  System.Writeln("[+h", IntToHex(Offset, 12), "]"#9"c"#9, ToStr(Data));
-end;
-//}}}
-//{{{ TMetaEmbroInt
-function TMetaEmbroInt.Size(Data: Pointer): TUInt;
-begin
-  Result := SizeOf(TCell);
-end;
-
-procedure TMetaEmbroInt.Write(Data: Pointer; Param: TCell; Buffer: Pointer = nil);
-begin
-  TCell(Data^) := Param;
-end;
-
-function TMetaEmbroInt.ToStr(Data: Pointer): TString;
-begin
-  Result := "h" + IntToHex(TCell(Data^));
-end;
-
-procedure TMetaEmbroInt.Dump(Data: Pointer; Offset: Cardinal);
-begin
-  System.Writeln("[+h", IntToHex(Offset, 12), "]"#9"i"#9"  ", ToStr(Data), #9"// ", IntToStr(TCell(Data^)));
-end;
-//}}}
-//{{{ Function for general using records
-function RecHeader(Rec: Pointer): TUInt; inline;
-begin
-  Result := TUInts(Rec^)[0];
-end;
-
-function RecLow(Rec: Pointer): TUInt; inline;
-begin
-  Result := RecHeader(Rec) and LOW_MASK;
-end;
-
-function RecData(Rec: Pointer): Pointer; inline;
-begin
-  Result := PByte(Rec) + SizeOf(TUInt);
-end;
-
-function RecSize(Rec: Pointer): TUInt; inline;
-begin
-  Result := SizeOf(TUInt) + RECORDS[RecLow(Rec)].Size(PByte(Rec) + SizeOf(TUInt));
-end;
-
-procedure RecWrite(Rec: Pointer; Param: TCell; Buffer: Pointer); overload; inline;
-begin
-  RECORDS[RecLow(Rec)].Write(PByte(Rec) + SizeOf(TUInt), Param, Buffer);
-end;
-
-procedure RecWrite(Rec: Pointer; _Type: TUInt; Param: TCell; Buffer: Pointer); overload; inline;
-begin
-  TUInts(Rec^)[0] := _Type;
-  RecWrite(Rec, Param, Buffer);
-end;
-
-function RecToStr(Rec: Pointer): TString; overload; inline;
-begin
-  Result := RECORDS[RecLow(Rec)].ToStr(RecData(Rec));
-end;
-
-procedure RecDump(Rec: Pointer; Offset: Cardinal);
-begin
-  RECORDS[RecLow(Rec)].Dump(RecData(Rec), Offset);
-end;
-//}}}
 //{{{ TMetaEmbro
 procedure TMetaEmbro.AllocNewBlock;
 var
@@ -493,30 +317,4 @@ begin
 end;
 //}}}
 
-var
-  RECORDS_OBJECTS : record
-    CALL : TMetaEmbroCall;
-    RAW  : TMetaEmbroRaw;
-    XT   : TMetaEmbroXt;
-    INT  : TMetaEmbroInt;
-  end;
-
-procedure InitRecords;
-var
-  I: Integer;
-begin
-  RECORDS[LOW_CALL]     := @RECORDS_OBJECTS.CALL;
-  RECORDS[LOW_RAW]      := @RECORDS_OBJECTS.RAW;
-  RECORDS[LOW_XT]       := @RECORDS_OBJECTS.XT;
-  RECORDS[LOW_INT]      := @RECORDS_OBJECTS.INT;
-  for I := LOW_CALL to LOW_INT do
-    RECORDS[I]^.Init(I);
-end;
-
-initialization
-  InitRecords;
-  //RECORDS[LOW_CALL]     := New(PMetaEmbroCall,  Init(LOW_CALL));
-  //RECORDS[LOW_RAW]      := New(PMetaEmbroRaw,   Init(LOW_RAW));
-  //RECORDS[LOW_XT]       := New(PMetaEmbroXt,    Init(LOW_XT));
-  //RECORDS[LOW_INT]      := New(PMetaEmbroInt,   Init(LOW_INT));
 end.
