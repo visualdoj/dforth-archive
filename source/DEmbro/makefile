@@ -175,7 +175,7 @@ copy: temp/copy.stamp;
 	cd $(BUILD_DIR)/DEmbro && mkdir -p temp
 	cd $(BUILD_DIR)/DEmbro && $(FPC) -vb de.pp -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../../release/" -FUtemp
 
-../../release/de.exe: $(PP_LIST) $(BUILD_DIR)/body.inc
+../../release/de.exe: $(PP_LIST) $(BUILD_DIR)/DEmbro/body.inc
 	cd $(BUILD_DIR)/DEmbro && mkdir -p temp
 	cd $(BUILD_DIR)/DEmbro && $(FPC) -vb temp/de.dpr -dFLAG_FPC -dFLAG_CONSOLE -dFLAG_NOLOG -Sd -O3 -al -an -ar -at -gl -FE"../../../release/" -FUtemp
 

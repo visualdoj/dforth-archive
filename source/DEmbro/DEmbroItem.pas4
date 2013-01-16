@@ -64,7 +64,6 @@ type
 //{{{ meta code records
 PMetaEmbroRecord = ^TMetaEmbroRecord;
 
-//{{{ TMetaEmbroRecord - minimal data in metaembro code
 TMetaEmbroRecord = object
   _Type: TUInt;
   constructor Init(TheType: TUInt);
@@ -74,7 +73,6 @@ TMetaEmbroRecord = object
   function ToStr(Data: Pointer): TString; overload; virtual; abstract;
   procedure Dump(Data: Pointer; Offset: Cardinal); virtual; abstract;
 end;
-//}}}
 
 define(`REC', `type PMetaEmbro$1 = ^TMetaEmbro$1;
 TMetaEmbro$1 = object(TMetaEmbroRecord)
@@ -88,7 +86,7 @@ REC(Call);
 REC(Int);
 REC(Raw);
 REC(Xt);
-
+//}}}
 //{{{ TMetaEmbroRecord
 function TMetaEmbroRecord.ToStr(Data: Pointer; Buffer: PAnsiChar; MaxLen: TInt): TInt;
 var
@@ -188,7 +186,6 @@ procedure TMetaEmbroXt.Dump(Data: Pointer; Offset: Cardinal);
 begin
   System.Writeln("[+h", IntToHex(Offset, 12), "]"#9"i"#9"  ", ToStr(Data), #9"// ", IntToStr(TCell(Data^)));
 end;
-//}}}
 //}}}
 
 const
