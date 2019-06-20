@@ -1,0 +1,10 @@
+// 2011.10.20 # Doj
+// Тест googlecode генерации
+
+include" units\tools\doc\googlecode.de"
+
+" ..\..\wiki\test.wiki" file-w file-open value f
+:noname  f file-str-write ; dup <<!
+" #sidebar nav" execute
+GOOGLECODE " sample.dep" evaluate-file ^
+f file-close

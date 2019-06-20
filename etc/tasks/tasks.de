@@ -1,0 +1,35 @@
+// This file was generated automatically by DEmbro task base
+
+include" utils\taskbase\taskbase.de"
+
+uses TASK-BASE TASK-BASE-v01
+  " commands for local stack" task: L-core 1 id
+  " supported objects" task: OPP-base 2 id
+  " flow-based structures" task: FBP-base 3 id status: *
+  " DEmbro core macrolayer" task: core-macro 4 id
+  " xt convert path to absolute" task+ 5 id
+  " virtual console" task: console-virtual 6 id
+  " help generation" task: core-help 7 id status: *
+  " encoding convertings" task: encodings 8 id
+  " string mapping" task+ 9 id
+  " #char strings" task+ 10 id
+  " #char strings in source" task+ 11 id
+  " DEmbro state virtualer" task+ 12 id
+  " long arithmetic" task: core-long 13 id
+  " supporting labels in mov instruction" task+ 14 id
+  " type all general asm instructions" task+ 15 id
+  " asm macrocommands for DEmbro structures" task+ 16 id
+  " second pass for asm translator" task: asm2 17 id
+  " encoding translation while reading source" task+ 18 id
+  " fix AV on exit" task+ 19 id
+  " fix: 1 1 str-cut str->int ." task+ 20 id
+  " float point commands for memory" task+ 21 id
+  " advanced bits and arithmetic commands" task+ 22 id
+  " simple templates" task+ 23 id
+  " advanced open and close braces" task+ 24 id
+  " pcre patterns supporting" task: pcre 25 id
+  " opengl console" task: console-gl 26 id
+  " exec command" task: exec 27 id
+\uses
+
+include" utils\taskbase\session.de"

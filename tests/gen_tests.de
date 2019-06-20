@@ -1,0 +1,25 @@
+// 2011.06.29 # Doj
+// Генератор больших юнит тестов для команд ядра DEmbro
+
+:noname
+  ."     // + table" cr
+  -20 begin dup 20 <= while
+    -20 begin dup 20 <= while
+      ."     " over . dup . ." + " over over + . ." = test" cr
+    1+ repeat drop
+  1+ repeat drop
+
+  ."     // - table" cr
+  -20 begin dup 20 <= while
+    -20 begin dup 20 <= while
+      ."     " over . dup . ." - " over over - . ." = test" cr
+    1+ repeat drop
+  1+ repeat drop
+
+  ."     // * table" cr
+  -20 begin dup 20 <= while
+    -20 begin dup 20 <= while
+      ."     " over . dup . ." * " over over * . ." = test" cr
+    1+ repeat drop
+  1+ repeat drop
+; execute

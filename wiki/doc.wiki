@@ -1,0 +1,61 @@
+= Документация =
+==== [group_misc misc] ====
+
+Команды, не отнесённые к какой-либо категории
+
+[article_switch switch] [article_of of] 
+==== [group_fpu fpu] ====
+
+Команды использования сопроцессора для вычислений с плавающей точкой.
+
+[article_finit finit] [article_fdrop fdrop] [article_fnip fnip] [article_fdup fdup] [article_fover fover] [article_ftuck ftuck] [article_fswap fswap] [article_flrot flrot] [article_frrot frrot] [article_f0 f0] [article_f1 f1] [article_fpi fpi] [article_flog10 flog10] [article_floge floge] [article_f10log2 f10log2] [article_fln2 fln2] [article_frandom frandom] [article_fsqrt fsqrt] [article_fabs fabs] [article_fneg fneg] [article_flog1_plus__mul_ flog1+*] [article_f2_mul__mul_1_minus_ f2**1-] [article_fcos fcos] [article_fsin fsin] [article_fsincos fsincos] [article_float_minus__gt_str float->str] [article_double_minus__gt_str double->str] [article_extended_minus__gt_str extended->str] [article_extended_minus_fliteral extended-fliteral] [article_ftan ftan] [article_fctan fctan] [article_fsec fsec] [article_fcosec fcosec] [article_fatan fatan] [article_flog flog] [article_fln fln] [article_f10log f10log] [article_f2_mul__mul_ f2**] [article_f_mul__mul_ f**] [article_fexp fexp] [article_f10_mul__mul_ f10**] [article_fstr_minus__gt_f_question_ fstr->f?] [article_fstr_minus__gt_float_question_ fstr->float?] [article_fstr_minus__gt_double_question_ fstr->double?] [article_fstr_minus__gt_extended_question_ fstr->extended?] [article_def_minus_str_minus__gt_f def-str->f] [article_def_minus_str_minus__gt_float def-str->float] [article_def_minus_str_minus__gt_double def-str->double] [article_def_minus_str_minus__gt_extended def-str->extended] [article_str_minus_right str-right] [article_str_minus_left str-left] [article_str_minus_leftright str-leftright] [article_parse_minus_binary_question_ parse-binary?] [article_parse_minus_list parse-list] [article_parse_minus_trim parse-trim] [article_topics topics] 
+==== [group_W W] ====
+
+Основные стековые операции.
+
+[article_drop drop] [article_nip nip] [article_dup dup] [article_over over] [article_tuck tuck] [article_swap swap] [article_lrot lrot] [article_rrot rrot] [article_pick pick] 
+==== [group_arithmetic arithmetic] ====
+
+Основные арифметические операции.
+
+[article__hash_arithmetic #arithmetic] [article__plus_ +] [article__minus_ -] [article__mul_ *] [article__eq_ =] [article__lt__gt_ <>] [article__lt_ <] [article__gt_ >] [article__lt__eq_ <=] [article__gt__eq_ >=] [article_0_eq_ 0=] [article_0_lt__gt_ 0<>] [article_0_lt_ 0<] [article_0_gt_ 0>] [article_0_lt__eq_ 0<=] [article_0_gt__eq_ 0>=] [article__question_dup ?dup] [article_0_endcolon_ 0;] [article_max max] [article_min min] [article_minmax minmax] [article_div div] [article_mod mod] [article_divmod divmod] [article_inc inc] [article_dec dec] [article_1_plus_ 1+] [article_1_minus_ 1-] [article_abs abs] [article_neg neg] [article__div_ /] [article_cos cos] [article_sin sin] [article_tan tan] [article_atan atan] [article_atan2 atan2] 
+==== [group_bool&bits bool&bits] ====
+
+Команды для работы с bool и flag, побитовые команды.
+
+[article__hash_bool&bits #bool&bits] [article_false false] [article_true true] [article_not not] [article_or or] [article_and and] [article_xor xor] 
+==== [group_createwords createwords] ====
+
+Команды, создающие новые слова
+
+[article__hash_createword #createword] [article_create create] [article_allot allot] [article_here here] [article__comma_ ,] [article_to to] [article_variable variable] [article_value value] [article_constant constant] [article_does_gt_ does>] 
+==== [group_ptr ptr] ====
+
+Команды по работе с указателями
+
+[article__hash_ptr #ptr] [article__dog_ @] [article__ex_ !] [article_1_plus__ex_ 1+!] [article_1_minus__ex_ 1-!] [article_cell_plus_ cell+] [article_cells cells] [article_malloc malloc] [article_free free] [article_move move] [article_on on] [article_off off] 
+==== [group_statements statements] ====
+
+Стандартные блочные операторы.
+
+[article__hash_statements #statements] [article_branch branch] [article__question_branch ?branch] [article__gt_mark >mark] [article__gt_resolve >resolve] [article__lt_mark <mark] [article__lt_resolve <resolve] [article__colon_ :] [article__endcolon_ ;] [article_immediate immediate] [article_exit exit] [article_recurse recurse] [article_if if] [article_else else] [article_then then] 
+==== [group_console console] ====
+
+Команды по работе со стеком.
+
+[article__hash_console #console] [article__dot_ .] 
+==== [group_dyn dyn] ====
+
+Команды по работе с динамическим массивом.
+
+[article__hash_dyn #dyn] [article_dyn dyn] [article_dyn_hash_ dyn#] [article_dyn_lsq__rsq_ dyn[]] [article_dyn_dog_ dyn@] [article_dyn_ex_ dyn!] [article_high high] [article_dyn_dot_l_dog_ dyn.l@] [article_dyn_dot_l_ex_ dyn.l!] [article_dyn_dot_last dyn.last] [article_dyn_plus_ dyn+] [article_dyn_minus_new dyn-new] [article_dyn_dot_free dyn.free] 
+==== [group_file file] ====
+
+Команды по работе с файлами и файловой системой
+
+[article__hash_file #file] [article_file_minus_open file-open] [article_file_minus_close file-close] [article_file_minus_w file-w] [article_file_minus_r file-r] [article_file_minus_write file-write] [article_file_minus_read file-read] [article_file_minus_size file-size] 
+==== [group_DEVM DEVM] ====
+
+Системные команды виртуальной машины
+
+[article__hash_system #system] [article__underline_NOTFOUND_underline_ _NOTFOUND_] 

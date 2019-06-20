@@ -1,0 +1,22 @@
+  # [faq FAQ]
+  # [standart Стандарт DEmbro v0.12]
+  # Язык 
+    # [tut_base Основы]
+    # [tut_syntax Синтаксис]
+    # [tut_stack Работа со стеком]
+    # [tut_standart Функции, переменные и константы]
+    # [tut_arith Арифметика]
+    # [tut_statements Операторы ветвлений]
+    # [tut_strings Строки]
+    # Стандартный ввод-вывод
+    # [tut_files Работа с файлами]
+    # [tut_expan Выразимость]
+    # Тип command
+    # [tut_voc Использование словарей]
+    # [tut_aliens Взаимодействие с внешним кодом]
+    # [tut_scattered Scattered Colons (расширяемые команды)]
+    # [tut_sys Системные команды]
+    # [tut_ex_stack Расширенный набор команд для работы со стеком]
+    # [tut_cheats Трюки]
+  # [http://code.google.com/p/dforth/wiki/doc_dll Использование в качестве скриптового движка]
+  # [plans TODO]

@@ -1,0 +1,21 @@
+{page}
+{header} Заголовок {\header}
+Текст внутри заголовка.
+{list}
+  {** b}Жирный текст{\b \**}
+  {** i}Наклонный текст{\i \**}
+  {** u}Подчёркнутый текст{\u \**}
+{\list}
+
+{w dup s( a-ab)}
+
+Просто программа:
+{code}
+  : fac ?dup if dup 1- recurse * else 1 then ;
+  : create source-next-name created ;
+{\code}
+
+{article +}
+Раздел описывает поведение слова {w +}.
+{\article}
+{\page}
